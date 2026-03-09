@@ -4,6 +4,24 @@ Cross-skill fixes and update history.
 
 ---
 
+## 2026-03-09
+
+### Bilingual Trigger Keywords for Socratic & Plan Mode
+
+**Files changed**: 4 files across `deep-research/`, `academic-paper/`
+
+**deep-research** (2 files):
+- `SKILL.md`: Added Traditional Chinese (繁體中文) trigger keywords to YAML description, general Trigger Keywords section, and Socratic Mode Trigger Keywords section (6 Chinese keyword groups with variants). Added Chinese Quick Start examples. Quick Mode Selection Guide now bilingual.
+- `references/mode_selection_guide.md`: Added Chinese trigger examples for socratic mode (5 examples). Common misselection table now bilingual.
+
+**academic-paper** (2 files):
+- `SKILL.md`: Added Traditional Chinese trigger keywords to YAML description and general Trigger Keywords section. **New section: Plan Mode Trigger Keywords** — English (5) + Chinese (7 keyword groups with variants). Previously plan mode had no dedicated trigger keywords.
+- `references/mode_selection_guide.md`: Common misselection table now bilingual. Added 2 Chinese-specific misselection scenarios (「帶我寫論文」→ plan mode, 「第一次寫論文」→ plan mode).
+
+**Motivation**: Original skills were designed in Chinese, then translated to English. After translation, trigger keywords were English-only, causing Socratic/Plan mode to fail to activate when users prompted in Chinese (defaulting to `full` mode instead).
+
+---
+
 ## 2026-03-08
 
 ### Academic Skills Suite v4.0 — 15 Improvements Across 4 Skills

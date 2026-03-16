@@ -94,4 +94,3 @@ git clone https://github.com/pouriamrt/academic-research-skills.git .claude/skil
 
 [CC-BY-NC 4.0](https://creativecommons.org/licenses/by-nc/4.0/) — Free to share and adapt with attribution for non-commercial use.
 
-Originally created by **Cheng-I Wu**. Experimentation skills contributed by **Pouria Mortezaagha**.

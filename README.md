@@ -19,17 +19,9 @@ A Claude Code plugin covering the full academic research lifecycle — from lite
 
 ## Pipeline
 
-```
-Research (deep-research)
-  -> Experiment (optional, auto-detected)
-     -> Design (experiment-designer)
-     -> Execute (data-analyst / simulation-runner)
-     -> Log (lab-notebook)
-  -> Write (academic-paper)
-  -> Integrity Check
-  -> Review (academic-paper-reviewer)
-  -> Revise -> Re-Review -> Final Check -> Publish
-```
+<p align="center">
+  <img src="assets/pipeline.png" alt="Academic Research Pipeline" width="500"/>
+</p>
 
 The experiment stages are auto-detected from the methodology blueprint. Literature reviews, theoretical papers, and policy analyses skip straight to writing.
 
@@ -102,4 +94,4 @@ git clone https://github.com/pouriamrt/academic-research-skills.git .claude/skil
 
 [CC-BY-NC 4.0](https://creativecommons.org/licenses/by-nc/4.0/) — Free to share and adapt with attribution for non-commercial use.
 
-Originally created by **Cheng-I Wu**. Experimentation skills contributed by **Pouria Mortazavi**.
+Originally created by **Cheng-I Wu**. Experimentation skills contributed by **Pouria Mortezaagha**.

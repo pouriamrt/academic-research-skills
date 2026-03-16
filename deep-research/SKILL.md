@@ -2,8 +2,8 @@
 name: deep-research
 description: "Universal deep research agent team. 13-agent pipeline for rigorous academic research on any topic. 7 modes: full research, quick brief, paper review, lit-review, fact-check, Socratic guided research dialogue, and systematic review with optional meta-analysis. Covers research question formulation, Socratic mentoring, methodology design, systematic literature search, source verification, cross-source synthesis, risk of bias assessment, meta-analysis, APA 7.0 report compilation, editorial review, devil's advocate challenges, ethics review, and post-research literature monitoring. Triggers on: research, deep research, literature review, systematic review, meta-analysis, PRISMA, evidence synthesis, fact-check, guide my research, help me think through, 研究, 深度研究, 文獻回顧, 文獻探討, 系統性回顧, 後設分析, 事實查核, 引導我的研究, 幫我釐清, 幫我想想, 我不確定要研究什麼, 研究方向, 研究主題."
 metadata:
-  version: "2.3"
-  last_updated: "2026-03-08"
+  version: "2.4"
+  last_updated: "2026-03-16"
 ---
 
 # Deep Research — Universal Academic Research Agent Team
@@ -467,7 +467,7 @@ See `references/literature_monitoring_strategies.md` for platform-specific setup
 After research is complete, the following materials can be handed off to `academic-paper`:
 
 1. **Research Question Brief** (from research_question_agent)
-2. **Methodology Blueprint** (from research_architect_agent)
+2. **Methodology Blueprint** (from research_architect_agent) — includes `methodology_subtype` field (enum: `experimental`, `quasi_experimental`, `correlational`, `simulation`, `secondary_data_analysis`, `survey`, `case_study`, `content_analysis`, `literature_review`, `theoretical`, `mixed_methods`) and routing flags (`requires_experiment_design`, `requires_data_collection`, `requires_simulation`) used by academic-pipeline to auto-detect experiment stages
 3. **Annotated Bibliography** (from bibliography_agent)
 4. **Synthesis Report** (from synthesis_agent)
 5. **[If socratic mode] INSIGHT Collection and Research Plan Summary**

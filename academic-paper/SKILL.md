@@ -2,8 +2,8 @@
 name: academic-paper
 description: "Academic paper writing skill with 12-agent pipeline. v2.4: LaTeX output formatting hardening — mandatory apa7 class, text justification fix, table column width formula, bilingual abstract centering, standardized font stack, PDF must compile from LaTeX. Supports IMRaD, literature review, theoretical, case study, policy brief, and conference paper structures. APA 7.0 (default), Chicago, MLA, IEEE, Vancouver citation formats. Bilingual abstracts (zh-TW + EN). Multi-format output (LaTeX, DOCX, PDF, Markdown). Triggers on: write paper, academic paper, paper outline, write abstract, revise paper, check citations, convert to LaTeX, guide my paper, parse reviews, revision roadmap, 寫論文, 學術論文, 論文大綱, 寫摘要, 修改論文, 檢查引用, 引導我寫論文, 帶我規劃論文, 逐章規劃, 論文架構, 審查意見, 修訂路線圖."
 metadata:
-  version: "2.4"
-  last_updated: "2026-03-08"
+  version: "2.5"
+  last_updated: "2026-03-16"
 ---
 
 # Academic Paper — Academic Paper Writing Agent Team
@@ -349,6 +349,15 @@ Output: Chapter Plan + INSIGHT Collection
 ## Handoff Protocol: deep-research -> academic-paper
 
 `intake_agent` automatically detects deep-research materials (RQ Brief / Bibliography / Synthesis / INSIGHT Collection) and skips redundant steps. See `deep-research/SKILL.md` Handoff Protocol for the complete handoff material format.
+
+## Handoff Protocol: experiment skills -> academic-paper (v2.5)
+
+When experiment skills have been run (via academic-pipeline Stage 1.5 or standalone), `intake_agent` also detects:
+
+- **Schema 11 (Experiment Results)**: When available, `draft_writer_agent` integrates the `apa_results_text` directly into the Results section. Tables and figures from Schema 11 are referenced in the paper with their APA captions. The `reproducibility` field is cited in the Methods section.
+- **Schema 12 (Lab Record)**: When available, `draft_writer_agent` uses the `methods_summary` to enhance the Methods section with experiment provenance details. Deviations from Schema 12 are disclosed in the Limitations subsection.
+
+**Fallback**: When Schema 11/12 are absent (non-experimental papers, literature reviews, theoretical papers), behavior is unchanged from v2.4. No experiment integration occurs.
 
 ---
 

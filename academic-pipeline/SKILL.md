@@ -2,12 +2,12 @@
 name: academic-pipeline
 description: "Orchestrator for the full academic research pipeline: research -> write -> integrity check -> review -> revise -> re-review -> re-revise -> final integrity check -> finalize. Coordinates deep-research, academic-paper, and academic-paper-reviewer into a seamless 9-stage workflow with mandatory integrity verification, two-stage peer review, and reproducible quality gates. Triggers on: academic pipeline, research to paper, full paper workflow, paper pipeline, end-to-end paper, research-to-publication, complete paper workflow."
 metadata:
-  version: "2.6"
-  last_updated: "2026-03-08"
-  depends_on: "deep-research, academic-paper, academic-paper-reviewer"
+  version: "2.7"
+  last_updated: "2026-03-16"
+  depends_on: "deep-research, experiment-designer, data-analyst, simulation-runner, lab-notebook, academic-paper, academic-paper-reviewer"
 ---
 
-# Academic Pipeline v2.6 — Full Academic Research Workflow Orchestrator
+# Academic Pipeline v2.7 — Full Academic Research Workflow Orchestrator
 
 A lightweight orchestrator that manages the complete academic pipeline from research exploration to final manuscript. It does not perform substantive work — it only detects stages, recommends modes, dispatches skills, manages transitions, and tracks state.
 
@@ -63,6 +63,9 @@ I received reviewer comments, help me revise
 | Only need to review a paper | `academic-paper-reviewer` |
 | Only need to check citation format | `academic-paper` (citation-check mode) |
 | Only need to convert paper format | `academic-paper` (format-convert mode) |
+| Only need to design an experiment | `experiment-designer` |
+| Only need to analyze data | `data-analyst` |
+| Only need to run a simulation | `simulation-runner` |
 
 ### Trigger Exclusions
 
@@ -76,8 +79,9 @@ I received reviewer comments, help me revise
 
 | Stage | Name | Skill / Agent Called | Available Modes | Deliverables |
 |-------|------|---------------------|----------------|-------------|
-| 1 | RESEARCH | `deep-research` | socratic, full, quick | RQ Brief, Methodology, Bibliography, Synthesis |
-| 2 | WRITE | `academic-paper` | plan, full | Paper Draft |
+| 1 | RESEARCH | `deep-research` | socratic, full, quick | RQ Brief, Methodology Blueprint, Bibliography, Synthesis |
+| **1.5** | **EXPERIMENT** (optional) | **`experiment-designer` + `data-analyst`/`simulation-runner` + `lab-notebook`** | **full, guided** | **Experiment Design (Schema 10), Results (Schema 11), Lab Record (Schema 12)** |
+| 2 | WRITE | `academic-paper` | plan, full | Paper Draft (integrates Schema 11 results + Schema 12 methods if available) |
 | **2.5** | **INTEGRITY** | **`integrity_verification_agent`** | **pre-review** | **Integrity verification report + corrected paper** |
 | 3 | REVIEW | `academic-paper-reviewer` | full (incl. Devil's Advocate) | 5 review reports + Editorial Decision + Revision Roadmap |
 | 4 | REVISE | `academic-paper` | revision | Revised Draft, Response to Reviewers |
@@ -91,7 +95,13 @@ I received reviewer comments, help me revise
 
 ## Pipeline State Machine
 
-1. **Stage 1 RESEARCH** -> user confirmation -> Stage 2
+1. **Stage 1 RESEARCH** -> user confirmation -> detect methodology type
+   - If methodology requires experimentation -> Stage 1.5
+   - If not (literature review, theoretical, etc.) -> Stage 2
+1.5. **Stage 1.5 EXPERIMENT** (optional) -> user confirmation -> Stage 2
+   - Detection: Methodology Blueprint `requires_experiment_design` or `requires_simulation` = true
+   - Sub-stages: 1.5a DESIGN (experiment-designer) -> 1.5b EXECUTE (data-analyst/simulation-runner) -> 1.5c LOG (lab-notebook, continuous)
+   - Stage 2.5 INTEGRITY extended with Phase F: re-execute reproducibility script, diff results
 2. **Stage 2 WRITE** -> user confirmation -> Stage 2.5
 3. **Stage 2.5 INTEGRITY** -> PASS -> Stage 3 (FAIL -> fix and re-verify, max 3 rounds)
 4. **Stage 3 REVIEW** -> Accept -> Stage 4.5 / Minor|Major -> Stage 4 / Reject -> Stage 2 or end

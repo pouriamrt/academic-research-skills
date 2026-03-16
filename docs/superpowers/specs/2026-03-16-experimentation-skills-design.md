@@ -65,6 +65,41 @@ Provides instructions referenced by all 4 experiment skills.
   reports/          (analysis reports, simulation reports)
 ```
 
+#### 1.5 Agent Naming Convention
+
+Agent names are scoped to their skill directory. Multiple skills may have agents with the same name (e.g., `intake_agent`). When referencing agents cross-skill, always use the fully-qualified path: `skill-name/agent_name` (e.g., `data-analyst/intake_agent` vs `simulation-runner/intake_agent`). This matches the convention used in `shared/handoff_schemas.md` producer/consumer fields.
+
+#### 1.6 Auto-Logging Protocol
+
+When experiment skills (`experiment-designer`, `data-analyst`, `simulation-runner`) execute within the pipeline, they check for an existing notebook at `./experiment_outputs/logs/notebook_*.md` at the start of execution. If a notebook exists:
+
+1. The pipeline orchestrator passes `notebook_path` as a parameter to each experiment skill
+2. At the end of each agent phase, the skill appends a structured entry to the notebook file using the entry format defined in Section 5.5
+3. Entries are appended directly (file append) -- lab-notebook agents are NOT invoked mid-execution to avoid circular dependencies
+4. The `lab-notebook` skill's `provenance_auditor_agent` validates all auto-logged entries during `audit` or `export` mode
+
+If no notebook exists and the pipeline is active, the pipeline orchestrator creates one via `lab-notebook` (full mode) at the start of Stage 1.5 before dispatching other experiment skills.
+
+When experiment skills run standalone (outside the pipeline), auto-logging is disabled. Users can manually invoke `lab-notebook` (log-entry mode) to record results after the fact.
+
+#### 1.7 Failure Paths
+
+Common failure scenarios across all experiment skills. Each skill's SKILL.md will reference this shared section and add skill-specific failures.
+
+| Failure | Trigger | Recovery |
+|---------|---------|----------|
+| `VENV_CREATE_FAILED` | Cannot create virtual environment (permissions, disk space) | Report error, suggest manual venv creation, provide requirements.txt |
+| `PACKAGE_INSTALL_FAILED` | pip install fails (network, version conflict) | Report specific package, suggest alternatives, continue with available packages if possible |
+| `DATA_FILE_NOT_FOUND` | User-specified data file does not exist | Prompt user for correct path, list files in current directory |
+| `DATA_FORMAT_UNREADABLE` | File format not recognized or corrupted | Report detected format, suggest conversion, list supported formats |
+| `EXECUTION_TIMEOUT` | Python script exceeds reasonable execution time (>10 min) | Kill process, report last output, suggest reducing iterations/sample size |
+| `CONVERGENCE_FAILURE` | Simulation or optimization does not converge | Report diagnostics, suggest parameter adjustment, offer manual override |
+| `ALL_ASSUMPTIONS_VIOLATED` | Every statistical assumption fails for chosen test | Recommend non-parametric alternative, present options to user, do not proceed without user confirmation |
+| `POWER_TOO_LOW` | Computed power < 0.80 for feasible sample size | Report power table, suggest effect size or design changes, warn but do not block |
+| `NOTEBOOK_CORRUPTED` | Lab notebook file is malformed or unreadable | Create backup, start fresh notebook, attempt to salvage entries |
+| `HANDOFF_INCOMPLETE` | Required schema fields missing in upstream handoff | Report missing fields, request re-generation from upstream skill |
+| `SCHEMA_VALIDATION_FAILED` | Handoff artifact does not conform to schema | Report specific violations, request correction |
+
 ---
 
 ## 2. Skill: `experiment-designer`
@@ -83,6 +118,23 @@ Designs experimental protocols — from power analysis to randomization schemes 
 | `power-only` | Just need sample size / power calculation | Power analysis report only |
 | `instrument` | Just need to build a survey/measure/rubric | Instrument + validity assessment only |
 
+### 2.2b Trigger Conditions
+
+**English**: design experiment, experimental design, power analysis, sample size calculation, randomization, create survey, build instrument, write protocol, plan experiment, RCT design, factorial design, quasi-experimental design, crossover design
+
+**Traditional Chinese**: 實驗設計, 樣本數計算, 檢定力分析, 隨機分派, 設計問卷, 建立量表, 撰寫計畫書, 規劃實驗
+
+**Guided mode triggers**: "help me design an experiment", "I'm not sure what design to use", "what sample size do I need", "guide my experiment design"
+
+**Does NOT trigger**:
+
+| Scenario | Use Instead |
+|----------|-------------|
+| Have data, want to run analysis | `data-analyst` |
+| Need to run a simulation | `simulation-runner` |
+| Need to write up results as a paper | `academic-paper` |
+| Need research/literature review | `deep-research` |
+
 ### 2.3 Agent Team (6 agents)
 
 | # | Agent | Role | Phase |
@@ -92,7 +144,7 @@ Designs experimental protocols — from power analysis to randomization schemes 
 | 3 | `power_analyst_agent` | Executes power analysis via Python (statsmodels, scipy) -- computes required sample size, detects minimum effect size, generates power curves | Phase 1 |
 | 4 | `instrument_builder_agent` | Builds measurement instruments -- survey items, rubrics, coding schemes, observation protocols. Assesses content validity, suggests pilot testing | Phase 2 |
 | 5 | `randomization_agent` | Designs allocation scheme -- simple random, stratified, block, cluster. Generates actual randomization sequences via Python (numpy) | Phase 2 |
-| 6 | `protocol_compiler_agent` | Assembles the complete experiment protocol document, cross-validates all components for coherence, produces the Experiment Design handoff artifact (Schema 10) | Phase 3 |
+| 6 | `protocol_compiler_agent` | Assembles the complete experiment protocol document, cross-validates all components for coherence, produces the Experiment Design handoff artifact (Schema 10) and, when design_type is `simulation`, also produces the Simulation Specification (Schema 13) | Phase 3 |
 
 ### 2.4 Key Deliverables
 
@@ -121,7 +173,7 @@ Designs experimental protocols — from power analysis to randomization schemes 
 ### 2.7 Integration Points
 
 - **Upstream**: Consumes RQ Brief (Schema 1) + Methodology Blueprint from `deep-research`
-- **Downstream**: Produces Experiment Design (Schema 10) consumed by `data-analyst`, `simulation-runner`, `lab-notebook`
+- **Downstream**: Produces Experiment Design (Schema 10) consumed by `data-analyst`, `simulation-runner`, `lab-notebook`. When `design_type` is `simulation`, also produces Simulation Specification (Schema 13) consumed by `simulation-runner`
 - **Pipeline**: Inserted as optional stage between RESEARCH and WRITE when methodology is experimental/quasi-experimental
 
 ---
@@ -142,6 +194,23 @@ The execution engine for statistical analysis. Takes data and an analysis plan, 
 | `assumption-check` | Need to verify statistical assumptions before committing to a test | Normality, homogeneity, independence checks with recommendations |
 | `exploratory` | No hypotheses, want to explore the dataset | EDA report -- distributions, correlations, outliers, missing data patterns |
 | `replication` | Re-running someone else's analysis with their data | Execute a pre-specified analysis script, compare with reported results |
+
+### 3.2b Trigger Conditions
+
+**English**: analyze data, run statistics, statistical analysis, t-test, ANOVA, regression, correlation, chi-square, descriptive statistics, check assumptions, explore data, EDA, replicate analysis, analyze my data, run the analysis, effect size, missing data
+
+**Traditional Chinese**: 分析資料, 統計分析, 跑統計, 描述統計, 檢驗假設, 探索資料, 複製分析, 效果量, 缺失值處理
+
+**Guided mode triggers**: "I have data but don't know what test to run", "help me choose the right analysis", "what statistics should I use"
+
+**Does NOT trigger**:
+
+| Scenario | Use Instead |
+|----------|-------------|
+| Need to design an experiment (no data yet) | `experiment-designer` |
+| Need Monte Carlo, bootstrap, simulation | `simulation-runner` |
+| Need to write up results as a paper | `academic-paper` |
+| Need literature/research review | `deep-research` |
 
 ### 3.3 Agent Team (7 agents)
 
@@ -230,6 +299,28 @@ Designs and executes computational experiments -- Monte Carlo simulations, agent
 | `sensitivity` | Systematically vary parameters to test robustness | Sensitivity analysis report with tornado/spider plots |
 | `bootstrap` | Bootstrap resampling of existing data for CIs or hypothesis testing | Bootstrap distribution + CI report |
 
+### 4.2b Trigger Conditions
+
+**English**: Monte Carlo, simulation, bootstrap, parameter sweep, sensitivity analysis, agent-based model, power simulation, simulate, computational experiment, stochastic, resampling, permutation test
+
+**Traditional Chinese**: 蒙地卡羅, 模擬, 拔靴法, 參數掃描, 敏感度分析, 代理人模型, 檢定力模擬, 計算實驗, 隨機過程, 重抽樣
+
+**Guided mode triggers**: "I want to simulate but don't know how to set up the model", "help me design a Monte Carlo study"
+
+**Does NOT trigger**:
+
+| Scenario | Use Instead |
+|----------|-------------|
+| Have real data to analyze | `data-analyst` |
+| Need to design an experiment (protocol, instruments) | `experiment-designer` |
+| Need literature/research review | `deep-research` |
+
+**Ad-hoc request minimum fields** (when no Schema 10/13 available):
+- Simulation type (Monte Carlo, bootstrap, etc.)
+- Model description or data file (for bootstrap)
+- Number of iterations (or accept default: 10,000)
+- What to measure / report
+
 ### 4.3 Agent Team (5 agents)
 
 | # | Agent | Role | Phase |
@@ -238,7 +329,7 @@ Designs and executes computational experiments -- Monte Carlo simulations, agent
 | 2 | `model_builder_agent` | Translates the conceptual model into executable Python code -- defines data-generating process (DGP), parameters, distributions, stopping rules. For agent-based models: defines agents, rules, environment, interaction topology | Phase 1 |
 | 3 | `execution_engine_agent` | Runs the simulation -- manages iterations, seeds for reproducibility, parallel execution where possible. Monitors convergence (Monte Carlo error, Gelman-Rubin R-hat). Implements early stopping if convergence criteria met | Phase 2 |
 | 4 | `diagnostics_agent` | Assesses simulation quality -- convergence diagnostics, trace plots, autocorrelation, effective sample size. For parameter sweeps: generates heatmaps, tornado plots, spider plots. Flags non-convergence or instability | Phase 3 |
-| 5 | `report_compiler_agent` | Assembles simulation report -- model specification, parameter tables, results summary, diagnostic plots, reproducibility seed log. Produces Schema 11 handoff artifact and Schema 13 for the model spec | Phase 4 |
+| 5 | `report_compiler_agent` | Assembles simulation report -- model specification, parameter tables, results summary, diagnostic plots, reproducibility seed log. Produces Schema 11 handoff artifact (consumes Schema 13 from experiment-designer for model provenance) | Phase 4 |
 
 ### 4.4 Simulation Types Coverage
 
@@ -311,6 +402,20 @@ The research record keeper. Tracks the entire experiment lifecycle -- from desig
 | `export` | Export the notebook for paper writing or archival | Formatted export (Markdown / PDF) + Schema 12 handoff artifact |
 | `audit` | Review notebook completeness | Audit report with gaps identified |
 
+### 5.2b Trigger Conditions
+
+**English**: lab notebook, log experiment, record deviation, experiment log, track experiment, research record, audit notebook, export notebook, experiment snapshot
+
+**Traditional Chinese**: 實驗紀錄, 記錄偏差, 實驗日誌, 追蹤實驗, 研究紀錄, 審計紀錄, 匯出紀錄
+
+**Does NOT trigger as entry point**: `lab-notebook` is never the *entry point* to the experiment pipeline (i.e., don't start with lab-notebook when no experiment context exists). However, it can be invoked standalone for `log-entry`, `deviation`, `snapshot`, `export`, or `audit` modes on an existing notebook.
+
+| Scenario | Use Instead |
+|----------|-------------|
+| Need to design an experiment | `experiment-designer` |
+| Need to run statistical analysis | `data-analyst` |
+| Need to run simulations | `simulation-runner` |
+
 ### 5.3 Agent Team (4 agents)
 
 | # | Agent | Role | Phase |
@@ -372,7 +477,7 @@ Every entry follows a consistent structure:
 ### 5.7 Templates
 
 - `notebook_template.md` -- Master notebook structure with all 10 sections
-- `entry_templates.md` -- Per-type entry templates (collection, deviation, decision, etc.)
+- `entry_template.md` -- Per-type entry templates (collection, deviation, decision, etc.)
 - `audit_checklist_template.md` -- Completeness checklist
 - `file_manifest_template.md` -- Artifact inventory format
 
@@ -411,25 +516,58 @@ Stage 1: RESEARCH (deep-research)
     +-- No -> Skip to Stage 2
 Stage 2: WRITE (academic-paper)
   -> Now receives Schema 11 results + Schema 12 lab record in addition to existing schemas
-Stage 2.5: INTEGRITY (existing)
-  -> Extended to also verify experiment results match analysis scripts
+Stage 2.5: INTEGRITY (existing, extended)
+  -> New Phase F: Experiment Reproducibility Verification
+     1. Locate reproducibility script from Schema 11 `reproducibility.script_path`
+     2. Re-execute the script in the experiment venv
+     3. Diff output tables/stats against reported Schema 11 results
+     4. Verify figure file hashes match (regenerated vs reported)
+     5. If any mismatch: SERIOUS issue, blocks pipeline
 Stage 3-9: (existing stages unchanged)
 ```
 
-### 6.2 Detection Logic
+### 6.2 Schema 1 Extension: Methodology Type
+
+The existing Schema 1 (RQ Brief) has a `methodology_type` field with enum values `"qualitative"` / `"quantitative"` / `"mixed"`. This is too coarse for the detection logic. **Required change to Schema 1**: add a new field `methodology_subtype` to carry the specific design:
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `methodology_subtype` | enum | No (new) | `"experimental"` / `"quasi_experimental"` / `"correlational"` / `"simulation"` / `"secondary_data_analysis"` / `"survey"` / `"case_study"` / `"content_analysis"` / `"literature_review"` / `"theoretical"` / `"mixed_methods"` |
+
+This field is populated by `deep-research/research_architect_agent` when it produces the Methodology Blueprint. The existing `methodology_type` field (`qualitative`/`quantitative`/`mixed`) remains unchanged for backward compatibility.
+
+### 6.3 Methodology Blueprint Formalization
+
+The Methodology Blueprint is an informal artifact produced by `deep-research/research_architect_agent`. For the pipeline detection logic to work reliably, the following fields MUST be present in any Methodology Blueprint:
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `research_paradigm` | string | Positivist / Interpretivist / Pragmatist / Critical |
+| `method_type` | string | qualitative / quantitative / mixed |
+| `specific_method` | string | E.g., "quasi-experimental", "comparative case study" |
+| `data_type` | string | primary / secondary / both |
+| `requires_experiment_design` | boolean | Whether an experiment protocol is needed |
+| `requires_data_collection` | boolean | Whether primary data collection is needed |
+| `requires_simulation` | boolean | Whether computational simulation is needed |
+
+These fields enable the pipeline orchestrator to make routing decisions without parsing free text.
+
+### 6.4 Detection Logic
 
 ```
-Trigger experimentation stages when methodology_type in Methodology Blueprint matches:
-- "experimental"           -> experiment-designer (full) + data-analyst
-- "quasi-experimental"     -> experiment-designer (full) + data-analyst
-- "simulation"             -> experiment-designer (guided) + simulation-runner
-- "mixed" with quant strand -> experiment-designer + data-analyst
-- "correlational" with primary data -> data-analyst only (no design needed)
-- "secondary data analysis" -> data-analyst only
-- All others               -> skip experimentation
+Trigger experimentation stages based on Methodology Blueprint fields:
+- requires_experiment_design = true  -> experiment-designer (full) + data-analyst
+- requires_simulation = true         -> experiment-designer (guided) + simulation-runner
+- methodology_subtype = "correlational" AND requires_data_collection = true
+                                     -> data-analyst only (no design needed)
+- methodology_subtype = "secondary_data_analysis"
+                                     -> data-analyst only
+- method_type = "mixed" AND requires_data_collection = true
+                                     -> experiment-designer + data-analyst
+- All others                         -> skip experimentation
 ```
 
-### 6.3 Updated CLAUDE.md Routing Rules
+### 6.5 Updated CLAUDE.md Routing Rules
 
 New additions:
 
@@ -444,9 +582,10 @@ New additions:
    "Monte Carlo" with existing data, that's simulation-runner. If user says
    "run a regression on my data", that's data-analyst.
 
-8. lab-notebook: Never runs alone as a first step. Always accompanies other
-   experiment skills. Automatically invoked by pipeline when experiment stages
-   are active. Can be invoked standalone for log-entry or audit after the fact.
+8. lab-notebook: Never the *entry point* to the experiment pipeline. Always
+   accompanies other experiment skills. Automatically invoked by pipeline when
+   experiment stages are active. Can be invoked standalone for log-entry,
+   deviation, snapshot, export, or audit modes on an existing notebook.
 ```
 
 ---
@@ -461,7 +600,7 @@ New additions:
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
 | `experiment_id` | string | Yes | Unique experiment identifier |
-| `design_type` | enum | Yes | `RCT` / `quasi_experimental` / `factorial` / `crossover` / `single_subject` / `correlational` / `simulation` |
+| `design_type` | enum | Yes | `RCT` / `quasi_experimental` / `factorial` / `crossover` / `single_subject` / `correlational` / `simulation` / `mixed` |
 | `hypotheses` | list[Hypothesis] | Yes | Pre-registered hypotheses with direction |
 | `variables` | object | Yes | `{independent: list[Variable], dependent: list[Variable], control: list[Variable], moderator: list[Variable], mediator: list[Variable]}` |
 | `sample` | object | Yes | `{target_n: int, power: float, alpha: float, effect_size: string, attrition_buffer: float}` |
@@ -530,14 +669,14 @@ New additions:
 
 | Skill | Version | Purpose | Key Modes |
 |-------|---------|---------|-----------|
-| `deep-research` | v2.3 | Universal research team | full, quick, socratic, review, lit-review, fact-check, systematic-review |
-| `experiment-designer` | v1.0 | Experiment protocol and power analysis | full, guided, quick, power-only, instrument |
-| `data-analyst` | v1.0 | Statistical analysis execution | full, guided, quick, assumption-check, exploratory, replication |
-| `simulation-runner` | v1.0 | Computational experiments | full, guided, quick, power-sim, sensitivity, bootstrap |
-| `lab-notebook` | v1.0 | Experiment research record | full, log-entry, deviation, snapshot, export, audit |
-| `academic-paper` | v2.4 | Academic paper writing | full, plan, outline-only, revision, abstract-only, lit-review, format-convert, citation-check |
-| `academic-paper-reviewer` | v1.4 | Multi-perspective paper review | full, re-review, quick, methodology-focus, guided |
-| `academic-pipeline` | v2.7 | Full pipeline orchestrator | (coordinates all above) |
+| `deep-research` | v2.3 -> v2.4 | Universal research team (+ methodology_subtype in RQ Brief) | full, quick, socratic, review, lit-review, fact-check, systematic-review |
+| `experiment-designer` | v1.0 (NEW) | Experiment protocol and power analysis | full, guided, quick, power-only, instrument |
+| `data-analyst` | v1.0 (NEW) | Statistical analysis execution | full, guided, quick, assumption-check, exploratory, replication |
+| `simulation-runner` | v1.0 (NEW) | Computational experiments | full, guided, quick, power-sim, sensitivity, bootstrap |
+| `lab-notebook` | v1.0 (NEW) | Experiment research record | full, log-entry, deviation, snapshot, export, audit |
+| `academic-paper` | v2.4 -> v2.5 | Academic paper writing (+ Schema 11/12 consumption) | full, plan, outline-only, revision, abstract-only, lit-review, format-convert, citation-check |
+| `academic-paper-reviewer` | v1.4 (unchanged) | Multi-perspective paper review | full, re-review, quick, methodology-focus, guided |
+| `academic-pipeline` | v2.6 -> v2.7 | Full pipeline orchestrator (+ experiment stages) | (coordinates all above) |
 
 ---
 
@@ -566,6 +705,9 @@ experiment-designer/
     instrument_development_guide.md
     randomization_methods.md
     equator_protocol_guidelines.md
+  examples/
+    rct_design_example.md
+    quasi_experimental_example.md
 
 data-analyst/
   SKILL.md
@@ -589,6 +731,9 @@ data-analyst/
     effect_size_interpretation_guide.md
     missing_data_strategies.md
     common_analysis_pitfalls.md
+  examples/
+    anova_analysis_example.md
+    regression_analysis_example.md
 
 simulation-runner/
   SKILL.md
@@ -609,6 +754,9 @@ simulation-runner/
     seed_management_guide.md
     parallel_execution_guide.md
     reporting_simulation_studies.md
+  examples/
+    monte_carlo_power_example.md
+    bootstrap_ci_example.md
 
 lab-notebook/
   SKILL.md
@@ -619,7 +767,7 @@ lab-notebook/
     provenance_auditor_agent.md
   templates/
     notebook_template.md
-    entry_templates.md
+    entry_template.md
     audit_checklist_template.md
     file_manifest_template.md
   references/
@@ -627,11 +775,26 @@ lab-notebook/
     reproducibility_standards.md
     deviation_handling_guide.md
     provenance_tracking_guide.md
+  examples/
+    full_notebook_example.md
 
 shared/
   experiment_infrastructure.md  (NEW)
   handoff_schemas.md            (UPDATED -- add schemas 10-13)
 ```
 
-**Total new files: 54**
-**Modified files: 3** (shared/handoff_schemas.md, .claude/CLAUDE.md, academic-pipeline/SKILL.md)
+**Total new files: 71**
+- experiment-designer: 1 SKILL + 6 agents + 4 templates + 5 references + 2 examples = 18
+- data-analyst: 1 SKILL + 7 agents + 4 templates + 6 references + 2 examples = 20
+- simulation-runner: 1 SKILL + 5 agents + 4 templates + 5 references + 2 examples = 17
+- lab-notebook: 1 SKILL + 4 agents + 4 templates + 4 references + 1 example = 14
+- shared: 1 new file (experiment_infrastructure.md) + 1 updated file (handoff_schemas.md) = 1 new + 1 updated
+
+**Modified files: 7**
+- `shared/handoff_schemas.md` -- Add schemas 10-13
+- `.claude/CLAUDE.md` -- Add routing rules 6-8, update skills overview table
+- `academic-pipeline/SKILL.md` -- Add Stage 1.5 (EXPERIMENT), bump to v2.7
+- `academic-pipeline/agents/pipeline_orchestrator_agent.md` -- Add experiment stage detection logic
+- `academic-pipeline/agents/integrity_verification_agent.md` -- Add Phase F: Experiment Reproducibility Verification
+- `academic-paper/SKILL.md` -- Document Schema 11/12 consumption, bump to v2.5
+- `deep-research/SKILL.md` -- Add `methodology_subtype` field to RQ Brief output, bump to v2.4

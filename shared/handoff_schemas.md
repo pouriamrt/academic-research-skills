@@ -468,6 +468,312 @@ phases: {
 
 ---
 
+## Schema 10: Experiment Design (experiment-designer -> data-analyst / simulation-runner / lab-notebook)
+
+**Producer**: `experiment-designer/protocol_compiler_agent`
+**Consumer**: `data-analyst/intake_agent` | `simulation-runner/intake_agent` | `lab-notebook/entry_writer_agent`
+
+### Required Fields
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `experiment_id` | string | Unique experiment identifier (format: `EXP-YYYYMMDD-NNN`) |
+| `design_type` | enum | `"RCT"` / `"quasi_experimental"` / `"factorial"` / `"crossover"` / `"single_subject"` / `"correlational"` / `"simulation"` / `"mixed"` |
+| `hypotheses` | list[Hypothesis] | Pre-registered hypotheses with direction |
+| `variables` | object | `{independent: list[Variable], dependent: list[Variable], control: list[Variable], moderator: list[Variable], mediator: list[Variable]}` |
+| `sample` | object | `{target_n: int, power: float, alpha: float, effect_size: string, attrition_buffer: float}` |
+| `analysis_plan` | object | `{primary: list[AnalysisSpec], secondary: list[AnalysisSpec], exploratory: list[AnalysisSpec]}` |
+| `validity_threats` | list[Threat] | Identified threats with mitigation strategies |
+| `protocol_document` | string | Path to full protocol file |
+| `timeline` | list[Milestone] | Data collection and analysis milestones |
+
+### Conditional Fields
+
+| Field | Type | Condition | Description |
+|-------|------|-----------|-------------|
+| `randomization` | object | Required if design_type is `RCT` or `factorial` | `{method: string, seed: int, allocation_ratio: string, schedule: list}` |
+| `instruments` | list[Instrument] | Required if primary data collection | Measurement instruments (surveys, rubrics, coding schemes) |
+
+### Hypothesis Object
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `id` | string | Unique identifier (e.g., `H1`, `H2`) |
+| `statement` | string | The hypothesis in declarative form |
+| `direction` | enum | `"positive"` / `"negative"` / `"non-directional"` |
+| `primary` | boolean | Whether this is a primary or secondary hypothesis |
+
+### Variable Object
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `name` | string | Variable name |
+| `type` | enum | `"continuous"` / `"categorical"` / `"ordinal"` / `"binary"` |
+| `operationalization` | string | How the variable is measured |
+| `levels` | list[string] | For categorical/ordinal: the levels |
+
+### AnalysisSpec Object
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `test` | string | Statistical test name (e.g., `"independent_t_test"`, `"one_way_anova"`) |
+| `iv` | list[string] | Independent variable(s) for this analysis |
+| `dv` | string | Dependent variable |
+| `covariates` | list[string] | Covariates (if any) |
+| `hypothesis_id` | string | Which hypothesis this analysis tests |
+
+### Threat Object
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `type` | enum | `"internal"` / `"external"` / `"construct"` / `"statistical"` |
+| `name` | string | Specific threat (e.g., `"selection bias"`, `"maturation"`) |
+| `likelihood` | enum | `"high"` / `"medium"` / `"low"` |
+| `mitigation` | string | Strategy to address the threat |
+| `residual_risk` | string | Risk remaining after mitigation |
+
+### Example
+
+```markdown
+## Experiment Design
+
+**Experiment ID**: EXP-20260316-001
+
+**Design Type**: quasi_experimental
+
+**Hypotheses**:
+- H1 (primary, positive): Students receiving AI-assisted formative assessment will show significantly higher exam scores than the control group
+- H2 (secondary, positive): Students in the treatment group will report higher self-efficacy
+
+**Variables**:
+- Independent: Teaching method (AI-assisted vs traditional), categorical, 2 levels
+- Dependent: Exam score (continuous, 0-100), Self-efficacy (continuous, Likert composite)
+- Control: Prior GPA, Gender, Year of study
+
+**Sample**: target_n=180 (90 per group), power=0.80, alpha=0.05, effect_size="d=0.50", attrition_buffer=0.15
+
+**Analysis Plan**:
+- Primary: Independent t-test (H1), ANCOVA controlling for prior GPA (H1 robustness)
+- Secondary: Independent t-test (H2)
+- Exploratory: Moderation analysis (prior GPA x treatment)
+```
+
+---
+
+## Schema 11: Experiment Results (data-analyst / simulation-runner -> academic-paper / lab-notebook)
+
+**Producer**: `data-analyst/report_compiler_agent` | `simulation-runner/report_compiler_agent`
+**Consumer**: `academic-paper/draft_writer_agent` | `lab-notebook/entry_writer_agent`
+
+### Required Fields
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `experiment_id` | string | Links to Schema 10 experiment_id |
+| `result_type` | enum | `"statistical_analysis"` / `"simulation"` / `"bootstrap"` / `"exploratory"` |
+| `dataset_info` | object | `{n_original: int, n_analyzed: int, exclusions: list[string], missing_strategy: string}` |
+| `assumption_checks` | list[AssumptionCheck] | Each assumption tested with result and decision |
+| `primary_results` | list[AnalysisResult] | Primary analysis results |
+| `effect_sizes` | list[EffectSize] | All effect sizes with confidence intervals |
+| `tables` | list[Table] | Formatted tables with file paths |
+| `figures` | list[Figure] | Publication-quality figures with file paths |
+| `apa_results_text` | object | `{primary: string, secondary: string, exploratory: string}` — ready-to-insert APA text |
+| `reproducibility` | object | `{script_path: string, seed: int, environment: string, requirements_path: string}` |
+
+### Optional Fields
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `secondary_results` | list[AnalysisResult] | Secondary analysis results |
+
+### AssumptionCheck Object
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `assumption` | string | Which assumption (e.g., `"normality"`, `"homogeneity_of_variance"`) |
+| `test_used` | string | Statistical test (e.g., `"Shapiro-Wilk"`, `"Levene's"`) |
+| `statistic` | float | Test statistic value |
+| `p_value` | float | p-value |
+| `diagnostic_plot` | string | Path to diagnostic plot file |
+| `verdict` | enum | `"met"` / `"violated"` / `"marginal"` |
+| `action` | string | Action taken (e.g., `"proceed with parametric"`, `"switch to non-parametric"`) |
+
+### AnalysisResult Object
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `hypothesis_id` | string | Links to Schema 10 hypothesis (e.g., `H1`) |
+| `test` | string | Statistical test used |
+| `statistic` | float | Test statistic value |
+| `df` | string | Degrees of freedom (e.g., `"2, 87"`) |
+| `p_value` | float | p-value |
+| `significant` | boolean | Whether p < alpha |
+| `apa_string` | string | Full APA-formatted result string |
+
+### EffectSize Object
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `measure` | string | Effect size type (e.g., `"Cohen's d"`, `"eta_squared"`) |
+| `value` | float | Effect size value |
+| `ci_lower` | float | 95% CI lower bound |
+| `ci_upper` | float | 95% CI upper bound |
+| `magnitude` | enum | `"negligible"` / `"small"` / `"medium"` / `"large"` |
+
+### Table Object
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `id` | string | Table identifier (e.g., `"Table 1"`) |
+| `caption` | string | APA-formatted table caption |
+| `csv_path` | string | Path to CSV file |
+| `markdown_path` | string | Path to formatted Markdown file |
+| `apa_formatted` | string | Inline APA-formatted table (Markdown) |
+
+### Figure Object
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `id` | string | Figure identifier (e.g., `"Figure 1"`) |
+| `caption` | string | APA-formatted figure caption |
+| `png_path` | string | Path to PNG file |
+| `pdf_path` | string | Path to PDF file |
+
+### Example
+
+```markdown
+## Experiment Results
+
+**Experiment ID**: EXP-20260316-001
+**Result Type**: statistical_analysis
+
+**Dataset Info**:
+- Original N: 195
+- Analyzed N: 180 (15 excluded: 8 incomplete data, 7 failed attention checks)
+- Missing strategy: Listwise deletion (< 5% missing, MCAR confirmed by Little's test)
+
+**Assumption Checks**:
+| Assumption | Test | Statistic | p | Verdict | Action |
+|------------|------|-----------|---|---------|--------|
+| Normality (treatment) | Shapiro-Wilk | W = 0.98 | .142 | Met | Proceed |
+| Normality (control) | Shapiro-Wilk | W = 0.97 | .089 | Met | Proceed |
+| Homogeneity of variance | Levene's | F = 1.23 | .269 | Met | Proceed |
+
+**Primary Results**:
+- H1: t(178) = 3.42, p < .001, d = 0.51, 95% CI [0.21, 0.81]
+  → Significant: Students with AI-assisted assessment scored higher (M = 78.3, SD = 12.1) than control (M = 72.1, SD = 12.8)
+
+**Reproducibility**: script at `experiment_outputs/scripts/analysis.py`, seed=42, environment at `experiment_env/requirements.txt`
+```
+
+---
+
+## Schema 12: Lab Record (lab-notebook -> academic-paper / academic-pipeline)
+
+**Producer**: `lab-notebook/provenance_auditor_agent`
+**Consumer**: `academic-paper/draft_writer_agent` | `academic-pipeline/pipeline_orchestrator_agent`
+
+### Required Fields
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `experiment_id` | string | Links to Schema 10 experiment_id |
+| `notebook_path` | string | Path to the notebook Markdown file |
+| `entry_count` | integer | Total number of entries in the notebook |
+| `deviation_count` | integer | Number of protocol deviation entries |
+| `file_manifest` | list[FileRecord] | Complete inventory of all experiment artifacts |
+| `completeness_score` | float | 0.0-1.0 audit completeness score |
+| `environment_snapshot` | object | `{python_version: string, packages: dict, os: string}` |
+| `methods_summary` | string | Condensed narrative suitable for paper Methods section |
+
+### Conditional Fields
+
+| Field | Type | Condition | Description |
+|-------|------|-----------|-------------|
+| `deviations_summary` | list[string] | Required if deviation_count > 0 | One-line summary of each deviation |
+| `completeness_gaps` | list[string] | Required if completeness_score < 1.0 | Sections that are incomplete |
+
+### FileRecord Object
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `path` | string | Relative file path |
+| `purpose` | string | What the file contains / is used for |
+| `hash` | string | SHA-256 hash of file contents |
+| `created` | string | ISO 8601 creation timestamp |
+
+### Example
+
+```markdown
+## Lab Record
+
+**Experiment ID**: EXP-20260316-001
+**Notebook**: experiment_outputs/logs/notebook_2026-03-16_ai-assessment.md
+**Entries**: 14
+**Deviations**: 1 (sample fell short of target by 15 students; adjusted power analysis)
+**Completeness**: 0.90 (missing: pilot test results not documented)
+
+**Methods Summary**: A quasi-experimental study was conducted with 180 undergraduate physics students across 4 sections at National Taiwan University during Spring 2026. Two sections (n=90) received AI-assisted formative assessment via the XLearn platform; two sections (n=90) received traditional assessment. Data were collected over 16 weeks. One protocol deviation occurred: final sample (N=180) fell below the target (N=195) due to higher-than-expected attrition; post-hoc power analysis confirmed adequate power (0.82) for the observed effect.
+
+**Environment**: Python 3.12.3, pandas 2.2.1, scipy 1.13.0, statsmodels 0.14.1, pingouin 0.5.4
+```
+
+---
+
+## Schema 13: Simulation Specification (experiment-designer -> simulation-runner)
+
+**Producer**: `experiment-designer/protocol_compiler_agent` (only when Schema 10 `design_type` is `"simulation"`)
+**Consumer**: `simulation-runner/model_builder_agent`
+
+### Required Fields
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `experiment_id` | string | Links to Schema 10 experiment_id |
+| `simulation_type` | enum | `"monte_carlo"` / `"bootstrap"` / `"power_sim"` / `"agent_based"` / `"parameter_sweep"` / `"stochastic_process"` |
+| `model_definition` | object | `{description: string, dgp: string, parameters: dict, distributions: dict}` |
+| `execution_plan` | object | `{n_iterations: int, burn_in: int, convergence_criterion: string, seeds: list[int]}` |
+| `performance_measures` | list[string] | What to measure (e.g., `["bias", "MSE", "coverage", "power"]`) |
+| `ademp_checklist` | object | `{aims: string, dgp: string, estimands: list, methods: list, performance: list}` |
+
+### Optional Fields
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `parameter_grid` | object | For parameter sweeps: `{param_name: [values]}` |
+
+### Example
+
+```markdown
+## Simulation Specification
+
+**Experiment ID**: EXP-20260316-002
+**Simulation Type**: power_sim
+
+**Model Definition**:
+- Description: Simulate power for a 2x3 mixed ANOVA with one between-subjects factor (treatment: 2 levels) and one within-subjects factor (time: 3 levels)
+- DGP: Y_ij = mu + alpha_i + beta_j + (alpha*beta)_ij + epsilon_ij, where epsilon ~ N(0, sigma^2)
+- Parameters: {mu: 50, alpha: [0, 5], beta: [0, 2, 4], interaction: [0, 0, 0, 0, 1, 3], sigma: 10}
+- Distributions: {epsilon: "normal(0, 10)", group_assignment: "uniform(2 levels)"}
+
+**Execution Plan**:
+- n_iterations: 10000
+- burn_in: 0
+- convergence_criterion: MCSE < 0.01
+- seeds: [42, 123, 456, 789, 1011]
+
+**Performance Measures**: ["power", "type_I_error", "effect_size_bias"]
+
+**ADEMP Checklist**:
+- Aims: Estimate statistical power for a 2x3 mixed ANOVA across a range of sample sizes (N = 30 to 300)
+- DGP: Normal errors, balanced groups, compound symmetry covariance
+- Estimands: Power to detect interaction effect at alpha = .05
+- Methods: Mixed ANOVA via statsmodels
+- Performance: Power (proportion of significant results), Type I error rate, bias of eta-squared estimate
+```
+
+---
+
 ## Validation Rules
 
 1. **Required field check**: All schema fields marked without "(optional)" or "No" in the Required column are REQUIRED. Consumer agents MUST verify all required fields are present before proceeding
@@ -482,3 +788,7 @@ phases: {
 10. **Passport freshness**: A Material Passport's integrity results are considered STALE if `integrity_pass_date` is more than 24 hours old relative to the current timestamp. Stale passports require re-verification before proceeding
 11. **Stage-skip eligibility via passport**: A passport allows skipping Stage 2.5 (pre-review integrity) ONLY when ALL of the following conditions are met: (a) `verification_status` = `"VERIFIED"`, (b) `integrity_pass_date` is within the current session or less than 24 hours old, (c) `version_label` matches the current artifact version (content has not been modified since verification), and (d) the user explicitly confirms the skip. If any condition fails, full Stage 2.5 re-verification is required
 12. **Passport does not grant Stage 4.5 skip**: The final integrity check (Stage 4.5) can NEVER be skipped via Material Passport, regardless of passport status. Stage 4.5 always requires full Mode 2 verification
+13. **Experiment ID uniqueness**: Schema 10 `experiment_id` must be unique within a pipeline run. Schemas 11, 12, and 13 must reference an existing Schema 10 `experiment_id`
+14. **Schema 13 conditionality**: Schema 13 (Simulation Specification) is only produced when Schema 10 `design_type` is `"simulation"`. It is never produced for other design types
+15. **Experiment file cross-reference**: Figures and tables referenced in Schema 11 must have corresponding files at the declared paths in `experiment_outputs/`. Consumer agents should verify file existence before proceeding
+16. **Reproducibility script validity**: Schema 11 `reproducibility.script_path` must point to a valid Python file. The integrity verification agent (Stage 2.5, Phase F) re-executes this script to verify results match

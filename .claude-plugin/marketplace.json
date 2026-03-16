@@ -1,0 +1,15 @@
+{
+  "name": "academic-research-skills",
+  "description": "Full academic research lifecycle as Claude Code skills",
+  "owner": {
+    "name": "Pouria Mortezaagha"
+  },
+  "plugins": [
+    {
+      "name": "academic-research-skills",
+      "version": "3.0.0",
+      "description": "8 AI skills covering literature review, experiment design, statistical analysis, simulation, paper writing, and peer review.",
+      "source": "./"
+    }
+  ]
+}

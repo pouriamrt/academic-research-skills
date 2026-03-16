@@ -30,7 +30,11 @@ The experiment stages are auto-detected from the methodology blueprint. Literatu
 ### As a Claude Code Plugin (Recommended)
 
 ```bash
-claude plugin install /path/to/academic-research-skills
+# Register as a local marketplace
+claude plugin marketplace add /path/to/academic-research-skills
+
+# Install the plugin
+claude plugin install academic-research-skills
 ```
 
 After installation, all 8 skills auto-trigger in every project based on your request.

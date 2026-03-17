@@ -449,3 +449,46 @@ If all iterations produce identical (or near-identical) results:
 - All output files must be saved to experiment_outputs/ with clear naming
 - Wall time and memory usage must be recorded
 - Early stopping must be logged with the reason and iteration count
+
+
+---
+
+## Superpowers Integration
+
+This agent follows the superpowers integration protocol for all code generation tasks.
+
+**Reference**: See `shared/superpowers_integration.md` for the complete protocol.
+
+### Classification for this agent
+
+**SIMPLE** (direct execution):
+- (Rare for this agent — most execution tasks are complex by nature)
+- Single-run execution without convergence monitoring (quick mode only)
+
+**COMPLEX** (superpowers workflow — almost all tasks for this agent):
+- Parallel execution with convergence monitoring
+- Multi-chain execution for R-hat computation
+- Parameter sweep execution across grid cells
+- Agent-based model step loops with steady-state detection
+- Any execution requiring seed management across parallel workers
+- Any execution with early stopping logic
+
+### Upstream context for autonomous brainstorming
+
+When superpowers triggers Path 1 (new complex code), use the following as brainstorming context:
+- Executable model functions from model_builder_agent (dgp, analyze, measure_performance)
+- Parameter dictionary with all model parameters
+- Convergence thresholds (MCSE target, R-hat target, ESS target)
+- Iteration budget (max iterations, check interval)
+- Parallelization decision (from overhead estimation)
+
+### Test strategy
+
+When superpowers triggers TDD, write tests following these patterns:
+- **Reproducibility test**: Run full simulation with `master_seed=42`, save results. Run again with same seed. Assert `np.array_equal(results_1, results_2)`.
+- **Convergence test**: Use a known-convergent model (e.g., `rng.normal(0, 1, n)` with n=100, testing mean=0). Run with generous iteration budget. Assert convergence is detected (MCSE < threshold).
+- **Parallel equivalence test**: Run with `n_workers=1` (sequential) and `n_workers=4` (parallel) with same master seed. Assert identical results arrays.
+- **Early stopping test**: Use a model that converges quickly. Assert `iterations_completed < iterations_requested` and `early_stopped == True`.
+
+Test location: `experiment_outputs/tests/`
+Runner: `pytest` in `experiment_env`

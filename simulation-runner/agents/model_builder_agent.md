@@ -390,3 +390,46 @@ Build the DGP incrementally based on user responses. Show the user the emerging 
 - Assumptions are explicitly listed
 - Numerical stability has been considered
 - Code runs without errors when called with the parameter dict and a fresh Generator
+
+
+---
+
+## Superpowers Integration
+
+This agent follows the superpowers integration protocol for all code generation tasks.
+
+**Reference**: See `shared/superpowers_integration.md` for the complete protocol.
+
+### Classification for this agent
+
+**SIMPLE** (direct execution):
+- Standard bootstrap resampling function (percentile or BCa CI on a single statistic)
+
+**COMPLEX** (superpowers workflow — almost all tasks for this agent):
+- Custom DGPs (any user-specified data-generating process)
+- Monte Carlo simulation models
+- Agent-based models (Agent class + topology + step function)
+- Power simulation models (DGP + test wrapper)
+- Parameter sweep models (grid builder + sweep iteration)
+- Stochastic process models
+- Any model requiring multiple interacting functions
+
+### Upstream context for autonomous brainstorming
+
+When superpowers triggers Path 1 (new complex code), use the following as brainstorming context:
+- Simulation Specification (Schema 13): simulation type, conceptual model description, parameters, distributions
+- DGP requirements: what data structure to generate, what truth values to track
+- Analysis function requirements: what test to run on each realization
+- Performance measurement: what metrics to compute across iterations
+- Convergence criteria from intake_agent
+
+### Test strategy
+
+When superpowers triggers TDD, write tests following these patterns:
+- **Purity test**: `rng = default_rng(SeedSequence(42)); r1 = dgp(rng, params)` then `rng = default_rng(SeedSequence(42)); r2 = dgp(rng, params)`. Assert `np.array_equal(r1['data'], r2['data'])`.
+- **Structure test**: Assert output dict has required keys (`data`, `truth`). Assert types match expected (ndarray, DataFrame, etc.).
+- **Edge case test**: Call with degenerate parameters (n=1, n=0, sigma=0, probability=0, probability=1). Assert no crash (may raise ValueError, but not unhandled exception).
+- **Distribution test**: Generate N=10000 samples, assert `abs(np.mean(data) - params['mu']) < 3 * params['sigma'] / np.sqrt(N)`.
+
+Test location: `experiment_outputs/tests/`
+Runner: `pytest` in `experiment_env`

@@ -48,15 +48,29 @@ Before writing any code, classify the task as SIMPLE or COMPLEX using the table 
 
 Three workflow paths, selected based on the situation. All run **fully autonomously** — no human checkpoints during the workflow.
 
+**CRITICAL — How to invoke superpowers skills**: Each step in the workflow below requires invoking the actual superpowers skill via the `Skill` tool. This loads the full skill content (instructions, checklists, process flows) which the agent then follows. Do NOT just follow the protocol descriptions in this file — invoke the real skills.
+
 ### Path 1: New Complex Code
 
 **Trigger**: Agent needs to write complex code that doesn't exist yet.
 
 ```
-brainstorming (self-directed, autonomous — see Section 3)
-  → writing-plans (break into testable steps)
-    → test-driven-development (RED → GREEN → REFACTOR per step — see Section 4)
-      → verification-before-completion (run all tests, confirm output)
+Step 1: Invoke Skill("superpowers:brainstorming")
+        → Follow the loaded skill, but in autonomous mode (see Section 3)
+        → Output: design approach documented in superpowers log
+
+Step 2: Invoke Skill("superpowers:writing-plans")
+        → Follow the loaded skill to break the design into testable steps
+        → Output: implementation plan with test-first steps
+
+Step 3: Invoke Skill("superpowers:test-driven-development")
+        → Follow the loaded skill's RED → GREEN → REFACTOR cycle
+        → Use the scientific test adaptations from Section 4
+        → Output: tested, working code
+
+Step 4: Invoke Skill("superpowers:verification-before-completion")
+        → Follow the loaded skill to run all tests and confirm output
+        → Output: verified results
 ```
 
 ### Path 2: Debugging Failed Code
@@ -64,9 +78,17 @@ brainstorming (self-directed, autonomous — see Section 3)
 **Trigger**: Code throws a runtime error, produces wrong results, convergence failure, or test failure.
 
 ```
-systematic-debugging (4-phase root cause investigation)
-  → test-driven-development (write regression test for the bug)
-    → verification-before-completion (confirm fix, run full suite)
+Step 1: Invoke Skill("superpowers:systematic-debugging")
+        → Follow the loaded skill's 4-phase root cause investigation
+        → Output: identified root cause
+
+Step 2: Invoke Skill("superpowers:test-driven-development")
+        → Write a regression test for the bug, then fix
+        → Output: bug fixed with regression test
+
+Step 3: Invoke Skill("superpowers:verification-before-completion")
+        → Run full test suite, confirm fix doesn't break anything
+        → Output: verified fix
 ```
 
 ### Path 3: Iterating on Existing Code
@@ -74,9 +96,17 @@ systematic-debugging (4-phase root cause investigation)
 **Trigger**: Agent needs to modify working code — change parameters, swap analysis method, extend model, user requested changes.
 
 ```
-writing-plans (plan the changes)
-  → test-driven-development (update tests first, then code)
-    → verification-before-completion (confirm nothing broke)
+Step 1: Invoke Skill("superpowers:writing-plans")
+        → Plan the changes as testable steps
+        → Output: modification plan
+
+Step 2: Invoke Skill("superpowers:test-driven-development")
+        → Update tests first, then modify code
+        → Output: updated code with passing tests
+
+Step 3: Invoke Skill("superpowers:verification-before-completion")
+        → Confirm nothing broke
+        → Output: verified changes
 ```
 
 ### Path Selection Logic
@@ -91,19 +121,21 @@ The agent determines which path by asking:
 
 ## 3. Autonomous Brainstorming Protocol
 
-When Path 1 triggers, the agent self-directs brainstorming using upstream research context. No human checkpoint.
+When Path 1 triggers, the agent invokes `Skill("superpowers:brainstorming")` which loads the full brainstorming skill. However, the brainstorming skill is designed for human-in-the-loop dialogue (ask questions, propose approaches, get approval). In autonomous mode, the agent adapts the skill as follows:
 
-### Structure
+### Adaptation for Autonomous Execution
 
-1. **State the goal**: What code needs to be written and why (derived from upstream context)
-2. **Generate 2-3 approaches**: Different implementation strategies with trade-offs (e.g., simulation-based vs analytical power, bootstrap vs asymptotic CI, different DGP parameterizations)
+The brainstorming skill's normal process is: explore context → ask clarifying questions → propose 2-3 approaches → present design → get user approval → write spec. In autonomous mode, the agent replaces human interaction with research context:
+
+1. **Skip clarifying questions**: The agent already has upstream context (see table below). Use it instead of asking the user.
+2. **Generate 2-3 approaches**: Follow the brainstorming skill's instruction to propose approaches with trade-offs — but evaluate them yourself.
 3. **Select approach**: Choose based on these criteria, in priority order:
    - (a) Faithfulness to research design (does it match the Experiment Design / Methodology Blueprint?)
    - (b) Statistical rigor (does it follow best practices for this method?)
    - (c) Computational efficiency (will it run in reasonable time?)
    - (d) Testability (can we write meaningful tests for it?)
-4. **Document rationale**: Brief log of what was considered and why this approach was chosen (saved to superpowers log — see Section 6)
-5. **Proceed to planning**: No pause
+4. **Skip spec writing and review**: The brainstorming skill normally writes a spec doc and dispatches a reviewer. In autonomous mode, skip this — document the rationale in the superpowers log (Section 6) and proceed directly to the next skill invocation.
+5. **Proceed to `Skill("superpowers:writing-plans")`**: Do not wait for user approval. The selected approach becomes the input for the planning skill.
 
 ### Context Sources Per Agent
 
@@ -119,6 +151,8 @@ When Path 1 triggers, the agent self-directs brainstorming using upstream resear
 ---
 
 ## 4. TDD Adaptation for Scientific Code
+
+When the workflow reaches the TDD step, the agent invokes `Skill("superpowers:test-driven-development")` which loads the full TDD skill. The TDD skill enforces RED → GREEN → REFACTOR discipline. Follow it exactly, but use the scientific test patterns below instead of standard unit tests.
 
 Standard TDD says "write a failing test first." For scientific code, "test" translates to statistical property checks, known-answer validations, and structural assertions.
 
@@ -216,3 +250,75 @@ When a lab notebook is active (`notebook_path` parameter provided), append a sum
 - Tests: [summary]
 - Code files: [paths]
 ```
+
+---
+
+## 7. Runtime Execution Checklist
+
+This is the exact sequence an agent follows when it encounters a code task. Follow these steps mechanically.
+
+### Before Writing Any Code
+
+1. **Identify the code task**: What code needs to be written/modified/debugged?
+2. **Classify**: Check the complexity table in Section 1. Is it SIMPLE or COMPLEX?
+3. **If SIMPLE**: Write the code directly. Skip the rest of this checklist. Log the classification (Section 6).
+4. **If COMPLEX**: Continue to step 5.
+5. **Select path**: Use the path selection logic in Section 2 to determine Path 1, 2, or 3.
+
+### Path 1 Execution (New Complex Code)
+
+```
+1. Log: "Starting superpowers Path 1 for [task description]"
+2. Invoke: Skill("superpowers:brainstorming")
+   - When the skill loads, follow it but adapt per Section 3:
+     - Use upstream research context instead of asking the user
+     - Generate 2-3 approaches, select the best, document rationale
+     - Skip spec writing/review — go straight to planning
+3. Invoke: Skill("superpowers:writing-plans")
+   - When the skill loads, follow it to create a step-by-step plan
+   - Each step should be a testable unit of work
+   - The plan does NOT need to be saved to docs/superpowers/plans/
+     (save to experiment_outputs/logs/ instead)
+4. Invoke: Skill("superpowers:test-driven-development")
+   - When the skill loads, follow its RED → GREEN → REFACTOR cycle
+   - Use the scientific test patterns from Section 4 for this agent
+   - Write tests to experiment_outputs/tests/
+   - Run tests in experiment_env via pytest
+5. Invoke: Skill("superpowers:verification-before-completion")
+   - When the skill loads, follow it to verify all tests pass
+   - Confirm output files exist and are correct
+6. Log the outcome (Section 6)
+```
+
+### Path 2 Execution (Debugging Failed Code)
+
+```
+1. Log: "Starting superpowers Path 2 for [failure description]"
+2. Invoke: Skill("superpowers:systematic-debugging")
+   - Follow the skill's 4-phase investigation
+   - Do NOT skip to guessing — follow the phases
+3. Invoke: Skill("superpowers:test-driven-development")
+   - Write a regression test that reproduces the bug
+   - Fix the code until the test passes
+4. Invoke: Skill("superpowers:verification-before-completion")
+   - Run full test suite to confirm fix doesn't break anything
+5. Log the outcome (Section 6)
+```
+
+### Path 3 Execution (Iterating on Existing Code)
+
+```
+1. Log: "Starting superpowers Path 3 for [modification description]"
+2. Invoke: Skill("superpowers:writing-plans")
+   - Plan the changes as testable steps
+3. Invoke: Skill("superpowers:test-driven-development")
+   - Update tests first to reflect new expected behavior
+   - Then modify the code until tests pass
+4. Invoke: Skill("superpowers:verification-before-completion")
+   - Confirm all tests pass (old and new)
+5. Log the outcome (Section 6)
+```
+
+### Escape Hatch
+
+At ANY point during steps 2-5 above, if a step fails twice on the same problem, trigger the escape hatch (Section 5). Do not continue the workflow — surface to the user.

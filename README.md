@@ -2,7 +2,7 @@
 
 [![License: CC BY-NC 4.0](https://img.shields.io/badge/license-CC%20BY--NC%204.0-lightgrey)](https://creativecommons.org/licenses/by-nc/4.0/)
 
-A Claude Code plugin covering the full academic research lifecycle — from literature review through experimentation, statistical analysis, paper writing, peer review, and publication.
+A Claude Code plugin covering the full academic research lifecycle — from literature review through experimentation, statistical analysis, paper writing, peer review, and publication. Experiment skills integrate with the [superpowers](https://github.com/obra/superpowers) plugin for disciplined, test-driven code development.
 
 ## Skills
 
@@ -24,6 +24,27 @@ A Claude Code plugin covering the full academic research lifecycle — from lite
 </p>
 
 The experiment stages are auto-detected from the methodology blueprint. Literature reviews, theoretical papers, and policy analyses skip straight to writing.
+
+## Superpowers Integration
+
+Experiment skills (`experiment-designer`, `data-analyst`, `simulation-runner`) integrate with the **superpowers** plugin for disciplined code development. When agents need to write complex code — custom simulations, SEM models, multi-step analysis pipelines — they autonomously run through the superpowers workflow:
+
+<p align="center">
+  <img src="assets/superpowers-workflow.png" alt="Superpowers Adaptive Workflow" width="700"/>
+</p>
+
+**How it works:**
+
+- **Category-based trigger** — a lookup table classifies each code task as SIMPLE or COMPLEX
+- **SIMPLE** tasks (standard t-test, basic power analysis) execute directly — no overhead
+- **COMPLEX** tasks (custom DGPs, SEM, agent-based models, multi-step pipelines) trigger one of 3 adaptive paths:
+  - **New code** — brainstorm approach, plan steps, TDD with scientific tests, verify
+  - **Bug/failure** — systematic debugging, regression test, verify
+  - **Iteration** — plan changes, update tests, verify
+- **Fully autonomous** — no human checkpoints during the workflow; escape hatch surfaces to user after 2 failed attempts
+- **TDD adapted for scientific code** — known-answer tests, synthetic data validation, reproducibility checks, distributional property assertions
+
+**Prerequisite:** Install the superpowers plugin: `claude plugin install superpowers@claude-plugins-official`
 
 ## Installation
 
@@ -86,6 +107,7 @@ git clone https://github.com/pouriamrt/academic-research-skills.git .claude/skil
 |---------|---------|
 | **Claude Opus 4.6 + Max plan** | Full pipeline can exceed 200K+ tokens |
 | **`--dangerously-skip-permissions`** | Uninterrupted autonomous execution for long pipelines |
+| **superpowers plugin** | Enables disciplined TDD workflow for complex experiment code |
 
 ## Supported Formats
 
@@ -97,4 +119,3 @@ git clone https://github.com/pouriamrt/academic-research-skills.git .claude/skil
 ## License
 
 [CC-BY-NC 4.0](https://creativecommons.org/licenses/by-nc/4.0/) — Free to share and adapt with attribution for non-commercial use.
-

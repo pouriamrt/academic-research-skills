@@ -313,3 +313,16 @@ Common failure scenarios across all experiment skills. Each skill's SKILL.md ref
 | BLOCKING | Cannot proceed at all | Stop, report, wait for resolution |
 | MAJOR | Can proceed with degraded quality | Warn user, offer alternatives, require confirmation to continue |
 | WARNING | Informational concern | Report to user, continue unless user objects |
+
+
+---
+
+## 8. Superpowers Integration
+
+All code-writing experiment agents follow the superpowers integration protocol for disciplined code development. This ensures complex code is brainstormed, planned, test-driven, and verified before being declared complete.
+
+**Reference**: See `shared/superpowers_integration.md` for the complete protocol.
+
+**Key rule**: Before writing any code, consult the complexity classification table in `shared/superpowers_integration.md`. SIMPLE tasks execute directly. COMPLEX tasks go through the adaptive superpowers workflow (brainstorming → planning → TDD → verification).
+
+**Prerequisite**: The superpowers plugin must be installed (`claude plugin install superpowers@claude-plugins-official`).

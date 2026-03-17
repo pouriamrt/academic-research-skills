@@ -133,6 +133,7 @@ git clone https://github.com/pouriamrt/academic-research-skills.git .claude/skil
 **Paper structures:** IMRaD, Literature Review, Theoretical, Case Study, Policy Brief, Conference Paper
 **Output:** Markdown, LaTeX, DOCX, PDF (via tectonic)
 **Statistics:** t-tests, ANOVA, regression, chi-square, SEM, HLM, survival analysis, Bayesian, and more
+**Visualization:** matplotlib/seaborn statistical plots (300 DPI, APA-formatted, colorblind-safe) + Mermaid MCP structural diagrams (CONSORT flow, analysis workflow, DGP architecture, convergence status)
 
 ## License
 

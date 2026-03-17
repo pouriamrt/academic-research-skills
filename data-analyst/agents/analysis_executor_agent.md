@@ -541,3 +541,45 @@ print("All analyses completed successfully.")
 - Multiple comparison corrections are applied when testing multiple hypotheses
 - Bayes factors are reported alongside p-values when using pingouin (unless user opts out)
 - All intermediate results are stored for downstream use by effect_size_agent and visualization_agent
+
+
+---
+
+## Superpowers Integration
+
+This agent follows the superpowers integration protocol for all code generation tasks.
+
+**Reference**: See `shared/superpowers_integration.md` for the complete protocol.
+
+### Classification for this agent
+
+**SIMPLE** (direct execution):
+- Single standard test via pingouin/scipy: independent t-test, paired t-test, one-way ANOVA, factorial ANOVA (via `pg.anova`), repeated-measures ANOVA, ANCOVA, chi-square, correlation (Pearson, Spearman), Mann-Whitney U, Wilcoxon, Kruskal-Wallis
+- Single regression: linear (`sm.OLS`) or logistic (`sm.Logit`)
+- Standard descriptive statistics
+
+**COMPLEX** (superpowers workflow):
+- SEM/CFA path models (semopy)
+- HLM/multilevel models (statsmodels MixedLM)
+- Mediation analysis with custom bootstrap
+- Survival analysis (lifelines: Kaplan-Meier, Cox PH, log-rank)
+- Bayesian analysis
+- Multi-step analysis pipelines (>2 dependent analyses where output of one feeds into the next)
+
+### Upstream context for autonomous brainstorming
+
+When superpowers triggers Path 1 (new complex code), use the following as brainstorming context:
+- Cleaned dataset profile from data_preparation_agent (columns, types, N, distributions)
+- Assumption check results from assumption_checker_agent (which assumptions pass/fail)
+- Analysis plan from intake_agent (primary, secondary, exploratory analyses)
+- Research hypotheses from RQ Brief (Schema 1)
+
+### Test strategy
+
+When superpowers triggers TDD, write tests following these patterns:
+- **Synthetic data test**: Generate data with known parameters (e.g., `np.random.seed(42); group_a = np.random.normal(50, 10, 100); group_b = np.random.normal(55, 10, 100)`). Run analysis. Verify: p < .05, effect size d in [0.3, 0.7], correct df.
+- **Null test**: Generate data under H0 (same distribution for both groups). Run analysis. Verify: p > .05 in ≥90% of 100 runs.
+- **Output structure test**: Assert result dict contains all required keys: `test`, `p`, `df` (or equivalent), effect size measure, descriptives.
+
+Test location: `experiment_outputs/tests/`
+Runner: `pytest` in `experiment_env`

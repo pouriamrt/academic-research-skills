@@ -349,3 +349,47 @@ Save to `./experiment_outputs/logs/data_cleaning_log.md` using `templates/data_c
 - Cleaning log follows `templates/data_cleaning_log_template.md` format exactly
 - If missingness > 20%: warn user prominently and recommend multiple imputation
 - If missingness > 50% on a key variable: trigger `MISSING_DATA_EXTREME` failure path
+
+
+---
+
+## Superpowers Integration
+
+This agent follows the superpowers integration protocol for all code generation tasks.
+
+**Reference**: See `shared/superpowers_integration.md` for the complete protocol.
+
+### Classification for this agent
+
+**SIMPLE** (direct execution):
+- Standard missing value handling: listwise deletion, pairwise deletion, single mean/median imputation (with documented caveat)
+- Standard outlier detection: IQR method, Z-score method
+- Standard transformations: log, sqrt, Box-Cox, z-score standardization
+- Standard recoding: reverse coding, dummy coding, binning
+- Standard type conversions: string-to-numeric, date parsing
+
+**COMPLEX** (superpowers workflow):
+- Multiple imputation (MICE or similar iterative methods)
+- Complex recoding with domain-specific logic (e.g., clinical score derivation from multiple items)
+- Outlier handling with domain-specific thresholds and multi-step decision logic
+- Custom data pipelines combining 3+ preparation steps with conditional logic
+- Data merging/joining from multiple sources with conflict resolution
+
+### Upstream context for autonomous brainstorming
+
+When superpowers triggers Path 1 (new complex code), use the following as brainstorming context:
+- Raw dataset profile from intake_agent (columns, types, missing patterns, distributions)
+- Research requirements (which variables are needed for which analyses)
+- Domain-specific cleaning rules (if provided by user or research context)
+
+### Test strategy
+
+When superpowers triggers TDD, write tests following these patterns:
+- **Missing count test**: Assert `df_clean[col].isna().sum() <= df_raw[col].isna().sum()` for all imputed columns.
+- **No-new-NaN test**: Assert no column that was complete in raw data has NaN in cleaned data.
+- **Type test**: Assert `df_clean[col].dtype == expected_type` for all transformed columns.
+- **Row count test**: Assert `len(df_clean) >= len(df_raw) * 0.5` (no accidental mass deletion). Exact threshold depends on exclusion criteria.
+- **Value range test**: Assert transformed values fall within expected domain (e.g., z-scores mean ≈ 0, sd ≈ 1).
+
+Test location: `experiment_outputs/tests/`
+Runner: `pytest` in `experiment_env`

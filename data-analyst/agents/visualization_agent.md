@@ -476,3 +476,43 @@ def survival_plot(df, duration_col, event_col, group_col=None, fig_num=None):
 - Figures numbered sequentially across the entire analysis
 - APA caption format: "Figure N. *Description in italics.*"
 - Individual data points shown on box plots when N < 200
+
+
+---
+
+## Superpowers Integration
+
+This agent follows the superpowers integration protocol for all code generation tasks.
+
+**Reference**: See `shared/superpowers_integration.md` for the complete protocol.
+
+### Classification for this agent
+
+**SIMPLE** (direct execution):
+- Standard plots using seaborn defaults: bar chart (`sns.barplot`), box plot (`sns.boxplot`), scatter plot (`sns.scatterplot`), histogram (`sns.histplot`), violin plot (`sns.violinplot`), heatmap (`sns.heatmap`)
+- Single-panel figures with standard APA formatting
+
+**COMPLEX** (superpowers workflow):
+- Multi-panel figures (subplots with shared axes, complex grid layouts)
+- Interaction plots with custom annotations and significance brackets
+- Forest plots (effect sizes with CIs across multiple studies/subgroups)
+- Custom figure types not covered by seaborn (path diagrams, DAGs, survival curves with risk tables)
+- Figures requiring custom legend placement, insets, or overlaid annotations
+
+### Upstream context for autonomous brainstorming
+
+When superpowers triggers Path 1 (new complex code), use the following as brainstorming context:
+- Analysis results from analysis_executor_agent or effect_size_agent
+- Publication target requirements (journal figure guidelines if specified)
+- APA 7.0 figure format constraints from `shared/experiment_infrastructure.md`
+- Number of groups/conditions/variables to display
+
+### Test strategy
+
+When superpowers triggers TDD, write tests following these patterns:
+- **File existence test**: Assert `os.path.exists(expected_path)` for both PNG and PDF output.
+- **Smoke test**: Call plot function with sample data, assert no exceptions raised.
+- **Dimensions test**: Load generated image, assert width and DPI match APA spec (width: 3.3" single-column or 6.9" double-column, DPI: ≥300).
+
+Test location: `experiment_outputs/tests/`
+Runner: `pytest` in `experiment_env`

@@ -462,6 +462,59 @@ def survival_plot(df, duration_col, event_col, group_col=None, fig_num=None):
 **Figure 2.** *Regression diagnostic plots. Top left: residuals vs fitted values (linearity). Top right: Q-Q plot (normality of residuals). Bottom left: scale-location (homoscedasticity). Bottom right: residuals vs leverage (influential observations).*
 ```
 
+## Mermaid MCP Diagrams
+
+In addition to matplotlib/seaborn statistical plots, generate structural diagrams using `mcp__mermaid__generate`. See `shared/experiment_infrastructure.md` Section 9 for full conventions.
+
+### Analysis Overview Diagram
+
+**Always generate** an analysis overview flowchart showing what analyses were run and their relationships:
+
+```
+mcp__mermaid__generate(
+    code: "flowchart LR
+        subgraph primary[Primary Analyses]
+            A1[t-test: Group A vs B]
+            A2[ANOVA: 3 teaching methods]
+        end
+        subgraph secondary[Secondary Analyses]
+            A3[Regression: predictors of Y]
+        end
+        subgraph exploratory[Exploratory]
+            A4[Correlation matrix]
+        end
+        primary --> secondary --> exploratory
+        style primary fill:#4A90D9,color:#fff
+        style secondary fill:#F5A623,color:#fff
+        style exploratory fill:#2ECC71,color:#fff",
+    name: "diagram_analysis_overview",
+    folder: "./experiment_outputs/figures",
+    theme: "default",
+    backgroundColor: "white"
+)
+```
+
+Adapt the diagram to show the actual analyses run in this session. Include the test name, variables, and result (significant or not) in each node.
+
+### Assumption Check Decision Flowchart
+
+**Generate when** assumption checks redirected to alternative tests (e.g., normality failed → non-parametric):
+
+```
+mcp__mermaid__generate(
+    code: "flowchart TB
+        N{Normality?} -->|PASS| H{Homogeneity?}
+        N -->|FAIL| NP[Non-parametric test]
+        H -->|PASS| T[Parametric test]
+        H -->|FAIL| W[Welch correction]
+        style NP fill:#E74C3C,color:#fff
+        style T fill:#2ECC71,color:#fff
+        style W fill:#F5A623,color:#fff",
+    name: "diagram_assumption_decisions",
+    folder: "./experiment_outputs/figures"
+)
+```
+
 ## Quality Criteria
 
 - Every figure saved in BOTH PNG and PDF format
@@ -473,9 +526,10 @@ def survival_plot(df, duration_col, event_col, group_col=None, fig_num=None):
 - Error bars present when showing means (SEM or 95% CI, always specified in caption)
 - Legend present when multiple groups or conditions
 - No chartjunk: no 3D effects, no gradient fills, no unnecessary grid lines
-- Figures numbered sequentially across the entire analysis
+- Figures numbered sequentially across the entire analysis (including Mermaid diagrams)
 - APA caption format: "Figure N. *Description in italics.*"
 - Individual data points shown on box plots when N < 200
+- Mermaid diagrams follow style guidelines in `shared/experiment_infrastructure.md` Section 9
 
 
 ---

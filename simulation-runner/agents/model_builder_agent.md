@@ -381,6 +381,38 @@ In `guided` mode, the model_builder_agent takes over from intake_agent for Round
 
 Build the DGP incrementally based on user responses. Show the user the emerging model specification and ask for confirmation before generating code.
 
+## Mermaid MCP Diagrams
+
+Generate a DGP architecture diagram using `mcp__mermaid__generate` after building the model. See `shared/experiment_infrastructure.md` Section 9 for full conventions.
+
+### DGP Architecture Diagram
+
+**Always generate** a diagram showing the data generation → analysis → performance measurement flow:
+
+```
+mcp__mermaid__generate(
+    code: "flowchart LR
+        subgraph dgp[Data Generating Process]
+            P[Parameters<br/>n, mu, sigma] --> D[Generate Data<br/>rng.normal]
+        end
+        subgraph analysis[Analysis]
+            D --> T[Statistical Test<br/>t-test]
+        end
+        subgraph perf[Performance]
+            T --> R[Record<br/>p-value, effect size,<br/>significant?]
+        end
+        style dgp fill:#4A90D9,color:#fff
+        style analysis fill:#F5A623,color:#fff
+        style perf fill:#2ECC71,color:#fff",
+    name: "diagram_dgp_architecture",
+    folder: "./experiment_outputs/figures",
+    theme: "default",
+    backgroundColor: "white"
+)
+```
+
+Adapt to show the actual DGP structure — distributions used, parameters varied, analysis method, and performance metrics. For agent-based models, show the agent → topology → update rule → summary statistics flow.
+
 ## Quality Criteria
 
 - All functions pass the purity check (deterministic, no side effects, no global state)
@@ -390,6 +422,7 @@ Build the DGP incrementally based on user responses. Show the user the emerging 
 - Assumptions are explicitly listed
 - Numerical stability has been considered
 - Code runs without errors when called with the parameter dict and a fresh Generator
+- DGP architecture diagram generated via Mermaid MCP
 
 
 ---

@@ -385,6 +385,39 @@ Save the full report to `./experiment_outputs/reports/analysis_report.md` using 
 [Structured Schema 11 output]
 ```
 
+## Mermaid MCP Diagrams
+
+Generate structural diagrams using `mcp__mermaid__generate` when the analysis involves multiple connected steps. See `shared/experiment_infrastructure.md` Section 9 for full conventions.
+
+### Results Summary Diagram
+
+**Generate when** the analysis includes 3+ analyses that form a logical chain (e.g., ANOVA → post-hoc → effect sizes, or mediation path a → b → c'):
+
+```
+mcp__mermaid__generate(
+    code: "flowchart TB
+        subgraph primary[Primary Analyses]
+            A1[One-way ANOVA<br/>F&#40;2,87&#41; = 5.23, p = .007<br/>eta-sq = .11]
+        end
+        subgraph posthoc[Post-hoc]
+            PH[Tukey HSD<br/>A vs B: p = .004<br/>A vs C: p = .12<br/>B vs C: p = .31]
+        end
+        subgraph effects[Effect Sizes]
+            ES[d&#40;A-B&#41; = 0.72<br/>d&#40;A-C&#41; = 0.38<br/>d&#40;B-C&#41; = 0.21]
+        end
+        primary --> posthoc --> effects
+        style primary fill:#4A90D9,color:#fff
+        style posthoc fill:#F5A623,color:#fff
+        style effects fill:#2ECC71,color:#fff",
+    name: "diagram_results_summary",
+    folder: "./experiment_outputs/figures",
+    theme: "default",
+    backgroundColor: "white"
+)
+```
+
+Adapt to show the actual analyses, test statistics, p-values, and effect sizes. Use green nodes for significant results, red for non-significant.
+
 ## Quality Criteria
 
 - Every statistical result in the report follows APA 7 formatting (see `shared/experiment_infrastructure.md` Section 2)
@@ -396,3 +429,4 @@ Save the full report to `./experiment_outputs/reports/analysis_report.md` using 
 - Exploratory analyses are explicitly labeled in both the report and Schema 11
 - The report references (not duplicates) the cleaning log and diagnostic plots by file path
 - All file paths in Schema 11 point to existing files in `experiment_outputs/`
+- Results summary diagram generated via Mermaid MCP when 3+ analyses present

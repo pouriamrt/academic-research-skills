@@ -300,6 +300,91 @@ The primary output is the complete protocol document following the section order
 **Overall Status**: [READY / BLOCKED / WARNING]
 ```
 
+## Mermaid MCP Diagrams
+
+Generate structural diagrams using `mcp__mermaid__generate` to visually communicate the experiment design. See `shared/experiment_infrastructure.md` Section 9 for full conventions.
+
+### Experiment Design Diagram
+
+**Always generate** a diagram showing the experimental structure — groups, conditions, measurement points:
+
+```
+mcp__mermaid__generate(
+    code: "flowchart TB
+        subgraph enrollment[Enrollment]
+            E[Eligible participants<br/>N = 120]
+        end
+        subgraph allocation[Random Allocation]
+            G1[Treatment Group<br/>n = 60]
+            G2[Control Group<br/>n = 60]
+        end
+        subgraph measures[Measurement Points]
+            T0[Baseline<br/>Pre-test]
+            T1[Post-intervention<br/>Week 8]
+            T2[Follow-up<br/>Week 16]
+        end
+        E --> G1 & G2
+        G1 & G2 --> T0 --> T1 --> T2
+        style enrollment fill:#4A90D9,color:#fff
+        style allocation fill:#F5A623,color:#fff
+        style measures fill:#2ECC71,color:#fff",
+    name: "diagram_experiment_design",
+    folder: "./experiment_outputs/figures",
+    theme: "default",
+    backgroundColor: "white"
+)
+```
+
+Adapt the diagram to show the actual design — number of groups, conditions, IVs/DVs, and measurement schedule.
+
+### CONSORT Participant Flow Diagram
+
+**Generate for RCT and quasi-experimental designs**. Follow the CONSORT 2010 flow diagram structure:
+
+```
+mcp__mermaid__generate(
+    code: "flowchart TB
+        A[Assessed for eligibility<br/>N = 200] --> B{Excluded<br/>n = 40}
+        A --> C[Randomized<br/>N = 160]
+        C --> D[Allocated to Treatment<br/>n = 80]
+        C --> E[Allocated to Control<br/>n = 80]
+        D --> F[Lost to follow-up<br/>n = 5]
+        E --> G[Lost to follow-up<br/>n = 8]
+        D --> H[Analyzed<br/>n = 75]
+        E --> I[Analyzed<br/>n = 72]
+        style A fill:#4A90D9,color:#fff
+        style C fill:#F5A623,color:#fff
+        style H fill:#2ECC71,color:#fff
+        style I fill:#2ECC71,color:#fff",
+    name: "diagram_consort_flow",
+    folder: "./experiment_outputs/figures"
+)
+```
+
+### Timeline Diagram
+
+**Generate when** the protocol includes a multi-phase timeline:
+
+```
+mcp__mermaid__generate(
+    code: "gantt
+        title Experiment Timeline
+        dateFormat YYYY-MM-DD
+        section Preparation
+            IRB Approval        :2026-01-01, 30d
+            Recruitment         :2026-02-01, 45d
+        section Data Collection
+            Baseline Testing    :2026-03-15, 14d
+            Intervention        :2026-04-01, 56d
+            Post-test           :2026-05-27, 14d
+        section Analysis
+            Data Cleaning       :2026-06-10, 7d
+            Statistical Analysis:2026-06-17, 14d",
+    name: "diagram_experiment_timeline",
+    folder: "./experiment_outputs/figures"
+)
+```
+
 ## Quality Criteria
 
 - All 5 cross-validation checks must be run and reported
@@ -311,3 +396,4 @@ The primary output is the complete protocol document following the section order
 - The cross-validation report must be transparent — failed checks must not be hidden
 - If any cross-validation check FAILS, the protocol status must be BLOCKED until resolved
 - The protocol document must be self-contained: a researcher unfamiliar with the study should be able to execute the study by reading only the protocol
+- Mermaid diagrams follow style guidelines in `shared/experiment_infrastructure.md` Section 9

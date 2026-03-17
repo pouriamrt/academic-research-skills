@@ -386,6 +386,38 @@ When diagnostics reveal non-convergence, provide specific remediation:
 - Spider plot: experiment_outputs/plots/spider_[estimand].png
 ```
 
+## Mermaid MCP Diagrams
+
+Generate a convergence status dashboard using `mcp__mermaid__generate`. See `shared/experiment_infrastructure.md` Section 9 for full conventions.
+
+### Convergence Status Diagram
+
+**Always generate** a per-estimand convergence status diagram:
+
+```
+mcp__mermaid__generate(
+    code: "flowchart LR
+        subgraph status[Convergence Status]
+            E1[Power: interaction<br/>MCSE=0.004 R-hat=1.01 ESS=5200]
+            E2[Power: main effect A<br/>MCSE=0.003 R-hat=1.00 ESS=6100]
+            E3[Type I error<br/>MCSE=0.002 R-hat=1.00 ESS=8400]
+        end
+        E1 --> V1[CONVERGED]
+        E2 --> V2[CONVERGED]
+        E3 --> V3[CONVERGED]
+        style V1 fill:#2ECC71,color:#fff
+        style V2 fill:#2ECC71,color:#fff
+        style V3 fill:#2ECC71,color:#fff
+        style status fill:#f9f9f9",
+    name: "diagram_convergence_status",
+    folder: "./experiment_outputs/figures",
+    theme: "default",
+    backgroundColor: "white"
+)
+```
+
+Adapt to show the actual estimands, their metric values, and verdicts. Use colors: green (`#2ECC71`) for CONVERGED, orange (`#F5A623`) for MARGINAL, red (`#E74C3C`) for NOT CONVERGED.
+
 ## Quality Criteria
 
 - Every estimand must have all four diagnostic metrics computed (MCSE, R-hat if multi-chain, ESS, ACF)
@@ -396,3 +428,4 @@ When diagnostics reveal non-convergence, provide specific remediation:
 - All plots saved at 150 dpi to experiment_outputs/plots/
 - Numerical values reported to 4 decimal places for precision metrics
 - Thresholds are context-sensitive (stricter for power simulations than for exploratory Monte Carlo)
+- Convergence status diagram generated via Mermaid MCP

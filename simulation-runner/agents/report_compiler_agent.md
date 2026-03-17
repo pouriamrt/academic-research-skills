@@ -275,6 +275,48 @@ experiment_outputs/
     └── execution_log.md
 ```
 
+## Mermaid MCP Diagrams
+
+Generate structural diagrams using `mcp__mermaid__generate`. See `shared/experiment_infrastructure.md` Section 9 for full conventions.
+
+### Simulation Architecture Diagram
+
+**Always generate** a diagram showing the full ADEMP structure of the simulation:
+
+```
+mcp__mermaid__generate(
+    code: "flowchart TB
+        subgraph aims[Aims]
+            A[Estimate power of<br/>2x3 mixed ANOVA<br/>interaction effect]
+        end
+        subgraph dgp[Data Generating Process]
+            D[Generate 2 groups x 3 timepoints<br/>Normal errors, sigma=10<br/>Effect: f = 0.25]
+        end
+        subgraph methods[Methods]
+            M[Mixed ANOVA<br/>alpha = .05]
+        end
+        subgraph estimands[Estimands]
+            E1[Power at each N]
+            E2[Type I error rate]
+        end
+        subgraph performance[Performance]
+            P[Rejection rate<br/>across 10,000 iterations]
+        end
+        aims --> dgp --> methods --> estimands --> performance
+        style aims fill:#4A90D9,color:#fff
+        style dgp fill:#F5A623,color:#fff
+        style methods fill:#7B68EE,color:#fff
+        style estimands fill:#2ECC71,color:#fff
+        style performance fill:#1ABC9C,color:#fff",
+    name: "diagram_simulation_architecture",
+    folder: "./experiment_outputs/figures",
+    theme: "default",
+    backgroundColor: "white"
+)
+```
+
+Adapt to show the actual simulation's ADEMP components.
+
 ## Quality Criteria
 
 - Full report follows ADEMP structure with all 5 components
@@ -288,3 +330,4 @@ experiment_outputs/
 - Convergence status is clearly stated with supporting evidence
 - If non-converged: report includes explicit caveats in APA results text
 - Auto-log entry (if applicable) follows lab-notebook format
+- Simulation architecture diagram generated via Mermaid MCP

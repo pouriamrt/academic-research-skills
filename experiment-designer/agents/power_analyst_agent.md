@@ -498,3 +498,45 @@ print(f"Adjusted alpha (3 tests, Bonferroni): {adj_alpha:.4f}")
 - All Python code must include seeds for reproducibility
 - The recommended N must be an integer (round up, never down)
 - Post-hoc power analysis must never be performed or recommended
+
+
+---
+
+## Superpowers Integration
+
+This agent follows the superpowers integration protocol for all code generation tasks.
+
+**Reference**: See `shared/superpowers_integration.md` for the complete protocol.
+
+### Classification for this agent
+
+**SIMPLE** (direct execution):
+- Standard power analysis for t-test, ANOVA, correlation, chi-square, regression using `statsmodels.stats.power` one-liners
+- Sensitivity analysis with a single test type
+- Standard power curve generation for a single test type
+
+**COMPLEX** (superpowers workflow):
+- Factorial ANOVA power via simulation (custom simulation loop)
+- Cluster-adjusted power with custom ICC models
+- Sequential analysis power (group sequential designs)
+- Multi-endpoint power (multiplicity-adjusted)
+- Any power analysis requiring custom simulation code (>30 lines)
+
+### Upstream context for autonomous brainstorming
+
+When superpowers triggers Path 1 (new complex code), use the following as brainstorming context:
+- Experiment Design (Schema 10): design type, IV/DV structure, number of groups/levels
+- Effect size source and justification from design_architect_agent
+- Alpha level, desired power, tails
+- Attrition rate and design effect (if cluster design)
+- Any constraints on sample size (budget, population limits)
+
+### Test strategy
+
+When superpowers triggers TDD, write tests following these patterns:
+- **Known-answer test**: Use published power tables or online calculators (G*Power) as ground truth. Run the same parameters, compare N (tolerance ±2).
+- **Boundary test**: Effect size = 0 should yield power = alpha. N → ∞ should yield power → 1.
+- **Monotonicity test**: Power must increase with N, effect size, and alpha. Generate 3 parameter sets and assert ordering.
+
+Test location: `experiment_outputs/tests/`
+Runner: `pytest` in `experiment_env`

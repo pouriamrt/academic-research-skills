@@ -48,86 +48,88 @@ This document defines all legal states, transition conditions, transition action
         |          |          |          |          |
    [checkpoint]   [checkpoint]   |     [checkpoint]  |
         |          |          |          |          |
-        v          v          v          v          v
-   +--------+ +--------+ +---+----+    |          |
-   |Stage 2 | |Stg 2.5 | |PASS?   |    |          |
-   | WRITE  | |INTEGRIT| +---+----+    |          |
-   +---+----+ +---+----+     |         |          |
-                         +----+----+    |          |
-                         |         |    |          |
-                        Yes       No    |          |
-                         |     [Fix]    |          |
-                         |   [Re-verify]|          |
-                    [checkpoint]   |    |          |
-                         |         |    |          |
-                         v         |    |          |
-                    +--------+     |    |          |
-                    |Stage 3 | <---+    |          |
-                    | REVIEW |          |          |
-                    +---+----+          |          |
-                        |               |          |
-                   [DECISION]           |          |
-                        |               |          |
-              +---------+---------+     |          |
-              |         |         |     |          |
-            Accept    Minor     Major   |          |
-              |       Revision  Revision|          |
-              |         |         |     |          |
-              |    [checkpoint]  [checkpoint]      |
-              |         |         |     |          |
-              |         v         v     |          |
-              |    +--------+ +--------+|          |
-              |    |Stage 4 | |Stage 4 ||          |
-              |    | REVISE | | REVISE ||          |
-              |    +---+----+ +---+----+|          |
-              |        |          |     |          |
-              |   [checkpoint]   [checkpoint]      |
-              |        |          |     |          |
-              |        v          v     |          |
-              |    +--------+ +--------+           |
-              |    |Stg 3'  | |Stg 3'  |           |
-              |    |RE-REV. | |RE-REV. |           |
-              |    +---+----+ +---+----+           |
-              |        |          |                 |
-              |   [DECISION]  [DECISION]            |
-              |        |          |                 |
-              |     Accept      Major               |
-              |     /Minor        |                 |
-              |        |     [checkpoint]           |
-              |        |          |                 |
-              |        |          v                 |
-              |        |     +--------+             |
-              |        |     |Stg 4'  |             |
-              |        |     |RE-REVIS|             |
-              |        |     +---+----+             |
-              |        |          |                 |
-              |   [checkpoint]  [checkpoint]        |
-              |        |          |                 |
-              v        v          v                 |
-         +----+--------+----------+-----+           |
-         |     Stage 4.5                |           |
-         |   FINAL INTEGRITY            |           |
-         +----------+------------------+           |
-                    |                               |
-               [PASS? Zero issues]                  |
-                    |                               |
-              +-----+-----+                         |
-              |           |                         |
-             Yes         No                         |
-              |        [Fix]                         |
-              |      [Re-verify]                     |
-         [checkpoint]     |                         |
-              |           |                         |
-              v           |                         |
-         +--------+       |                         |
-         |Stage 5 | <-----+                         |
-         |FINALIZE|                                 |
-         +---+----+                                 |
-             |                                      |
-             v                                      |
-         +-------+                                  |
-         |  END  |                                  |
-         +-------+                                  |
+        v          |          v          v          v
+   [Detect        |     +---+----+    |          |
+    routing       |     |PASS?   |    |          |
+    flags]        |     +---+----+    |          |
+        |         |         |         |          |
+   +----+----+    |    +----+----+    |          |
+   |         |    |    |         |    |          |
+  EXP     No EXP  |   Yes       No    |          |
+  needed  needed  |    |     [Fix]    |          |
+   |         |    |    |   [Re-verify]|          |
+   v         |    |    |        |     |          |
++--------+   |    |  [checkpoint]|    |          |
+|Stg 1.5 |   |    |    |        |    |          |
+|EXPERIM.|   |    |    v        |    |          |
++---+----+   |    |  +--------+ |    |          |
+    |        |    |  |Stage 3 |<+    |          |
+ [1.5a DESIGN]   |  | REVIEW |      |          |
+    |        |    |  +---+----+      |          |
+ [1.5b EXECUTE]  |      |           |          |
+    |        |    |  [DECISION]      |          |
+ [1.5c LOG]  |    |      |          |          |
+    |        |    |      |          |          |
+ [checkpoint]|    +---------+---------+     |          |
+    |        |    |         |         |     |          |
+    +---+----+  Accept    Minor     Major   |          |
+        |         |       Revision  Revision|          |
+        v         |         |         |     |          |
+   +--------+     |    [checkpoint]  [checkpoint]      |
+   |Stage 2 |     |         |         |     |          |
+   | WRITE  |     |         v         v     |          |
+   +---+----+     |    +--------+ +--------+|          |
+        |         |    |Stage 4 | |Stage 4 ||          |
+   [checkpoint]   |    | REVISE | | REVISE ||          |
+        |         |    +---+----+ +---+----+|          |
+        v         |        |          |     |          |
+   +--------+     |   [checkpoint]   [checkpoint]      |
+   |Stg 2.5 |    |        |          |     |          |
+   |INTEGRIT|    |        v          v     |          |
+   +---+----+    |    +--------+ +--------+           |
+        |         |    |Stg 3'  | |Stg 3'  |           |
+        |         |    |RE-REV. | |RE-REV. |           |
+        v         |    +---+----+ +---+----+           |
+   +---+----+     |        |          |                 |
+   |PASS?   |     |   [DECISION]  [DECISION]            |
+   +---+----+     |        |          |                 |
+        |         |     Accept      Major               |
+   +----+----+    |     /Minor        |                 |
+   |         |    |        |     [checkpoint]           |
+  Yes       No    |        |          |                 |
+   |     [Fix]    |        |          v                 |
+   |   [Re-verify]|        |     +--------+             |
+[checkpoint]  |    |        |     |Stg 4'  |             |
+   |         |    |        |     |RE-REVIS|             |
+   v         |    |        |     +---+----+             |
++--------+   |    |        |          |                 |
+|Stage 3 |<--+    |   [checkpoint]  [checkpoint]        |
+| REVIEW |         |        |          |                 |
++---+----+         v        v          v                 |
+                +----+--------+----------+-----+           |
+                |     Stage 4.5                |           |
+                |   FINAL INTEGRITY            |           |
+                +----------+------------------+           |
+                           |                               |
+                      [PASS? Zero issues]                  |
+                           |                               |
+                     +-----+-----+                         |
+                     |           |                         |
+                    Yes         No                         |
+                     |        [Fix]                         |
+                     |      [Re-verify]                     |
+                [checkpoint]     |                         |
+                     |           |                         |
+                     v           |                         |
+                +--------+       |                         |
+                |Stage 5 | <-----+                         |
+                |FINALIZE|                                 |
+                +---+----+                                 |
+                    |                                      |
+                    v                                      |
+                +-------+                                  |
+                |  END  |                                  |
+                +-------+                                  |
 ```
 
 ---
@@ -144,8 +146,15 @@ This document defines all legal states, transition conditions, transition action
 | INIT | Stage 3 | User has verified paper + integrity report | Confirm paper language/domain, launch reviewer |
 | INIT | Stage 4 | User has review comments | Confirm paper + review comments, launch revision |
 | INIT | Stage 5 | User has final draft for format conversion | Confirm format requirements, launch format-convert |
-| Stage 1 | **checkpoint** | Stage 1 completed | Wait for user confirmation |
-| checkpoint | Stage 2 | User confirms | handoff RQ Brief + Bibliography + Synthesis |
+| Stage 1 | **checkpoint (post-1)** | Stage 1 completed | Wait for user confirmation; detect routing flags |
+| checkpoint (post-1) | Stage 1.5a | User confirms + Methodology Blueprint has `requires_experiment_design=true` OR `requires_simulation=true` | Create lab notebook, launch experiment-designer |
+| checkpoint (post-1) | Stage 2 | User confirms + no experiment routing flags | handoff RQ Brief + Bibliography + Synthesis |
+| Stage 1.5a | **checkpoint (post-1.5a)** | Stage 1.5a completed, Schema 10 produced | Wait for user confirmation |
+| checkpoint (post-1.5a) | Stage 1.5b | User confirms | Pass Schema 10 (+ Schema 13 if simulation) to data-analyst or simulation-runner |
+| Stage 1.5b | **checkpoint (post-1.5b)** | Stage 1.5b completed, Schema 11 produced | Wait for user confirmation |
+| checkpoint (post-1.5b) | Stage 1.5c | User confirms | Pass notebook to lab-notebook export mode |
+| Stage 1.5c | **checkpoint (post-1.5c)** | Stage 1.5c completed, Schema 12 produced | Wait for user confirmation |
+| checkpoint (post-1.5c) | Stage 2 | User confirms | handoff RQ Brief + Bibliography + Synthesis + Schema 10 + Schema 11 + Schema 12 |
 | Stage 2 | **checkpoint** | Stage 2 completed, Paper Draft produced | Wait for user confirmation |
 | checkpoint | Stage 2.5 | User confirms | Pass Paper Draft to integrity agent |
 | Stage 2.5 | **checkpoint** | PASS | Wait for user confirmation |
@@ -164,6 +173,9 @@ This document defines all legal states, transition conditions, transition action
 | Stage 4.5 | **checkpoint** | PASS (zero issues) | Wait for user confirmation |
 | Stage 4.5 | Stage 4.5 (retry) | FAIL | Fix issues, re-verify (max 3 rounds) |
 | checkpoint | Stage 5 | User confirms | Pass final accepted draft |
+| Stage 5 | **checkpoint (post-5)** | Stage 5 completed, final paper produced | Wait for user confirmation |
+| checkpoint (post-5) | Stage 6 | User confirms | Launch process summary generation |
+| Stage 6 | END | Stage 6 completed, process record PDF produced | Pipeline complete |
 
 ### Special Flow Transitions
 
@@ -180,6 +192,9 @@ This document defines all legal states, transition conditions, transition action
 
 | From | To | Reason |
 |------|----|--------|
+| Stage 1 | Stage 2 (when routing flags require experiment) | Cannot skip Stage 1.5 when `requires_experiment_design=true` or `requires_simulation=true` |
+| Stage 1.5a | Stage 2 | Cannot skip Stage 1.5b execution (design must be executed) |
+| Stage 1.5b | Stage 2 | Cannot skip Stage 1.5c export (lab record must be produced) |
 | Stage 1 | Stage 3 | Cannot skip Stage 2 and 2.5 (unless mid-entry + has paper) |
 | Stage 2 | Stage 3 | **Cannot skip Stage 2.5 (integrity check is mandatory)** |
 | Stage 4 | Stage 5 | Cannot skip RE-REVIEW (revision must be re-reviewed) |
@@ -194,10 +209,14 @@ This document defines all legal states, transition conditions, transition action
 
 | Material | Produced At | Consumed At | Required/Recommended |
 |----------|-----------|-------------|---------------------|
-| RQ Brief | Stage 1 | Stage 2 (Phase 0) | Recommended |
-| Methodology Blueprint | Stage 1 | Stage 2 (Phase 0) | Recommended |
+| RQ Brief | Stage 1 | Stage 1.5a (input), Stage 2 (Phase 0) | Recommended |
+| Methodology Blueprint | Stage 1 | Stage 1 checkpoint (routing flags), Stage 1.5a (input), Stage 2 (Phase 0) | Recommended |
 | Bibliography | Stage 1 | Stage 2 (Phase 1) | Recommended |
 | Synthesis Report | Stage 1 | Stage 2 (Phase 3) | Recommended |
+| **Experiment Design (Schema 10)** | **Stage 1.5a** | **Stage 1.5b (input), Stage 2 (Methods)** | **Required if Stage 1.5 active** |
+| **Simulation Spec (Schema 13)** | **Stage 1.5a** | **Stage 1.5b (input, simulation-runner only)** | **Required if `requires_simulation=true`** |
+| **Experiment Results (Schema 11)** | **Stage 1.5b** | **Stage 2 (Results section)** | **Required if Stage 1.5 active** |
+| **Lab Record (Schema 12)** | **Stage 1.5c** | **Stage 2 (Methods section)** | **Required if Stage 1.5 active** |
 | Paper Draft | Stage 2 | Stage 2.5 (input) | **Required** |
 | **Integrity Report (Pre)** | **Stage 2.5** | **Stage 3 (prerequisite)** | **Required** |
 | **Verified Paper Draft** | **Stage 2.5** | **Stage 3 (Phase 0)** | **Required** |
@@ -209,7 +228,8 @@ This document defines all legal states, transition conditions, transition action
 | **Re-Review Report** | **Stage 3'** | **Stage 4' (input)** | **Required (if Major)** |
 | **Re-Revised Draft** | **Stage 4'** | **Stage 4.5 (input)** | **Required (if executed)** |
 | **Integrity Report (Final)** | **Stage 4.5** | **Stage 5 (prerequisite)** | **Required** |
-| Final Paper | Stage 5 | END (delivery) | Required |
+| Final Paper | Stage 5 | Stage 6 (input) | Required |
+| **Process Record** | **Stage 6** | **END (delivery)** | **Required** |
 
 ---
 

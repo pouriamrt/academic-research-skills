@@ -1,6 +1,6 @@
 ---
 name: academic-pipeline
-description: "Orchestrator for the full academic research pipeline: research -> write -> integrity check -> review -> revise -> re-review -> re-revise -> final integrity check -> finalize. Coordinates deep-research, academic-paper, and academic-paper-reviewer into a seamless 9-stage workflow with mandatory integrity verification, two-stage peer review, and reproducible quality gates. Triggers on: academic pipeline, research to paper, full paper workflow, paper pipeline, end-to-end paper, research-to-publication, complete paper workflow."
+description: "Orchestrator for the full academic research pipeline: research -> experiment (optional) -> write -> integrity check -> review -> revise -> re-review -> re-revise -> final integrity check -> finalize -> process summary. Coordinates deep-research, experiment-designer, data-analyst, simulation-runner, lab-notebook, academic-paper, and academic-paper-reviewer into a seamless workflow with auto-detected experiment stages, mandatory integrity verification, two-stage peer review, and reproducible quality gates. Triggers on: academic pipeline, research to paper, full paper workflow, paper pipeline, end-to-end paper, research-to-publication, complete paper workflow."
 metadata:
   version: "2.7"
   last_updated: "2026-03-16"
@@ -75,7 +75,7 @@ I received reviewer comments, help me revise
 
 ---
 
-## Pipeline Stages (10 Stages)
+## Pipeline Stages (12 Stages, 3 optional)
 
 | Stage | Name | Skill / Agent Called | Available Modes | Deliverables |
 |-------|------|---------------------|----------------|-------------|
@@ -779,6 +779,17 @@ Stage 1: deep-research
   - full mode: Complete research report
   - quick mode: Quick research summary
 
+Stage 1.5 (optional, auto-detected from Methodology Blueprint routing flags):
+  Stage 1.5a: experiment-designer
+    - full mode: Complete experiment protocol design
+    - guided mode: Socratic design dialogue
+  Stage 1.5b: data-analyst OR simulation-runner
+    - data-analyst full mode: Statistical analysis execution
+    - simulation-runner full mode: Computational simulation execution
+    - Routing: requires_simulation=true -> simulation-runner; else -> data-analyst
+  Stage 1.5c: lab-notebook
+    - export mode: Produce Schema 12 (Lab Record) for handoff
+
 Stage 2: academic-paper
   - plan mode: Socratic chapter-by-chapter guidance
   - full mode: Complete paper writing
@@ -809,6 +820,10 @@ Stage 5: academic-paper (format-convert mode)
 | Skill | Relationship |
 |-------|-------------|
 | `deep-research` | Dispatched (Stage 1 research phase) |
+| `experiment-designer` | Dispatched (Stage 1.5a experiment design, optional) |
+| `data-analyst` | Dispatched (Stage 1.5b data analysis, optional) |
+| `simulation-runner` | Dispatched (Stage 1.5b simulation execution, optional) |
+| `lab-notebook` | Dispatched (Stage 1.5c lab record export, optional) |
 | `academic-paper` | Dispatched (Stage 2 writing, Stage 4/4' revision, Stage 5 formatting) |
 | `academic-paper-reviewer` | Dispatched (Stage 3 first review, Stage 3' verification review) |
 

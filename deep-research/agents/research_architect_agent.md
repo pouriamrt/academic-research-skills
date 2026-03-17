@@ -105,7 +105,39 @@ Indicate the applicable reporting guideline in the blueprint to ensure the resea
 
 > Reference: `references/equator_reporting_guidelines.md`
 
-### 8. Preregistration Consideration
+### 8. Experiment Pipeline Routing Flags
+
+The Methodology Blueprint **must** include routing flags consumed by `academic-pipeline` to decide whether Stage 1.5 (EXPERIMENT) is triggered. These flags are determined from the research question type, method selection, and data strategy.
+
+#### `methodology_subtype` (required enum)
+
+Select exactly one:
+
+| Subtype | Typical RQ Pattern | Stage 1.5? |
+|---------|--------------------|-----------|
+| `experimental` | "Does X cause Y?" with intervention + randomization | YES |
+| `quasi_experimental` | "Does X cause Y?" without full randomization | YES |
+| `simulation` | Computational modeling, Monte Carlo, agent-based | YES |
+| `correlational` | "Is X related to Y?" | No |
+| `secondary_data_analysis` | Analysis of existing datasets | No |
+| `survey` | "What do people think about X?" | No |
+| `case_study` | "How do people experience X?" | No |
+| `content_analysis` | Systematic text/media analysis | No |
+| `literature_review` | Systematic review, scoping review | No |
+| `theoretical` | Framework development, conceptual analysis | No |
+| `mixed_methods` | Depends on components — set routing flags individually |
+
+#### Routing flags (required booleans)
+
+| Flag | Set `true` when | Downstream effect |
+|------|-----------------|-------------------|
+| `requires_experiment_design` | The study requires designing an experiment protocol (RCT, factorial, crossover, quasi-experimental, single-subject), a computational simulation, or a benchmark evaluation | Triggers `experiment-designer` at Stage 1.5a |
+| `requires_data_collection` | The study requires primary data collection (surveys, interviews, lab measurements, sensor data) | Informs `experiment-designer` instrument building |
+| `requires_simulation` | The study involves computational simulation, Monte Carlo, bootstrap, agent-based modeling, or parameter sweeps | Triggers `simulation-runner` (instead of `data-analyst`) at Stage 1.5b |
+
+**Decision heuristic for computational/systems papers**: If the paper proposes a new method, algorithm, or system and evaluates it against baselines using benchmark datasets, set `requires_experiment_design = true` and `methodology_subtype = "experimental"` or `"simulation"` — benchmark evaluations are experiments.
+
+### 9. Preregistration Consideration
 
 For research involving hypothesis testing, the methodology blueprint should prompt preregistration:
 
@@ -148,6 +180,13 @@ Recommended platforms: PROSPERO for systematic reviews, OSF Registries for all o
 | [criterion 1] | [specific strategy] |
 | [criterion 2] | [specific strategy] |
 
+### Experiment Pipeline Routing (Required)
+**Methodology Subtype**: [experimental / quasi_experimental / correlational / simulation / secondary_data_analysis / survey / case_study / content_analysis / literature_review / theoretical / mixed_methods]
+**Requires Experiment Design**: [true / false]
+**Requires Data Collection**: [true / false]
+**Requires Simulation**: [true / false]
+**Routing Justification**: [1-2 sentences explaining why these flags were set — what about the RQ and method demands experimentation or simulation, or why it does not]
+
 ### Limitations (By Design)
 - [known limitation 1 and mitigation]
 - [known limitation 2 and mitigation]
@@ -176,6 +215,8 @@ Recommended platforms: PROSPERO for systematic reviews, OSF Registries for all o
 - No method should be selected "because it's popular" — justify from the question
 - Limitations must be acknowledged upfront, not hidden
 - Blueprint must cover all 5 components: paradigm, method, data, analysis, validity
+- Blueprint must include the Experiment Pipeline Routing section with `methodology_subtype` and all three routing flags (`requires_experiment_design`, `requires_data_collection`, `requires_simulation`) — this is consumed by `academic-pipeline` to auto-detect Stage 1.5
+- For computational papers proposing new methods with benchmark evaluations, `requires_experiment_design` must be `true` — benchmark evaluations are experiments
 - If human subjects are involved, IRB planning is mandatory (ref: `references/irb_decision_tree.md`)
 - Reporting standard should be identified at design stage (ref: `references/equator_reporting_guidelines.md`)
 - Preregistration should be considered for confirmatory research (ref: `references/preregistration_guide.md`)

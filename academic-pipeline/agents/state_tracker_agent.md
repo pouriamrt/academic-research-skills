@@ -34,6 +34,10 @@ Every material artifact produced by the pipeline carries a version label. These 
 | Material | Version Format | Example | Schema Reference |
 |----------|---------------|---------|-----------------|
 | Research output | `research_v{N}` | `research_v1` (initial), `research_v2` (after keyword expansion) | Schema 1-3 |
+| Experiment design | `experiment_design_v{N}` | `experiment_design_v1` (initial protocol) | Schema 10 |
+| Simulation spec | `simulation_spec_v{N}` | `simulation_spec_v1` (initial specification) | Schema 13 |
+| Experiment results | `experiment_results_v{N}` | `experiment_results_v1` (initial analysis) | Schema 11 |
+| Lab record | `lab_record_v{N}` | `lab_record_v1` (exported record) | Schema 12 |
 | Paper draft | `paper_draft_v{N}` | `paper_draft_v1` (initial), `paper_draft_v2` (post-review revision) | Schema 4 |
 | Integrity report | `integrity_{mid|final}_v{N}` | `integrity_mid_v1`, `integrity_final_v1` | Schema 5 |
 | Review report | `review_v{N}` | `review_v1` (initial review), `review_v2` (re-review after revision) | Schema 6 |
@@ -56,7 +60,7 @@ Every material artifact produced by the pipeline carries a version label. These 
 {
   "topic": "Paper topic (determined by Stage 1 or user input)",
   "language": "en",
-  "pipeline_version": "2.6",
+  "pipeline_version": "2.7",
   "entry_point": 1,
   "current_stage": "2.5",
   "pipeline_state": "awaiting_confirmation",
@@ -73,6 +77,54 @@ Every material artifact produced by the pipeline carries a version label. These 
       "checkpoint_confirmed": true,
       "checkpoint_type": "FULL",
       "schema_validated": true,
+      "assigned_to": null,
+      "approval_gate": false,
+      "team_notes": null
+    },
+    "1.5a": {
+      "name": "EXPERIMENT-DESIGN",
+      "skill": "experiment-designer",
+      "status": "skipped",
+      "mode": null,
+      "reason": "methodology_subtype does not require experimentation",
+      "outputs": [],
+      "started_at": null,
+      "completed_at": null,
+      "checkpoint_confirmed": null,
+      "checkpoint_type": null,
+      "schema_validated": null,
+      "assigned_to": null,
+      "approval_gate": false,
+      "team_notes": null
+    },
+    "1.5b": {
+      "name": "EXPERIMENT-EXECUTE",
+      "skill": "data-analyst or simulation-runner",
+      "status": "skipped",
+      "mode": null,
+      "reason": "methodology_subtype does not require experimentation",
+      "outputs": [],
+      "started_at": null,
+      "completed_at": null,
+      "checkpoint_confirmed": null,
+      "checkpoint_type": null,
+      "schema_validated": null,
+      "assigned_to": null,
+      "approval_gate": false,
+      "team_notes": null
+    },
+    "1.5c": {
+      "name": "EXPERIMENT-LOG",
+      "skill": "lab-notebook",
+      "status": "skipped",
+      "mode": null,
+      "reason": "methodology_subtype does not require experimentation",
+      "outputs": [],
+      "started_at": null,
+      "completed_at": null,
+      "checkpoint_confirmed": null,
+      "checkpoint_type": null,
+      "schema_validated": null,
       "assigned_to": null,
       "approval_gate": false,
       "team_notes": null
@@ -210,6 +262,21 @@ Every material artifact produced by the pipeline carries a version label. These 
       "assigned_to": null,
       "approval_gate": true,
       "team_notes": null
+    },
+    "6": {
+      "name": "PROCESS SUMMARY",
+      "agent": "orchestrator",
+      "status": "pending",
+      "mode": null,
+      "outputs": [],
+      "started_at": null,
+      "completed_at": null,
+      "checkpoint_confirmed": false,
+      "checkpoint_type": null,
+      "schema_validated": false,
+      "assigned_to": null,
+      "approval_gate": false,
+      "team_notes": null
     }
   },
   "revision_history": [
@@ -243,6 +310,27 @@ Every material artifact produced by the pipeline carries a version label. These 
       "timestamp": "conversation turn #15"
     },
     {
+      "transition": "1 -> 1.5a",
+      "schemas_checked": ["Methodology Blueprint routing flags"],
+      "result": "PASS or N/A (if no experiment needed)",
+      "missing_fields": [],
+      "timestamp": "conversation turn #15"
+    },
+    {
+      "transition": "1.5a -> 1.5b",
+      "schemas_checked": ["Schema 10 (Experiment Design)", "Schema 13 (Simulation Spec, if applicable)"],
+      "result": "PASS or SKIPPED",
+      "missing_fields": [],
+      "timestamp": "conversation turn #N"
+    },
+    {
+      "transition": "1.5c -> 2",
+      "schemas_checked": ["Schema 10 (Experiment Design)", "Schema 11 (Experiment Results)", "Schema 12 (Lab Record)"],
+      "result": "PASS or SKIPPED",
+      "missing_fields": [],
+      "timestamp": "conversation turn #N"
+    },
+    {
       "transition": "2 -> 2.5",
       "schemas_checked": ["Schema 4 (Paper Draft)"],
       "result": "PASS",
@@ -255,6 +343,10 @@ Every material artifact produced by the pipeline carries a version label. These 
     "methodology_blueprint": true,
     "bibliography": true,
     "synthesis_report": true,
+    "experiment_design": false,
+    "simulation_spec": false,
+    "experiment_results": false,
+    "lab_record": false,
     "paper_draft": true,
     "integrity_report_pre": true,
     "verified_paper_draft": true,
@@ -266,7 +358,8 @@ Every material artifact produced by the pipeline carries a version label. These 
     "re_review_report": true,
     "re_revised_draft": false,
     "integrity_report_final": false,
-    "final_paper": false
+    "final_paper": false,
+    "process_record": false
   },
   "team": {
     "research_lead": null,
@@ -289,7 +382,7 @@ Update the specified stage's status.
 
 | Parameter | Description |
 |-----------|------------|
-| stage_id | "1", "2", "2.5", "3", "4", "3p", "4p", "4.5", "5" |
+| stage_id | "1", "1.5a", "1.5b", "1.5c", "2", "2.5", "3", "4", "3p", "4p", "4.5", "5", "6" |
 | status | "pending", "in_progress", "completed", "skipped", "blocked" |
 | details | mode, outputs, decision, verdict, and other additional information |
 
@@ -319,6 +412,10 @@ Legal material_name values (v2.0 additions marked with **):
 - `methodology_blueprint`: Methodology blueprint
 - `bibliography`: Bibliography
 - `synthesis_report`: Synthesis report
+- `experiment_design`: Experiment design protocol (Schema 10)
+- `simulation_spec`: Simulation specification (Schema 13, only when `requires_simulation=true`)
+- `experiment_results`: Experiment results (Schema 11)
+- `lab_record`: Lab record (Schema 12)
 - `paper_draft`: Paper draft
 - **`integrity_report_pre`**: Pre-review integrity verification report
 - **`verified_paper_draft`**: Integrity-verified paper
@@ -331,6 +428,7 @@ Legal material_name values (v2.0 additions marked with **):
 - **`re_revised_draft`**: Second revised draft
 - **`integrity_report_final`**: Final integrity verification report
 - `final_paper`: Final paper
+- `process_record`: Paper creation process record (Stage 6)
 
 ### 4. update_integrity(stage_id, verdict, details)
 
@@ -353,7 +451,10 @@ Check whether prerequisite materials for entering the specified stage are availa
 | Target Stage | Required Materials | Recommended Materials |
 |-------------|-------------------|----------------------|
 | Stage 1 | None (can start from scratch) | User-provided topic/direction |
-| Stage 2 | None (but Stage 1 output recommended) | RQ Brief, Bibliography, Synthesis |
+| Stage 1.5a | Methodology Blueprint with `requires_experiment_design=true` or `requires_simulation=true` | RQ Brief |
+| Stage 1.5b | Experiment Design (Schema 10) | Simulation Spec (Schema 13, if simulation) |
+| Stage 1.5c | Accumulated notebook entries from 1.5a and 1.5b | -- |
+| Stage 2 | None (but Stage 1 output recommended) | RQ Brief, Bibliography, Synthesis; Experiment Design + Results + Lab Record (if Stage 1.5 executed) |
 | Stage 2.5 | Paper Draft | -- |
 | Stage 3 | **Verified Paper Draft + Integrity Report (Pre)** | -- |
 | Stage 4 | Review Reports + Revision Roadmap | Paper Draft |
@@ -381,8 +482,11 @@ Produce the Progress Dashboard. Format as follows:
 | Topic: [topic]                              |
 +---------------------------------------------+
 
-  Stage 1   RESEARCH          [status] [details]
-  Stage 2   WRITE             [status] [details]
+  Stage 1     RESEARCH          [status] [details]
+  Stage 1.5a  EXPERIMENT-DESIGN [status] [details] (or [-] Skipped if no experiment)
+  Stage 1.5b  EXPERIMENT-EXEC   [status] [details] (or [-] Skipped if no experiment)
+  Stage 1.5c  EXPERIMENT-LOG    [status] [details] (or [-] Skipped if no experiment)
+  Stage 2     WRITE             [status] [details]
   Stage 2.5 INTEGRITY         [status] [verdict] ([refs])
   Stage 3   REVIEW (1st)      [status] [decision] ([items])
   Stage 4   REVISE            [status] ([addressed/total])
@@ -390,6 +494,7 @@ Produce the Progress Dashboard. Format as follows:
   Stage 4'  RE-REVISE         [status]
   Stage 4.5 FINAL INTEGRITY   [status] [verdict]
   Stage 5   FINALIZE          [status]
+  Stage 6   PROCESS SUMMARY   [status]
 
 +---------------------------------------------+
 | Integrity:                                  |
@@ -404,7 +509,7 @@ Produce the Progress Dashboard. Format as follows:
 
 **Simplified version (appended to checkpoint notification after stage completion):**
 ```
-Pipeline: [v]RES -> [v]WRT -> [v]INT -> [v]REV -> [..]REVISE -> [ ]RE-REV -> [ ]RE-REV' -> [ ]F-INT -> [ ]FIN
+Pipeline: [v]RES -> [-]EXP -> [v]WRT -> [v]INT -> [v]REV -> [..]REVISE -> [ ]RE-REV -> [ ]RE-REV' -> [ ]F-INT -> [ ]FIN -> [ ]PROC
 ```
 
 ---

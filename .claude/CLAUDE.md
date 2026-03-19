@@ -1,6 +1,6 @@
 # Academic Research Skills
 
-A suite of Claude Code skills for rigorous academic research, paper writing, peer review, and pipeline orchestration.
+A suite of Claude Code skills for rigorous academic research, experimentation, statistical analysis, paper writing, peer review, and pipeline orchestration. 8 skills, 57 agents, 13 handoff schemas.
 
 ## Skills Overview
 
@@ -44,19 +44,22 @@ A suite of Claude Code skills for rigorous academic research, paper writing, pee
 ## Full Academic Pipeline
 
 ```
-deep-research (socratic/full)
-  → [EXPERIMENT — optional, when methodology is experimental/quasi-experimental/simulation]
-    → experiment-designer (full/guided)
-      → data-analyst (full) and/or simulation-runner (full)
-        → lab-notebook (continuous, auto-logging)
-  → academic-paper (plan/full)
-    → academic-paper-reviewer (full/guided)
-      → academic-paper (revision)
-        → academic-paper-reviewer (re-review, max 2 loops)
-          → academic-paper (format-convert → final output)
+Stage 1:   deep-research (socratic/full)
+Stage 1.5: [EXPERIMENT — optional, auto-detected from Methodology Blueprint]
+             → experiment-designer (Schema 10)
+               → data-analyst / simulation-runner (Schema 11)
+                 → lab-notebook (Schema 12, continuous)
+Stage 2:   academic-paper (plan/full) ← integrates Schema 11/12 into Results & Methods
+Stage 2.5: integrity verification (mandatory gate — references, claims, originality)
+Stage 3:   academic-paper-reviewer (full/guided)
+Stage 4:   academic-paper (revision) + Response to Reviewers
+Stage 3':  academic-paper-reviewer (re-review)
+Stage 4':  academic-paper (re-revision, max 1 round)
+Stage 4.5: final integrity verification (mandatory, zero-tolerance)
+Stage 5:   academic-paper (format-convert → LaTeX/DOCX/PDF)
 ```
 
-The experiment stages are auto-detected from the Methodology Blueprint produced by deep-research. If the methodology does not require experimentation (e.g., literature review, theoretical, policy analysis), these stages are skipped entirely.
+The experiment stages (1.5) are auto-detected from the Methodology Blueprint produced by deep-research. If the methodology does not require experimentation (e.g., literature review, theoretical, policy analysis), these stages are skipped entirely.
 
 ## Handoff Protocol
 
@@ -78,8 +81,11 @@ Materials: Experiment Results (Schema 11) — APA-formatted statistics, tables, 
 ### lab-notebook → academic-paper
 Materials: Lab Record (Schema 12) — methods summary, file manifest, deviation log, completeness score
 
+### academic-paper → integrity verification (Stage 2.5 & 4.5)
+Materials: Complete paper draft (Schema 4). Integrity agent checks references, citation context, data, originality, claims. Produces Integrity Report (Schema 5) with PASS/PASS_WITH_CONDITIONS/FAIL verdict.
+
 ## Version Info
-- **Version**: 3.0
-- **Last Updated**: 2026-03-16
-- **Author**: Cheng-I Wu
+- **Version**: 3.5.1
+- **Last Updated**: 2026-03-18
+- **Author**: Pouria Mortezaagha
 - **License**: CC-BY-NC 4.0

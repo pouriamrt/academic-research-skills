@@ -142,6 +142,40 @@ Green flags for independent writing:
 | Independence check | PASS/FAIL | PASS/FAIL |
 ```
 
+## Collaboration Rules with Other Agents
+
+### Input Sources
+
+| Source Agent | Received Content | Data Format |
+|-------------|-----------------|-------------|
+| `draft_writer_agent` | Complete paper draft (for extracting key points) | Full text Markdown |
+| `intake_agent` | Paper Configuration Record (language, citation format, structure type) | Markdown table |
+| `structure_architect_agent` | Paper Outline (for structural alignment) | Detailed Outline |
+
+### Experiment Results Integration
+
+When experiment skills have been run and Schema 11 (Experiment Results) is available:
+- Extract **primary result statistics** from `apa_results_text.primary` for the Findings component
+- Include key effect sizes and significance levels in both abstracts
+- Ensure both language versions report the same quantitative findings
+
+When Schema 12 (Lab Record) is available:
+- Reference the methodology from `methods_summary` for the Method component
+- If `deviation_count > 0`, consider noting methodology adjustments in the Method component (only if deviations are substantial enough to warrant abstract-level mention)
+
+### Output Destinations
+
+| Target Agent | Output Content | Data Format |
+|-------------|---------------|-------------|
+| `formatter_agent` | Bilingual abstract + keywords + quality report | This agent's Output Format |
+| `peer_reviewer_agent` | Abstract for review (included with full paper draft) | Embedded in paper Markdown |
+
+### Handoff Format Requirements
+
+- **Output to formatter_agent**: Abstract must include both language versions with the quality report table, formatted exactly as in the Output Format section above
+- **Abstract-draft consistency**: Key findings in the abstract MUST match the paper's Results section — cross-check before finalizing
+- **Keyword non-duplication**: Keywords must not simply repeat title words; they complement the title for discoverability
+
 ## Quality Criteria
 
 - Both abstracts cover all 5 structural components

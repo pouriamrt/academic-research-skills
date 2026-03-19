@@ -2,20 +2,20 @@
 
 [![License: CC BY-NC 4.0](https://img.shields.io/badge/license-CC%20BY--NC%204.0-lightgrey)](https://creativecommons.org/licenses/by-nc/4.0/)
 
-A Claude Code plugin covering the full academic research lifecycle — from literature review through experimentation, statistical analysis, paper writing, peer review, and publication. Experiment skills integrate with the [superpowers](https://github.com/obra/superpowers) plugin for disciplined, test-driven code development.
+A Claude Code plugin covering the full academic research lifecycle — from literature review through experimentation, statistical analysis, paper writing, peer review, and publication. 8 skills, 57 agents, 13 handoff schemas, and full pipeline orchestration. Experiment skills integrate with the [superpowers](https://github.com/obra/superpowers) plugin for disciplined, test-driven code development.
 
 ## Skills
 
 | Skill | Agents | What it does | Key Modes |
 |-------|--------|-------------|-----------|
-| **deep-research** | 13 | Research team with systematic review, PRISMA, meta-analysis | full, quick, socratic, lit-review, fact-check, systematic-review |
-| **experiment-designer** | 6 | Experiment protocol, power analysis, instruments, randomization | full, guided, quick, power-only, instrument |
-| **data-analyst** | 7 | Statistical analysis execution with APA-formatted results | full, guided, quick, assumption-check, exploratory, replication |
-| **simulation-runner** | 5 | Monte Carlo, bootstrap, agent-based models, parameter sweeps | full, guided, quick, power-sim, sensitivity, bootstrap |
-| **lab-notebook** | 4 | Experiment research record with provenance tracking | full, log-entry, deviation, snapshot, export, audit |
-| **academic-paper** | 12 | Paper writing with bilingual abstracts and LaTeX output | full, plan, revision, format-convert, citation-check |
-| **academic-paper-reviewer** | 7 | Multi-perspective peer review (EIC + 3 reviewers + Devil's Advocate) | full, re-review, quick, methodology-focus, guided |
-| **academic-pipeline** | 3 | Full pipeline orchestrator coordinating all skills above | auto-detected stages |
+| **deep-research** v2.4 | 13 | Research team with systematic review, PRISMA, meta-analysis | full, quick, socratic, review, lit-review, fact-check, systematic-review |
+| **experiment-designer** v1.0 | 6 | Experiment protocol, power analysis, instruments, randomization | full, guided, quick, power-only, instrument |
+| **data-analyst** v1.0 | 7 | Statistical analysis execution with APA-formatted results | full, guided, quick, assumption-check, exploratory, replication |
+| **simulation-runner** v1.0 | 5 | Monte Carlo, bootstrap, agent-based models, parameter sweeps | full, guided, quick, power-sim, sensitivity, bootstrap |
+| **lab-notebook** v1.0 | 4 | Experiment research record with provenance tracking | full, log-entry, deviation, snapshot, export, audit |
+| **academic-paper** v2.5 | 12 | Paper writing with experiment integration and LaTeX output | full, plan, outline-only, revision, abstract-only, lit-review, format-convert, citation-check |
+| **academic-paper-reviewer** v1.4 | 7 | Multi-perspective peer review (EIC + 3 reviewers + Devil's Advocate) | full, re-review, quick, methodology-focus, guided |
+| **academic-pipeline** v2.7 | 3 | Full pipeline orchestrator coordinating all skills above | auto-detected stages |
 
 ## Pipeline
 

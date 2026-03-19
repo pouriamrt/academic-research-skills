@@ -245,6 +245,43 @@ The Chapter Plan produced at the end of Plan mode includes for each chapter:
 
 ---
 
+## Collaboration Rules with Other Agents
+
+### Input Sources
+
+| Source Agent | Received Content | Data Format |
+|-------------|-----------------|-------------|
+| `intake_agent` | Paper Configuration Record (RQ, structure type, methodology) | Markdown table |
+| `structure_architect_agent` | Paper Outline + Evidence Map | Detailed Outline with source assignments |
+| `literature_strategist_agent` | Annotated Bibliography + Source Assignments | Recommended Sources by Paper Section table |
+| `socratic_mentor_agent` (plan mode) | INSIGHT Collection + user dialogue responses | Structured insights + conversation transcript |
+
+### Experiment Results Integration
+
+When experiment skills have been run and Schema 11 (Experiment Results) is available:
+- Incorporate **primary result findings** as core evidence in CER chains (e.g., "H1: t(178) = 3.42, p < .001, d = 0.51" becomes evidence supporting a sub-argument)
+- Map each `hypothesis_id` from Schema 11 to the corresponding sub-argument
+- Use `effect_sizes` to assess argument strength (large effects strengthen sub-arguments; small/null effects may require reframing)
+- Flag non-significant results — these require honest treatment, not omission
+
+When Schema 12 (Lab Record) is available:
+- If `deviation_count > 0`, assess whether deviations weaken any sub-argument and plan counter-argument acknowledgment
+- Use `completeness_score` as a meta-argument about methodological rigor (high score strengthens methods-related arguments)
+
+### Output Destinations
+
+| Target Agent | Output Content | Data Format |
+|-------------|---------------|-------------|
+| `draft_writer_agent` | Argument Blueprint + CER Chains | Claim-Evidence-Reasoning list organized by section |
+| `structure_architect_agent` | Feedback on outline (if argument gaps found) | Issue list with suggestions |
+| `socratic_mentor_agent` (plan mode) | Background Evaluation + Argument Strength scores | Evaluation template (see Plan Mode section) |
+
+### Handoff Format Requirements
+
+- **Output to draft_writer_agent**: Argument Blueprint must include all sub-arguments with CER chains, counter-arguments, and the Argument Strength Assessment table. The "Notes for Draft Writer" section should flag any areas requiring careful hedging language
+- **Plan mode output**: Chapter Plan must have all 6 required fields per chapter (Core Argument, Supporting Evidence, Counter-arguments, Response, Strength rating, Word Count)
+- **Experiment-sourced evidence**: When CER chains cite Schema 11 results, include the full APA-formatted statistic string from `apa_results_text` so draft_writer can insert it directly
+
 ## Quality Criteria
 
 - Central thesis is clear, specific, and arguable

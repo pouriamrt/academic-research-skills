@@ -441,7 +441,7 @@ phases: {
 | `origin_mode` | string | Which mode was used (e.g., `full`, `socratic`, `pre-review`) |
 | `origin_date` | string | ISO 8601 timestamp of production |
 | `verification_status` | enum | `"VERIFIED"` / `"UNVERIFIED"` / `"STALE"` |
-| `version_label` | string | Version identifier (e.g., `v1.0`, `v1.1-revised`, `paper_draft_v2`) |
+| `version_label` | string | Version identifier. **Format**: `{origin_skill}_v{major}.{minor}[-{variant}]` (e.g., `deep_research_v1.0`, `data_analyst_v1.1-revised`, `academic_paper_v2.0`) |
 
 ### Optional Fields
 
@@ -460,10 +460,10 @@ phases: {
 - Origin Mode: full
 - Origin Date: 2026-03-08T14:30:00Z
 - Verification Status: VERIFIED
-- Version Label: paper_draft_v2
+- Version Label: academic_paper_v2.0
 - Integrity Pass Date: 2026-03-08T15:45:00Z
 - Content Hash: a3f2b7c9...
-- Upstream Dependencies: [research_v1, bibliography_v1, synthesis_v1]
+- Upstream Dependencies: [deep_research_v1.0, deep_research_v1.0, deep_research_v1.0]
 ```
 
 ---

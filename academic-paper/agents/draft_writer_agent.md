@@ -377,6 +377,32 @@ Quality gate not passed ->
 | `structure_architect_agent` | Paper Outline + Word Count Allocation | Detailed Outline + Evidence Map |
 | `argument_builder_agent` | Argument Blueprint + CER Chains | Claim-Evidence-Reasoning list organized by section |
 | `peer_reviewer_agent` (revision rounds) | Review Report + Revision Instructions | Issues table (Critical/Major/Minor) |
+| `data-analyst/report_compiler_agent` | Schema 11: Experiment Results (when available) | Structured Markdown (see `shared/handoff_schemas.md`) |
+| `simulation-runner/report_compiler_agent` | Schema 11: Experiment Results (when available) | Structured Markdown (see `shared/handoff_schemas.md`) |
+| `lab-notebook/provenance_auditor_agent` | Schema 12: Lab Record (when available) | Structured Markdown (see `shared/handoff_schemas.md`) |
+
+### Schema 11 Integration (Experiment Results)
+
+When `intake_agent` detects Schema 11 materials, integrate as follows:
+
+1. **Results section**: Insert `apa_results_text.primary` as the core results narrative. For each `primary_results` entry, verify the `apa_string` is correctly formatted and insert verbatim — do NOT rephrase statistical strings
+2. **Secondary results**: Insert `apa_results_text.secondary` after primary results. If exploratory analyses exist, place `apa_results_text.exploratory` in a clearly labeled subsection
+3. **Tables and Figures**: Reference Schema 11 `tables[].id` and `figures[].id` with their APA `caption` fields. Use `Table N` and `Figure N` numbering consistent with the paper's sequence
+4. **Assumption checks**: Summarize `assumption_checks` in the Methods section (e.g., "Normality was assessed using Shapiro-Wilk tests; all variables met the assumption, W > .95, p > .05")
+5. **Effect sizes**: Include all `effect_sizes` entries with confidence intervals in the Results section
+6. **Methods section**: Cite `reproducibility.script_path` and `reproducibility.environment` to establish computational reproducibility (e.g., "Analyses were conducted using Python 3.12 with scipy 1.13.0; the analysis script is available at [path]")
+
+### Schema 12 Integration (Lab Record)
+
+When `intake_agent` detects Schema 12 materials, integrate as follows:
+
+1. **Methods section**: Use `methods_summary` to enhance the Methods section with experiment provenance details. The `methods_summary` is a pre-written narrative — integrate or adapt it rather than duplicating content already covered by the outline
+2. **Deviations → Limitations**: If `deviation_count > 0`, disclose each deviation from `deviations_summary` in the Limitations subsection. Frame deviations honestly (e.g., "One protocol deviation occurred: the final sample fell below target...")
+3. **Completeness gaps → Limitations**: If `completeness_score < 1.0`, note `completeness_gaps` as methodological limitations (e.g., "Pilot test results were not formally documented...")
+4. **Completeness score interpretation**: Use these thresholds for narrative treatment:
+   - 0.9-1.0: No special mention needed (documentation is thorough)
+   - 0.7-0.89: Brief mention in Limitations ("Documentation was substantially complete, though [specific gaps]...")
+   - Below 0.7: Explicit Limitations paragraph discussing documentation gaps and their potential impact on reproducibility
 
 ### Output Destinations
 

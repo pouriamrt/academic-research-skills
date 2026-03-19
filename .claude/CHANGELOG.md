@@ -4,6 +4,29 @@ Cross-skill fixes and update history.
 
 ---
 
+## 2026-03-18
+
+### v3.5.1 — Experiment Handoff Documentation & Cross-Agent Wiring
+
+**Files changed**: 5 files across `academic-paper/`, `shared/`, `README.md`, `.claude-plugin/`
+
+**academic-paper v2.5** (3 agent files modified):
+- `agents/draft_writer_agent.md`: Added Schema 11 (Experiment Results) and Schema 12 (Lab Record) as input sources in Collaboration Rules. Added detailed integration instructions: 6 steps for Schema 11 (apa_results_text insertion, tables/figures, assumption checks, effect sizes, reproducibility) and 4 steps for Schema 12 (methods_summary, deviations→limitations, completeness gaps with score thresholds)
+- `agents/abstract_bilingual_agent.md`: Added missing Collaboration Rules section — input sources, Schema 11/12 integration for abstracts, output destinations, handoff format requirements
+- `agents/argument_builder_agent.md`: Added missing Collaboration Rules section — input sources, Schema 11/12 integration for CER chains, output destinations, handoff format requirements
+- `SKILL.md`: Updated frontmatter description and opening paragraph from v2.4 to v2.5 with experiment integration as headline change
+
+**shared/handoff_schemas.md**:
+- Standardized `version_label` format in Schema 9 (Material Passport) to `{origin_skill}_v{major}.{minor}[-{variant}]` with examples. Updated example to match
+
+**README.md**:
+- Updated skill table with version numbers, accurate mode lists, and agent counts
+- Added "57 agents, 13 handoff schemas" to description
+
+**Motivation**: Full audit revealed that while all 13 handoff schemas were fully defined and the pipeline state machine was correctly enforced, three write-phase agents in academic-paper lacked documentation for consuming experiment results (Schema 11/12). This created a documentation gap for experiment-inclusive paper workflows despite the pipeline orchestrator and SKILL.md correctly describing the integration.
+
+---
+
 ## 2026-03-09
 
 ### Intent-Based Mode Activation (v2.6.2)

@@ -1,6 +1,6 @@
 ---
 name: academic-paper
-description: "Academic paper writing skill with 12-agent pipeline. v2.4: LaTeX output formatting hardening — mandatory apa7 class, text justification fix, table column width formula, bilingual abstract centering, standardized font stack, PDF must compile from LaTeX. Supports IMRaD, literature review, theoretical, case study, policy brief, and conference paper structures. APA 7.0 (default), Chicago, MLA, IEEE, Vancouver citation formats. Bilingual abstracts (zh-TW + EN). Multi-format output (LaTeX, DOCX, PDF, Markdown). Triggers on: write paper, academic paper, paper outline, write abstract, revise paper, check citations, convert to LaTeX, guide my paper, parse reviews, revision roadmap, 寫論文, 學術論文, 論文大綱, 寫摘要, 修改論文, 檢查引用, 引導我寫論文, 帶我規劃論文, 逐章規劃, 論文架構, 審查意見, 修訂路線圖."
+description: "Academic paper writing skill with 12-agent pipeline. v2.5: Experiment results integration (Schema 11/12) + LaTeX output formatting hardening — mandatory apa7 class, text justification fix, table column width formula, bilingual abstract centering, standardized font stack, PDF must compile from LaTeX. Supports IMRaD, literature review, theoretical, case study, policy brief, and conference paper structures. APA 7.0 (default), Chicago, MLA, IEEE, Vancouver citation formats. Bilingual abstracts (zh-TW + EN). Multi-format output (LaTeX, DOCX, PDF, Markdown). Triggers on: write paper, academic paper, paper outline, write abstract, revise paper, check citations, convert to LaTeX, guide my paper, parse reviews, revision roadmap, 寫論文, 學術論文, 論文大綱, 寫摘要, 修改論文, 檢查引用, 引導我寫論文, 帶我規劃論文, 逐章規劃, 論文架構, 審查意見, 修訂路線圖."
 metadata:
   version: "2.5"
   last_updated: "2026-03-16"
@@ -8,7 +8,7 @@ metadata:
 
 # Academic Paper — Academic Paper Writing Agent Team
 
-A general-purpose academic paper writing tool — 12-agent pipeline covering all disciplines, with higher education domain as the default reference. v2.4 hardens LaTeX output formatting: mandatory `apa7` document class for APA 7.0, text justification override for `man` mode, table column width formula with `\tabcolsep` deduction, bilingual abstract centering, standardized font stack (Times New Roman + Source Han Serif TC VF + Courier New), and PDF compilation via tectonic.
+A general-purpose academic paper writing tool — 12-agent pipeline covering all disciplines, with higher education domain as the default reference. v2.5 adds experiment results integration (Schema 11/12 from data-analyst, simulation-runner, and lab-notebook). v2.4 hardened LaTeX output formatting: mandatory `apa7` document class for APA 7.0, text justification override for `man` mode, table column width formula with `\tabcolsep` deduction, bilingual abstract centering, standardized font stack (Times New Roman + Source Han Serif TC VF + Courier New), and PDF compilation via tectonic.
 
 ## Quick Start
 

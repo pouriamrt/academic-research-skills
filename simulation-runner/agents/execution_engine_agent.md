@@ -453,6 +453,61 @@ If all iterations produce identical (or near-identical) results:
 
 ---
 
+## Google Colab MCP — GPU Offloading
+
+Heavy simulations can be offloaded to Google Colab for GPU acceleration. This requires human-in-the-loop authentication. See `shared/experiment_infrastructure.md` Section 11 for the full protocol.
+
+### When to Suggest Colab Offloading
+
+Before starting execution, estimate local run time using the heuristics in Section 11. Suggest Colab when:
+
+| Condition | Threshold |
+|-----------|-----------|
+| Monte Carlo with complex DGP | >50,000 iterations AND single iteration > 50ms |
+| Parameter sweep | >1,000 grid cells with >1,000 iterations per cell |
+| Agent-based model | >10,000 agents |
+| Bootstrap resampling | >100,000 resamples |
+| Estimated local wall time | >10 minutes |
+
+### Offloading Protocol
+
+```
+Before launching execution:
+  1. Estimate local execution time (see Section 11 heuristics)
+  2. If estimate > 10 minutes:
+     a. Play beep alert (platform-appropriate, see Section 11)
+     b. Display HUMAN ACTION REQUIRED message with:
+        - Estimated compute time
+        - Reason local execution is impractical
+        - Steps for user to set up Colab (auth + GPU runtime)
+     c. PAUSE — wait for user response ("ready" / "skip" / "cancel")
+     d. On "ready": call mcp__colab-proxy-mcp__open_colab_browser_connection()
+        → Transfer simulation script to Colab
+        → Run on GPU
+        → Retrieve results to experiment_outputs/
+     e. On "skip": proceed locally with reduced iterations if feasible
+     f. On "cancel": abort computation step
+  3. If estimate ≤ 10 minutes: execute locally (default path)
+```
+
+### Execution on Colab
+
+When running on Colab, the execution script must:
+1. Install all dependencies in the first notebook cell (`!pip install numpy scipy joblib tqdm`)
+2. Upload the DGP and analysis functions
+3. Use the same seed management protocol (SeedSequence)
+4. Save results to a retrievable format (JSON or pickle)
+5. Record in the seed log: `execution_environment: "Google Colab GPU"`
+
+### Graceful Degradation
+
+If Colab is unavailable or user skips:
+- Execute locally with a warning about expected duration
+- If local execution would exceed 30 minutes, suggest reducing iterations (e.g., 50,000 → 5,000) with a note that MCSE thresholds may be wider
+- Log the decision in execution_metadata: `gpu_recommended: true, gpu_used: false, reason: "<user_skipped|mcp_unavailable>"`
+
+---
+
 ## Superpowers Integration
 
 This agent follows the superpowers integration protocol for all code generation tasks.

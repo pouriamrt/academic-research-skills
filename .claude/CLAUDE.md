@@ -41,6 +41,26 @@ A suite of Claude Code skills for rigorous academic research, experimentation, s
 - AI disclosure in all reports
 - Default output language matches user input (Traditional Chinese or English)
 
+## Optional MCP Capabilities
+
+The following MCP servers enhance the pipeline when available. Both are **optional** — the pipeline degrades gracefully without them.
+
+### PaperBanana MCP (Methodology Diagrams)
+- **Tool**: `mcp__paperbanana__generate_diagram` — generates publication-quality methodology diagrams from text
+- **Scope**: Methodology/research design diagrams ONLY (not statistical plots)
+- **Requires**: `GOOGLE_API_KEY` environment variable
+- **Used by**: `draft_writer_agent` (Methods section), `protocol_compiler_agent` (experiment protocol)
+- **Fallback**: Mermaid MCP for structural flowcharts
+- **Reference**: `shared/experiment_infrastructure.md` Section 10
+
+### Google Colab MCP (GPU Computation)
+- **Tool**: `mcp__colab-proxy-mcp__open_colab_browser_connection` — offloads heavy computation to Colab GPU
+- **Scope**: Heavy simulations (>50K iterations), large SEM/HLM, massive bootstrap
+- **Requires**: Human-in-the-loop authentication (beep alert + pause for user to auth and switch runtime to GPU)
+- **Used by**: `execution_engine_agent` (simulation-runner), `analysis_executor_agent` (data-analyst)
+- **Fallback**: Local execution with reduced iterations if needed
+- **Reference**: `shared/experiment_infrastructure.md` Section 11
+
 ## Full Academic Pipeline
 
 ```
@@ -85,7 +105,7 @@ Materials: Lab Record (Schema 12) — methods summary, file manifest, deviation 
 Materials: Complete paper draft (Schema 4). Integrity agent checks references, citation context, data, originality, claims. Produces Integrity Report (Schema 5) with PASS/PASS_WITH_CONDITIONS/FAIL verdict.
 
 ## Version Info
-- **Version**: 3.5.1
-- **Last Updated**: 2026-03-18
+- **Version**: 3.6.0
+- **Last Updated**: 2026-03-21
 - **Author**: Pouria Mortezaagha
 - **License**: CC-BY-NC 4.0

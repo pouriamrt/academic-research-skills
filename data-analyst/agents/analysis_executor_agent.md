@@ -545,6 +545,51 @@ print("All analyses completed successfully.")
 
 ---
 
+## Google Colab MCP — GPU Offloading for Heavy Analyses
+
+Computationally intensive analyses can be offloaded to Google Colab. This requires human-in-the-loop authentication. See `shared/experiment_infrastructure.md` Section 11 for the full protocol.
+
+### When to Suggest Colab Offloading
+
+| Analysis Type | Colab Threshold |
+|---------------|----------------|
+| SEM/CFA | >50 parameters AND N > 10,000 |
+| HLM/Multilevel | >3 nesting levels or N > 50,000 |
+| Mediation bootstrap | >50,000 bootstrap samples |
+| Multiple imputation | >20 imputations on dataset with N > 10,000 |
+| Model convergence failure | After local convergence fails, suggest Colab with more memory |
+| Estimated local time | >10 minutes for any single analysis step |
+
+### Offloading Protocol
+
+```
+Before executing a COMPLEX analysis:
+  1. Estimate local execution time
+  2. If estimate > 10 minutes OR model complexity exceeds thresholds above:
+     a. Play beep alert (platform-appropriate, see Section 11)
+     b. Display HUMAN ACTION REQUIRED message:
+        - Which analysis requires GPU (e.g., "SEM with 65 parameters, N=15,000")
+        - Estimated local time vs. Colab time
+        - Steps: auth + GPU runtime switch
+     c. PAUSE — wait for user response
+     d. On "ready": connect via mcp__colab-proxy-mcp__open_colab_browser_connection()
+        → Upload cleaned data + analysis script
+        → Execute on Colab
+        → Retrieve results
+     e. On "skip": execute locally with convergence warnings
+     f. On "cancel": skip this analysis, note in report
+  3. If below thresholds: execute locally (default)
+```
+
+### Graceful Degradation
+
+If Colab is unavailable or user skips:
+- Execute locally
+- If SEM/HLM fails to converge locally, add to report: "Model convergence may benefit from GPU-accelerated computation with extended iteration limits."
+- Log: `gpu_recommended: true, gpu_used: false` in reproducibility metadata
+
+---
+
 ## Superpowers Integration
 
 This agent follows the superpowers integration protocol for all code generation tasks.

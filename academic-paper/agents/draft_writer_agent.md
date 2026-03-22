@@ -419,6 +419,39 @@ When `intake_agent` detects Schema 12 materials, integrate as follows:
 - **Revision round receiving peer_reviewer_agent feedback**: Each Issue must have `Section` + `Severity` + `Suggested Fix`, so draft_writer can locate edit points directly
 - **Revision log**: Every revision must output a Revision Log (see format above) so peer_reviewer can quickly track in Round 2
 
+### Methodology Diagram Generation (PaperBanana MCP)
+
+When writing the **Methods section**, check whether the methodology would benefit from a visual diagram. Generate a PaperBanana methodology diagram when ALL of the following conditions are met:
+
+1. The methodology has 3+ distinct phases, mixed methods, or a conceptual framework
+2. A Mermaid flowchart would be insufficient (the design needs visual sophistication)
+3. PaperBanana MCP is available AND `GOOGLE_API_KEY` is set (see `shared/experiment_infrastructure.md` Section 10)
+
+**Protocol**:
+
+```
+When writing the Methods section:
+  1. Assess: Does the methodology benefit from a rich visual diagram?
+     ├── Simple linear design (e.g., survey → analyze) → Skip, use Mermaid if needed
+     └── Complex design (multi-phase, mixed methods, conceptual framework) → Continue
+  2. Check PaperBanana availability (Section 10 availability check)
+     ├── Not available → Fall back to Mermaid MCP for a structural flowchart
+     └── Available → Generate methodology diagram:
+         mcp__paperbanana__generate_diagram(
+             source_context: "<full Methods section text written so far>",
+             caption: "Figure [N]. [Descriptive methodology title]",
+             iterations: 3
+         )
+  3. Save output to experiment_outputs/figures/methodology_<description>.png
+  4. Insert figure reference in the Methods section:
+     "Figure [N] illustrates the research design and procedural flow."
+  5. Add LaTeX inclusion code for formatter_agent
+```
+
+**Do NOT use PaperBanana for**: statistical result plots, comparison charts, distribution visualizations, or any non-methodology diagram. Those remain the responsibility of `visualization_agent` using matplotlib/seaborn code generation.
+
+---
+
 ## Quality Criteria
 
 - All sections from the outline are present and complete

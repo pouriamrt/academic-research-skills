@@ -390,3 +390,211 @@ mcp__mermaid__generate(
   - Decision points: `#9B59B6` (purple)
 - Keep diagrams focused — one concept per diagram, not the entire pipeline
 - Use `<br/>` for line breaks in node labels (not `\n`)
+
+---
+
+## 10. PaperBanana MCP — Publication-Quality Methodology Diagrams
+
+The PaperBanana MCP server (`mcp__paperbanana__generate_diagram`) generates publication-quality methodology diagrams from natural-language descriptions. It is used **exclusively for methodology/workflow diagrams** — not for statistical plots (use matplotlib/seaborn) or structural flowcharts (use Mermaid MCP).
+
+### Scope — What PaperBanana Is and Is NOT For
+
+| Use PaperBanana `generate_diagram` | Do NOT use PaperBanana |
+|-------------------------------------|------------------------|
+| Research methodology overview diagrams | Statistical plots (bar, scatter, box, forest) — use matplotlib/seaborn |
+| Conceptual framework visualizations | Structural flowcharts (CONSORT, DGP, decision trees) — use Mermaid MCP |
+| Theoretical model diagrams | Data distribution plots — use matplotlib/seaborn |
+| Multi-phase research design illustrations | Convergence diagnostics — use matplotlib/seaborn |
+| Intervention logic models | Simple process flows — use Mermaid MCP |
+
+**Rule**: PaperBanana is for **rich, publication-quality methodology diagrams** that benefit from visual sophistication beyond what Mermaid box-and-arrow diagrams can offer. If a Mermaid flowchart would suffice, prefer Mermaid (it's faster and always available).
+
+### Prerequisites
+
+PaperBanana requires a Google API key. Before invoking, agents MUST check availability:
+
+```
+Availability Check (mandatory before first use in a session):
+
+1. Check if mcp__paperbanana__generate_diagram is available as a tool
+   ├── Not available → SKIP. Fall back to Mermaid MCP for structural diagrams.
+   └── Available → Check GOOGLE_API_KEY
+       ├── GOOGLE_API_KEY not set → WARN user:
+       │   "PaperBanana MCP requires a Google API key. Set GOOGLE_API_KEY in your
+       │    environment to enable publication-quality methodology diagrams.
+       │    Falling back to Mermaid MCP for this session."
+       │   → Fall back to Mermaid MCP.
+       └── GOOGLE_API_KEY set → Proceed with PaperBanana.
+```
+
+### Tool Invocation
+
+```
+mcp__paperbanana__generate_diagram(
+    source_context: "<methodology section text or relevant paper excerpt>",
+    caption: "<Figure N. Descriptive caption for the methodology diagram>",
+    iterations: 3
+)
+```
+
+**Parameters**:
+- `source_context`: The methodology text describing the research design, phases, participant flow, or conceptual framework. Provide enough context for the diagram to be self-explanatory.
+- `caption`: APA-format figure caption. Must start with "Figure N." followed by an italic descriptive title.
+- `iterations`: Refinement iterations (default 3). Use 2 for simple diagrams, 3 for standard, 4-5 for complex multi-phase designs.
+
+### Output Convention
+
+- **Location**: `experiment_outputs/figures/` (same directory as matplotlib and Mermaid figures)
+- **Naming**: `methodology_<description>.png` (e.g., `methodology_research_design.png`, `methodology_conceptual_framework.png`)
+- **Format**: PNG (returned directly by MCP server)
+- **Numbering**: Numbered in the same sequence as all other figures (use `fig_counter`)
+- **Caption**: APA-format: "**Figure N.** *Description in italics.*"
+
+### When Agents Should Generate Methodology Diagrams
+
+| Agent | Context | Trigger |
+|-------|---------|---------|
+| `draft_writer_agent` (academic-paper) | Writing the Methods section | When the methodology has 3+ phases, mixed methods, or a conceptual framework that benefits from visual representation |
+| `protocol_compiler_agent` (experiment-designer) | Compiling experiment protocol | When the experiment design involves multi-stage interventions or complex participant allocation |
+
+### Graceful Degradation
+
+If PaperBanana is unavailable (MCP not connected or no API key):
+1. Fall back to Mermaid MCP for a simplified structural diagram
+2. Add a note in the figure caption: "Diagram generated using Mermaid; a higher-fidelity methodology diagram can be produced with PaperBanana MCP."
+3. Continue the pipeline without blocking — PaperBanana is always optional
+
+---
+
+## 11. Google Colab MCP — GPU-Accelerated Computation
+
+The Google Colab MCP server (`mcp__colab-proxy-mcp__open_colab_browser_connection`) enables offloading heavy computational workloads to Google Colab with GPU acceleration. This is used when local execution would be impractically slow or when GPU is required.
+
+### Scope — When to Offload to Colab
+
+| Offload to Colab | Keep Local |
+|-------------------|------------|
+| Monte Carlo simulations with >50,000 iterations AND complex DGPs | Simple bootstrap (N < 10,000) |
+| Parameter sweeps with >1,000 grid cells | Standard statistical tests (t-test, ANOVA, regression) |
+| SEM/CFA with >50 parameters or N > 10,000 | Descriptive statistics, assumption checks |
+| Bootstrap resampling with N > 100,000 | Single-run simulations in `quick` mode |
+| Agent-based models with >10,000 agents | Standard power analysis via `statsmodels` |
+| Any workload estimated to exceed 10 minutes locally | Visualization/plotting code |
+| Deep learning or neural network model fitting | Data cleaning and transformation |
+
+**Rule**: Default to local execution. Only suggest Colab when the workload clearly exceeds local capacity. When in doubt, try locally first — if it fails or takes too long, then suggest Colab.
+
+### Human-in-the-Loop Protocol (MANDATORY)
+
+Colab requires human authentication and manual GPU runtime configuration. The agent CANNOT do this autonomously. Follow this exact protocol:
+
+```
+COLAB OFFLOAD PROTOCOL — Human-in-the-Loop
+
+Step 1: NOTIFY — Alert the user that GPU computation is needed
+  ├── Play an audible alert:
+  │   Bash: powershell -c "[console]::beep(800,300); Start-Sleep -m 200; [console]::beep(1000,300); Start-Sleep -m 200; [console]::beep(1200,500)"
+  │   (Three ascending beeps: 800Hz, 1000Hz, 1200Hz)
+  │
+  ├── Display a prominent message:
+  │   ┌─────────────────────────────────────────────────────┐
+  │   │  🔔 HUMAN ACTION REQUIRED — Google Colab Setup      │
+  │   │                                                     │
+  │   │  The upcoming computation is too heavy for local    │
+  │   │  execution and needs GPU acceleration via Colab.    │
+  │   │                                                     │
+  │   │  Please complete these steps:                       │
+  │   │  1. Open Google Colab in your browser               │
+  │   │  2. Sign in with your Google account                │
+  │   │  3. Change runtime: Runtime → Change runtime type   │
+  │   │     → Select GPU (T4 or higher)                     │
+  │   │  4. Connect to the runtime (click "Connect")        │
+  │   │  5. Come back here and confirm: "ready" or "skip"   │
+  │   │                                                     │
+  │   │  Estimated compute time: [X minutes]                │
+  │   │  Reason: [why local won't work]                     │
+  │   └─────────────────────────────────────────────────────┘
+  │
+  └── PAUSE — Wait for user response. Do NOT proceed until user says "ready" or "skip".
+
+Step 2: BRANCH on user response
+  ├── User says "ready" / "done" / "go" / "yes" →
+  │   └── Call mcp__colab-proxy-mcp__open_colab_browser_connection()
+  │       ├── Returns true → Proceed to Step 3
+  │       └── Returns false → Report connection failure, ask user to retry or skip
+  │
+  ├── User says "skip" / "no" / "local" →
+  │   └── Fall back to local execution with warnings:
+  │       - "Running locally. This may take [estimated time]. Consider Colab for faster results."
+  │       - Reduce iterations if possible (e.g., 10,000 → 2,000 with wider MCSE threshold)
+  │       - Log in lab notebook that local execution was used despite GPU recommendation
+  │
+  └── User says "cancel" →
+      └── Abort the computation step, continue pipeline without results
+
+Step 3: EXECUTE on Colab
+  ├── Transfer the simulation/analysis script to the Colab notebook
+  ├── Ensure all dependencies are installed (pip install in first cell)
+  ├── Run the computation
+  ├── Retrieve results back to local experiment_outputs/
+  └── Log execution environment in Material Passport:
+      - runtime: "Google Colab"
+      - gpu_type: [as reported by Colab]
+      - execution_time: [actual]
+```
+
+### Beep Sound Cross-Platform Reference
+
+The notification beep must work on the user's platform:
+
+```
+Windows (PowerShell):
+  powershell -c "[console]::beep(800,300); Start-Sleep -m 200; [console]::beep(1000,300); Start-Sleep -m 200; [console]::beep(1200,500)"
+
+macOS:
+  osascript -e 'beep 3'
+
+Linux:
+  for freq in 800 1000 1200; do (speaker-test -t sine -f $freq -l 1 &) ; sleep 0.3 ; kill $! 2>/dev/null; done
+
+Fallback (if none work):
+  printf '\a\a\a'
+```
+
+Agents should detect the platform from the environment and use the appropriate command. On Windows, use the PowerShell variant.
+
+### Workload Estimation Heuristic
+
+Before suggesting Colab, estimate local execution time:
+
+```
+Estimated local time (rough heuristic):
+
+Monte Carlo:
+  time ≈ (n_iterations × single_iteration_ms) / (n_cores × 0.7)
+  → If time > 10 min → suggest Colab
+
+Bootstrap:
+  time ≈ (n_bootstrap × n_observations × 0.001ms) / (n_cores × 0.7)
+  → If time > 10 min → suggest Colab
+
+Parameter sweep:
+  time ≈ (n_cells × n_per_cell × single_iteration_ms) / (n_cores × 0.7)
+  → If time > 10 min → suggest Colab
+
+SEM/CFA:
+  → If n_parameters > 50 AND n_observations > 10,000 → suggest Colab
+  → If model fails to converge locally → suggest Colab with more memory
+
+Agent-based model:
+  → If n_agents > 10,000 → suggest Colab
+```
+
+### Graceful Degradation
+
+If Colab is unavailable (MCP not connected, user skips, connection fails):
+1. Fall back to local execution
+2. Reduce computational load where safe (fewer iterations with wider thresholds, smaller parameter grids)
+3. Log the degradation in the lab notebook and Material Passport
+4. Add a note in the report: "Computation was performed locally; results may benefit from increased iterations with GPU acceleration."
+5. Never block the pipeline — Colab is always optional

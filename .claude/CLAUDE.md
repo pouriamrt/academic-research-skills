@@ -106,7 +106,7 @@ Materials: Lab Record (Schema 12) — methods summary, file manifest, deviation 
 Materials: Complete paper draft (Schema 4). Integrity agent checks references, citation context, data, originality, claims. Produces Integrity Report (Schema 5) with PASS/PASS_WITH_CONDITIONS/FAIL verdict.
 
 ## Version Info
-- **Version**: 3.7.0
+- **Version**: 3.7.1
 - **Last Updated**: 2026-03-22
 - **Author**: Pouria Mortezaagha
 - **License**: CC-BY-NC 4.0

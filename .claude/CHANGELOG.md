@@ -99,7 +99,7 @@ Cross-skill fixes and update history.
 
 ## 2026-03-08
 
-### Academic Skills Suite v4.0 — 15 Improvements Across 4 Skills
+### Academic Skills Suite v2.6 — 15 Improvements Across 4 Skills
 
 **Files changed**: 30 files (17 new, 13 modified) across `deep-research/`, `academic-paper/`, `academic-paper-reviewer/`, `academic-pipeline/`, `shared/`
 

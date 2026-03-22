@@ -4,6 +4,32 @@ Cross-skill fixes and update history.
 
 ---
 
+## 2026-03-22
+
+### v3.7.0 — Cross-Skill Integrity Audit & Schema Formalization
+
+**Files changed**: 16 files across 7 skills + shared + plugin config
+
+**Critical fixes**:
+- **FINER scale alignment** (`deep-research/agents/research_question_agent.md`): Changed FINER scoring from 1-5 to 1-10 scale to match Schema 1 data contract in `shared/handoff_schemas.md`. Updated score table anchors, output format, and minimum thresholds (avg >= 6.0, no criterion below 4)
+- **Reviewer count propagation** (`academic-paper-reviewer/agents/field_analyst_agent.md`, `editorial_synthesizer_agent.md`): Updated from 4 to 5 reviewers (EIC + 3 Peer + Devil's Advocate) in configuration protocol, report inventory table, quality gates, decision letter template, and Part 3 summary. DA column added to synthesis table with CRITICAL findings tracking
+
+**Schema additions** (`shared/handoff_schemas.md`):
+- **Schema 14: Methodology Blueprint** — formalized the routing artifact produced by `research_architect_agent` and consumed by `pipeline_orchestrator_agent`. Includes routing flags (`requires_experiment_design`, `requires_simulation`), method/data/validity fields, and IRB/preregistration metadata
+- **Schema 15: INSIGHT Collection** — formalized the Socratic dialogue output with typed insight objects (scope_decision, methodology_choice, theoretical_anchor, etc.) and FINER dimension mapping
+
+**Agent hardening**:
+- Added Required Tools sections (tool name, purpose, criticality, fallbacks) to 5 critical agents: `integrity_verification_agent`, `bibliography_agent`, `power_analyst_agent`, `analysis_executor_agent`, `draft_writer_agent`
+- Added **Dual-Pass Self-Verification Protocol** to `integrity_verification_agent`: adversarial self-check on VERIFIED verdicts, citation context double-check, internal consistency audit. Mandatory for Mode 2 (Stage 4.5)
+
+**Version/metadata fixes**:
+- Fixed `2025-03-05` → `2026-03-05` date typos in 4 SKILL.md changelogs + CHANGELOG.md
+- Fixed `academic-pipeline/SKILL.md` version info table (v2.6 → v2.7) and added v2.7 changelog entry
+- Removed stale "(future skill)" label from `data-analyst` reference in `experiment-designer/SKILL.md`
+- Added Stage 6 (PROCESS SUMMARY) to pipeline flow in `.claude/CLAUDE.md`
+
+---
+
 ## 2026-03-18
 
 ### v3.5.1 — Experiment Handoff Documentation & Cross-Agent Wiring
@@ -173,7 +199,7 @@ Cross-skill fixes and update history.
 
 ---
 
-## 2025-03-05
+## 2026-03-05
 
 ### v2.2 / v1.3 Cross-Agent Quality Alignment Update (4 skills)
 

@@ -774,6 +774,137 @@ phases: {
 
 ---
 
+## Schema 14: Methodology Blueprint (deep-research -> academic-pipeline / experiment-designer)
+
+**Producer**: `deep-research/research_architect_agent`
+**Consumer**: `academic-pipeline/pipeline_orchestrator_agent` | `experiment-designer/intake_agent` | `academic-paper/intake_agent`
+
+> The Methodology Blueprint is a critical routing artifact that determines whether Stage 1.5 (EXPERIMENT) is triggered. The `pipeline_orchestrator_agent` reads the routing flags to decide the pipeline path.
+
+### Required Fields
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `research_paradigm` | object | `{selected: string, justification: string}` |
+| `method` | object | `{type: enum["qualitative"/"quantitative"/"mixed"], specific_method: string, justification: string}` |
+| `data_strategy` | object | `{data_type: enum["primary"/"secondary"/"both"], sources: list[string], sampling: string, time_frame: string}` |
+| `analytical_framework` | object | `{technique: string, steps: list[string], tools: list[string]}` |
+| `validity_criteria` | list[object] | `[{criterion: string, strategy: string}]` |
+| `methodology_subtype` | enum | `"experimental"` / `"quasi_experimental"` / `"simulation"` / `"correlational"` / `"secondary_data_analysis"` / `"survey"` / `"case_study"` / `"content_analysis"` / `"literature_review"` / `"theoretical"` / `"mixed_methods"` |
+| `requires_experiment_design` | boolean | Triggers `experiment-designer` at Stage 1.5a when `true` |
+| `requires_data_collection` | boolean | Informs `experiment-designer` instrument building |
+| `requires_simulation` | boolean | Triggers `simulation-runner` (instead of `data-analyst`) at Stage 1.5b when `true` |
+| `routing_justification` | string | 1-2 sentences explaining why routing flags were set |
+
+### Optional Fields
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `limitations` | list[string] | Known limitations by design, with mitigations |
+| `ethical_considerations` | list[string] | Relevant ethical issues |
+| `irb_plan` | object | `{level: enum["Exempt"/"Expedited"/"Full Board"], consent_strategy: string, deidentification: string}` |
+| `reporting_standard` | string | PRISMA / CONSORT / STROBE / COREQ / SQUIRE |
+| `preregistration` | object | `{recommended: boolean, platform: string, status: string}` |
+
+### Example
+
+```markdown
+## Methodology Blueprint
+
+### Research Paradigm
+**Selected**: Post-positivist
+**Justification**: The RQ seeks to measure causal effects of an intervention, requiring controlled comparison
+
+### Method
+**Type**: quantitative
+**Specific Method**: Quasi-experimental pre-post with comparison group
+**Justification**: Random assignment is not feasible at the course-section level
+
+### Data Strategy
+**Data Type**: primary
+**Sources**: [Undergraduate STEM students at 3 Taiwanese universities]
+**Sampling**: Cluster sampling by course section (n=180 target)
+**Time Frame**: Spring 2026 semester (16 weeks)
+
+### Analytical Framework
+**Technique**: Mixed ANOVA + mediation analysis
+**Steps**: [1. Descriptive stats, 2. Assumption checks, 3. 2x3 mixed ANOVA, 4. Mediation via bootstrapped CI]
+**Tools**: [Python, statsmodels, pingouin]
+
+### Validity Criteria
+| Criterion | Strategy to Ensure |
+|-----------|-------------------|
+| Internal validity | Pre-test equivalence check, propensity score matching |
+| Construct validity | Validated instruments with reported reliability |
+
+### Experiment Pipeline Routing (Required)
+**Methodology Subtype**: quasi_experimental
+**Requires Experiment Design**: true
+**Requires Data Collection**: true
+**Requires Simulation**: false
+**Routing Justification**: The study requires designing a quasi-experimental protocol with pre/post assessments and primary data collection from students.
+```
+
+---
+
+## Schema 15: INSIGHT Collection (deep-research socratic -> deep-research full / academic-paper)
+
+**Producer**: `deep-research/socratic_mentor_agent`
+**Consumer**: `deep-research/research_question_agent` (full mode) | `academic-paper/intake_agent`
+
+> The INSIGHT Collection captures key insights discovered during Socratic dialogue. Each insight represents a moment where the user's thinking crystallized around an important aspect of their research.
+
+### Required Fields
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `session_id` | string | Unique identifier for the Socratic session |
+| `insights` | list[Insight] | Ordered list of insights from the dialogue |
+| `convergence_status` | enum | `"converged"` / `"partially_converged"` / `"diverged"` |
+| `total_rounds` | integer | Number of dialogue rounds completed |
+| `rq_summary` | object | The RQ Summary produced at convergence (see `research_question_agent` Socratic Mode output) |
+
+### Insight Object
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `id` | string | Unique identifier (e.g., `INS-001`) |
+| `round` | integer | Which dialogue round this insight emerged from |
+| `type` | enum | `"scope_decision"` / `"methodology_choice"` / `"theoretical_anchor"` / `"feasibility_constraint"` / `"novelty_claim"` / `"ethical_consideration"` |
+| `content` | string | The insight statement |
+| `user_quote` | string | The user's own words that triggered or confirmed this insight |
+| `finer_dimension` | enum | Which FINER dimension this insight primarily relates to: `"F"` / `"I"` / `"N"` / `"E"` / `"R"` |
+
+### Example
+
+```markdown
+## INSIGHT Collection
+
+**Session ID**: SOC-20260316-001
+**Convergence Status**: converged
+**Total Rounds**: 8
+
+### Insights
+
+1. **INS-001** (Round 2, Scope Decision, F):
+   - Content: Research should focus on formative assessment specifically, not all AI in education
+   - User Quote: "I want to know if AI assessment actually helps students learn, not just whether teachers like it"
+
+2. **INS-002** (Round 4, Methodology Choice, F):
+   - Content: Quasi-experimental design is most feasible given institutional constraints
+   - User Quote: "We can't randomly assign students to different sections — the registrar controls that"
+
+3. **INS-003** (Round 6, Novelty Claim, N):
+   - Content: No existing study examines AI formative assessment in Taiwan's STEM context
+   - User Quote: "Most studies are from the US or UK, nobody has looked at how this works with our exam-oriented culture"
+
+### RQ Summary
+**Research Question Direction**: How does AI-assisted formative assessment affect undergraduate learning outcomes in STEM courses at Taiwanese universities?
+**Preliminary FINER Assessment**: [see research_question_agent Socratic Mode output]
+```
+
+---
+
 ## Validation Rules
 
 1. **Required field check**: All schema fields marked without "(optional)" or "No" in the Required column are REQUIRED. Consumer agents MUST verify all required fields are present before proceeding

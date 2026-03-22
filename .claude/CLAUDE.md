@@ -77,6 +77,7 @@ Stage 3':  academic-paper-reviewer (re-review)
 Stage 4':  academic-paper (re-revision, max 1 round)
 Stage 4.5: final integrity verification (mandatory, zero-tolerance)
 Stage 5:   academic-paper (format-convert → LaTeX/DOCX/PDF)
+Stage 6:   PROCESS SUMMARY (auto — bilingual paper creation record → PDF)
 ```
 
 The experiment stages (1.5) are auto-detected from the Methodology Blueprint produced by deep-research. If the methodology does not require experimentation (e.g., literature review, theoretical, policy analysis), these stages are skipped entirely.
@@ -105,7 +106,7 @@ Materials: Lab Record (Schema 12) — methods summary, file manifest, deviation 
 Materials: Complete paper draft (Schema 4). Integrity agent checks references, citation context, data, originality, claims. Produces Integrity Report (Schema 5) with PASS/PASS_WITH_CONDITIONS/FAIL verdict.
 
 ## Version Info
-- **Version**: 3.6.0
-- **Last Updated**: 2026-03-21
+- **Version**: 3.7.0
+- **Last Updated**: 2026-03-22
 - **Author**: Pouria Mortezaagha
 - **License**: CC-BY-NC 4.0

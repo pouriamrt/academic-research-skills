@@ -75,7 +75,7 @@ Activate `guided` mode when the user's **intent** matches any of the following p
 | Writing a paper (not designing) | `academic-paper` |
 | Reviewing a paper | `academic-paper-reviewer` |
 | Full research-to-paper pipeline | `academic-pipeline` |
-| Running a statistical analysis on existing data | `data-analyst` (future skill) |
+| Running a statistical analysis on existing data | `data-analyst` |
 
 ### Quick Mode Selection Guide
 

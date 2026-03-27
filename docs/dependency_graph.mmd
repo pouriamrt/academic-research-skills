@@ -1,0 +1,206 @@
+flowchart TD
+
+    subgraph dr_sub["Deep Research"]
+        style dr_sub fill:#4A90D9,fill-opacity:0.15,stroke:#4A90D9,stroke-width:2px
+        dr_research_question["Research Question"]
+        dr_research_architect["Research Architect"]
+        dr_bibliography["Bibliography"]
+        dr_source_verification["Source Verification"]
+        dr_synthesis["Synthesis"]
+        dr_report_compiler["Report Compiler"]
+        dr_editor_in_chief["Editor In Chief"]
+        dr_devils_advocate["Devils Advocate"]
+        dr_ethics_review["Ethics Review"]
+        dr_socratic_mentor["Socratic Mentor"]
+        dr_risk_of_bias["Risk Of Bias"]
+        dr_meta_analysis["Meta Analysis"]
+        dr_monitoring["Monitoring"]
+    end
+
+    subgraph ed_sub["Experiment Designer"]
+        style ed_sub fill:#F5A623,fill-opacity:0.15,stroke:#F5A623,stroke-width:2px
+        ed_intake["Intake"]
+        ed_design_architect["Design Architect"]
+        ed_power_analyst["Power Analyst"]
+        ed_instrument_builder["Instrument Builder"]
+        ed_randomization["Randomization"]
+        ed_protocol_compiler["Protocol Compiler"]
+    end
+
+    subgraph da_sub["Data Analyst"]
+        style da_sub fill:#2ECC71,fill-opacity:0.15,stroke:#2ECC71,stroke-width:2px
+        da_intake["Intake"]
+        da_data_preparation["Data Preparation"]
+        da_assumption_checker["Assumption Checker"]
+        da_analysis_executor["Analysis Executor"]
+        da_effect_size["Effect Size"]
+        da_visualization["Visualization"]
+        da_report_compiler["Report Compiler"]
+    end
+
+    subgraph sr_sub["Simulation Runner"]
+        style sr_sub fill:#9B59B6,fill-opacity:0.15,stroke:#9B59B6,stroke-width:2px
+        sr_intake["Intake"]
+        sr_model_builder["Model Builder"]
+        sr_execution_engine["Execution Engine"]
+        sr_diagnostics["Diagnostics"]
+        sr_report_compiler["Report Compiler"]
+    end
+
+    subgraph ln_sub["Lab Notebook"]
+        style ln_sub fill:#E67E22,fill-opacity:0.15,stroke:#E67E22,stroke-width:2px
+        ln_notebook_manager["Notebook Manager"]
+        ln_entry_writer["Entry Writer"]
+        ln_deviation_tracker["Deviation Tracker"]
+        ln_provenance_auditor["Provenance Auditor"]
+    end
+
+    subgraph ap_sub["Academic Paper"]
+        style ap_sub fill:#3498DB,fill-opacity:0.15,stroke:#3498DB,stroke-width:2px
+        ap_intake["Intake"]
+        ap_literature_strategist["Literature Strategist"]
+        ap_structure_architect["Structure Architect"]
+        ap_argument_builder["Argument Builder"]
+        ap_draft_writer["Draft Writer"]
+        ap_citation_compliance["Citation Compliance"]
+        ap_abstract_bilingual["Abstract Bilingual"]
+        ap_peer_reviewer["Peer Reviewer"]
+        ap_formatter["Formatter"]
+        ap_socratic_mentor["Socratic Mentor"]
+        ap_visualization["Visualization"]
+        ap_revision_coach["Revision Coach"]
+    end
+
+    subgraph apr_sub["Academic Paper Reviewer"]
+        style apr_sub fill:#E74C3C,fill-opacity:0.15,stroke:#E74C3C,stroke-width:2px
+        apr_field_analyst["Field Analyst"]
+        apr_eic["Eic"]
+        apr_methodology_reviewer["Methodology Reviewer"]
+        apr_domain_reviewer["Domain Reviewer"]
+        apr_perspective_reviewer["Perspective Reviewer"]
+        apr_editorial_synthesizer["Editorial Synthesizer"]
+        apr_devils_advocate_reviewer["Devils Advocate Reviewer"]
+    end
+
+    subgraph apl_sub["Academic Pipeline"]
+        style apl_sub fill:#1ABC9C,fill-opacity:0.15,stroke:#1ABC9C,stroke-width:2px
+        apl_pipeline_orchestrator["Pipeline Orchestrator"]
+        apl_state_tracker["State Tracker"]
+        apl_integrity_verification["Integrity Verification"]
+    end
+
+    %% Schema handoff edges
+    dr_research_question -->|"S1"| dr_research_architect
+    dr_research_question -->|"S1"| ap_intake
+    dr_socratic_mentor -->|"S1"| dr_research_architect
+    dr_socratic_mentor -->|"S1"| ap_intake
+    dr_bibliography -->|"S2"| dr_synthesis
+    dr_bibliography -->|"S2"| dr_source_verification
+    dr_bibliography -->|"S2"| ap_literature_strategist
+    dr_synthesis -->|"S3"| dr_report_compiler
+    dr_synthesis -->|"S3"| ap_argument_builder
+    ap_draft_writer -->|"S4"| apl_integrity_verification
+    ap_draft_writer -->|"S4"| apr_field_analyst
+    ap_draft_writer -->|"S4"| apr_eic
+    ap_draft_writer -->|"S4"| apr_methodology_reviewer
+    ap_draft_writer -->|"S4"| apr_domain_reviewer
+    ap_draft_writer -->|"S4"| apr_perspective_reviewer
+    ap_draft_writer -->|"S4"| apr_editorial_synthesizer
+    ap_draft_writer -->|"S4"| apr_devils_advocate_reviewer
+    apl_integrity_verification -->|"S5"| apl_pipeline_orchestrator
+    apl_integrity_verification -->|"S5"| ap_draft_writer
+    apr_editorial_synthesizer -->|"S6"| apl_pipeline_orchestrator
+    apr_editorial_synthesizer -->|"S6"| ap_draft_writer
+    apr_editorial_synthesizer -->|"S7"| ap_draft_writer
+    apr_editorial_synthesizer -->|"S7"| apl_pipeline_orchestrator
+    ap_draft_writer -->|"S8"| apr_editorial_synthesizer
+    ed_protocol_compiler -->|"S10"| da_intake
+    ed_protocol_compiler -->|"S10"| sr_intake
+    ed_protocol_compiler -->|"S10"| ln_entry_writer
+    da_report_compiler -->|"S11"| ap_draft_writer
+    da_report_compiler -->|"S11"| ln_entry_writer
+    sr_report_compiler -->|"S11"| ap_draft_writer
+    sr_report_compiler -->|"S11"| ln_entry_writer
+    ln_provenance_auditor -->|"S12"| ap_draft_writer
+    ln_provenance_auditor -->|"S12"| apl_pipeline_orchestrator
+    ed_protocol_compiler -->|"S13"| sr_model_builder
+    dr_research_architect -->|"S14"| apl_pipeline_orchestrator
+    dr_research_architect -->|"S14"| ed_intake
+    dr_research_architect -->|"S14"| ap_intake
+    dr_socratic_mentor -->|"S15"| dr_research_question
+    dr_socratic_mentor -->|"S15"| ap_intake
+
+    %% Cross-agent collaboration edges
+    ln_entry_writer -.-> ed_protocol_compiler
+    ap_draft_writer -.-> da_report_compiler
+    ap_draft_writer -.-> sr_report_compiler
+    ap_draft_writer -.-> ln_provenance_auditor
+    apl_pipeline_orchestrator -.-> ap_draft_writer
+
+    %% Node styles
+    style dr_research_question fill:#4A90D9,fill-opacity:0.3,stroke:#4A90D9,color:#000
+    style dr_research_architect fill:#4A90D9,fill-opacity:0.3,stroke:#4A90D9,color:#000
+    style dr_bibliography fill:#4A90D9,fill-opacity:0.3,stroke:#4A90D9,color:#000
+    style dr_source_verification fill:#4A90D9,fill-opacity:0.3,stroke:#4A90D9,color:#000
+    style dr_synthesis fill:#4A90D9,fill-opacity:0.3,stroke:#4A90D9,color:#000
+    style dr_report_compiler fill:#4A90D9,fill-opacity:0.3,stroke:#4A90D9,color:#000
+    style dr_editor_in_chief fill:#4A90D9,fill-opacity:0.3,stroke:#4A90D9,color:#000
+    style dr_devils_advocate fill:#4A90D9,fill-opacity:0.3,stroke:#4A90D9,color:#000
+    style dr_ethics_review fill:#4A90D9,fill-opacity:0.3,stroke:#4A90D9,color:#000
+    style dr_socratic_mentor fill:#4A90D9,fill-opacity:0.3,stroke:#4A90D9,color:#000
+    style dr_risk_of_bias fill:#4A90D9,fill-opacity:0.3,stroke:#4A90D9,color:#000
+    style dr_meta_analysis fill:#4A90D9,fill-opacity:0.3,stroke:#4A90D9,color:#000
+    style dr_monitoring fill:#4A90D9,fill-opacity:0.3,stroke:#4A90D9,color:#000
+    style ed_intake fill:#F5A623,fill-opacity:0.3,stroke:#F5A623,color:#000
+    style ed_design_architect fill:#F5A623,fill-opacity:0.3,stroke:#F5A623,color:#000
+    style ed_power_analyst fill:#F5A623,fill-opacity:0.3,stroke:#F5A623,color:#000
+    style ed_instrument_builder fill:#F5A623,fill-opacity:0.3,stroke:#F5A623,color:#000
+    style ed_randomization fill:#F5A623,fill-opacity:0.3,stroke:#F5A623,color:#000
+    style ed_protocol_compiler fill:#F5A623,fill-opacity:0.3,stroke:#F5A623,color:#000
+    style da_intake fill:#2ECC71,fill-opacity:0.3,stroke:#2ECC71,color:#000
+    style da_data_preparation fill:#2ECC71,fill-opacity:0.3,stroke:#2ECC71,color:#000
+    style da_assumption_checker fill:#2ECC71,fill-opacity:0.3,stroke:#2ECC71,color:#000
+    style da_analysis_executor fill:#2ECC71,fill-opacity:0.3,stroke:#2ECC71,color:#000
+    style da_effect_size fill:#2ECC71,fill-opacity:0.3,stroke:#2ECC71,color:#000
+    style da_visualization fill:#2ECC71,fill-opacity:0.3,stroke:#2ECC71,color:#000
+    style da_report_compiler fill:#2ECC71,fill-opacity:0.3,stroke:#2ECC71,color:#000
+    style sr_intake fill:#9B59B6,fill-opacity:0.3,stroke:#9B59B6,color:#000
+    style sr_model_builder fill:#9B59B6,fill-opacity:0.3,stroke:#9B59B6,color:#000
+    style sr_execution_engine fill:#9B59B6,fill-opacity:0.3,stroke:#9B59B6,color:#000
+    style sr_diagnostics fill:#9B59B6,fill-opacity:0.3,stroke:#9B59B6,color:#000
+    style sr_report_compiler fill:#9B59B6,fill-opacity:0.3,stroke:#9B59B6,color:#000
+    style ln_notebook_manager fill:#E67E22,fill-opacity:0.3,stroke:#E67E22,color:#000
+    style ln_entry_writer fill:#E67E22,fill-opacity:0.3,stroke:#E67E22,color:#000
+    style ln_deviation_tracker fill:#E67E22,fill-opacity:0.3,stroke:#E67E22,color:#000
+    style ln_provenance_auditor fill:#E67E22,fill-opacity:0.3,stroke:#E67E22,color:#000
+    style ap_intake fill:#3498DB,fill-opacity:0.3,stroke:#3498DB,color:#000
+    style ap_literature_strategist fill:#3498DB,fill-opacity:0.3,stroke:#3498DB,color:#000
+    style ap_structure_architect fill:#3498DB,fill-opacity:0.3,stroke:#3498DB,color:#000
+    style ap_argument_builder fill:#3498DB,fill-opacity:0.3,stroke:#3498DB,color:#000
+    style ap_draft_writer fill:#3498DB,fill-opacity:0.3,stroke:#3498DB,color:#000
+    style ap_citation_compliance fill:#3498DB,fill-opacity:0.3,stroke:#3498DB,color:#000
+    style ap_abstract_bilingual fill:#3498DB,fill-opacity:0.3,stroke:#3498DB,color:#000
+    style ap_peer_reviewer fill:#3498DB,fill-opacity:0.3,stroke:#3498DB,color:#000
+    style ap_formatter fill:#3498DB,fill-opacity:0.3,stroke:#3498DB,color:#000
+    style ap_socratic_mentor fill:#3498DB,fill-opacity:0.3,stroke:#3498DB,color:#000
+    style ap_visualization fill:#3498DB,fill-opacity:0.3,stroke:#3498DB,color:#000
+    style ap_revision_coach fill:#3498DB,fill-opacity:0.3,stroke:#3498DB,color:#000
+    style apr_field_analyst fill:#E74C3C,fill-opacity:0.3,stroke:#E74C3C,color:#000
+    style apr_eic fill:#E74C3C,fill-opacity:0.3,stroke:#E74C3C,color:#000
+    style apr_methodology_reviewer fill:#E74C3C,fill-opacity:0.3,stroke:#E74C3C,color:#000
+    style apr_domain_reviewer fill:#E74C3C,fill-opacity:0.3,stroke:#E74C3C,color:#000
+    style apr_perspective_reviewer fill:#E74C3C,fill-opacity:0.3,stroke:#E74C3C,color:#000
+    style apr_editorial_synthesizer fill:#E74C3C,fill-opacity:0.3,stroke:#E74C3C,color:#000
+    style apr_devils_advocate_reviewer fill:#E74C3C,fill-opacity:0.3,stroke:#E74C3C,color:#000
+    style apl_pipeline_orchestrator fill:#1ABC9C,fill-opacity:0.3,stroke:#1ABC9C,color:#000
+    style apl_state_tracker fill:#1ABC9C,fill-opacity:0.3,stroke:#1ABC9C,color:#000
+    style apl_integrity_verification fill:#1ABC9C,fill-opacity:0.3,stroke:#1ABC9C,color:#000
+
+    %% Legend
+    subgraph legend["Legend"]
+        direction LR
+        leg_schema["Solid arrow = Schema handoff"]
+        leg_collab["Dashed arrow = Agent collaboration"]
+        leg_schema ~~~ leg_collab
+    end
+    style legend fill:#f9f9f9,stroke:#ccc,stroke-width:1px

@@ -2,7 +2,7 @@
 
 [![License: CC BY-NC 4.0](https://img.shields.io/badge/license-CC%20BY--NC%204.0-lightgrey)](https://creativecommons.org/licenses/by-nc/4.0/)
 
-A Claude Code plugin covering the full academic research lifecycle — from literature review through experimentation, statistical analysis, paper writing, peer review, and publication. 8 skills, 57 agents, 13 handoff schemas, and full pipeline orchestration. Experiment skills integrate with the [superpowers](https://github.com/obra/superpowers) plugin for disciplined, test-driven code development.
+A Claude Code plugin covering the full academic research lifecycle — from literature review through experimentation, statistical analysis, paper writing, peer review, and publication. 8 skills, 57 agents, 15 handoff schemas, and full pipeline orchestration. Experiment skills integrate with the [superpowers](https://github.com/obra/superpowers) plugin for disciplined, test-driven code development.
 
 ## Skills
 
@@ -16,6 +16,8 @@ A Claude Code plugin covering the full academic research lifecycle — from lite
 | **academic-paper** v2.5 | 12 | Paper writing with experiment integration and LaTeX output | full, plan, outline-only, revision, abstract-only, lit-review, format-convert, citation-check |
 | **academic-paper-reviewer** v1.4 | 7 | Multi-perspective peer review (EIC + 3 reviewers + Devil's Advocate) | full, re-review, quick, methodology-focus, guided |
 | **academic-pipeline** v2.7 | 3 | Full pipeline orchestrator coordinating all skills above | auto-detected stages |
+
+See the [Quick Reference Card](docs/QUICK_REFERENCE.md) for a full "I want to X → use skill Y in mode Z" lookup table.
 
 ## Pipeline
 
@@ -119,6 +121,21 @@ git clone https://github.com/pouriamrt/academic-research-skills.git .claude/skil
 "Review this paper" (then provide the paper)
 ```
 
+## Validation Tools
+
+The `tools/` directory contains automated validation scripts (Python stdlib only, no external dependencies):
+
+| Tool | Purpose | Command |
+|------|---------|---------|
+| **self_test.py** | Structural integrity check (192 checks across 7 categories) | `python tools/self_test.py` |
+| **validate_schemas.py** | Handoff schema cross-reference validation | `python tools/validate_schemas.py` |
+| **check_schema_versions.py** | Schema versioning and migration registry check | `python tools/check_schema_versions.py` |
+| **generate_dependency_graph.py** | Auto-generate Mermaid agent dependency graph | `python tools/generate_dependency_graph.py --output file` |
+| **generate_dashboard.py** | Pipeline progress dashboard (HTML) from state JSON | `python tools/generate_dashboard.py --init` |
+| **replay_experiments.py** | Re-execute reproducibility scripts and compare outputs | `python tools/replay_experiments.py --dry-run` |
+
+Run `python tools/self_test.py` after making changes to catch regressions.
+
 ## Recommended Settings
 
 | Setting | Purpose |
@@ -132,7 +149,7 @@ git clone https://github.com/pouriamrt/academic-research-skills.git .claude/skil
 **Citation:** APA 7.0 (default), Chicago, MLA, IEEE, Vancouver
 **Paper structures:** IMRaD, Literature Review, Theoretical, Case Study, Policy Brief, Conference Paper
 **Output:** Markdown, LaTeX, DOCX, PDF (via tectonic)
-**Statistics:** t-tests, ANOVA, regression, chi-square, SEM, HLM, survival analysis, Bayesian, and more
+**Statistics:** t-tests, ANOVA, regression, chi-square, SEM, HLM, survival analysis, Bayesian, mediation, MANOVA, and more
 **Visualization:** matplotlib/seaborn statistical plots (300 DPI, APA-formatted, colorblind-safe) + Mermaid MCP structural diagrams (CONSORT flow, analysis workflow, DGP architecture, convergence status) + PaperBanana MCP methodology diagrams (optional)
 
 ## Optional MCP Integrations
@@ -146,6 +163,10 @@ git clone https://github.com/pouriamrt/academic-research-skills.git .claude/skil
 All MCP integrations are **optional** — the pipeline works without them and degrades gracefully. PaperBanana falls back to Mermaid; Colab falls back to local execution with reduced iterations.
 
 **Google Colab note:** When a workload requires GPU, agents play an audible beep and pause for you to authenticate in Colab and switch the runtime to GPU before proceeding.
+
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines on adding agents, modes, schemas, and skills.
 
 ## License
 

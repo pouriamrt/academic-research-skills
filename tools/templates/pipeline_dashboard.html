@@ -1,0 +1,1021 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Academic Pipeline Dashboard</title>
+<style>
+  /* ========== Reset & Base ========== */
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --navy:       #1b2a4a;
+    --navy-light: #2c3e6b;
+    --navy-dark:  #0f1a30;
+    --white:      #ffffff;
+    --gray-50:    #f8f9fa;
+    --gray-100:   #eef0f3;
+    --gray-200:   #dde1e7;
+    --gray-300:   #c5cad3;
+    --gray-400:   #9aa1ad;
+    --gray-500:   #6b7280;
+    --gray-700:   #374151;
+    --green:      #16a34a;
+    --green-bg:   #dcfce7;
+    --blue:       #2563eb;
+    --blue-bg:    #dbeafe;
+    --yellow:     #d97706;
+    --yellow-bg:  #fef3c7;
+    --red:        #dc2626;
+    --red-bg:     #fee2e2;
+    --skip-gray:  #e5e7eb;
+    --skip-text:  #9ca3af;
+    --font:       'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif;
+    --mono:       'Cascadia Code', 'Fira Code', 'JetBrains Mono', 'Consolas', monospace;
+    --radius:     8px;
+    --shadow:     0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.06);
+    --shadow-md:  0 4px 6px rgba(0,0,0,0.07), 0 2px 4px rgba(0,0,0,0.05);
+  }
+
+  body {
+    font-family: var(--font);
+    background: var(--gray-50);
+    color: var(--gray-700);
+    line-height: 1.5;
+    min-height: 100vh;
+  }
+
+  /* ========== Header ========== */
+  .header {
+    background: linear-gradient(135deg, var(--navy), var(--navy-light));
+    color: var(--white);
+    padding: 28px 32px 24px;
+  }
+
+  .header-inner {
+    max-width: 1280px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .header h1 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+  }
+
+  .header-meta {
+    font-size: 0.8rem;
+    opacity: 0.75;
+    margin-top: 4px;
+  }
+
+  .header-meta span + span::before {
+    content: '|';
+    margin: 0 8px;
+    opacity: 0.5;
+  }
+
+  .header-topic {
+    font-size: 0.95rem;
+    margin-top: 6px;
+    opacity: 0.9;
+  }
+
+  .header-right {
+    text-align: right;
+    font-size: 0.8rem;
+    opacity: 0.7;
+  }
+
+  /* ========== Main layout ========== */
+  .main {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 24px 32px 48px;
+    display: grid;
+    gap: 24px;
+  }
+
+  /* ========== Card ========== */
+  .card {
+    background: var(--white);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    overflow: hidden;
+  }
+
+  .card-header {
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--gray-100);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .card-header h2 {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--navy);
+  }
+
+  .card-body {
+    padding: 20px;
+  }
+
+  /* ========== Stage Tracker ========== */
+  .stage-pipeline {
+    display: flex;
+    align-items: flex-start;
+    gap: 0;
+    overflow-x: auto;
+    padding: 8px 0 16px;
+  }
+
+  .stage-node {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-width: 110px;
+    flex: 1;
+    position: relative;
+  }
+
+  .stage-connector {
+    width: 100%;
+    height: 2px;
+    background: var(--gray-200);
+    position: absolute;
+    top: 18px;
+    left: 50%;
+    z-index: 0;
+  }
+
+  .stage-node:last-child .stage-connector {
+    display: none;
+  }
+
+  .stage-dot {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75rem;
+    font-weight: 700;
+    z-index: 1;
+    background: var(--gray-200);
+    color: var(--gray-500);
+    border: 3px solid var(--white);
+    box-shadow: var(--shadow);
+    transition: all 0.2s ease;
+  }
+
+  .stage-dot.complete { background: var(--green); color: var(--white); }
+  .stage-dot.active   { background: var(--blue);  color: var(--white); animation: pulse 2s infinite; }
+  .stage-dot.pending  { background: var(--gray-200); color: var(--gray-400); }
+  .stage-dot.skipped  { background: var(--skip-gray); color: var(--skip-text); }
+  .stage-dot.blocked  { background: var(--red); color: var(--white); }
+
+  @keyframes pulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(37, 99, 235, 0.4); }
+    50%      { box-shadow: 0 0 0 8px rgba(37, 99, 235, 0); }
+  }
+
+  .stage-label {
+    margin-top: 8px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-align: center;
+    color: var(--gray-500);
+    line-height: 1.3;
+    max-width: 100px;
+  }
+
+  .stage-label.active { color: var(--blue); }
+  .stage-label.complete { color: var(--green); }
+  .stage-label.skipped { color: var(--skip-text); }
+
+  .stage-skill {
+    font-size: 0.62rem;
+    color: var(--gray-400);
+    margin-top: 2px;
+    text-align: center;
+    font-family: var(--mono);
+  }
+
+  .stage-time {
+    font-size: 0.6rem;
+    color: var(--gray-400);
+    margin-top: 2px;
+    text-align: center;
+  }
+
+  /* ========== Stage Detail Cards ========== */
+  .stage-details {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 12px;
+    margin-top: 16px;
+  }
+
+  .stage-detail-card {
+    border: 1px solid var(--gray-100);
+    border-radius: 6px;
+    padding: 14px 16px;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .stage-detail-card .sd-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .sd-header .sd-name {
+    font-weight: 600;
+    font-size: 0.85rem;
+    color: var(--navy);
+  }
+
+  .sd-header .sd-badge {
+    font-size: 0.65rem;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+
+  .sd-badge.complete { background: var(--green-bg); color: var(--green); }
+  .sd-badge.active   { background: var(--blue-bg);  color: var(--blue); }
+  .sd-badge.pending  { background: var(--gray-100); color: var(--gray-400); }
+  .sd-badge.skipped  { background: var(--skip-gray); color: var(--skip-text); }
+  .sd-badge.blocked  { background: var(--red-bg); color: var(--red); }
+
+  .sd-skill {
+    font-size: 0.72rem;
+    color: var(--gray-400);
+    font-family: var(--mono);
+  }
+
+  .sd-timestamp {
+    font-size: 0.7rem;
+    color: var(--gray-400);
+  }
+
+  /* ========== Schema Artifact Table ========== */
+  .schema-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    font-size: 0.82rem;
+  }
+
+  .schema-table th {
+    background: var(--gray-50);
+    padding: 10px 14px;
+    text-align: left;
+    font-weight: 600;
+    color: var(--navy);
+    border-bottom: 2px solid var(--gray-200);
+    white-space: nowrap;
+  }
+
+  .schema-table td {
+    padding: 8px 14px;
+    border-bottom: 1px solid var(--gray-100);
+    vertical-align: middle;
+  }
+
+  .schema-table tr:last-child td {
+    border-bottom: none;
+  }
+
+  .schema-table tr:hover td {
+    background: var(--gray-50);
+  }
+
+  .schema-id {
+    font-family: var(--mono);
+    font-weight: 600;
+    font-size: 0.78rem;
+    color: var(--navy-light);
+  }
+
+  .schema-status-pill {
+    display: inline-block;
+    padding: 2px 10px;
+    border-radius: 12px;
+    font-size: 0.72rem;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+
+  .schema-status-pill.not-produced { background: var(--gray-100); color: var(--gray-400); }
+  .schema-status-pill.produced     { background: var(--blue-bg);  color: var(--blue); }
+  .schema-status-pill.consumed     { background: var(--green-bg); color: var(--green); }
+  .schema-status-pill.validated    { background: #d1fae5; color: #065f46; }
+
+  /* ========== Material Passport Chain ========== */
+  .passport-chain {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
+  }
+
+  .passport-node {
+    border: 1px solid var(--gray-200);
+    border-radius: 6px;
+    padding: 8px 12px;
+    font-size: 0.75rem;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 120px;
+    background: var(--white);
+    transition: border-color 0.15s;
+  }
+
+  .passport-node.exists {
+    border-color: var(--green);
+    background: #f0fdf4;
+  }
+
+  .passport-node.missing {
+    border-color: var(--gray-200);
+    background: var(--gray-50);
+    opacity: 0.6;
+  }
+
+  .passport-node .pn-name {
+    font-weight: 600;
+    color: var(--navy);
+    font-size: 0.72rem;
+  }
+
+  .passport-node .pn-version {
+    font-family: var(--mono);
+    font-size: 0.65rem;
+    color: var(--gray-400);
+  }
+
+  .passport-node .pn-status {
+    font-size: 0.65rem;
+    font-weight: 600;
+  }
+
+  .pn-status.verified { color: var(--green); }
+  .pn-status.unverified { color: var(--yellow); }
+  .pn-status.stale { color: var(--red); }
+
+  .passport-arrow {
+    color: var(--gray-300);
+    font-size: 1.1rem;
+    flex-shrink: 0;
+  }
+
+  /* ========== Integrity Panel ========== */
+  .integrity-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+  }
+
+  @media (max-width: 700px) {
+    .integrity-grid { grid-template-columns: 1fr; }
+  }
+
+  .integrity-check {
+    border: 1px solid var(--gray-200);
+    border-radius: 6px;
+    padding: 16px;
+  }
+
+  .integrity-check h3 {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--navy);
+    margin-bottom: 12px;
+  }
+
+  .verdict-badge {
+    display: inline-block;
+    padding: 4px 14px;
+    border-radius: 14px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+  }
+
+  .verdict-badge.pass           { background: var(--green-bg); color: var(--green); }
+  .verdict-badge.pass-with-cond { background: var(--yellow-bg); color: var(--yellow); }
+  .verdict-badge.fail           { background: var(--red-bg); color: var(--red); }
+  .verdict-badge.pending        { background: var(--gray-100); color: var(--gray-400); }
+
+  .integrity-stats {
+    margin-top: 12px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+
+  .stat-item {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .stat-label {
+    font-size: 0.7rem;
+    color: var(--gray-400);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+
+  .stat-value {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--navy);
+  }
+
+  .stat-value.good { color: var(--green); }
+  .stat-value.warn { color: var(--yellow); }
+  .stat-value.bad  { color: var(--red); }
+
+  .issue-bar {
+    display: flex;
+    gap: 10px;
+    margin-top: 10px;
+    font-size: 0.75rem;
+  }
+
+  .issue-item {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .issue-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+  }
+
+  .issue-dot.serious { background: var(--red); }
+  .issue-dot.medium  { background: var(--yellow); }
+  .issue-dot.minor   { background: var(--gray-300); }
+
+  /* ========== Footer ========== */
+  .footer {
+    text-align: center;
+    padding: 16px;
+    font-size: 0.72rem;
+    color: var(--gray-400);
+    border-top: 1px solid var(--gray-100);
+    margin-top: 8px;
+  }
+
+  /* ========== Responsive ========== */
+  @media (max-width: 900px) {
+    .header { padding: 20px 16px; }
+    .main   { padding: 16px; }
+    .stage-pipeline { gap: 0; }
+    .stage-node { min-width: 80px; }
+  }
+</style>
+</head>
+<body>
+
+<script>
+// ===========================================================================
+// PIPELINE STATE DATA
+// Agents populate this object. All fields are optional; the dashboard
+// gracefully handles missing data by showing "pending" / "N/A" defaults.
+// ===========================================================================
+var PIPELINE_STATE = {
+  "meta": {
+    "topic": "",
+    "pipeline_version": "2.7",
+    "last_updated": "",
+    "session_id": ""
+  },
+  "stages": [
+    {
+      "id": "1",
+      "label": "Research",
+      "skill": "deep-research",
+      "status": "pending",
+      "mode": "",
+      "completed_at": ""
+    },
+    {
+      "id": "1.5",
+      "label": "Experiment",
+      "skill": "experiment-designer / data-analyst / simulation-runner / lab-notebook",
+      "status": "pending",
+      "mode": "",
+      "completed_at": "",
+      "optional": true,
+      "sub_stages": [
+        { "id": "1.5a", "label": "Design", "skill": "experiment-designer", "status": "pending", "completed_at": "" },
+        { "id": "1.5b", "label": "Execute", "skill": "data-analyst / simulation-runner", "status": "pending", "completed_at": "" },
+        { "id": "1.5c", "label": "Log", "skill": "lab-notebook", "status": "pending", "completed_at": "" }
+      ]
+    },
+    {
+      "id": "2",
+      "label": "Write",
+      "skill": "academic-paper",
+      "status": "pending",
+      "mode": "",
+      "completed_at": ""
+    },
+    {
+      "id": "2.5",
+      "label": "Integrity (Pre-Review)",
+      "skill": "integrity-verification",
+      "status": "pending",
+      "mode": "pre-review",
+      "completed_at": ""
+    },
+    {
+      "id": "3",
+      "label": "Peer Review",
+      "skill": "academic-paper-reviewer",
+      "status": "pending",
+      "mode": "",
+      "completed_at": ""
+    },
+    {
+      "id": "4",
+      "label": "Revision",
+      "skill": "academic-paper (revision)",
+      "status": "pending",
+      "mode": "revision",
+      "completed_at": ""
+    },
+    {
+      "id": "3p",
+      "label": "Re-Review",
+      "skill": "academic-paper-reviewer (re-review)",
+      "status": "pending",
+      "mode": "re-review",
+      "completed_at": ""
+    },
+    {
+      "id": "4p",
+      "label": "Re-Revision",
+      "skill": "academic-paper (re-revision)",
+      "status": "pending",
+      "mode": "re-revision",
+      "completed_at": ""
+    },
+    {
+      "id": "4.5",
+      "label": "Integrity (Final)",
+      "skill": "integrity-verification",
+      "status": "pending",
+      "mode": "final-check",
+      "completed_at": ""
+    },
+    {
+      "id": "5",
+      "label": "Format & Finalize",
+      "skill": "academic-paper (format-convert)",
+      "status": "pending",
+      "mode": "",
+      "completed_at": ""
+    }
+  ],
+  "schemas": [
+    { "id": 1,  "name": "RQ Brief",                "producer": "deep-research",           "consumer": "academic-paper",                   "status": "not_produced" },
+    { "id": 2,  "name": "Bibliography",             "producer": "deep-research",           "consumer": "academic-paper",                   "status": "not_produced" },
+    { "id": 3,  "name": "Synthesis Report",         "producer": "deep-research",           "consumer": "academic-paper",                   "status": "not_produced" },
+    { "id": 4,  "name": "Paper Draft",              "producer": "academic-paper",          "consumer": "integrity / reviewer",             "status": "not_produced" },
+    { "id": 5,  "name": "Integrity Report",         "producer": "integrity-verification",  "consumer": "pipeline / academic-paper",        "status": "not_produced" },
+    { "id": 6,  "name": "Review Report",            "producer": "academic-paper-reviewer", "consumer": "pipeline / academic-paper",        "status": "not_produced" },
+    { "id": 7,  "name": "Revision Roadmap",         "producer": "academic-paper-reviewer", "consumer": "academic-paper (revision)",        "status": "not_produced" },
+    { "id": 8,  "name": "Response to Reviewers",    "producer": "academic-paper (revision)","consumer": "academic-paper-reviewer (re-review)","status": "not_produced" },
+    { "id": 9,  "name": "Material Passport",        "producer": "(cross-stage)",           "consumer": "(cross-stage)",                    "status": "not_produced" },
+    { "id": 10, "name": "Experiment Design",        "producer": "experiment-designer",     "consumer": "data-analyst / simulation-runner", "status": "not_produced" },
+    { "id": 11, "name": "Experiment Results",       "producer": "data-analyst / sim-runner","consumer": "academic-paper / lab-notebook",    "status": "not_produced" },
+    { "id": 12, "name": "Lab Record",               "producer": "lab-notebook",            "consumer": "academic-paper / pipeline",        "status": "not_produced" },
+    { "id": 13, "name": "Simulation Specification", "producer": "experiment-designer",     "consumer": "simulation-runner",                "status": "not_produced" },
+    { "id": 14, "name": "Methodology Blueprint",    "producer": "deep-research",           "consumer": "pipeline / experiment-designer",   "status": "not_produced" },
+    { "id": 15, "name": "INSIGHT Collection",       "producer": "deep-research (socratic)","consumer": "deep-research / academic-paper",   "status": "not_produced" }
+  ],
+  "passports": [
+    { "schema_id": 1,  "name": "RQ Brief",              "version": "", "verification_status": "", "upstream": [] },
+    { "schema_id": 2,  "name": "Bibliography",           "version": "", "verification_status": "", "upstream": [1] },
+    { "schema_id": 3,  "name": "Synthesis Report",       "version": "", "verification_status": "", "upstream": [1, 2] },
+    { "schema_id": 14, "name": "Methodology Blueprint",  "version": "", "verification_status": "", "upstream": [1] },
+    { "schema_id": 15, "name": "INSIGHT Collection",     "version": "", "verification_status": "", "upstream": [] },
+    { "schema_id": 10, "name": "Experiment Design",      "version": "", "verification_status": "", "upstream": [14] },
+    { "schema_id": 13, "name": "Simulation Spec",        "version": "", "verification_status": "", "upstream": [10] },
+    { "schema_id": 11, "name": "Experiment Results",     "version": "", "verification_status": "", "upstream": [10] },
+    { "schema_id": 12, "name": "Lab Record",             "version": "", "verification_status": "", "upstream": [10, 11] },
+    { "schema_id": 4,  "name": "Paper Draft",            "version": "", "verification_status": "", "upstream": [1, 2, 3, 14] },
+    { "schema_id": 5,  "name": "Integrity Report",       "version": "", "verification_status": "", "upstream": [4] },
+    { "schema_id": 6,  "name": "Review Report",          "version": "", "verification_status": "", "upstream": [4] },
+    { "schema_id": 7,  "name": "Revision Roadmap",       "version": "", "verification_status": "", "upstream": [6] },
+    { "schema_id": 8,  "name": "Response to Reviewers",  "version": "", "verification_status": "", "upstream": [4, 7] },
+    { "schema_id": 9,  "name": "Material Passport",      "version": "", "verification_status": "", "upstream": [] }
+  ],
+  "integrity": {
+    "pre_review": {
+      "verdict": "pending",
+      "issues": { "serious": 0, "medium": 0, "minor": 0 },
+      "citation_integrity_score": null,
+      "fabrication_risk_score": null,
+      "timestamp": ""
+    },
+    "final_check": {
+      "verdict": "pending",
+      "issues": { "serious": 0, "medium": 0, "minor": 0 },
+      "citation_integrity_score": null,
+      "fabrication_risk_score": null,
+      "timestamp": ""
+    }
+  }
+};
+</script>
+
+<!-- The HTML is generated by the render function below -->
+<div id="app"></div>
+
+<script>
+(function() {
+  "use strict";
+
+  // ---- Helpers ----
+  function esc(str) {
+    if (str == null) return '';
+    return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  function statusClass(status) {
+    var map = {
+      'complete': 'complete', 'completed': 'complete',
+      'active': 'active', 'in_progress': 'active',
+      'pending': 'pending',
+      'skipped': 'skipped',
+      'blocked': 'blocked'
+    };
+    return map[(status || '').toLowerCase()] || 'pending';
+  }
+
+  function statusLabel(status) {
+    var map = {
+      'complete': 'Complete', 'completed': 'Complete',
+      'active': 'Active', 'in_progress': 'Active',
+      'pending': 'Pending',
+      'skipped': 'Skipped',
+      'blocked': 'Blocked'
+    };
+    return map[(status || '').toLowerCase()] || 'Pending';
+  }
+
+  function stageAbbrev(id) {
+    var map = {
+      '1': '1', '1.5': '1.5', '2': '2', '2.5': '2.5',
+      '3': '3', '4': '4', '3p': "3'", '4p': "4'",
+      '4.5': '4.5', '5': '5'
+    };
+    return map[id] || id;
+  }
+
+  function formatTimestamp(ts) {
+    if (!ts) return '';
+    try {
+      var d = new Date(ts);
+      if (isNaN(d.getTime())) return ts;
+      return d.toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+    } catch(e) { return ts; }
+  }
+
+  function schemaStatusClass(status) {
+    return (status || 'not_produced').replace(/ /g, '-').toLowerCase();
+  }
+
+  function schemaStatusLabel(status) {
+    var map = {
+      'not_produced': 'Not Produced',
+      'produced': 'Produced',
+      'consumed': 'Consumed',
+      'validated': 'Validated'
+    };
+    return map[(status || '').toLowerCase()] || 'Not Produced';
+  }
+
+  function verdictClass(v) {
+    var map = {
+      'pass': 'pass',
+      'pass_with_conditions': 'pass-with-cond',
+      'fail': 'fail'
+    };
+    return map[(v || '').toLowerCase()] || 'pending';
+  }
+
+  function verdictLabel(v) {
+    var map = {
+      'pass': 'PASS',
+      'pass_with_conditions': 'PASS WITH CONDITIONS',
+      'fail': 'FAIL'
+    };
+    return map[(v || '').toLowerCase()] || 'PENDING';
+  }
+
+  function scoreColorClass(score, invert) {
+    if (score == null || score === '') return '';
+    var n = parseFloat(score);
+    if (isNaN(n)) return '';
+    if (invert) {
+      if (n <= 0.1) return 'good';
+      if (n <= 0.3) return 'warn';
+      return 'bad';
+    }
+    if (n >= 0.9) return 'good';
+    if (n >= 0.7) return 'warn';
+    return 'bad';
+  }
+
+  function formatScore(score) {
+    if (score == null || score === '') return 'N/A';
+    var n = parseFloat(score);
+    if (isNaN(n)) return 'N/A';
+    return n.toFixed(2);
+  }
+
+  // ---- Render Pipeline Stage Tracker ----
+  function renderStageTracker(stages) {
+    var html = '<div class="stage-pipeline">';
+    for (var i = 0; i < stages.length; i++) {
+      var s = stages[i];
+      var cls = statusClass(s.status);
+      html += '<div class="stage-node">';
+      if (i < stages.length - 1) {
+        var connCls = statusClass(stages[i].status) === 'complete' ? 'complete' : '';
+        html += '<div class="stage-connector" style="background:' +
+          (cls === 'complete' ? 'var(--green)' : 'var(--gray-200)') + ';"></div>';
+      }
+      html += '<div class="stage-dot ' + cls + '">' + esc(stageAbbrev(s.id)) + '</div>';
+      html += '<div class="stage-label ' + cls + '">' + esc(s.label) + '</div>';
+      html += '<div class="stage-skill">' + esc(s.skill) + '</div>';
+      if (s.completed_at) {
+        html += '<div class="stage-time">' + esc(formatTimestamp(s.completed_at)) + '</div>';
+      }
+      html += '</div>';
+    }
+    html += '</div>';
+    return html;
+  }
+
+  // ---- Render Stage Detail Cards ----
+  function renderStageDetails(stages) {
+    var html = '<div class="stage-details">';
+    for (var i = 0; i < stages.length; i++) {
+      var s = stages[i];
+      var cls = statusClass(s.status);
+      html += '<div class="stage-detail-card">';
+      html += '<div class="sd-header">';
+      html += '<span class="sd-name">Stage ' + esc(stageAbbrev(s.id)) + ': ' + esc(s.label) + '</span>';
+      html += '<span class="sd-badge ' + cls + '">' + esc(statusLabel(s.status)) + '</span>';
+      html += '</div>';
+      html += '<div class="sd-skill">' + esc(s.skill) + '</div>';
+      if (s.mode) {
+        html += '<div class="sd-timestamp">Mode: ' + esc(s.mode) + '</div>';
+      }
+      if (s.completed_at) {
+        html += '<div class="sd-timestamp">Completed: ' + esc(formatTimestamp(s.completed_at)) + '</div>';
+      }
+      if (s.sub_stages && s.sub_stages.length > 0) {
+        html += '<div style="margin-top:6px;font-size:0.72rem;color:var(--gray-500);">';
+        for (var j = 0; j < s.sub_stages.length; j++) {
+          var ss = s.sub_stages[j];
+          var ssCls = statusClass(ss.status);
+          html += '<div style="display:flex;align-items:center;gap:6px;margin-top:3px;">';
+          html += '<span class="sd-badge ' + ssCls + '" style="font-size:0.6rem;">' + esc(statusLabel(ss.status)) + '</span>';
+          html += '<span>' + esc(ss.id) + ' ' + esc(ss.label) + '</span>';
+          html += '</div>';
+        }
+        html += '</div>';
+      }
+      html += '</div>';
+    }
+    html += '</div>';
+    return html;
+  }
+
+  // ---- Render Schema Table ----
+  function renderSchemaTable(schemas) {
+    var html = '<div style="overflow-x:auto;"><table class="schema-table">';
+    html += '<thead><tr>';
+    html += '<th>ID</th><th>Schema</th><th>Producer</th><th>Consumer</th><th>Status</th>';
+    html += '</tr></thead><tbody>';
+    for (var i = 0; i < schemas.length; i++) {
+      var s = schemas[i];
+      var sCls = schemaStatusClass(s.status);
+      html += '<tr>';
+      html += '<td><span class="schema-id">' + esc(s.id) + '</span></td>';
+      html += '<td>' + esc(s.name) + '</td>';
+      html += '<td style="font-size:0.78rem;">' + esc(s.producer) + '</td>';
+      html += '<td style="font-size:0.78rem;">' + esc(s.consumer) + '</td>';
+      html += '<td><span class="schema-status-pill ' + sCls + '">' + esc(schemaStatusLabel(s.status)) + '</span></td>';
+      html += '</tr>';
+    }
+    html += '</tbody></table></div>';
+    return html;
+  }
+
+  // ---- Render Material Passport Chain ----
+  function renderPassportChain(passports, schemas) {
+    // Build a lookup for schema status
+    var schemaLookup = {};
+    for (var i = 0; i < schemas.length; i++) {
+      schemaLookup[schemas[i].id] = schemas[i];
+    }
+
+    var html = '<div class="passport-chain">';
+    for (var i = 0; i < passports.length; i++) {
+      var p = passports[i];
+      var schemaInfo = schemaLookup[p.schema_id] || {};
+      var hasVersion = p.version && p.version.length > 0;
+      var exists = hasVersion || (schemaInfo.status && schemaInfo.status !== 'not_produced');
+      var nodeCls = exists ? 'exists' : 'missing';
+
+      if (i > 0) {
+        html += '<span class="passport-arrow">&#8594;</span>';
+      }
+
+      html += '<div class="passport-node ' + nodeCls + '">';
+      html += '<span class="pn-name">S' + esc(p.schema_id) + ': ' + esc(p.name) + '</span>';
+      if (hasVersion) {
+        html += '<span class="pn-version">' + esc(p.version) + '</span>';
+      }
+      if (p.verification_status) {
+        var vCls = p.verification_status.toLowerCase();
+        html += '<span class="pn-status ' + esc(vCls) + '">' + esc(p.verification_status.toUpperCase()) + '</span>';
+      }
+      if (p.upstream && p.upstream.length > 0) {
+        html += '<span style="font-size:0.6rem;color:var(--gray-400);">depends: S' + p.upstream.join(', S') + '</span>';
+      }
+      html += '</div>';
+    }
+    html += '</div>';
+    return html;
+  }
+
+  // ---- Render Integrity Panel ----
+  function renderIntegrityPanel(integrity) {
+    function renderCheck(check, title) {
+      var vCls = verdictClass(check.verdict);
+      var citScore = formatScore(check.citation_integrity_score);
+      var fabScore = formatScore(check.fabrication_risk_score);
+      var citCls = scoreColorClass(check.citation_integrity_score, false);
+      var fabCls = scoreColorClass(check.fabrication_risk_score, true);
+      var issues = check.issues || {};
+
+      var html = '<div class="integrity-check">';
+      html += '<h3>' + esc(title) + '</h3>';
+      html += '<span class="verdict-badge ' + vCls + '">' + esc(verdictLabel(check.verdict)) + '</span>';
+
+      html += '<div class="integrity-stats">';
+      html += '<div class="stat-item">';
+      html += '<span class="stat-label">Citation Integrity</span>';
+      html += '<span class="stat-value ' + citCls + '">' + esc(citScore) + '</span>';
+      html += '</div>';
+      html += '<div class="stat-item">';
+      html += '<span class="stat-label">Fabrication Risk</span>';
+      html += '<span class="stat-value ' + fabCls + '">' + esc(fabScore) + '</span>';
+      html += '</div>';
+      html += '</div>';
+
+      html += '<div class="issue-bar">';
+      html += '<div class="issue-item"><span class="issue-dot serious"></span> Serious: ' + (issues.serious || 0) + '</div>';
+      html += '<div class="issue-item"><span class="issue-dot medium"></span> Medium: ' + (issues.medium || 0) + '</div>';
+      html += '<div class="issue-item"><span class="issue-dot minor"></span> Minor: ' + (issues.minor || 0) + '</div>';
+      html += '</div>';
+
+      if (check.timestamp) {
+        html += '<div style="margin-top:8px;font-size:0.7rem;color:var(--gray-400);">Checked: ' + esc(formatTimestamp(check.timestamp)) + '</div>';
+      }
+
+      html += '</div>';
+      return html;
+    }
+
+    var html = '<div class="integrity-grid">';
+    html += renderCheck(integrity.pre_review || {}, 'Stage 2.5: Pre-Review Integrity');
+    html += renderCheck(integrity.final_check || {}, 'Stage 4.5: Final Integrity');
+    html += '</div>';
+    return html;
+  }
+
+  // ---- Main Render ----
+  function render() {
+    var state = window.PIPELINE_STATE || {};
+    var meta = state.meta || {};
+    var stages = state.stages || [];
+    var schemas = state.schemas || [];
+    var passports = state.passports || [];
+    var integrity = state.integrity || {};
+
+    var html = '';
+
+    // Header
+    html += '<div class="header"><div class="header-inner"><div>';
+    html += '<h1>Academic Research Pipeline</h1>';
+    if (meta.topic) {
+      html += '<div class="header-topic">' + esc(meta.topic) + '</div>';
+    }
+    html += '<div class="header-meta">';
+    html += '<span>Pipeline v' + esc(meta.pipeline_version || '2.7') + '</span>';
+    if (meta.session_id) {
+      html += '<span>Session: ' + esc(meta.session_id) + '</span>';
+    }
+    html += '</div>';
+    html += '</div>';
+    html += '<div class="header-right">';
+    if (meta.last_updated) {
+      html += 'Last updated<br>' + esc(formatTimestamp(meta.last_updated));
+    }
+    html += '</div>';
+    html += '</div></div>';
+
+    // Main content
+    html += '<div class="main">';
+
+    // 1. Stage Tracker
+    html += '<div class="card">';
+    html += '<div class="card-header"><h2>Pipeline Stage Tracker</h2>';
+    // Count completed stages
+    var completedCount = 0;
+    for (var i = 0; i < stages.length; i++) {
+      if (statusClass(stages[i].status) === 'complete') completedCount++;
+    }
+    html += '<span style="font-size:0.78rem;color:var(--gray-400);">' + completedCount + ' / ' + stages.length + ' stages</span>';
+    html += '</div>';
+    html += '<div class="card-body">';
+    html += renderStageTracker(stages);
+    html += renderStageDetails(stages);
+    html += '</div></div>';
+
+    // 2. Schema Artifacts
+    html += '<div class="card">';
+    html += '<div class="card-header"><h2>Schema Artifact Tracker</h2>';
+    var producedCount = 0;
+    for (var i = 0; i < schemas.length; i++) {
+      if (schemas[i].status && schemas[i].status !== 'not_produced') producedCount++;
+    }
+    html += '<span style="font-size:0.78rem;color:var(--gray-400);">' + producedCount + ' / ' + schemas.length + ' artifacts</span>';
+    html += '</div>';
+    html += '<div class="card-body">';
+    html += renderSchemaTable(schemas);
+    html += '</div></div>';
+
+    // 3. Material Passport Chain
+    html += '<div class="card">';
+    html += '<div class="card-header"><h2>Material Passport Chain</h2></div>';
+    html += '<div class="card-body" style="overflow-x:auto;">';
+    html += renderPassportChain(passports, schemas);
+    html += '</div></div>';
+
+    // 4. Integrity Panel
+    html += '<div class="card">';
+    html += '<div class="card-header"><h2>Integrity Status</h2></div>';
+    html += '<div class="card-body">';
+    html += renderIntegrityPanel(integrity);
+    html += '</div></div>';
+
+    html += '</div>'; // .main
+
+    // Footer
+    html += '<div class="footer">Academic Research Skills Pipeline Dashboard &mdash; Generated by academic-pipeline v' + esc(meta.pipeline_version || '2.7') + '</div>';
+
+    document.getElementById('app').innerHTML = html;
+  }
+
+  // Render on load
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', render);
+  } else {
+    render();
+  }
+
+  // Expose re-render for dynamic updates
+  window.renderDashboard = render;
+})();
+</script>
+
+</body>
+</html>

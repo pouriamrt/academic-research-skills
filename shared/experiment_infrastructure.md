@@ -95,6 +95,51 @@ Linear regression:   b = X.XX, SE = X.XX, t(df) = X.XX, p = .XXX, 95% CI [X.XX, 
 Logistic regression: OR = X.XX, 95% CI [X.XX, X.XX], p = .XXX
 ```
 
+### Advanced Test Format Strings
+
+```
+SEM path coefficient:           beta = X.XX, SE = X.XX, z = X.XX, p = .XXX, 95% CI [X.XX, X.XX]
+SEM model fit:                  chi-sq(df) = X.XX, p = .XXX, CFI = .XX, TLI = .XX, RMSEA = .XX, 90% CI [.XX, .XX], SRMR = .XX
+CFA factor loading:             lambda = X.XX, SE = X.XX, z = X.XX, p = .XXX
+HLM/Multilevel fixed effect:    b = X.XX, SE = X.XX, t(df) = X.XX, p = .XXX, 95% CI [X.XX, X.XX]
+HLM/Multilevel random effect:   sigma-sq = X.XX, SD = X.XX, 95% CI [X.XX, X.XX]
+HLM ICC:                        ICC = .XX, 95% CI [.XX, .XX]
+Cox proportional hazards:       HR = X.XX, 95% CI [X.XX, X.XX], p = .XXX
+Kaplan-Meier log-rank:          chi-sq(df) = X.XX, p = .XXX
+Bayesian posterior:             M = X.XX, SD = X.XX, 95% HDI [X.XX, X.XX], BF10 = X.XX
+Bayesian model comparison:      BF10 = X.XX (evidence: [anecdotal|moderate|strong|very strong|extreme])
+Mediation indirect effect:      ab = X.XX, SE = X.XX, 95% CI [X.XX, X.XX] (bootstrap N = XXXXX)
+Moderation interaction:         b = X.XX, SE = X.XX, t(df) = X.XX, p = .XXX, Delta-R-sq = .XX
+Repeated measures ANOVA:        F(df1, df2) = X.XX, p = .XXX, partial-eta-sq = .XX, Greenhouse-Geisser epsilon = .XX
+MANOVA:                         Pillai's V = X.XX, F(df1, df2) = X.XX, p = .XXX, partial-eta-sq = .XX
+```
+
+### Non-Significant (Null) Result Format Strings
+
+Null results MUST be reported with the same precision as significant results. Never omit or downplay non-significant findings — this prevents publication bias and supports cumulative science.
+
+```
+Non-significant t-test:         t(df) = X.XX, p = .XXX, d = X.XX, 95% CI [X.XX, X.XX]
+  Example: "The difference was not statistically significant, t(87) = 1.34, p = .184, d = 0.28, 95% CI [-0.14, 0.71]."
+
+Non-significant ANOVA:          F(df1, df2) = X.XX, p = .XXX, eta-sq = .XX
+  Example: "There was no significant main effect of condition, F(2, 87) = 1.12, p = .331, eta-sq = .03."
+
+Non-significant correlation:    r(df) = .XX, p = .XXX
+  Example: "The correlation was not statistically significant, r(48) = .12, p = .401."
+
+Non-significant chi-square:     chi-sq(df) = X.XX, p = .XXX, Cramer's V = .XX
+  Example: "The association was not statistically significant, chi-sq(2) = 3.45, p = .178, Cramer's V = .13."
+
+Non-significant regression:     b = X.XX, SE = X.XX, t(df) = X.XX, p = .XXX, 95% CI [X.XX, X.XX]
+  Example: "The predictor did not significantly predict the outcome, b = 0.08, SE = 0.12, t(95) = 0.67, p = .505, 95% CI [-0.16, 0.32]."
+
+Non-significant Bayesian:       BF10 = X.XX, M = X.XX, SD = X.XX, 95% HDI [X.XX, X.XX] (evidence for null: [anecdotal|moderate|strong])
+  Example: "Bayesian analysis provided moderate evidence for the null hypothesis, BF10 = 0.21, M = 0.15, SD = 0.29, 95% HDI [-0.42, 0.73]."
+```
+
+> **Reporting rule**: Always report effect sizes and confidence intervals for non-significant results. Frame non-significance as "the evidence was insufficient to detect an effect" — never as "there was no effect." Include equivalence testing when relevant (TOST procedure).
+
 ### Effect Size Interpretation Thresholds (Cohen's Conventions)
 
 | Measure | Small | Medium | Large |

@@ -1,6 +1,6 @@
 # Academic Research Skills
 
-A suite of Claude Code skills for rigorous academic research, experimentation, statistical analysis, paper writing, peer review, and pipeline orchestration. 8 skills, 57 agents, 13 handoff schemas.
+A suite of Claude Code skills for rigorous academic research, experimentation, statistical analysis, paper writing, peer review, and pipeline orchestration. 8 skills, 57 agents, 15 handoff schemas.
 
 ## Skills Overview
 
@@ -105,8 +105,12 @@ Materials: Lab Record (Schema 12) — methods summary, file manifest, deviation 
 ### academic-paper → integrity verification (Stage 2.5 & 4.5)
 Materials: Complete paper draft (Schema 4). Integrity agent checks references, citation context, data, originality, claims. Produces Integrity Report (Schema 5) with PASS/PASS_WITH_CONDITIONS/FAIL verdict.
 
+## Validation Tools
+
+Run `python tools/self_test.py` to validate plugin structural integrity (192 checks). See `tools/` for schema validation, dependency graph generation, pipeline dashboard, and reproducibility replay.
+
 ## Version Info
-- **Version**: 3.7.1
-- **Last Updated**: 2026-03-22
+- **Version**: 3.8.0
+- **Last Updated**: 2026-03-26
 - **Author**: Pouria Mortezaagha
 - **License**: CC-BY-NC 4.0

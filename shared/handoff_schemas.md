@@ -238,8 +238,31 @@ AI-assisted assessment's primary advantage lies in the immediacy of feedback, re
 | `name` | string | Full name |
 | `affiliation` | string | Institution |
 | `email` | string | Contact email (corresponding author only) |
-| `credit_roles` | list[string] | CRediT taxonomy roles |
+| `credit_roles` | list[CRediTRole] | CRediT taxonomy roles (see enum below) |
 | `corresponding` | boolean | Is corresponding author |
+
+### CRediT Role Enum
+
+The `credit_roles` field MUST use values from the [CRediT (Contributor Roles Taxonomy)](https://credit.niso.org/):
+
+| Value | Description |
+|-------|-------------|
+| `Conceptualization` | Ideas; formulation of overarching research goals and aims |
+| `Data curation` | Annotation, scrubbing, and maintenance of research data |
+| `Formal analysis` | Application of statistical, mathematical, or computational techniques |
+| `Funding acquisition` | Acquisition of financial support for the project |
+| `Investigation` | Conducting the research and investigation process |
+| `Methodology` | Development or design of methodology |
+| `Project administration` | Management and coordination responsibility |
+| `Resources` | Provision of study materials, reagents, patients, laboratory samples, instrumentation, or computing resources |
+| `Software` | Programming, software development, implementation of code |
+| `Supervision` | Oversight and leadership responsibility |
+| `Validation` | Verification of results/experiments reproducibility |
+| `Visualization` | Preparation and presentation of published work, specifically visualization |
+| `Writing – original draft` | Preparation of the initial draft |
+| `Writing – review & editing` | Critical review, commentary, or revision of the draft |
+
+> **Validation rule**: Any value in `credit_roles` not matching the 14 values above triggers a `SCHEMA_VALIDATION_FAILED` error. Agents MUST use exact string matches (case-sensitive).
 
 ---
 
@@ -923,3 +946,17 @@ phases: {
 14. **Schema 13 conditionality**: Schema 13 (Simulation Specification) is only produced when Schema 10 `design_type` is `"simulation"`. It is never produced for other design types
 15. **Experiment file cross-reference**: Figures and tables referenced in Schema 11 must have corresponding files at the declared paths in `experiment_outputs/`. Consumer agents should verify file existence before proceeding
 16. **Reproducibility script validity**: Schema 11 `reproducibility.script_path` must point to a valid Python file. The integrity verification agent (Stage 2.5, Phase F) re-executes this script to verify results match
+
+---
+
+## 16. Schema Versioning
+
+All handoff artifacts MUST include a `schema_version` field at the top level.
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `schema_version` | string | Yes | Version of the schema this artifact conforms to (format: `MAJOR.MINOR`) |
+
+Current version for all schemas: `1.0`
+
+See `shared/schema_migrations.md` for the complete versioning protocol, migration rules, and staleness detection.

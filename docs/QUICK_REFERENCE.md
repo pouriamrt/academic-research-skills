@@ -49,14 +49,14 @@ Academic Research Skills -- "I want to X, use skill Y in mode Z"
 
 | Skill | Agents | Modes | Typical duration |
 |---|---|---|---|
-| `deep-research` | 13 | full, quick, socratic, review, lit-review, fact-check, systematic-review | 5-30 min |
+| `deep-research` | 14 | full, quick, socratic, review, lit-review, fact-check, systematic-review | 5-30 min |
 | `experiment-designer` | 6 | full, guided, quick, power-only, instrument | 5-20 min |
 | `data-analyst` | 7 | full, guided, quick, assumption-check, exploratory, replication | 5-25 min |
 | `simulation-runner` | 5 | full, guided, quick, power-sim, sensitivity, bootstrap | 5-30 min |
 | `lab-notebook` | 4 | full, log-entry, deviation, snapshot, export, audit | 2-10 min |
 | `academic-paper` | 12 | full, plan, outline-only, revision, abstract-only, lit-review, format-convert, citation-check | 10-45 min |
 | `academic-paper-reviewer` | 5 | full, re-review, quick, methodology-focus, guided | 10-30 min |
-| `academic-pipeline` | 57 | orchestrates all above | 1-3 hours |
+| `academic-pipeline` | 58 | orchestrates all above | 1-3 hours |
 
 ## Decision Flowchart
 

@@ -68,6 +68,27 @@ Create a Literature Matrix (reference: `templates/literature_matrix_template.md`
 | Author2 (2024) | Supports | Supports | -- | Qual | Level VI |
 ```
 
+### Step 1.5: Methodology Distribution Analysis
+
+After completing the Literature Matrix, aggregate the `Method` column across all sources:
+
+```
+| Methodology Type | Count | % of Corpus | Key Sources |
+|-----------------|-------|-------------|-------------|
+| [e.g., RCT] | [n] | [%] | [source IDs] |
+| [e.g., Survey] | [n] | [%] | [source IDs] |
+| [e.g., Case study] | [n] | [%] | [source IDs] |
+| ... | | | |
+```
+
+Assess:
+- **Dominant methodology**: Which type appears most? Why might this field favor it? (ease of data collection, tradition, funding incentives, regulatory requirements)
+- **Underrepresented methodologies**: Which types have 0-1 entries? Would applying them to this topic yield new insights?
+- **Methodological weakness**: Which specific paper's methodology is weakest relative to its claims? (e.g., a causal claim from a cross-sectional survey, a generalization from a single case study)
+- **Triangulation opportunities**: Where could combining methods from different categories strengthen evidence?
+
+This step feeds into the Gap Analysis (Step 4) — methodological gaps are a specific gap type.
+
 ### Step 2: Convergence/Divergence Analysis
 
 - **Convergence**: Where do 3+ sources agree? What's the collective evidence strength?
@@ -86,13 +107,14 @@ For each contradiction:
 
 ### Step 4: Gap Analysis
 
-| Gap Type | Description | Implication |
-|----------|-------------|-------------|
-| Empirical | No data on specific population/context | Future research needed |
-| Methodological | Only studied with one method type | Triangulation opportunity |
-| Theoretical | No framework explains observed pattern | Theory development needed |
-| Temporal | Evidence outdated for fast-moving field | Update study needed |
-| Geographic | Evidence only from specific regions | Generalizability concern |
+| Gap Type | Description | Implication | Closest Paper | Proposed Methodology |
+|----------|-------------|-------------|---------------|---------------------|
+| Empirical | No data on specific population/context | Future research needed | [Source ID] — [why it came closest but fell short] | [specific study design that would address this gap] |
+| Methodological | Only studied with one method type | Triangulation opportunity | [Source ID] — [the method used and what's missing] | [complementary method + rationale] |
+| Theoretical | No framework explains observed pattern | Theory development needed | [Source ID] — [partial theoretical coverage] | [theory-building approach: grounded theory, conceptual analysis, etc.] |
+| Temporal | Evidence outdated for fast-moving field | Update study needed | [Source ID] — [most recent but still outdated] | [replication study with updated data + timeframe] |
+| Geographic | Evidence only from specific regions | Generalizability concern | [Source ID] — [closest geographic coverage] | [cross-cultural/multi-site study design] |
+
 
 ### Step 5: Synthesis Narrative
 
@@ -128,9 +150,16 @@ Write the integrated narrative that:
 |---------|---------|-----------|
 | [source: claim] | [source: counter-claim] | [reconciled/irreconcilable + explanation] |
 
+### Methodology Distribution
+| Type | Count | % | Dominant? | Notes |
+|------|-------|---|-----------|-------|
+| [method] | [n] | [%] | [Yes/No] | [field tendency or gap flag] |
+
 ### Knowledge Gaps
-1. [Gap description + type + implication]
-2. ...
+| # | Gap | Type | Closest Paper | Proposed Methodology |
+|---|-----|------|---------------|---------------------|
+| 1 | [description + implication] | [type] | [source ID + why it fell short] | [specific study design] |
+| 2 | ... | | | |
 
 ### Evidence Convergence Map
 Strong:      [==========] Theme A (7 sources, Levels I-III)
@@ -145,11 +174,22 @@ Gap:         [          ] Theme D (0 sources)
 - [limitations of the synthesis itself]
 ```
 
+## Integration with Concept Lineage Agent
+
+When a Concept Lineage Report (Schema 16) is available from the `concept_lineage_agent`, integrate it into the synthesis:
+
+1. **Theoretical Integration** section should reference lineage data — how the concepts evolved and where current themes fit in the intellectual history
+2. **Contradictions** may be enriched by lineage context — a disagreement may trace back to different intellectual traditions identified in the lineage
+3. **Gaps** may connect to lineage findings — a concept that was challenged but never resolved is both a lineage finding and a knowledge gap
+
+If the Concept Lineage Report is not available as input, omit the lineage references from Theoretical Integration and proceed without them.
+
 ## Quality Criteria
 
 - Must integrate (not just list) findings across sources
 - Every theme must cite specific sources with evidence levels
 - All contradictions must be explicitly addressed
-- At least 2 knowledge gaps identified
+- At least 2 knowledge gaps identified with closest paper and proposed methodology
 - Literature matrix completed for all included sources
+- Methodology distribution table completed
 - Synthesis must be traceable — reader can follow evidence back to sources

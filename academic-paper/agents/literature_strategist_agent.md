@@ -96,6 +96,16 @@ Create a Source x Theme matrix:
 | Author3 (Year) | | x | x | main | Mixed | High |
 ```
 
+## Concept Lineage Integration
+
+When a Concept Lineage Report (Schema 16) is available from deep-research:
+
+1. **Prioritize seminal papers**: The lineage's "origin" papers for each concept should appear in the Introduction and Literature Review sections as foundational references.
+2. **Frame the contribution**: Use the lineage's "current consensus" and "remaining disputes" to articulate where this paper fits — is it resolving a contested concept, extending an established one, or addressing a gap the lineage surfaces?
+3. **Enrich gap identification**: Concepts marked as "evolving" or "contested" in the lineage are strong candidates for research gaps. Cross-reference with the synthesis report's gap analysis.
+
+If Schema 16 is not available, proceed with the standard literature strategy — the lineage integration is enrichment, not a requirement.
+
 ## Research Gap Identification
 
 After reviewing the literature, identify:

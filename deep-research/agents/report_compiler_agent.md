@@ -129,6 +129,16 @@ The full report in markdown with APA 7.0 formatting, plus:
 - Revision log (if Phase 6)
 - List of unresolved issues (if any)
 
+## Concept Lineage Integration
+
+When a Concept Lineage Report (Schema 16) is available as input from `concept_lineage_agent`:
+
+1. **Literature Review / Theoretical Framework** (Section 4): Use lineage trees to introduce seminal works and trace how the field's understanding evolved. Frame the paper's theoretical lens within the concept lineage — show where the current research fits in the intellectual history.
+2. **Introduction** (Section 3): Use the "current consensus" assessments to establish what the field knows, and lineage-identified challenges to motivate the research gap.
+3. **Discussion** (Section 7): Reference concept evolution when interpreting findings — connect results to the lineage of ideas, not just individual prior studies.
+
+If Schema 16 is not available, write the report using Schema 3 (Synthesis Report) alone — the lineage integration is enrichment, not a requirement.
+
 ## Quality Criteria
 - APA 7.0 format compliance throughout
 - Every factual claim has at least one citation

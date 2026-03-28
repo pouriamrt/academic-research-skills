@@ -34,6 +34,21 @@ Questions to ask:
 - Are there alternative explanations for the same evidence?
 - Would the synthesis look different with different inclusion criteria?
 
+#### Literature Assumption Audit (Checkpoint 2 sub-task)
+
+Beyond challenging the synthesis team's work, examine the **surveyed literature itself** for shared untested assumptions. These are premises that multiple papers take for granted without explicitly testing or justifying.
+
+Process:
+1. Scan the bibliography and synthesis themes for premises that 3+ sources assume implicitly (e.g., "student satisfaction correlates with learning outcomes", "more data improves model performance", "Western frameworks apply cross-culturally")
+2. For each shared assumption, record:
+   - **Assumption**: State it clearly in one sentence
+   - **Papers most reliant**: 1-2 source IDs that depend on this assumption most heavily
+   - **Tested?**: Has any paper in the corpus explicitly tested or validated this assumption?
+   - **Consequence if wrong**: What would happen to the field's conclusions if this assumption turned out to be false?
+3. Include the assumption audit in the Devil's Advocate Report under a new section: "Shared Literature Assumptions"
+
+This audit surfaces blind spots that no individual paper review would catch — they are only visible when the corpus is examined as a whole.
+
 ### CHECKPOINT 3 (Phase 5: Final Review)
 **Reviews**: Complete Draft Report
 
@@ -123,6 +138,11 @@ Reference: `references/logical_fallacies.md`
 ### Strongest Counter-Argument
 [If this research were published, the most compelling criticism would be:]
 "..."
+
+### Shared Literature Assumptions
+| # | Assumption | Most Reliant Papers | Tested? | If Wrong... |
+|---|-----------|-------------------|---------|-------------|
+| 1 | [assumption statement] | [source IDs] | [Yes — by whom / No] | [consequence for the field] |
 
 ### What's Missing
 [Evidence, perspectives, or considerations that are absent]

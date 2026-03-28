@@ -2,13 +2,13 @@
 
 [![License: CC BY-NC 4.0](https://img.shields.io/badge/license-CC%20BY--NC%204.0-lightgrey)](https://creativecommons.org/licenses/by-nc/4.0/)
 
-A Claude Code plugin covering the full academic research lifecycle — from literature review through experimentation, statistical analysis, paper writing, peer review, and publication. 8 skills, 57 agents, 15 handoff schemas, and full pipeline orchestration. Experiment skills integrate with the [superpowers](https://github.com/obra/superpowers) plugin for disciplined, test-driven code development.
+A Claude Code plugin covering the full academic research lifecycle — from literature review through experimentation, statistical analysis, paper writing, peer review, and publication. 8 skills, 58 agents, 16 handoff schemas, and full pipeline orchestration. Experiment skills integrate with the [superpowers](https://github.com/obra/superpowers) plugin for disciplined, test-driven code development.
 
 ## Skills
 
 | Skill | Agents | What it does | Key Modes |
 |-------|--------|-------------|-----------|
-| **deep-research** v2.4 | 13 | Research team with systematic review, PRISMA, meta-analysis | full, quick, socratic, review, lit-review, fact-check, systematic-review |
+| **deep-research** v2.5 | 14 | Research team with concept lineage, systematic review, PRISMA, meta-analysis | full, quick, socratic, review, lit-review, fact-check, systematic-review |
 | **experiment-designer** v1.0 | 6 | Experiment protocol, power analysis, instruments, randomization | full, guided, quick, power-only, instrument |
 | **data-analyst** v1.0 | 7 | Statistical analysis execution with APA-formatted results | full, guided, quick, assumption-check, exploratory, replication |
 | **simulation-runner** v1.0 | 5 | Monte Carlo, bootstrap, agent-based models, parameter sweeps | full, guided, quick, power-sim, sensitivity, bootstrap |
@@ -127,7 +127,7 @@ The `tools/` directory contains automated validation scripts (Python stdlib only
 
 | Tool | Purpose | Command |
 |------|---------|---------|
-| **self_test.py** | Structural integrity check (192 checks across 7 categories) | `python tools/self_test.py` |
+| **self_test.py** | Structural integrity check (195 checks across 7 categories) | `python tools/self_test.py` |
 | **validate_schemas.py** | Handoff schema cross-reference validation | `python tools/validate_schemas.py` |
 | **check_schema_versions.py** | Schema versioning and migration registry check | `python tools/check_schema_versions.py` |
 | **generate_dependency_graph.py** | Auto-generate Mermaid agent dependency graph | `python tools/generate_dependency_graph.py --output file` |

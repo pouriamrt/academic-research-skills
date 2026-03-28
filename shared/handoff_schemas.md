@@ -71,7 +71,7 @@ Consuming agents should validate input and request re-generation if schema viola
 ## Schema 2: Bibliography (deep-research -> academic-paper)
 
 **Producer**: `deep-research/bibliography_agent`
-**Consumer**: `deep-research/synthesis_agent` | `deep-research/source_verification_agent` | `academic-paper/literature_strategist_agent`
+**Consumer**: `deep-research/synthesis_agent` | `deep-research/source_verification_agent` | `deep-research/concept_lineage_agent` | `academic-paper/literature_strategist_agent`
 
 ### Required Fields
 
@@ -924,6 +924,111 @@ phases: {
 ### RQ Summary
 **Research Question Direction**: How does AI-assisted formative assessment affect undergraduate learning outcomes in STEM courses at Taiwanese universities?
 **Preliminary FINER Assessment**: [see research_question_agent Socratic Mode output]
+```
+
+---
+
+## Schema 16: Concept Lineage Report (deep-research -> academic-paper)
+
+**Producer**: `deep-research/concept_lineage_agent`
+**Consumer**: `deep-research/report_compiler_agent` | `academic-paper/literature_strategist_agent`
+
+### Required Fields
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `concepts` | list[ConceptLineage] | 3-5 central concepts with lineage traced |
+| `api_coverage` | object | `{semantic_scholar: "available"/"unavailable", openalex: "available"/"unavailable", api_calls_made: int, fallback_used: bool}` |
+| `cross_concept_relationships` | string | How the traced concepts relate to each other |
+| `lineage_limitations` | list[string] | Gaps in coverage, inference disclaimers |
+
+### ConceptLineage Object
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `concept_name` | string | Yes | Short label for the concept |
+| `definition` | string | Yes | 1-2 sentence working definition as used in this literature |
+| `origin` | SourceRef | Yes | Seminal paper that introduced the concept |
+| `challengers` | list[ChallengeEntry] | Yes | Papers that challenged or contradicted the concept (may be empty) |
+| `refiners` | list[RefinementEntry] | Yes | Papers that extended or modified the concept (may be empty) |
+| `current_consensus` | ConsensusAssessment | Yes | Current state of the concept in the field |
+| `lineage_tree` | string | Yes | Text-based tree visualization (see agent output format) |
+| `verification_method` | enum | Yes | `"api_verified"` / `"bibliography_inferred"` / `"mixed"` |
+
+### SourceRef Object
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `authors` | string | Yes | Author(s) |
+| `year` | integer | Yes | Publication year |
+| `title` | string | Yes | Paper title |
+| `doi` | string | No | DOI if available |
+| `citation_count` | integer | No | Total citations (from API) |
+| `influential_citations` | integer | No | Influential citations (Semantic Scholar only) |
+| `source_id` | string | No | Bibliography source ID if paper is in the corpus (e.g., `[S01]`) |
+
+### ChallengeEntry Object
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `paper` | SourceRef | The challenging paper |
+| `challenge` | string | What specifically was challenged |
+| `reason` | string | Why they disagreed (methodology, dataset, context, theoretical lens) |
+
+### RefinementEntry Object
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `paper` | SourceRef | The refining paper |
+| `refinement` | string | What was added or modified |
+| `how_concept_evolved` | string | How the concept changed as a result |
+
+### ConsensusAssessment Object
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `status` | enum | `"established"` / `"contested"` / `"evolving"` / `"superseded"` |
+| `statement` | string | 1-2 sentence current consensus |
+| `key_evidence` | list[string] | Source IDs or citations supporting this assessment |
+| `remaining_disputes` | string | Active disagreements, if any |
+
+### Example
+
+```markdown
+## Concept Lineage Report
+
+### API Coverage
+- **Semantic Scholar**: Available — 28 API calls made
+- **OpenAlex**: Available — 15 API calls made
+- **Fallback methods used**: No
+
+### Concept 1: Technology Acceptance Model (TAM)
+
+**Definition**: A theoretical framework predicting user acceptance of technology based on perceived usefulness and perceived ease of use.
+
+**Lineage Tree**:
+CONCEPT: Technology Acceptance Model (TAM)
+│
+├─ ORIGIN (1989)
+│  Davis, F.D. — "Perceived Usefulness, Perceived Ease of Use, and User Acceptance"
+│  Introduced: Two-factor model (PU + PEOU) predicting behavioral intention
+│  Citations: 45,231 total, 8,412 influential
+│
+├─ CHALLENGES
+│  ├─ Bagozzi (2007) — TAM oversimplifies; ignores social/emotional factors
+│  └─ Benbasat & Barki (2007) — TAM creates "illusion of progress" via citation without insight
+│
+├─ REFINEMENTS
+│  ├─ Venkatesh et al. (2003) — UTAUT: unified 4 models into single framework
+│  ├─ Venkatesh & Bala (2008) — TAM3: added determinants of PU and PEOU
+│  └─ Dwivedi et al. (2019) — Re-examination with meta-analysis; confirmed core but added context moderators
+│
+└─ CURRENT CONSENSUS (2024)
+   Status: established
+   "TAM's core constructs remain valid but insufficient alone; modern applications require context-specific extensions (UTAUT2, cultural moderators)."
+   Based on: [S03, S07, S15]
+
+**Verification Method**: api_verified
 ```
 
 ---

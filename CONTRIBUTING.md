@@ -4,7 +4,7 @@ This guide covers the conventions, structures, and processes that keep the plugi
 
 ## Project Overview
 
-Academic Research Skills is a Claude Code plugin covering the full academic research lifecycle. It comprises 8 skills, 57 agents, and 15 handoff schemas orchestrated through a multi-stage pipeline (research, experimentation, writing, review, revision, publication). Shared infrastructure in `shared/` provides cross-skill data contracts and integration specifications.
+Academic Research Skills is a Claude Code plugin covering the full academic research lifecycle. It comprises 8 skills, 58 agents, and 16 handoff schemas orchestrated through a multi-stage pipeline (research, experimentation, writing, review, revision, publication). Shared infrastructure in `shared/` provides cross-skill data contracts and integration specifications.
 
 ## Repository Structure
 

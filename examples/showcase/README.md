@@ -39,7 +39,7 @@ Complete artifacts from a real 10-stage academic pipeline run, demonstrating the
 ## Pipeline Stages Covered
 
 ```
-Stage 1: Deep Research (13-agent research pipeline)
+Stage 1: Deep Research (14-agent research pipeline)
 Stage 2: Paper Writing (12-agent writing pipeline)
 Stage 2.5: Integrity Verification ← MANDATORY, caught 22 issues
 Stage 3: Peer Review Round 1 (EIC + R1/R2/R3 + Devil's Advocate)

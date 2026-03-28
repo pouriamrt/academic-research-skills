@@ -1,14 +1,14 @@
 ---
 name: deep-research
-description: "Universal deep research agent team. 13-agent pipeline for rigorous academic research on any topic. 7 modes: full research, quick brief, paper review, lit-review, fact-check, Socratic guided research dialogue, and systematic review with optional meta-analysis. Covers research question formulation, Socratic mentoring, methodology design, systematic literature search, source verification, cross-source synthesis, risk of bias assessment, meta-analysis, APA 7.0 report compilation, editorial review, devil's advocate challenges, ethics review, and post-research literature monitoring. Triggers on: research, deep research, literature review, systematic review, meta-analysis, PRISMA, evidence synthesis, fact-check, guide my research, help me think through, 研究, 深度研究, 文獻回顧, 文獻探討, 系統性回顧, 後設分析, 事實查核, 引導我的研究, 幫我釐清, 幫我想想, 我不確定要研究什麼, 研究方向, 研究主題."
+description: "Universal deep research agent team. 14-agent pipeline for rigorous academic research on any topic. 7 modes: full research, quick brief, paper review, lit-review, fact-check, Socratic guided research dialogue, and systematic review with optional meta-analysis. Covers research question formulation, Socratic mentoring, methodology design, systematic literature search (Semantic Scholar + OpenAlex + WebSearch), source verification, cross-source synthesis, concept lineage tracing, risk of bias assessment, meta-analysis, APA 7.0 report compilation, editorial review, devil's advocate challenges, ethics review, and post-research literature monitoring. Triggers on: research, deep research, literature review, systematic review, meta-analysis, PRISMA, evidence synthesis, fact-check, guide my research, help me think through, citation chain, concept lineage, 研究, 深度研究, 文獻回顧, 文獻探討, 系統性回顧, 後設分析, 事實查核, 引導我的研究, 幫我釐清, 幫我想想, 我不確定要研究什麼, 研究方向, 研究主題, 引用鏈, 概念系譜."
 metadata:
-  version: "2.4"
-  last_updated: "2026-03-16"
+  version: "2.5"
+  last_updated: "2026-03-28"
 ---
 
 # Deep Research — Universal Academic Research Agent Team
 
-Universal deep research tool — a domain-agnostic 13-agent team for rigorous academic research on any topic. v2.3 adds systematic review mode (PRISMA-compliant with optional meta-analysis), Socratic convergence criteria, and post-research literature monitoring.
+Universal deep research tool — a domain-agnostic 14-agent team for rigorous academic research on any topic. v2.5 adds concept lineage tracing via Semantic Scholar and OpenAlex APIs, enriched gap analysis, methodology distribution audits, and literature assumption extraction.
 
 ## Quick Start
 
@@ -83,7 +83,7 @@ Not sure? Start with `socratic` — it will help you figure out what you need.
 
 ---
 
-## Agent Team (13 Agents)
+## Agent Team (14 Agents)
 
 | # | Agent | Role | Phase |
 |---|-------|------|-------|
@@ -100,6 +100,7 @@ Not sure? Start with `socratic` — it will help you figure out what you need.
 | 11 | `risk_of_bias_agent` | Assesses risk of bias using RoB 2 (RCTs) and ROBINS-I (non-randomized); traffic-light visualization | Systematic Review (Phase 2) |
 | 12 | `meta_analysis_agent` | Designs and executes meta-analysis or narrative synthesis; effect sizes, heterogeneity, GRADE | Systematic Review (Phase 3) |
 | 13 | `monitoring_agent` | Post-research literature monitoring: digests, retraction alerts, contradictory findings detection | Optional (post-pipeline) |
+| 14 | `concept_lineage_agent` | Traces intellectual genealogy of central concepts via citation graph APIs (Semantic Scholar, OpenAlex) | Phase 3 |
 
 ---
 
@@ -170,20 +171,29 @@ User: "Research [topic]"
          - Currency assessment (publication date relevance)
          - Source quality matrix
      |
-=== Phase 3: ANALYSIS ===
+=== Phase 3: ANALYSIS (Parallel: Synthesis + Concept Lineage) ===
      |
      |-> [synthesis_agent] -> Synthesis Narrative + Gap Analysis
      |   - Thematic synthesis across sources
+     |   - Methodology distribution analysis
      |   - Contradiction identification & resolution
      |   - Evidence convergence/divergence mapping
-     |   - Knowledge gap analysis
+     |   - Enriched knowledge gap analysis (closest paper + proposed methodology)
      |   - Theoretical framework integration
+     |
+     |-> [concept_lineage_agent] -> Concept Lineage Report (parallel)
+     |   - Identifies 3-5 central concepts from bibliography
+     |   - Traces origin, challenges, refinements via Semantic Scholar + OpenAlex APIs
+     |   - Assesses current consensus per concept
+     |   - Produces lineage trees with citation counts
+     |   - Graceful degradation if APIs unavailable
      |
      +-> [devils_advocate_agent] -- CHECKPOINT 2
          - Cherry-picking check
          - Confirmation bias detection
          - Logic chain validation
          - Alternative explanations explored?
+         - Literature assumption audit (shared untested assumptions across corpus)
          - Verdict: PASS / REVISE
      |
 === Phase 4: COMPOSITION ===
@@ -410,13 +420,13 @@ User: "Systematic review of [topic]" / "Meta-analysis of [topic]"
 
 | Mode | Agents Active | Output | Word Count |
 |------|---------------|--------|------------|
-| `full` (default) | All 9 core (excluding socratic_mentor, RoB, meta-analysis) | Full APA 7.0 report | 3,000-8,000 |
+| `full` (default) | All 10 core (excluding socratic_mentor, RoB, meta-analysis) | Full APA 7.0 report + concept lineage | 3,000-8,000 |
 | `quick` | RQ + Biblio + Verification + Report | Research brief | 500-1,500 |
 | `review` | Editor + Devil's Advocate + Ethics | Reviewer report on provided text | N/A |
 | `lit-review` | Biblio + Verification + Synthesis | Annotated bibliography + synthesis | 1,500-4,000 |
 | `fact-check` | Source Verification only | Verification report | 300-800 |
 | `socratic` | Socratic Mentor + RQ + Devil's Advocate | Research Plan Summary (INSIGHT collection) | N/A (iterative) |
-| `systematic-review` | RQ + Architect + Biblio + Verification + RoB + Meta-Analysis + Synthesis + Report + Editor + Ethics + DA | Full PRISMA 2020 report + forest plot data + GRADE table | 5,000-15,000 |
+| `systematic-review` | RQ + Architect + Biblio + Verification + RoB + Meta-Analysis + Synthesis + Lineage + Report + Editor + Ethics + DA | Full PRISMA 2020 report + concept lineage + forest plot data + GRADE table | 5,000-15,000 |
 
 ---
 
@@ -469,8 +479,9 @@ After research is complete, the following materials can be handed off to `academ
 1. **Research Question Brief** (from research_question_agent)
 2. **Methodology Blueprint** (from research_architect_agent) — includes `methodology_subtype` field (enum: `experimental`, `quasi_experimental`, `correlational`, `simulation`, `secondary_data_analysis`, `survey`, `case_study`, `content_analysis`, `literature_review`, `theoretical`, `mixed_methods`) and routing flags (`requires_experiment_design`, `requires_data_collection`, `requires_simulation`) used by academic-pipeline to auto-detect experiment stages
 3. **Annotated Bibliography** (from bibliography_agent)
-4. **Synthesis Report** (from synthesis_agent)
-5. **[If socratic mode] INSIGHT Collection and Research Plan Summary**
+4. **Synthesis Report** (from synthesis_agent) — now includes methodology distribution and enriched gap analysis
+5. **Concept Lineage Report** (from concept_lineage_agent) — intellectual genealogy of central concepts with citation chain data
+6. **[If socratic mode] INSIGHT Collection and Research Plan Summary**
 
 **Trigger**: User says "now help me write a paper" or "write a paper based on this"
 
@@ -506,6 +517,7 @@ See `academic-pipeline/SKILL.md` for the complete workflow.
 | risk_of_bias_agent | `agents/risk_of_bias_agent.md` |
 | meta_analysis_agent | `agents/meta_analysis_agent.md` |
 | monitoring_agent | `agents/monitoring_agent.md` |
+| concept_lineage_agent | `agents/concept_lineage_agent.md` |
 
 ---
 
@@ -527,6 +539,7 @@ See `academic-pipeline/SKILL.md` for the complete workflow.
 | `references/preregistration_guide.md` | Preregistration decision tree + platforms + checklist | research_architect |
 | `references/systematic_review_toolkit.md` | Cochrane v6.4, PRISMA 2020, RoB 2, ROBINS-I, I² guide, GRADE, protocol registration | risk_of_bias, meta_analysis, bibliography, report_compiler |
 | `references/literature_monitoring_strategies.md` | Google Scholar alerts, PubMed alerts, RSS feeds, Retraction Watch, citation tracking, monitoring cadence | monitoring_agent |
+| `references/citation_graph_apis.md` | Semantic Scholar + OpenAlex API reference: endpoints, fields, rate limits, citation chain tracing patterns | concept_lineage_agent, bibliography_agent |
 
 ---
 
@@ -609,6 +622,7 @@ deep-research (systematic-review) + academic-paper -> PRISMA systematic review p
 
 | Version | Date | Changes |
 |---------|------|---------|
+| 2.5 | 2026-03-28 | Added concept_lineage_agent (14th agent): traces intellectual genealogy of central concepts via Semantic Scholar + OpenAlex APIs. Citation chain tracing (origin → challenges → refinements → consensus), API-first with graceful degradation. New reference: citation_graph_apis.md. Enhanced synthesis_agent: methodology distribution analysis (Step 1.5) aggregates and audits method types across corpus; enriched gap analysis (Step 4) adds closest paper + proposed methodology per gap. Enhanced devils_advocate_agent: Checkpoint 2 now includes literature assumption audit (shared untested axioms across surveyed papers). Enhanced bibliography_agent: three-tier search (Semantic Scholar + OpenAlex + WebSearch) with structured API queries. New handoff Schema 16: Concept Lineage Report. Agent count 13→14 |
 | 2.3 | 2026-03-08 | Added systematic-review mode (7th mode): PRISMA 2020 compliant pipeline with risk_of_bias_agent (RoB 2 + ROBINS-I), meta_analysis_agent (effect sizes, heterogeneity, GRADE, narrative synthesis), 2 new templates (PRISMA protocol + report), systematic_review_toolkit reference. Added monitoring_agent (post-pipeline literature monitoring with digests, retraction alerts, author tracking) + literature_monitoring_strategies reference. Enhanced socratic_mentor_agent with 4 convergence signals, 4-type question taxonomy, and auto-end triggers. Added Quick Mode Selection Guide to SKILL.md |
 | 2.2 | 2026-03-05 | Added synthesis anti-patterns, Socratic quantified thresholds & auto-end conditions, reference existence verification (DOI + WebSearch), enhanced ethics reference integrity check (50% + Retraction Watch), mode transition matrix, cross-agent quality alignment definitions |
 | 2.1 | 2026-03 | Added IRB decision tree, EQUATOR reporting guidelines, preregistration guide + template; enhanced ethics_review_agent with human subjects dimension; enhanced research_architect_agent with ethics/EQUATOR/preregistration integration; enhanced methodology_patterns with EQUATOR cross-references |

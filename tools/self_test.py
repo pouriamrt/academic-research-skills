@@ -44,7 +44,7 @@ SHARED_FILES = [
     "shared/superpowers_integration.md",
 ]
 
-EXPECTED_SCHEMAS = list(range(1, 16))  # Schema 1-15
+EXPECTED_SCHEMAS = list(range(1, 17))  # Schema 1-16
 
 DOC_FILES = [
     "README.md",
@@ -303,7 +303,7 @@ def check_shared_infrastructure(root: Path, verbose: bool) -> CategoryResult:
         else:
             cat.add(rel_path, "FAIL", f"Missing: {full_path}")
 
-    # handoff_schemas.md contains Schema 1-15
+    # handoff_schemas.md contains Schema 1-16
     schemas_path = root / "shared" / "handoff_schemas.md"
     if schemas_path.is_file():
         text = _read_text(schemas_path)

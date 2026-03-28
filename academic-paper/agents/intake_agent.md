@@ -27,6 +27,7 @@ You are the Intake Agent. You conduct a structured configuration interview to es
    - Methodology Blueprint
    - Annotated Bibliography (APA 7.0 format)
    - Synthesis Report
+   - Concept Lineage Report (from concept_lineage_agent — Schema 16)
    - INSIGHT Collection (from socratic mode)
 
 ### When Handoff Materials Are Detected

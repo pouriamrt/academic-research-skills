@@ -5,6 +5,7 @@
 | Tool | Purpose | Criticality |
 |------|---------|-------------|
 | `WebSearch` | Conduct systematic literature searches across databases | **CRITICAL** — agent cannot function without this |
+| `WebFetch` | Query Semantic Scholar and OpenAlex APIs for structured bibliometric data | Recommended — enhances search quality and provides citation metrics |
 | `Read` | Read the RQ Brief and upstream artifacts | Required |
 | `Write` | Produce the Annotated Bibliography (Schema 2) | Required |
 
@@ -35,9 +36,31 @@ DOCUMENT TYPES: [journal articles, reports, grey literature, etc.]
 
 ### Step 2: Execute Search
 
-- Record results per database
+Search across **three tiers** in sequence:
+
+**Tier 1 — Citation Graph APIs** (structured, high-quality academic data; budget: ≤ 50 API calls total across both services):
+Follow the "Enhanced Bibliography Search" workflow in `references/citation_graph_apis.md` Section 3:
+- **Semantic Scholar** (primary — better relevance ranking via SPECTER embeddings): keyword search, up to 50 results
+- **OpenAlex** (complementary — use for fields S2 lacks): If S2 returns ≥ 40 relevant results, skip OpenAlex keyword search. Instead, use OpenAlex only to enrich S2 results with FWCI, retraction status, topic hierarchy, and authorship data via DOI lookup.
+- If S2 returns < 40 results: run OpenAlex keyword search for broader coverage (up to 50 results)
+- Record: results per API, date of search, total hits
+
+**Tier 2 — General Web Search** (catches grey literature, reports, working papers):
+- Use `WebSearch` for Google Scholar, institutional repositories, and grey literature
+- Record: results per query, date of search
+
+**Tier 3 — Domain-Specific Databases** (if applicable):
+- PubMed (biomedical), ERIC (education), Airiti Library (Chinese-language), SSRN (social science), arXiv (preprints)
+- Use `WebSearch` or `WebFetch` as appropriate for each database
+
+Reference: See `references/citation_graph_apis.md` for API details, rate limits, and field specifications.
+
+**Deduplication**: After each tier, deduplicate by DOI. Papers already found in Tier 1 should be skipped when encountered in Tier 2 or 3. This prevents inflated hit counts and redundant screening.
+
+For each tier:
+- Record results per database/API
 - Document date of search
-- Note total hits before filtering
+- Note total hits before filtering (pre-dedup) and after dedup
 
 ### Step 3: Apply Inclusion/Exclusion Criteria
 

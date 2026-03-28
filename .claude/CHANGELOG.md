@@ -4,6 +4,40 @@ Cross-skill fixes and update history.
 
 ---
 
+## 2026-03-28
+
+### v3.9.0 — Citation Graph APIs, Concept Lineage Agent & Literature Analysis Enhancements
+
+**Files changed**: 9 files across deep-research + shared + plugin config
+
+**New agent** (`deep-research/agents/concept_lineage_agent.md`):
+- 14th agent in deep-research pipeline — traces intellectual genealogy of 3-5 central concepts
+- Uses Semantic Scholar API (citation context, intents, influential citations) and OpenAlex API (bibliometrics, topic hierarchy, FWCI) via WebFetch
+- Produces concept lineage trees: origin → challenges → refinements → current consensus
+- API-first with 3-tier graceful degradation (both APIs → one API → WebSearch inference)
+- Rate-limited: ≤100 API calls per run, exponential backoff on 429
+- Runs in Phase 3 parallel with synthesis_agent
+
+**New reference** (`deep-research/references/citation_graph_apis.md`):
+- Comprehensive API reference for Semantic Scholar Academic Graph API and OpenAlex API
+- Endpoint documentation, field specifications, rate limits, error handling
+- Combined workflow patterns for concept lineage tracing and enhanced bibliography search
+- Filter semantics guide (OpenAlex `cites:` vs `cited_by:` — counterintuitive naming documented)
+
+**New handoff schema** (`shared/handoff_schemas.md`):
+- **Schema 16: Concept Lineage Report** — ConceptLineage, SourceRef, ChallengeEntry, RefinementEntry, ConsensusAssessment objects with full field specifications and example
+
+**Enhanced agents**:
+- `synthesis_agent`: Added Step 1.5 (Methodology Distribution Analysis — aggregates method types across corpus, identifies dominant/underrepresented/weakest methods). Enhanced Step 4 (Gap Analysis — now includes Closest Paper and Proposed Methodology per gap). Added Concept Lineage integration section
+- `devils_advocate_agent`: Checkpoint 2 now includes Literature Assumption Audit sub-task — extracts shared untested assumptions across surveyed papers with reliance mapping and consequence analysis. New output section: "Shared Literature Assumptions" table
+- `bibliography_agent`: Added WebFetch to Required Tools. Step 2 (Execute Search) now uses three-tier search: Tier 1 (Semantic Scholar + OpenAlex APIs), Tier 2 (WebSearch), Tier 3 (domain-specific databases)
+
+**Plugin-level updates**:
+- `.claude/CLAUDE.md`: Agent count 57→58, schema count 15→16, deep-research v2.4→v2.5, added Semantic Scholar + OpenAlex to Optional MCP Capabilities, updated handoff protocol, version 3.8.0→3.9.0
+- `deep-research/SKILL.md`: Agent count 13→14, Phase 3 updated for parallel concept lineage, version 2.4→2.5, updated operational modes table, handoff protocol, agent references, reference files table
+
+---
+
 ## 2026-03-22
 
 ### v3.7.0 — Cross-Skill Integrity Audit & Schema Formalization

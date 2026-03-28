@@ -1,12 +1,12 @@
 # Academic Research Skills
 
-A suite of Claude Code skills for rigorous academic research, experimentation, statistical analysis, paper writing, peer review, and pipeline orchestration. 8 skills, 57 agents, 15 handoff schemas.
+A suite of Claude Code skills for rigorous academic research, experimentation, statistical analysis, paper writing, peer review, and pipeline orchestration. 8 skills, 58 agents, 16 handoff schemas.
 
 ## Skills Overview
 
 | Skill | Purpose | Key Modes |
 |-------|---------|-----------|
-| `deep-research` v2.4 | Universal 13-agent research team | full, quick, socratic, review, lit-review, fact-check, systematic-review |
+| `deep-research` v2.5 | Universal 14-agent research team | full, quick, socratic, review, lit-review, fact-check, systematic-review |
 | `experiment-designer` v1.0 | Experiment protocol and power analysis | full, guided, quick, power-only, instrument |
 | `data-analyst` v1.0 | Statistical analysis execution | full, guided, quick, assumption-check, exploratory, replication |
 | `simulation-runner` v1.0 | Computational experiments | full, guided, quick, power-sim, sensitivity, bootstrap |
@@ -44,6 +44,16 @@ A suite of Claude Code skills for rigorous academic research, experimentation, s
 ## Optional MCP Capabilities
 
 The following MCP servers enhance the pipeline when available. Both are **optional** — the pipeline degrades gracefully without them.
+
+### Semantic Scholar + OpenAlex (Citation Graph APIs)
+- **Tools**: `WebFetch` to call REST APIs — not MCP servers, but direct HTTP endpoints
+- **Semantic Scholar** (`api.semanticscholar.org/graph/v1`): Citation chain tracing with intent/context data, influential citation filtering, SPECTER embeddings
+- **OpenAlex** (`api.openalex.org`): Broad bibliometric data, topic hierarchy, institution/funder data, FWCI normalization
+- **Scope**: Citation chain analysis (concept lineage), enhanced bibliography search, paper verification
+- **Requires**: No API key required for basic use; optional keys increase rate limits
+- **Used by**: `concept_lineage_agent` (primary), `bibliography_agent` (enhanced search)
+- **Fallback**: WebSearch-only mode with bibliography-based inference if APIs are unavailable
+- **Reference**: `deep-research/references/citation_graph_apis.md`
 
 ### PaperBanana MCP (Methodology Diagrams)
 - **Tool**: `mcp__paperbanana__generate_diagram` — generates publication-quality methodology diagrams from text
@@ -85,7 +95,7 @@ The experiment stages (1.5) are auto-detected from the Methodology Blueprint pro
 ## Handoff Protocol
 
 ### deep-research → academic-paper
-Materials: RQ Brief, Methodology Blueprint, Annotated Bibliography, Synthesis Report, INSIGHT Collection
+Materials: RQ Brief, Methodology Blueprint, Annotated Bibliography, Synthesis Report, Concept Lineage Report, INSIGHT Collection
 
 ### academic-paper → academic-paper-reviewer
 Materials: Complete paper text. field_analyst_agent auto-detects domain and configures reviewers.
@@ -107,10 +117,10 @@ Materials: Complete paper draft (Schema 4). Integrity agent checks references, c
 
 ## Validation Tools
 
-Run `python tools/self_test.py` to validate plugin structural integrity (192 checks). See `tools/` for schema validation, dependency graph generation, pipeline dashboard, and reproducibility replay.
+Run `python tools/self_test.py` to validate plugin structural integrity (195 checks). See `tools/` for schema validation, dependency graph generation, pipeline dashboard, and reproducibility replay.
 
 ## Version Info
-- **Version**: 3.8.0
-- **Last Updated**: 2026-03-26
+- **Version**: 3.9.0
+- **Last Updated**: 2026-03-28
 - **Author**: Pouria Mortezaagha
 - **License**: CC-BY-NC 4.0

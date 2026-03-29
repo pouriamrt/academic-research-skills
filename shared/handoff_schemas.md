@@ -1033,6 +1033,66 @@ CONCEPT: Technology Acceptance Model (TAM)
 
 ---
 
+## Schema 10: Style Profile (intake -> draft_writer / report_compiler)
+
+**Producer**: `academic-paper/agents/intake_agent` (Step 10)
+**Consumer**: `academic-paper/agents/draft_writer_agent`, `deep-research/agents/report_compiler_agent`
+**Carried by**: `academic-pipeline` Material Passport (optional field)
+
+### Required Fields
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `calibration_source` | list[string] | Filenames or titles of the analyzed writing samples |
+| `sample_count` | integer | Number of samples analyzed (minimum 1, recommended 3+) |
+| `sentence_length` | object | `{mean: float, stddev: float, rhythm_pattern: string}` |
+| `paragraph_length` | object | `{mean_sentences: float, variation: string}` |
+| `vocabulary_preferences` | object | `{hedging_words: list[string], transition_words: list[string], preferred_verbs: list[string], formality: string}` |
+| `citation_style` | object | `{narrative_ratio: float, parenthetical_ratio: float, density: float, placement: string}` |
+| `modifier_style` | enum | `"minimal"` / `"moderate"` / `"elaborate"` |
+| `register_shifts` | list[object] | `[{section_name: string, assertiveness_level: string}]` |
+
+### Optional Fields
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `conflicts_with_discipline` | list[string] | Noted conflicts between personal style and discipline/journal norms |
+| `partial_profile` | boolean | `true` if < 3 samples were analyzed (lower confidence) |
+| `language_mismatch` | boolean | `true` if samples are in a different language than the target paper |
+
+### Consumption Priority System
+
+```
+Priority 1 (HARD):   Discipline conventions — cannot be violated
+Priority 2 (STRONG): Target journal conventions — if specified
+Priority 3 (SOFT):   Author's personal style — only where it does not conflict with 1 or 2
+```
+
+See `shared/style_calibration_protocol.md` for full consumption rules and conflict resolution.
+
+### Example
+
+```markdown
+## Style Profile
+
+**Calibration Source**: ["Chen_2024_AI_assessment.pdf", "Chen_2023_formative_feedback.pdf", "Chen_2022_STEM_pedagogy.pdf"]
+**Sample Count**: 3
+
+**Sentence Length**: mean: 22, stddev: 8, rhythm: "variable — mixes 10-word punchy sentences with 35-word complex ones"
+**Paragraph Length**: mean 5 sentences, variation: "moderate — 3-7 sentences, shorter in Methods"
+**Vocabulary Preferences**:
+  - Hedging: suggests, appears to, may
+  - Transitions: However, In contrast, Yet
+  - Reporting verbs: found, argued, noted
+  - Formality: moderate-formal
+**Citation Style**: narrative 40%, parenthetical 60%, density 2.3/paragraph, placement: mixed
+**Modifier Style**: minimal
+**Register Shifts**: [Methods: neutral, Results: descriptive, Discussion: assertive, Conclusion: personal]
+**Conflicts**: "Author prefers passive voice (68% in samples), but Education discipline conventions favor active voice — using active voice per convention."
+```
+
+---
+
 ## Validation Rules
 
 1. **Required field check**: All schema fields marked without "(optional)" or "No" in the Required column are REQUIRED. Consumer agents MUST verify all required fields are present before proceeding

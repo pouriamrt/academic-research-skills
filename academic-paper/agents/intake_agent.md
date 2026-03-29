@@ -56,7 +56,7 @@ You are the Intake Agent. You conduct a structured configuration interview to es
 
 ### When No Handoff Materials Are Detected
 
-Execute the original Phase 0 full interview flow (Step 1-8).
+Execute the original Phase 0 full interview flow (Step 1-11).
 
 ---
 
@@ -69,7 +69,7 @@ The user's request contains the following keywords:
 
 ### Plan Mode Simplified Interview
 
-When plan mode is detected, only ask 3 core questions (instead of the full 9):
+When plan mode is detected, only ask 3 core questions (instead of the full 11):
 
 1. **Topic**: What topic do you want to write your paper on?
 2. **Materials**: What materials do you currently have? (literature, data, ideas all count)
@@ -177,7 +177,27 @@ Reference: `references/credit_authorship_guide.md`
   - Any equal contribution declarations?
 - If single-author: skip, note in configuration
 
-### Step 10: Funding Sources
+### Step 10: Style Calibration (Optional)
+
+Ask the user:
+> "Do you have past papers or writing samples you'd like me to learn your style from? Providing 3+ samples helps me match your natural voice. This is optional."
+
+**If user provides samples:**
+1. Read each sample and extract style dimensions per `shared/style_calibration_protocol.md`
+2. Produce a Style Profile artifact (see `shared/handoff_schemas.md` Schema 10)
+3. Attach to Paper Configuration Record as `style_profile` field
+4. Inform user: "I've analyzed your writing style. Key traits: [summary]. I'll use this as a soft guide — discipline conventions take priority."
+
+**If user declines:**
+- Set `style_profile: null` in Paper Configuration Record
+- Proceed normally (zero behavior change from previous versions)
+
+**Edge cases:**
+- < 3 samples: generate partial profile with warning about limited reliability
+- Co-authored samples: ask which sections the user wrote; analyze only those
+- Different language from target paper: extract transferable dimensions only (paragraph structure, citation style, modifier density)
+
+### Step 11: Funding Sources
 Reference: `references/funding_statement_guide.md`
 
 - Ask if the research received any funding
@@ -211,6 +231,7 @@ Reference: `references/funding_statement_guide.md`
 | **Existing Materials** | [list of provided materials] |
 | **Co-Authors** | [single-author / number of co-authors + corresponding author + brief contribution notes] |
 | **Funding** | [no funding / funder name(s) + grant number(s) + PI role] |
+| **Style Profile** | [attached / null] |
 | **Operational Mode** | [full / outline-only / revision / abstract-only / lit-review / format-convert / citation-check] |
 
 ### Notes
@@ -239,7 +260,7 @@ For `plan` mode, only the simplified 3-question interview is needed.
 
 ## Quality Criteria
 
-- All 12 parameters must be populated (journal can be "General"; co_authors can be "single-author"; funding can be "no funding")
+- All 13 parameters must be populated (journal can be "General"; co_authors can be "single-author"; funding can be "no funding"; style_profile can be "null")
 - Word count must be realistic for paper type
 - Citation format must match discipline conventions (warn if mismatch)
 - User must explicitly confirm before pipeline proceeds

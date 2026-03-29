@@ -8,7 +8,10 @@ metadata:
 
 # Deep Research — Universal Academic Research Agent Team
 
-Universal deep research tool — a domain-agnostic 14-agent team for rigorous academic research on any topic. v2.5 adds concept lineage tracing via Semantic Scholar and OpenAlex APIs, enriched gap analysis, methodology distribution audits, and literature assumption extraction.
+Universal deep research tool — a domain-agnostic 14-agent team for rigorous academic research on any topic. v2.5 adds concept lineage tracing via Semantic Scholar and OpenAlex APIs, enriched gap analysis, methodology distribution audits, and literature assumption extraction. v2.4 added writing quality improvements to the report compiler:
+
+- **Style Profile consumption** (optional) — If a Style Profile is available from academic-paper intake, the report compiler applies it as a soft guide for the Executive Summary and Synthesis sections. Discipline conventions and report objectivity take priority.
+- **Writing Quality Check** — The report compiler runs a writing quality checklist before finalizing: flags AI-typical overused terms, checks sentence/paragraph length variation, removes throat-clearing openers. See `academic-paper/references/writing_quality_check.md`.
 
 ## Quick Start
 
@@ -623,6 +626,7 @@ deep-research (systematic-review) + academic-paper -> PRISMA systematic review p
 | Version | Date | Changes |
 |---------|------|---------|
 | 2.5 | 2026-03-28 | Added concept_lineage_agent (14th agent): traces intellectual genealogy of central concepts via Semantic Scholar + OpenAlex APIs. Citation chain tracing (origin → challenges → refinements → consensus), API-first with graceful degradation. New reference: citation_graph_apis.md. Enhanced synthesis_agent: methodology distribution analysis (Step 1.5) aggregates and audits method types across corpus; enriched gap analysis (Step 4) adds closest paper + proposed methodology per gap. Enhanced devils_advocate_agent: Checkpoint 2 now includes literature assumption audit (shared untested axioms across surveyed papers). Enhanced bibliography_agent: three-tier search (Semantic Scholar + OpenAlex + WebSearch) with structured API queries. New handoff Schema 16: Concept Lineage Report. Agent count 13→14 |
+| 2.4 | 2026-03-27 | Report compiler now consumes optional Style Profile (from academic-paper intake) and runs Writing Quality Check checklist before finalizing reports. Style Profile applied as soft guide for Executive Summary and Synthesis sections; discipline conventions take priority. Writing Quality Check catches overused AI-typical terms, em dash overuse, throat-clearing openers, and monotonous sentence rhythm. See `academic-paper/references/writing_quality_check.md` and `shared/style_calibration_protocol.md` |
 | 2.3 | 2026-03-08 | Added systematic-review mode (7th mode): PRISMA 2020 compliant pipeline with risk_of_bias_agent (RoB 2 + ROBINS-I), meta_analysis_agent (effect sizes, heterogeneity, GRADE, narrative synthesis), 2 new templates (PRISMA protocol + report), systematic_review_toolkit reference. Added monitoring_agent (post-pipeline literature monitoring with digests, retraction alerts, author tracking) + literature_monitoring_strategies reference. Enhanced socratic_mentor_agent with 4 convergence signals, 4-type question taxonomy, and auto-end triggers. Added Quick Mode Selection Guide to SKILL.md |
 | 2.2 | 2026-03-05 | Added synthesis anti-patterns, Socratic quantified thresholds & auto-end conditions, reference existence verification (DOI + WebSearch), enhanced ethics reference integrity check (50% + Retraction Watch), mode transition matrix, cross-agent quality alignment definitions |
 | 2.1 | 2026-03 | Added IRB decision tree, EQUATOR reporting guidelines, preregistration guide + template; enhanced ethics_review_agent with human subjects dimension; enhanced research_architect_agent with ethics/EQUATOR/preregistration integration; enhanced methodology_patterns with EQUATOR cross-references |

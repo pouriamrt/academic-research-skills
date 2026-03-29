@@ -38,6 +38,36 @@ Cross-skill fixes and update history.
 
 ---
 
+## 2026-03-27
+
+### Style Calibration + Writing Quality Check (v2.9)
+
+**Files changed**: 10 files across `academic-paper/`, `deep-research/`, `academic-pipeline/`, `shared/`, root
+
+**New files**:
+- `shared/style_calibration_protocol.md`: Full calibration flow (6 dimensions: sentence length, paragraph length, vocabulary preferences, citation integration, modifier style, register shifts). Priority system: discipline norms (hard) > journal conventions (strong) > personal style (soft). Conflict resolution with user notification.
+- `academic-paper/references/writing_quality_check.md`: Writing quality checklist (5 categories: 25-term AI high-frequency word warnings, punctuation pattern control, throat-clearing detection, structural pattern warnings, burstiness checks). Not a humanizer — good writing rules applicable regardless of author.
+
+**Modified agents**:
+- `academic-paper/agents/intake_agent.md`: New Step 10 (Style Calibration, optional). Renumbered Funding Sources to Step 11. Added `style_profile` field to Paper Configuration Record.
+- `academic-paper/agents/draft_writer_agent.md`: Step 1 pre-writing checklist gains Style Profile + Writing Quality Check items. Step 2 self-review gains Step 7 (style & lint check).
+- `deep-research/agents/report_compiler_agent.md`: New sections for optional Style Calibration and Writing Quality Check before Writing Style Guidelines.
+- `academic-pipeline/agents/pipeline_orchestrator_agent.md`: Style Profile carry-through in Material Passport.
+
+**Schema update**:
+- `shared/handoff_schemas.md`: Schema 10 (Style Profile) with 8 required fields, 3 optional fields, consumption priority system, and example.
+
+**SKILL.md updates**:
+- `academic-paper/SKILL.md`: v2.4 -> v2.5
+- `deep-research/SKILL.md`: v2.3 -> v2.4
+- `academic-pipeline/SKILL.md`: v2.6 -> v2.7
+
+**README updates**: EN + zh-TW both updated with v2.9 badge, new features in Features list, and changelog entry.
+
+**Design rationale**: The original proposal included 4 features (Argue-First Gate, Skeleton Drafting, Weighting, Style Calibration) under a "Jarvis Framework". Analysis showed Argue-First Gate, Skeleton Drafting, and Weighting overlapped 60-90% with existing Socratic convergence signals, Plan Mode Chapter Summary, and Integrity Verification respectively. Only Style Calibration was genuinely new. Writing Quality Check was adopted from Type A humanizer research (term/pattern replacement) as a writing quality improvement, explicitly not for AI detection evasion.
+
+---
+
 ## 2026-03-22
 
 ### v3.7.0 — Cross-Skill Integrity Audit & Schema Formalization

@@ -1,6 +1,6 @@
 # Academic Research Skills for Claude Code
 
-[![Version](https://img.shields.io/badge/version-v3.9.0-blue)](https://github.com/pouriamrt/academic-research-skills)
+[![Version](https://img.shields.io/badge/version-v3.9.1-blue)](https://github.com/pouriamrt/academic-research-skills)
 [![License: CC BY-NC 4.0](https://img.shields.io/badge/license-CC%20BY--NC%204.0-lightgrey)](https://creativecommons.org/licenses/by-nc/4.0/)
 
 A Claude Code plugin covering the full academic research lifecycle — from literature review through experimentation, statistical analysis, paper writing, peer review, and publication. 8 skills, 58 agents, 17 handoff schemas, and full pipeline orchestration. Experiment skills integrate with the [superpowers](https://github.com/obra/superpowers) plugin for disciplined, test-driven code development.
@@ -37,7 +37,7 @@ The experiment stages (1.5) are auto-detected from the methodology blueprint pro
 - **Deep Research** — 14-agent research team with concept lineage, Socratic guided mode + systematic review / PRISMA + SCR Loop
 - **Academic Paper** — 12-agent paper writing with Style Calibration, Writing Quality Check, LaTeX output hardening, visualization, revision coaching, and citation conversion
 - **Academic Paper Reviewer** — Multi-perspective peer review with 0-100 quality rubrics (EIC + 3 dynamic reviewers + Devil's Advocate)
-- **Academic Pipeline** — Full 10-stage pipeline orchestrator with adaptive checkpoints, claim verification, and material passport
+- **Academic Pipeline** — Full 10-stage pipeline orchestrator with adaptive checkpoints, audible alerts, claim verification, and material passport
 
 ## Superpowers Integration
 
@@ -285,6 +285,7 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines on adding agents, modes, s
 10. Style Calibration — learn the author's writing voice from past papers (optional, intake Step 10)
 11. Writing Quality Check — writing quality checklist catching overused AI-typical patterns
 12. Concept Lineage — trace intellectual genealogy via Semantic Scholar + OpenAlex APIs
+13. Audible checkpoint alerts — ascending tones for FULL/MANDATORY checkpoints (cross-platform)
 
 ---
 
@@ -315,6 +316,10 @@ https://github.com/Imbad0202/academic-research-skills
 ---
 
 ## Changelog
+
+### v3.9.1 (2026-03-28) — Audible Checkpoint Alerts + Schema Fix
+- **Audible checkpoint alerts**: FULL and MANDATORY pipeline checkpoints now play ascending tones (`tools/beep.sh`) so users know the pipeline has paused. Cross-platform (Windows/macOS/Linux). SLIM checkpoints remain silent and auto-continue.
+- **Schema 10 collision fix**: Style Profile moved from Schema 10 → Schema 17 (Schema 10 was already Experiment Design)
 
 ### v3.9.0 (2026-03-28) — Citation Graph APIs & Concept Lineage Agent
 - **Concept Lineage Agent** (deep-research, 14th agent): Traces intellectual genealogy of central concepts via Semantic Scholar + OpenAlex APIs. Citation chain tracing (origin → challenges → refinements → consensus), API-first with graceful degradation

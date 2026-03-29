@@ -184,9 +184,12 @@ consecutive_continue_count: integer (reset to 0 when user chooses any action oth
 ```
 1. Determine checkpoint_type (FULL / SLIM / MANDATORY) using rules above
 2. Update state_tracker (including checkpoint_type)
-3. Display checkpoint notification matching the type
-4. Wait for user response
-5. Based on user response, decide:
+3. If checkpoint_type is FULL or MANDATORY (pipeline will pause for human input):
+   a. Play audible alert via Bash tool (see Beep Sound below)
+   b. Display checkpoint notification matching the type
+4. If checkpoint_type is SLIM: display one-line status and auto-continue (no beep)
+5. Wait for user response
+6. Based on user response, decide:
    - "continue" "yes" -> increment consecutive_continue_count; proceed to next stage
    - "pause" "stop here" -> reset count; pause pipeline
    - "adjust" "change settings" -> reset count; let user adjust settings
@@ -267,6 +270,22 @@ This checkpoint requires your explicit confirmation.
 Continue?
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
+
+#### Beep Sound (Audible Checkpoint Alert)
+
+Before displaying a FULL or MANDATORY checkpoint, play a short audible alert so the user knows the pipeline has paused and needs attention. Use the Bash tool to run the shared beep script:
+
+```
+Bash: bash tools/beep.sh
+```
+
+The script auto-detects the platform (Windows/macOS/Linux) and plays three ascending tones (~2 seconds). See `tools/beep.sh` for implementation details.
+
+**Rules:**
+- SLIM checkpoints: no beep (auto-continues, user not needed)
+- FULL checkpoints: beep (pipeline pauses for user decision)
+- MANDATORY checkpoints: beep (pipeline pauses, explicit input required)
+- Beep fires **once** before the checkpoint prompt, not repeatedly
 
 ### Checkpoint Confirmation Semantics
 
@@ -353,7 +372,7 @@ When a sub-skill stage fails or produces unacceptable output:
 
 **All artifacts must carry a Material Passport (Schema 9)** with `origin_skill`, `origin_mode`, `origin_date`, `verification_status`, and `version_label`.
 
-**Style Profile carry-through**: If a Style Profile (Schema 10) was produced during `academic-paper` intake (Step 10), carry it through all stages in the Material Passport. The Style Profile is consumed by `draft_writer_agent` (Stage 2) and optionally by `report_compiler_agent` (Stage 1, if applicable). The Style Profile does not affect integrity verification or review stages.
+**Style Profile carry-through**: If a Style Profile (Schema 17) was produced during `academic-paper` intake (Step 10), carry it through all stages in the Material Passport. The Style Profile is consumed by `draft_writer_agent` (Stage 2) and optionally by `report_compiler_agent` (Stage 1, if applicable). The Style Profile does not affect integrity verification or review stages.
 
 ### 5. Exception Handling
 

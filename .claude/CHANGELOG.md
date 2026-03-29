@@ -55,7 +55,7 @@ Cross-skill fixes and update history.
 - `academic-pipeline/agents/pipeline_orchestrator_agent.md`: Style Profile carry-through in Material Passport.
 
 **Schema update**:
-- `shared/handoff_schemas.md`: Schema 10 (Style Profile) with 8 required fields, 3 optional fields, consumption priority system, and example.
+- `shared/handoff_schemas.md`: Schema 17 (Style Profile) with 8 required fields, 3 optional fields, consumption priority system, and example.
 
 **SKILL.md updates**:
 - `academic-paper/SKILL.md`: v2.4 -> v2.5

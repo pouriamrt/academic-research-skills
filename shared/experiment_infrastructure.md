@@ -538,8 +538,8 @@ COLAB OFFLOAD PROTOCOL — Human-in-the-Loop
 
 Step 1: NOTIFY — Alert the user that GPU computation is needed
   ├── Play an audible alert:
-  │   Bash: powershell -c "[console]::beep(800,300); Start-Sleep -m 200; [console]::beep(1000,300); Start-Sleep -m 200; [console]::beep(1200,500)"
-  │   (Three ascending beeps: 800Hz, 1000Hz, 1200Hz)
+  │   Bash: bash tools/beep.sh
+  │   (Three ascending tones ~2 seconds; auto-detects platform — see tools/beep.sh)
   │
   ├── Display a prominent message:
   │   ┌─────────────────────────────────────────────────────┐
@@ -590,21 +590,13 @@ Step 3: EXECUTE on Colab
 
 ### Beep Sound Cross-Platform Reference
 
-The notification beep must work on the user's platform:
+Use the shared beep script for all audible alerts (pipeline checkpoints, Colab pauses, etc.):
 
 ```
-Windows (PowerShell):
-  powershell -c "[console]::beep(800,300); Start-Sleep -m 200; [console]::beep(1000,300); Start-Sleep -m 200; [console]::beep(1200,500)"
-
-macOS:
-  osascript -e 'beep 3'
-
-Linux:
-  for freq in 800 1000 1200; do (speaker-test -t sine -f $freq -l 1 &) ; sleep 0.3 ; kill $! 2>/dev/null; done
-
-Fallback (if none work):
-  printf '\a\a\a'
+bash tools/beep.sh
 ```
+
+The script auto-detects the platform (Windows/macOS/Linux) and plays three ascending tones (~2 seconds). Includes fallbacks: PulseAudio → speaker-test → terminal bell. See `tools/beep.sh` for implementation.
 
 Agents should detect the platform from the environment and use the appropriate command. On Windows, use the PowerShell variant.
 

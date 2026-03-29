@@ -1033,7 +1033,7 @@ CONCEPT: Technology Acceptance Model (TAM)
 
 ---
 
-## Schema 10: Style Profile (intake -> draft_writer / report_compiler)
+## Schema 17: Style Profile (intake -> draft_writer / report_compiler)
 
 **Producer**: `academic-paper/agents/intake_agent` (Step 10)
 **Consumer**: `academic-paper/agents/draft_writer_agent`, `deep-research/agents/report_compiler_agent`

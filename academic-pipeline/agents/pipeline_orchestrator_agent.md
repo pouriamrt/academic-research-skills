@@ -287,9 +287,15 @@ For FULL checkpoints, the orchestrator must collect from state_tracker:
 | Word count (current vs target) | Paper draft metadata | Stages 2, 4, 4' |
 | Reference count (current vs minimum) | Bibliography / reference list | Stages 1, 2, 4 |
 | Section coverage | Paper draft sections | Stage 2 |
+| **Figure count** | **Figure Packages from Phase 4.5** | **Stage 2** |
 | Integrity scores | Integrity report | Stages 2.5, 4.5 |
 | Review decision + item counts | Review report | Stages 3, 3' |
 | Revision completion ratio | Response to Reviewers | Stages 4, 4' |
+
+**Figure completeness check at Stage 2 checkpoint:**
+- If figure count = 0: WARNING — "No figures were generated. A publication-ready paper requires at least 1 figure. Consider requesting visualization_agent to generate conceptual diagrams or data figures."
+- If figure count > 0: Display "Figures: [N] (Figure 1: [caption], Figure 2: [caption], ...)"
+- If [FIGURE PLACEHOLDER] markers remain in the draft: ERROR — "Unresolved figure placeholders found. visualization_agent (Phase 4.5) may not have completed."
 
 #### SLIM Checkpoint Template
 
@@ -414,7 +420,7 @@ When a sub-skill stage fails or produces unacceptable output:
 | Stage 1.5b -> 1.5c | Accumulated notebook entries | Notebook entries | Pass to lab-notebook for export |
 | Stage 1.5 -> 2 | RQ Brief, Bibliography, Synthesis + Experiment Design + Experiment Results + Lab Record | Schema 1-3 + Schema 10 + Schema 11 + Schema 12 | Combined deep-research + experiment handoff |
 | Stage 1 -> 2 (no experiment) | RQ Brief, Annotated Bibliography, Synthesis Report | Schema 1 (RQ Brief), Schema 2 (Bibliography), Schema 3 (Synthesis) | deep-research handoff protocol |
-| Stage 2 -> 2.5 | Complete Paper Draft | Schema 4 (Paper Draft) | Pass to integrity_verification_agent |
+| Stage 2 -> 2.5 | Complete Paper Draft + Figure Packages | Schema 4 (Paper Draft) + Figure Packages from Phase 4.5 | Verify figures are present (at least 1); pass to integrity_verification_agent |
 | Stage 2.5 -> 3 | Verified Paper Draft + Integrity Report | Schema 4 + Schema 5 (Integrity Report) | Pass to reviewer (with verification report attached) |
 | Stage 3 -> **experiment check** -> **coaching** -> 4 | Editorial Decision, Revision Roadmap, 5 Review Reports | Schema 6 (Review Report), Schema 7 (Revision Roadmap) | Check Roadmap for `requires_new_experiment` items -> if found, dispatch Stage 1.5-R -> then Socratic dialogue -> academic-paper revision mode input |
 | Stage 4 -> 3' | Revised Draft, Response to Reviewers | Schema 4 (revised) + Schema 8 (Response to Reviewers) | Pass to reviewer (marked as verification round) |

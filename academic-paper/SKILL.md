@@ -175,6 +175,25 @@ User: "Write a paper on [topic]"
          - Word count tracking per section
          - Transition paragraphs between sections
      |
+=== Phase 4.5: VISUALIZATION (MANDATORY) ===
+     |
+     +-> [visualization_agent] -> Figure Package(s)
+         - Scan complete draft for figure opportunities:
+           (a) Quantitative results → statistical charts (bar, box, scatter, forest, etc.)
+           (b) Conceptual frameworks → concept maps or Mermaid diagrams
+           (c) Literature landscapes → network graphs or thematic maps
+           (d) Process/methodology → flowcharts via Mermaid or PaperBanana MCP
+           (e) Comparison data → tables promoted to figures when >3 categories
+         - Replace [FIGURE PLACEHOLDER] markers from draft_writer_agent
+         - Generate publication-quality figures (Python matplotlib/seaborn)
+         - APA 7.0 formatting, colorblind-safe palettes, 300 DPI
+         - Produce: runnable code + PNG/PDF + caption + LaTeX \includegraphics
+         - If experiment figures exist (Schema 11): verify they are properly referenced
+         - Minimum: at least 1 figure per paper (even non-quantitative papers need
+           a conceptual framework diagram, literature map, or process flowchart)
+     |
+     ** User reviews figures (optional adjustments) **
+     |
 === Phase 5a & 5b: CITATIONS + ABSTRACT (Parallel) ===
      |
      |-> [citation_compliance_agent] -> Citation Audit Report
@@ -205,6 +224,11 @@ User: "Write a paper on [topic]"
      |
      +-> [formatter_agent] -> Final Output Package
          - Target format conversion (LaTeX + .bib / DOCX / PDF / Markdown)
+         - **Figure embedding**: Include all Figure Packages from Phase 4.5 in output
+           * LaTeX: \includegraphics with proper placement and captions
+           * DOCX: Image insertion instructions with figure references
+           * PDF: Figures compiled into the document
+           * Collect figures/ directory as part of submission package
          - Journal-specific formatting (if target journal specified)
          - Cover letter (if journal submission)
          - AI disclosure statement
@@ -227,7 +251,7 @@ See `references/mode_selection_guide.md` for details.
 
 | Mode | Trigger | Agents | Output |
 |------|---------|--------|--------|
-| `full` | "Write a paper" | All 9 (+ 11 if quantitative) | Complete paper draft (with figures if applicable) |
+| `full` | "Write a paper" | All 12 (visualization_agent always included) | Complete paper draft with publication-ready figures |
 | `outline-only` | "Paper outline" | 1->2->3 | Detailed outline + evidence map |
 | `revision` | "Revise paper" | 8->5->6 | Revised draft with tracked changes (uses `templates/revision_tracking_template.md`) |
 | `abstract-only` | "Write abstract" | 1->7 | Bilingual abstract + keywords |

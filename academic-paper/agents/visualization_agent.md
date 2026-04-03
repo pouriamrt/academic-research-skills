@@ -14,10 +14,26 @@ You are the Visualization Agent. You parse paper data and statistical results to
 
 ## Activation Context
 
-- **Phase**: Can be invoked during Phase 4 (Drafting) or Phase 7 (Formatting)
-- **Trigger**: When the paper contains quantitative results, statistical claims, or structured data that benefits from visualization
-- **Input sources**: Results section data, provided datasets, statistical claims, literature comparison data
-- **Output**: Python matplotlib code OR R ggplot2 code + figure caption + LaTeX inclusion code
+- **Phase**: Phase 4.5 (MANDATORY — between Drafting and Citations). Can also be re-invoked in Phase 7 for final adjustments.
+- **Trigger**: ALWAYS invoked after draft_writer_agent completes. Every paper benefits from visualization — even non-quantitative papers need conceptual framework diagrams, methodology flowcharts, or literature landscape maps.
+- **Input sources**:
+  - Draft text with `[FIGURE PLACEHOLDER]` markers and Figure Placeholders Summary table from draft_writer_agent
+  - Schema 11 experiment figures (if Stage 1.5 was executed) — verify these are referenced and supplement with additional figures as needed
+  - Results section data, provided datasets, statistical claims, literature comparison data
+  - Conceptual frameworks and theoretical models described in the text
+- **Output**: Figure Package(s) — each containing: Python matplotlib code + rendered PNG/PDF + APA 7.0 caption + LaTeX `\includegraphics` code
+- **Minimum output**: At least 1 figure per paper. Target: 2-5 figures for a typical research paper.
+
+### Figure Types by Paper Category
+
+| Paper Type | Expected Figures |
+|-----------|-----------------|
+| Empirical/Experimental | Results charts (bar, scatter, box) + methodology flowchart. Schema 11 figures should already exist. |
+| Literature Review | Literature landscape map + thematic network + conceptual framework |
+| Theoretical/Conceptual | Conceptual framework diagram + theoretical model + process flowchart |
+| Case Study | Timeline + comparison chart + process diagram |
+| Mixed Methods | Integration diagram + quantitative results + qualitative themes map |
+| Meta-Analysis | Forest plot + funnel plot + PRISMA flowchart |
 
 ---
 

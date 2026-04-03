@@ -25,10 +25,16 @@ Reference: `references/latex_template_reference.md`
 
 **Main .tex file**:
 - Document class: `article` (default) or journal-specific
-- Packages: `amsmath`, `graphicx`, `hyperref`, `natbib` or `biblatex`
+- Packages: `amsmath`, `graphicx`, `hyperref`, `natbib` or `biblatex`, `float`, `subcaption`, `caption`
 - Sections mapped to `\section{}`, `\subsection{}`, etc.
 - Tables as `tabular` environments
-- Figures as `figure` environments with captions
+- **Figures**: Embed all Figure Packages from visualization_agent (Phase 4.5) as `figure` environments:
+  - Use the LaTeX `\includegraphics` code provided in each Figure Package
+  - Place figures near their first text reference (use `[htbp]` placement)
+  - Include APA-formatted captions from Figure Package
+  - Copy figure PDF files to a `figures/` subdirectory alongside the .tex file
+  - For Schema 11 experiment figures: use PDF versions from `experiment_outputs/figures/`
+  - Verify every `[FIGURE PLACEHOLDER]` has been replaced by a real figure
 - Citations as `\cite{}`, `\citep{}`, `\citet{}`
 
 **Bibliography .bib file**:
@@ -37,20 +43,64 @@ Reference: `references/latex_template_reference.md`
 - DOI field included where available
 - Consistent citation keys: `AuthorYear` or `Author_Year_Keyword`
 
+**Figures directory**:
+- `figures/` subdirectory containing all PDF figure files
+- Naming convention: `figure_01.pdf`, `figure_02.pdf`, etc.
+- Must include experiment figures (from `experiment_outputs/figures/`) AND paper-generated figures (from visualization_agent Phase 4.5)
+
 ### 3. DOCX (Instructions for Word)
 Since direct DOCX generation is not available, provide:
 - Complete markdown with DOCX conversion instructions
+- **Figure integration**: Insert figure images inline at the marked positions using markdown image syntax: `![Figure N caption](figures/figure_0N.png)`
 - Style mapping guide (Heading 1 = Level 1, etc.)
 - Font/margin/spacing specifications
-- Instructions for Pandoc conversion: `pandoc input.md -o output.docx --reference-doc=template.docx`
+- Instructions for Pandoc conversion: `pandoc input.md -o output.docx --reference-doc=template.docx --resource-path=figures/`
+- **Figure files must be in the same directory** or a `figures/` subdirectory for Pandoc to find them
 
 ### 4. PDF (via LaTeX or Pandoc)
-- Provide LaTeX source that compiles to PDF
-- Or provide Pandoc command: `pandoc input.md -o output.pdf --pdf-engine=xelatex`
+- Provide LaTeX source that compiles to PDF (preferred — best figure quality)
+- **Figures MUST be embedded** — the PDF is not publication-ready without figures
+- Or provide Pandoc command: `pandoc input.md -o output.pdf --pdf-engine=xelatex --resource-path=figures/`
 - For zh-TW content: use XeLaTeX with CJK font support
 
 ### 5. Combined (All formats)
 - Generate Markdown + LaTeX + conversion instructions for DOCX and PDF
+
+## Figure Embedding Protocol (MANDATORY)
+
+**Before generating any output format, the formatter_agent MUST:**
+
+1. **Collect all Figure Packages** from visualization_agent (Phase 4.5 output):
+   - Each package contains: figure code, PNG/PDF files, APA caption, LaTeX inclusion code
+   - Also collect Schema 11 experiment figures (if Stage 1.5 was executed)
+
+2. **Run the figure code** to generate actual image files:
+   - Execute each Python/R script from the Figure Packages using the Bash tool
+   - Save output to `figures/` directory alongside the paper
+   - Verify each figure file exists and is non-empty
+
+3. **Replace all [FIGURE PLACEHOLDER] markers** in the paper text:
+   - For LaTeX: insert `\begin{figure}...\end{figure}` with `\includegraphics`
+   - For Markdown/DOCX: insert `![Figure N](figures/figure_0N.png)` with caption below
+   - For each figure, also insert the in-text reference: "As shown in Figure N, ..."
+
+4. **Verify figure completeness:**
+   - [ ] Every [FIGURE PLACEHOLDER] has been replaced
+   - [ ] Every figure has a numbered label (Figure 1, Figure 2, ...)
+   - [ ] Every figure has an APA 7.0 caption
+   - [ ] Every figure is referenced at least once in the text
+   - [ ] All figure files exist in the `figures/` directory
+   - [ ] At least 1 figure in the final paper (even non-quantitative papers)
+
+5. **Final submission package includes:**
+   - Main paper file (.tex / .md / .docx)
+   - Bibliography file (.bib)
+   - Figures directory with all PNG and PDF figure files
+   - Figure generation scripts (for reproducibility)
+
+**A paper without figures is NOT publication-ready.** If no Figure Packages were received from Phase 4.5, flag this to the user before proceeding.
+
+---
 
 ## Journal-Specific Formatting
 

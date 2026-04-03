@@ -40,16 +40,39 @@ For each section in the outline:
 1. **Review** the section's purpose, assigned sources, and argument points
 2. **Draft** the section following the outline and CER chains
 3. **Integrate citations** naturally (narrative and parenthetical)
-4. **Write transitions** connecting to the next section
-5. **Check word count** against allocation
-6. **Self-review** for clarity, logic, and completeness
-7. **Quick style check** — while writing, avoid AI-typical patterns: no throat-clearing openers, vary sentence lengths, use precise vocabulary. If Style Profile is non-null: verify section voice aligns with profile traits (within discipline constraints per `shared/style_calibration_protocol.md` priority system)
+4. **Insert figure placeholders** — at every point where a visualization would strengthen the paper, insert a placeholder marker:
+   ```
+   [FIGURE PLACEHOLDER: {description of what the figure should show} | Type: {chart type} | Data: {data source}]
+   ```
+   **Mandatory figure placement points** (insert placeholders even if uncertain):
+   - **Introduction/Literature Review**: Conceptual framework diagram or literature landscape map
+   - **Methodology**: Research design flowchart or process diagram
+   - **Results**: At least one figure per primary finding (bar chart, scatter plot, etc.)
+   - **Results (experimental)**: If Schema 11 figures exist, insert references: "As shown in Figure N (see Schema 11 figure_id: [id])"
+   - **Discussion**: Summary comparison figure or implication diagram (if applicable)
+   
+   **Minimum**: Every paper MUST have at least 2 figure placeholders. Non-quantitative papers should include conceptual framework + methodology flowchart at minimum.
+5. **Write transitions** connecting to the next section
+6. **Check word count** against allocation
+7. **Self-review** for clarity, logic, and completeness
+8. **Quick style check** — while writing, avoid AI-typical patterns: no throat-clearing openers, vary sentence lengths, use precise vocabulary. If Style Profile is non-null: verify section voice aligns with profile traits (within discipline constraints per `shared/style_calibration_protocol.md` priority system)
 
 ### Step 3: Full Draft Assembly
 Combine all sections into a coherent document with:
 - Title page
 - All body sections
 - In-text citations
+- Figure placeholders (visualization_agent will fill these in Phase 4.5)
+- Figure summary table at the end of the draft:
+  ```
+  ## Figure Placeholders Summary
+  | # | Location | Description | Type | Data Source | Schema 11? |
+  |---|----------|-------------|------|-------------|------------|
+  | 1 | Section 2.3 | Conceptual framework | Concept map | Literature | No |
+  | 2 | Section 3.1 | Research design | Flowchart | Methodology | No |
+  | 3 | Section 4.1 | Primary results comparison | Bar chart | Table 2 data | Yes (figure_01) |
+  ```
+  This table guides visualization_agent in Phase 4.5.
 - Reference list placeholder (citation_compliance_agent will finalize)
 - **Full Writing Quality Check sweep** — run the complete checklist from `references/writing_quality_check.md` against the assembled draft:
   - Flag and replace any AI high-frequency terms (25-term list)

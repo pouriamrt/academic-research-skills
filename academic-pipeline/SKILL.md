@@ -2,12 +2,12 @@
 name: academic-pipeline
 description: "Orchestrator for the full academic research pipeline: research -> experiment (optional) -> write -> integrity check -> review -> revise -> re-review -> re-revise -> final integrity check -> finalize -> process summary. Coordinates deep-research, experiment-designer, data-analyst, simulation-runner, lab-notebook, academic-paper, and academic-paper-reviewer into a seamless workflow with auto-detected experiment stages, mandatory integrity verification, two-stage peer review, and reproducible quality gates. Triggers on: academic pipeline, research to paper, full paper workflow, paper pipeline, end-to-end paper, research-to-publication, complete paper workflow."
 metadata:
-  version: "2.7"
-  last_updated: "2026-03-28"
+  version: "2.8"
+  last_updated: "2026-04-03"
   depends_on: "deep-research, experiment-designer, data-analyst, simulation-runner, lab-notebook, academic-paper, academic-paper-reviewer"
 ---
 
-# Academic Pipeline v2.7 — Full Academic Research Workflow Orchestrator
+# Academic Pipeline v2.8 — Full Academic Research Workflow Orchestrator
 
 A lightweight orchestrator that manages the complete academic pipeline from research exploration to final manuscript. It does not perform substantive work — it only detects stages, recommends modes, dispatches skills, manages transitions, and tracks state.
 
@@ -104,9 +104,12 @@ I received reviewer comments, help me revise
    - Stage 2.5 INTEGRITY extended with Phase F: re-execute reproducibility script, diff results
 2. **Stage 2 WRITE** -> user confirmation -> Stage 2.5
 3. **Stage 2.5 INTEGRITY** -> PASS -> Stage 3 (FAIL -> fix and re-verify, max 3 rounds)
-4. **Stage 3 REVIEW** -> Accept -> Stage 4.5 / Minor|Major -> Stage 4 / Reject -> Stage 2 or end
+4. **Stage 3 REVIEW** -> Accept -> Stage 4.5 / Minor|Major -> **Experiment Re-Entry Check** -> Stage 4 / Reject -> Stage 2 or end
+   - **Experiment Re-Entry Check**: Scan Revision Roadmap for `requires_new_experiment = true` items
+   - If found: Stage 1.5-R (EXPERIMENT RE-ENTRY) -> produce new Schema 11 -> merge with existing results -> Stage 4
+   - If not found or user opts out: proceed directly to Stage 4
 5. **Stage 4 REVISE** -> user confirmation -> Stage 3'
-6. **Stage 3' RE-REVIEW** -> Accept|Minor -> Stage 4.5 / Major -> Stage 4'
+6. **Stage 3' RE-REVIEW** -> Accept|Minor -> Stage 4.5 / Major -> **Experiment Re-Entry Check** -> Stage 4' (last experiment opportunity)
 7. **Stage 4' RE-REVISE** -> user confirmation -> Stage 4.5 (no return to review)
 8. **Stage 4.5 FINAL INTEGRITY** -> PASS (zero issues) -> Stage 5 (FAIL -> fix and re-verify)
 9. **Stage 5 FINALIZE** -> MD + DOCX -> ask about LaTeX -> confirm -> PDF -> Stage 6
@@ -244,9 +247,9 @@ After user confirmation:
    - Stage 1  --> 2: deep-research handoff (RQ Brief + Bibliography + Synthesis)
    - Stage 2  --> 2.5: Pass complete paper to integrity_verification_agent
    - Stage 2.5 --> 3: Pass verified paper to reviewer
-   - Stage 3  --> 4: Pass Revision Roadmap to academic-paper revision mode
+   - Stage 3  --> experiment check --> 4: Check Roadmap for experiment items; if found, dispatch Stage 1.5-R first; then pass Revision Roadmap + new Schema 11 (if any) to academic-paper revision mode
    - Stage 4  --> 3': Pass revised draft and Response to Reviewers to reviewer
-   - Stage 3' --> 4': Pass new Revision Roadmap to academic-paper revision mode
+   - Stage 3' --> experiment check --> 4': Check Roadmap for experiment items; if found, dispatch Stage 1.5-R2 (last chance); then pass new Revision Roadmap + new Schema 11 (if any) to academic-paper revision mode
    - Stage 4/4' --> 4.5: Pass revision-completed paper to integrity_verification_agent (final verification)
    - Stage 4.5 --> 5: Pass verified final draft to format-convert mode
 3. Begin next stage

@@ -215,8 +215,35 @@ Recommended platforms: PROSPERO for systematic reviews, OSF Registries for all o
 - No method should be selected "because it's popular" — justify from the question
 - Limitations must be acknowledged upfront, not hidden
 - Blueprint must cover all 5 components: paradigm, method, data, analysis, validity
-- Blueprint must include the Experiment Pipeline Routing section with `methodology_subtype` and all three routing flags (`requires_experiment_design`, `requires_data_collection`, `requires_simulation`) — this is consumed by `academic-pipeline` to auto-detect Stage 1.5
-- For computational papers proposing new methods with benchmark evaluations, `requires_experiment_design` must be `true` — benchmark evaluations are experiments
 - If human subjects are involved, IRB planning is mandatory (ref: `references/irb_decision_tree.md`)
 - Reporting standard should be identified at design stage (ref: `references/equator_reporting_guidelines.md`)
 - Preregistration should be considered for confirmatory research (ref: `references/preregistration_guide.md`)
+
+### **CRITICAL — Experiment Pipeline Routing Gate (BLOCKING)**
+
+The Methodology Blueprint is **incomplete and MUST NOT be delivered** unless it contains the **Experiment Pipeline Routing** section with ALL of the following:
+
+1. `methodology_subtype` — exactly one value from the enum in Section 8
+2. `requires_experiment_design` — explicit `true` or `false`
+3. `requires_data_collection` — explicit `true` or `false`
+4. `requires_simulation` — explicit `true` or `false`
+5. `routing_justification` — 1-2 sentences explaining the flag values
+
+**Self-check before delivering the blueprint:**
+
+```
+ROUTING FLAG SELF-CHECK (mandatory):
+[ ] methodology_subtype is set to exactly one valid enum value
+[ ] requires_experiment_design is explicitly true or false (not omitted)
+[ ] requires_data_collection is explicitly true or false (not omitted)
+[ ] requires_simulation is explicitly true or false (not omitted)
+[ ] routing_justification explains WHY (not just restating the flags)
+[ ] If RQ involves "Does X cause Y?" or intervention/treatment → requires_experiment_design = true
+[ ] If RQ involves computational modeling/Monte Carlo/bootstrap → requires_simulation = true
+[ ] If method is RCT/factorial/crossover/quasi-experimental → requires_experiment_design = true
+[ ] Benchmark evaluations of new methods/algorithms → requires_experiment_design = true
+```
+
+**If any flag would be `true` but was accidentally set to `false`, the entire downstream pipeline will skip experiments, producing a paper without empirical evidence. This is a CRITICAL failure mode.**
+
+These flags are consumed by `academic-pipeline` to auto-detect Stage 1.5 (EXPERIMENT). Omitting them or setting them incorrectly causes the experiment stage to be silently skipped.

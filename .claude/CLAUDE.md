@@ -13,7 +13,7 @@ A suite of Claude Code skills for rigorous academic research, experimentation, s
 | `lab-notebook` v1.0 | Experiment research record | full, log-entry, deviation, snapshot, export, audit |
 | `academic-paper` v2.5 | 12-agent academic paper writing | full, plan, outline-only, revision, abstract-only, lit-review, format-convert, citation-check |
 | `academic-paper-reviewer` v1.4 | Multi-perspective paper review (5 reviewers) | full, re-review, quick, methodology-focus, guided |
-| `academic-pipeline` v2.7 | Full pipeline orchestrator | (coordinates all above) |
+| `academic-pipeline` v2.8 | Full pipeline orchestrator | (coordinates all above) |
 
 ## Routing Rules
 
@@ -82,8 +82,13 @@ Stage 1.5: [EXPERIMENT — optional, auto-detected from Methodology Blueprint]
 Stage 2:   academic-paper (plan/full) ← integrates Schema 11/12 into Results & Methods
 Stage 2.5: integrity verification (mandatory gate — references, claims, originality)
 Stage 3:   academic-paper-reviewer (full/guided)
-Stage 4:   academic-paper (revision) + Response to Reviewers
+  → Experiment Re-Entry Check: scan Revision Roadmap for requires_new_experiment items
+Stage 1.5-R: [EXPERIMENT RE-ENTRY — conditional, triggered by reviewer requests for new data]
+             → experiment-designer / data-analyst / simulation-runner (based on experiment_type)
+Stage 4:   academic-paper (revision) + Response to Reviewers (integrates new Schema 11-R if available)
 Stage 3':  academic-paper-reviewer (re-review)
+  → Experiment Re-Entry Check (last opportunity for experiments)
+Stage 1.5-R2: [EXPERIMENT RE-ENTRY 2 — conditional, final experiment opportunity]
 Stage 4':  academic-paper (re-revision, max 1 round)
 Stage 4.5: final integrity verification (mandatory, zero-tolerance)
 Stage 5:   academic-paper (format-convert → LaTeX/DOCX/PDF)
@@ -91,6 +96,8 @@ Stage 6:   PROCESS SUMMARY (auto — bilingual paper creation record → PDF)
 ```
 
 The experiment stages (1.5) are auto-detected from the Methodology Blueprint produced by deep-research. If the methodology does not require experimentation (e.g., literature review, theoretical, policy analysis), these stages are skipped entirely.
+
+The experiment re-entry stages (1.5-R, 1.5-R2) are triggered when reviewers request new empirical evidence during revision. The editorial_synthesizer_agent flags revision items with `requires_new_experiment = true`, and the pipeline re-enters experiment stages before text revision. Users can opt out and mark items as Acknowledged Limitations instead.
 
 ## Handoff Protocol
 
@@ -101,7 +108,10 @@ Materials: RQ Brief, Methodology Blueprint, Annotated Bibliography, Synthesis Re
 Materials: Complete paper text. field_analyst_agent auto-detects domain and configures reviewers.
 
 ### academic-paper-reviewer → academic-paper (revision)
-Materials: Editorial Decision Letter, Revision Roadmap, Per-reviewer detailed comments
+Materials: Editorial Decision Letter, Revision Roadmap (with `requires_new_experiment` flags on applicable items), Per-reviewer detailed comments
+
+### academic-paper-reviewer → pipeline orchestrator → experiment re-entry (NEW)
+When Revision Roadmap contains `requires_new_experiment = true` items: pipeline re-enters Stage 1.5-R before Stage 4. New Schema 11-R and Schema 12-R are produced and merged with existing experiment materials for integration into the revised paper.
 
 ### experiment-designer → data-analyst / simulation-runner
 Materials: Experiment Design (Schema 10), Simulation Specification (Schema 13, if simulation design)
@@ -120,7 +130,7 @@ Materials: Complete paper draft (Schema 4). Integrity agent checks references, c
 Run `python tools/self_test.py` to validate plugin structural integrity (195 checks). See `tools/` for schema validation, dependency graph generation, pipeline dashboard, and reproducibility replay.
 
 ## Version Info
-- **Version**: 3.9.1
-- **Last Updated**: 2026-03-30
+- **Version**: 3.10.0
+- **Last Updated**: 2026-04-03
 - **Author**: Pouria Mortezaagha
 - **License**: CC-BY-NC 4.0

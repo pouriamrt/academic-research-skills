@@ -161,7 +161,10 @@ This document defines all legal states, transition conditions, transition action
 | Stage 2.5 | Stage 2.5 (retry) | FAIL | Fix issues, re-verify (max 3 rounds) |
 | checkpoint | Stage 3 | User confirms | Pass verified paper to reviewer |
 | Stage 3 | **checkpoint** | Decision produced | Wait for user confirmation |
-| checkpoint | Stage 4 | Decision = Minor/Major, user confirms | Pass Revision Roadmap |
+| checkpoint | **Experiment Re-Entry Check** | Decision = Minor/Major, user confirms | Scan Revision Roadmap for `requires_new_experiment` items |
+| Experiment Re-Entry Check | Stage 1.5-R | Experiment items found AND user confirms re-entry | Dispatch experiment sub-stages based on experiment_type |
+| Experiment Re-Entry Check | Stage 4 | No experiment items OR user opts out | Pass Revision Roadmap to revision coaching |
+| Stage 1.5-R | Stage 4 | New Schema 11 produced | Merge new results with existing materials; pass to revision coaching |
 | checkpoint | Stage 4.5 | Decision = Accept, user confirms | Skip revision, go directly to final verification |
 | Stage 4 | **checkpoint** | Stage 4 completed | Wait for user confirmation |
 | checkpoint | Stage 3' | User confirms | Pass Revised Draft + Response to Reviewers |
@@ -187,6 +190,19 @@ This document defines all legal states, transition conditions, transition action
 | Stage 4' | Stage 4.5 | Revision complete | Go directly to final verification (no return to review) |
 | Any stage | PAUSED | User says "pause" or "stop here" | Save pipeline state |
 | PAUSED | Previous stage | User returns to continue | Restore pipeline state, display Dashboard |
+
+### Experiment Re-Entry Transitions (NEW in v2.8)
+
+| From | To | Precondition | Action |
+|------|----|-------------|--------|
+| Stage 3 (Minor/Major) | **Stage 1.5-R** | Revision Roadmap contains item(s) with `requires_new_experiment = true` AND user confirms experiment re-entry | Dispatch experiment sub-stages based on `experiment_type`; preserve all Stage 1-3 materials |
+| **Stage 1.5-R** | Stage 4 | Stage 1.5-R produces new Schema 11 | Merge new experiment results with existing materials; proceed to revision coaching then Stage 4 |
+| Stage 3' (Major) | **Stage 1.5-R2** | New Revision Roadmap contains item(s) with `requires_new_experiment = true` AND user confirms | Dispatch experiment sub-stages; this is the LAST experiment opportunity |
+| **Stage 1.5-R2** | Stage 4' | Stage 1.5-R2 produces new Schema 11 | Merge new experiment results; proceed to residual coaching then Stage 4' |
+
+**Stage 1.5-R sub-stages follow the same protocol as Stage 1.5 (design -> execute -> log), but may skip the design phase when `experiment_type = "additional_analysis"` (re-use existing Schema 10).**
+
+**User opt-out**: At each experiment re-entry checkpoint, the user may choose to skip experiments and mark those items as "Acknowledged Limitations" instead. This is a valid academic choice (not all reviewer requests must be fulfilled).
 
 ### Prohibited Transitions (Illegal)
 
@@ -217,6 +233,8 @@ This document defines all legal states, transition conditions, transition action
 | **Simulation Spec (Schema 13)** | **Stage 1.5a** | **Stage 1.5b (input, simulation-runner only)** | **Required if `requires_simulation=true`** |
 | **Experiment Results (Schema 11)** | **Stage 1.5b** | **Stage 2 (Results section)** | **Required if Stage 1.5 active** |
 | **Lab Record (Schema 12)** | **Stage 1.5c** | **Stage 2 (Methods section)** | **Required if Stage 1.5 active** |
+| **Revision Experiment Results (Schema 11-R)** | **Stage 1.5-R** | **Stage 4 (Results integration)** | **Required if Stage 1.5-R active** |
+| **Revision Lab Record (Schema 12-R)** | **Stage 1.5-R** | **Stage 4 (Methods integration)** | **Required if Stage 1.5-R active** |
 | Paper Draft | Stage 2 | Stage 2.5 (input) | **Required** |
 | **Integrity Report (Pre)** | **Stage 2.5** | **Stage 3 (prerequisite)** | **Required** |
 | **Verified Paper Draft** | **Stage 2.5** | **Stage 3 (Phase 0)** | **Required** |

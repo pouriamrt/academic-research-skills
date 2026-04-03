@@ -396,6 +396,9 @@ phases: {
 | Field | Type | Description |
 |-------|------|-------------|
 | `deadline_suggestion` | string | Suggested timeline for completion |
+| `requires_new_experiment` | boolean | `true` if this revision item cannot be addressed by text revision alone and requires new data collection, experiment execution, or simulation. Default: `false`. When `true`, the pipeline orchestrator re-enters Stage 1.5 before proceeding with text revision |
+| `experiment_type` | enum | Only present when `requires_new_experiment = true`. One of: `"new_experiment"` (design + execute from scratch), `"additional_analysis"` (re-analyze existing data with new tests), `"replication"` (repeat experiment with modifications), `"simulation"` (new/modified simulation). Informs which sub-stage of 1.5 to re-enter |
+| `experiment_scope` | string | Only present when `requires_new_experiment = true`. Brief description of what experiment/analysis is needed (e.g., "Conduct robustness check with alternative DV operationalization") |
 
 ---
 

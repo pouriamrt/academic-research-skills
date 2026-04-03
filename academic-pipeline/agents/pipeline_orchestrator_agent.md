@@ -68,83 +68,127 @@ Integrity checks (Stage 2.5 & 4.5) are mandatory and cannot be skipped.
 You can adjust any stage's mode at any time. Ready to begin?
 ```
 
-### 2.5. Stage 1.5 Experiment Detection (Post-Stage 1)
+### 2.5. Stage 1.5 Experiment Detection (Post-Stage 1) — CRITICAL GATE
 
-After Stage 1 (RESEARCH) completes and the user confirms the checkpoint, the orchestrator **must** inspect the Methodology Blueprint for experiment routing flags before deciding whether to proceed to Stage 1.5 or Stage 2.
+**This step is MANDATORY and CANNOT be skipped.** After Stage 1 (RESEARCH) completes and the user confirms the checkpoint, the orchestrator MUST perform the following extraction and routing before ANY other action. Do NOT proceed to Stage 2 without completing this gate.
 
-#### Detection Logic
+#### Step A: Extract Routing Flags (MANDATORY)
 
-```
-1. Extract from Methodology Blueprint:
-   - methodology_subtype
-   - requires_experiment_design (boolean)
-   - requires_data_collection (boolean) — passed through to experiment-designer at 1.5a; not used for routing decisions
-   - requires_simulation (boolean)
-
-2. Decision:
-   IF requires_experiment_design = true OR requires_simulation = true:
-     -> Inform user: "The methodology requires experimentation. Proceeding to Stage 1.5 (EXPERIMENT)."
-     -> Present experiment mode options (see below)
-     -> Dispatch Stage 1.5
-
-   ELSE:
-     -> Inform user: "No experiment stage needed. Proceeding to Stage 2 (WRITE)."
-     -> Proceed to Stage 2
-
-3. If methodology_subtype is missing or routing flags are absent:
-   -> WARNING: "The Methodology Blueprint is missing routing flags. This may indicate an incomplete blueprint."
-   -> Ask user: "Does your research require designing and running experiments or simulations? (yes/no)"
-   -> If yes -> enter Stage 1.5
-   -> If no -> proceed to Stage 2
-```
-
-#### Stage 1.5 Mode Recommendation
+Locate the **Experiment Pipeline Routing** section in the Methodology Blueprint. Extract and display ALL four values to the user:
 
 ```
-Based on your methodology, I recommend the following experiment configuration:
-
-Stage 1.5a DESIGN:    [full/guided] -- [explanation]
-Stage 1.5b EXECUTE:   [data-analyst full / simulation-runner full] -- [explanation]
-Stage 1.5c LOG:       lab-notebook (auto) -- continuous auto-logging
-
-Note: If requires_simulation = true -> dispatch simulation-runner
-      If requires_simulation = false -> dispatch data-analyst
-      If both real data analysis AND simulation needed -> dispatch both sequentially
-
-Ready to begin experiment design?
+EXPERIMENT ROUTING FLAGS (extracted from Methodology Blueprint):
+  methodology_subtype:          [value or MISSING]
+  requires_experiment_design:   [true/false or MISSING]
+  requires_data_collection:     [true/false or MISSING]
+  requires_simulation:          [true/false or MISSING]
+  routing_justification:        [text or MISSING]
 ```
+
+**If ANY flag shows MISSING**: Do NOT silently skip experiments. Instead:
+1. WARNING: "The Methodology Blueprint is missing experiment routing flags. This is a quality issue."
+2. Review the Methodology Blueprint's method type yourself:
+   - If the method is experimental, quasi-experimental, simulation, benchmark evaluation, RCT, factorial, or involves hypothesis testing with intervention → set `requires_experiment_design = true` and inform the user
+   - If unclear → Ask user: "Does your research require designing and running experiments or simulations? (yes/no)"
+3. If user says no → proceed to Stage 2 with explicit acknowledgment
+
+#### Step B: Route Decision (MANDATORY)
+
+```
+IF requires_experiment_design = true OR requires_simulation = true:
+  -> Display: "The methodology requires experimentation. Entering Stage 1.5 (EXPERIMENT)."
+  -> Present experiment mode options (see below)
+  -> Dispatch Stage 1.5. DO NOT allow skipping Stage 1.5 when routing flags indicate experiments are needed.
+
+ELSE (both flags are explicitly false):
+  -> Display: "Routing flags confirm no experiment stage needed (methodology_subtype: [value]). Proceeding to Stage 2 (WRITE)."
+  -> Proceed to Stage 2
+```
+
+#### Step C: Semantic Cross-Check (NEW — catches flag errors)
+
+Even when routing flags say `false`, perform a quick semantic check on the research question and methodology:
+
+```
+Cross-check the methodology_subtype against the RQ:
+- If methodology_subtype = "correlational" but RQ contains "effect of", "impact of", "intervention" → WARNING: possible flag mismatch. Ask user to confirm.
+- If methodology_subtype = "survey" but method section describes controlled conditions → WARNING: possible flag mismatch. Ask user to confirm.
+- If methodology_subtype = "literature_review" or "theoretical" → no cross-check needed, proceed.
+```
+
+This catches cases where `research_architect_agent` set flags incorrectly.
+
+#### Stage 1.5 Mode Enforcement (Pipeline Context)
+
+**When running within the academic-pipeline, experiment skills MUST use `full` mode.** The pipeline produces publication-quality papers, and incomplete experiment designs or analyses will cascade into weak Results/Methods sections.
+
+```
+Stage 1.5a DESIGN:    experiment-designer FULL mode (LOCKED — no downgrade allowed)
+Stage 1.5b EXECUTE:   data-analyst FULL / simulation-runner FULL (LOCKED)
+Stage 1.5c LOG:       lab-notebook export mode (auto)
+
+Routing:
+  If requires_simulation = true  -> dispatch simulation-runner at 1.5b
+  If requires_simulation = false -> dispatch data-analyst at 1.5b
+  If BOTH real data AND simulation needed -> dispatch both sequentially (data-analyst first, then simulation-runner)
+
+Display to user:
+"Experiment stages will run in FULL mode to produce complete, publication-quality results.
+Stage 1.5a: Experiment Design (all 6 agents: intake, design architect, protocol compiler, instrument builder, randomization, power analyst)
+Stage 1.5b: Experiment Execution (all 7 agents for data-analyst OR all 5 agents for simulation-runner)
+Stage 1.5c: Lab Record Export
+
+Ready to begin experiment design?"
+```
+
+**Mode downgrade prohibition**: If the user asks for `quick` or `power-only` during the pipeline, respond: "Within the full academic pipeline, experiment stages use full mode to ensure the Results and Methods sections have complete data. For quick analyses outside the pipeline, use experiment-designer or data-analyst directly."
 
 #### Stage 1.5 Sub-Stage Execution
 
 ```
-1.5a DESIGN (experiment-designer):
+1.5a DESIGN (experiment-designer, FULL mode):
    - Input: RQ Brief + Methodology Blueprint from Stage 1
-   - Mode: full (default) or guided (if user is novice)
+   - Mode: FULL (mandatory in pipeline — all 6 agents must run)
    - Output: Schema 10 (Experiment Design) + Schema 13 (Simulation Spec, if simulation)
    - At start: Create lab notebook via lab-notebook (full mode)
    - Checkpoint: FULL (first experiment checkpoint)
+   - **Completeness gate**: Before proceeding, verify Schema 10 contains:
+     [ ] experiment_id, design_type, hypotheses (at least 1)
+     [ ] variables (at least IV + DV defined)
+     [ ] sample (with size justification from power analysis)
+     [ ] analysis_plan (with specific statistical tests named)
+     [ ] protocol_document (non-empty)
+     If any are missing → request experiment-designer to re-run the incomplete phase
 
-1.5b EXECUTE (data-analyst OR simulation-runner):
+1.5b EXECUTE (data-analyst OR simulation-runner, FULL mode):
    - Input: Schema 10 + Schema 13 (if simulation) + notebook_path
-   - Mode: full (default)
+   - Mode: FULL (mandatory in pipeline — all agents must run)
    - Output: Schema 11 (Experiment Results)
    - Auto-logging: Skills append entries to notebook at end of phases
    - Checkpoint: FULL
+   - **Completeness gate**: Before proceeding, verify Schema 11 contains:
+     [ ] primary_results (at least 1 result with test statistic + p-value + effect size)
+     [ ] apa_results_text.primary (non-empty APA-formatted narrative)
+     [ ] tables (at least 1 results table)
+     [ ] reproducibility.script_path (analysis script exists)
+     If any are missing → request the execution skill to re-run the incomplete phase
 
 1.5c LOG (lab-notebook):
    - Input: Accumulated notebook entries from 1.5a and 1.5b
    - Mode: export (produce Schema 12 for handoff)
    - Output: Schema 12 (Lab Record) with completeness score
-   - Checkpoint: SLIM (auto-continue unless issues)
+   - Checkpoint: SLIM (auto-continue unless completeness_score < 0.7)
+   - **Completeness gate**: If completeness_score < 0.7, escalate to FULL checkpoint and warn user
 ```
 
 #### Stage 1.5 -> Stage 2 Transition
 
-When Stage 1.5 completes, hand off ALL materials to Stage 2:
+When Stage 1.5 completes AND all completeness gates pass, hand off ALL materials to Stage 2:
 - Stage 1 materials: RQ Brief + Bibliography + Synthesis
 - Stage 1.5 materials: Schema 10 (Experiment Design) + Schema 11 (Experiment Results) + Schema 12 (Lab Record)
 - `academic-paper/draft_writer_agent` integrates Schema 11 `apa_results_text` into Results section
 - `academic-paper/draft_writer_agent` integrates Schema 12 `methods_summary` into Methods section
+- **Verify all three schemas are present before dispatching Stage 2.** If any schema is missing, do NOT proceed — return to the incomplete sub-stage.
 
 ### 3. Checkpoint Management (Adaptive Checkpoint System)
 
@@ -364,9 +408,9 @@ When a sub-skill stage fails or produces unacceptable output:
 | Stage 1 -> 2 (no experiment) | RQ Brief, Annotated Bibliography, Synthesis Report | Schema 1 (RQ Brief), Schema 2 (Bibliography), Schema 3 (Synthesis) | deep-research handoff protocol |
 | Stage 2 -> 2.5 | Complete Paper Draft | Schema 4 (Paper Draft) | Pass to integrity_verification_agent |
 | Stage 2.5 -> 3 | Verified Paper Draft + Integrity Report | Schema 4 + Schema 5 (Integrity Report) | Pass to reviewer (with verification report attached) |
-| Stage 3 -> **coaching** -> 4 | Editorial Decision, Revision Roadmap, 5 Review Reports | Schema 6 (Review Report), Schema 7 (Revision Roadmap) | **First Socratic dialogue** -> academic-paper revision mode input |
+| Stage 3 -> **experiment check** -> **coaching** -> 4 | Editorial Decision, Revision Roadmap, 5 Review Reports | Schema 6 (Review Report), Schema 7 (Revision Roadmap) | Check Roadmap for `requires_new_experiment` items -> if found, dispatch Stage 1.5-R -> then Socratic dialogue -> academic-paper revision mode input |
 | Stage 4 -> 3' | Revised Draft, Response to Reviewers | Schema 4 (revised) + Schema 8 (Response to Reviewers) | Pass to reviewer (marked as verification round) |
-| Stage 3' -> **coaching** -> 4' | New Revision Roadmap (if Major) | Schema 7 (Revision Roadmap) | **First Socratic dialogue** -> academic-paper revision mode input |
+| Stage 3' -> **experiment check** -> **coaching** -> 4' | New Revision Roadmap (if Major) | Schema 7 (Revision Roadmap) | Check Roadmap for `requires_new_experiment` items -> if found, dispatch Stage 1.5-R -> then Socratic dialogue -> academic-paper revision mode input |
 | Stage 4/4' -> 4.5 | Revised/Re-Revised Draft | Schema 4 (revised) | Pass to integrity_verification_agent (final verification) |
 | Stage 4.5 -> 5 | Final Verified Draft + Final Integrity Report | Schema 4 + Schema 5 (Integrity Report) | Auto-produce MD + DOCX -> ask about LaTeX -> confirm -> PDF |
 
@@ -416,7 +460,9 @@ Notify state_tracker_agent to update state whenever a stage begins or completes:
 
 **Experiment stages use stage_ids**: `"1.5a"`, `"1.5b"`, `"1.5c"`. If Stage 1.5 is skipped (no experiment needed), all three sub-stages are set to `"skipped"` with reason `"methodology_subtype does not require experimentation"`.
 
-**Experiment materials**: `experiment_design`, `simulation_spec`, `experiment_results`, `lab_record`.
+**Experiment re-entry stages use stage_ids**: `"1.5-Ra"`, `"1.5-Rb"`, `"1.5-Rc"` (suffixed with `-R` for revision re-entry). These are distinct from the initial Stage 1.5 stages. A second re-entry (from Stage 3') uses `"1.5-R2a"`, `"1.5-R2b"`, `"1.5-R2c"`.
+
+**Experiment materials**: `experiment_design`, `simulation_spec`, `experiment_results`, `lab_record`, `experiment_results_revision` (from Stage 1.5-R), `experiment_results_revision_2` (from Stage 1.5-R2).
 
 Request state_tracker_agent to produce the Progress Dashboard when needed.
 
@@ -428,10 +474,52 @@ Request state_tracker_agent to produce the Progress Dashboard when needed.
 **Executor**: academic-paper-reviewer's eic_agent (Phase 2.5)
 **Purpose**: Help users understand review comments and plan revision strategy, rather than passively receiving a change list
 
-### Stage 3 -> 4 Transition Coaching Process
+### Stage 3 -> Experiment Re-Entry OR Stage 4 Transition (UPDATED)
+
+**Before launching revision coaching, check the Revision Roadmap for experiment requirements.**
+
+```
+Step 0: EXPERIMENT RE-ENTRY CHECK (mandatory before coaching)
+
+1. Scan the Revision Roadmap for items where requires_new_experiment = true
+2. IF any experiment items found:
+   a. Display to user:
+      "━━━ EXPERIMENT RE-ENTRY REQUIRED ━━━
+       [N] revision item(s) require new experimental work:
+       - [REV-XXX]: [experiment_scope] (type: [experiment_type])
+       - [REV-YYY]: [experiment_scope] (type: [experiment_type])
+
+       These cannot be addressed by text revision alone. The pipeline will
+       re-enter Stage 1.5 (EXPERIMENT) to produce the needed evidence,
+       then return to Stage 4 (REVISE) for text revisions.
+       ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+   b. Present options:
+      [1] PROCEED — Re-enter Stage 1.5 for experiment items, then revise
+      [2] SKIP EXPERIMENTS — Address experiment items as "Acknowledged Limitations" instead
+      [3] PARTIAL — Choose which experiment items to execute vs. acknowledge as limitations
+   c. If user chooses PROCEED or PARTIAL:
+      -> Dispatch Stage 1.5-R (Revision Experiment Re-Entry):
+         - For experiment_type = "new_experiment": dispatch experiment-designer (full) -> data-analyst/simulation-runner (full)
+         - For experiment_type = "additional_analysis": skip experiment-designer, dispatch data-analyst (full) with existing Schema 10 + new analysis requirements
+         - For experiment_type = "replication": dispatch experiment-designer (full, using existing Schema 10 as template with modifications) -> data-analyst/simulation-runner (full)
+         - For experiment_type = "simulation": dispatch simulation-runner (full) directly
+      -> After Stage 1.5-R completes with new Schema 11:
+         - Merge new Schema 11 results with existing Schema 11 (if any)
+         - Update experiment_items in Revision Roadmap to mark as "experiment completed"
+         - Return to coaching step below
+   d. If user chooses SKIP EXPERIMENTS:
+      -> Mark all experiment items as "DELIBERATE_LIMITATION" in Response to Reviewers
+      -> Proceed to coaching
+
+Step 1: Present Editorial Decision and Revision Roadmap (after experiment re-entry, if applicable)
+```
+
+### Stage 3 -> 4 Revision Coaching Process
 
 ```
 1. Present Editorial Decision and Revision Roadmap
+   - If experiments were re-run: highlight new results available for integration
+   - "New experiment results are available from Stage 1.5-R. These will be integrated into your revised paper."
 2. Launch Revision Coaching (EIC guides via Socratic dialogue):
    - "After reading the review comments, what surprised you the most?"
    - "What are the consensus issues among the five reviewers? What do you think?"
@@ -439,20 +527,31 @@ Request state_tracker_agent to produce the Progress Dashboard when needed.
    - "If you could only change three things, which three would you pick?"
    - Guide the user to prioritize revisions themselves
 3. Output: User-formulated revision strategy + reprioritized Roadmap
-4. Enter Stage 4 (REVISE)
+4. Enter Stage 4 (REVISE) — draft_writer_agent receives both original + new Schema 11 materials
 ```
 
 ### Stage 3' -> 4' Transition Coaching Process
 
 ```
-1. Present Re-Review results and residual issues
+Step 0: EXPERIMENT RE-ENTRY CHECK (same protocol as Stage 3 -> 4)
+
+1. Scan the new Revision Roadmap from Stage 3' for requires_new_experiment = true items
+2. IF experiment items found:
+   - Same options as Stage 3 transition: PROCEED / SKIP / PARTIAL
+   - Stage 1.5-R dispatch follows the same protocol
+   - NOTE: This is the LAST opportunity for experiments. After Stage 4', no further experiments are possible.
+   - Display: "This is the final revision round. Any experiment items skipped here will become Acknowledged Limitations."
+3. After experiment re-entry (if any), proceed to coaching
+
+Step 1: Present Re-Review results and residual issues
 2. Launch Residual Coaching (EIC guides via Socratic dialogue):
    - "What problems did the first round of revisions solve? Why are the remaining ones harder?"
    - "Is it insufficient evidence, unclear argumentation, or a structural problem?"
+   - If new experiment results available: "New results from Stage 1.5-R are available. How should they be integrated?"
    - "This is the last revision opportunity — which items can be marked as study limitations?"
    - Plan a revision approach for each residual issue
 3. Output: Focused revision plan + trade-off decisions
-4. Enter Stage 4' (RE-REVISE)
+4. Enter Stage 4' (RE-REVISE) — draft_writer_agent receives all accumulated Schema 11 materials
 ```
 
 ### Coaching Rules

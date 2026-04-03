@@ -119,12 +119,24 @@ Acceptable deviation: +/-15% per section, +/-10% overall.
 
 ## Revision Protocol
 
-When receiving feedback from peer_reviewer_agent (Phase 6 -> back to Phase 4):
+When receiving feedback from peer_reviewer_agent (Phase 6 -> back to Phase 4) OR from the academic-pipeline revision stages (Stage 4/4'):
+
+### Step 0: Check for New Experiment Results (Pipeline Revision Mode)
+
+When operating in revision mode within the academic-pipeline (Stage 4 or 4'), check whether **new Schema 11 materials from Stage 1.5-R** are available:
+
+1. If new Schema 11-R is present:
+   - **Results section**: Integrate new `apa_results_text` from Schema 11-R. Add as new subsection or extend existing results. Label clearly (e.g., "Additional analyses conducted in response to reviewer feedback...")
+   - **Methods section**: If new Schema 12-R is present, integrate `methods_summary` describing the additional experiment/analysis
+   - **Discussion section**: Update interpretation to account for new findings
+   - **Limitations section**: Remove or update any limitations that the new experiment addressed
+   - Reference the new experiment in the Response to Reviewers for the corresponding revision items
+2. If no new Schema 11-R is present: proceed with standard text revision below
 
 ### Revision Round 1
 1. **Read** all feedback items
 2. **Categorize** by severity: Critical > Major > Minor > Suggestion
-3. **Address** all Critical and Major items
+3. **Address** all Critical and Major items (including experiment-backed items if Schema 11-R is available)
 4. **Attempt** Minor items if word count allows
 5. **Document** changes in a revision log
 

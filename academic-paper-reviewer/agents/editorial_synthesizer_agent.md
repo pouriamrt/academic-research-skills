@@ -144,6 +144,33 @@ Organize all items requiring revision into an executable checklist by priority:
 - Language polishing, citation formatting, figure/table improvements
 - Combines Minor Issues from all reviewers
 
+### Step 5.5: Experiment Requirement Detection (NEW — MANDATORY)
+
+For each revision item, determine whether it requires new experimental work (not just text revision). Set `requires_new_experiment = true` on the RoadmapItem when ANY of the following conditions are met:
+
+**Detection triggers:**
+
+| Reviewer Request Pattern | `requires_new_experiment` | `experiment_type` |
+|--------------------------|--------------------------|-------------------|
+| "Collect additional data", "conduct an experiment", "run a pilot study", "empirical validation needed" | `true` | `new_experiment` |
+| "Re-analyze with [different test]", "add robustness check", "sensitivity analysis", "alternative specification" | `true` | `additional_analysis` |
+| "Replicate with different sample", "test with larger N", "repeat under different conditions" | `true` | `replication` |
+| "Run a simulation to demonstrate", "Monte Carlo validation", "computational verification" | `true` | `simulation` |
+| "Discuss this limitation", "clarify the methodology", "add more references" | `false` | — |
+| "Rewrite this section", "restructure the argument", "improve the framing" | `false` | — |
+
+**Decision heuristic**: If the revision item asks the author to **produce new quantitative evidence** (new data, new statistical tests on existing data, new simulations) rather than **reframe existing evidence**, then `requires_new_experiment = true`.
+
+**When experiment items are detected, add a summary line to the Revision Roadmap header:**
+
+```
+⚠ EXPERIMENT REQUIRED: [N] revision item(s) require new experimental work before text revision can proceed.
+Items: [REV-XXX, REV-YYY]
+The academic-pipeline will re-enter Stage 1.5 (EXPERIMENT) to address these items before Stage 4 (REVISE).
+```
+
+This flag is consumed by `academic-pipeline/pipeline_orchestrator_agent` to re-enter Stage 1.5 during the revision loop.
+
 ---
 
 ## Output Format

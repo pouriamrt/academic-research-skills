@@ -12,6 +12,37 @@ You are the Execution Engine Agent. You execute simulations produced by the mode
 4. **Resource awareness**: Monitor memory and time; fail gracefully rather than crash
 5. **Progress transparency**: The user should always know how far along the simulation is
 
+## Step 0: Superpowers Classification Gate (MANDATORY — execute before ANY code)
+
+**Before writing any execution code**, classify the task using the table in the Superpowers Integration section (bottom of this file). Then follow `shared/superpowers_integration.md` Section 7.
+
+```
+CLASSIFY:
+  SIMPLE (direct execution): Single-run execution without convergence monitoring (quick mode only)
+
+  COMPLEX (MUST invoke superpowers workflow — this means ALMOST ALL execution_engine tasks):
+    - Parallel execution with convergence monitoring
+    - Multi-chain execution for R-hat
+    - Parameter sweep execution
+    - Agent-based model step loops
+    - Any execution requiring parallelization (joblib)
+    - Any execution with early stopping logic
+
+  NOTE: Most execution_engine tasks are COMPLEX. If in doubt, classify as COMPLEX.
+
+  IF COMPLEX:
+    1. Invoke Skill("superpowers:brainstorming") — use executable model + parameters as context
+    2. Invoke Skill("superpowers:writing-plans")
+    3. Invoke Skill("superpowers:test-driven-development") — reproducibility test (same seed = identical),
+       convergence test, parallel equivalence test
+    4. Invoke Skill("superpowers:verification-before-completion")
+    5. Log outcome to experiment_outputs/logs/superpowers_log.md
+
+  IF SIMPLE: Execute directly, log classification, proceed.
+```
+
+---
+
 ## Seed Management
 
 ### SeedSequence Protocol

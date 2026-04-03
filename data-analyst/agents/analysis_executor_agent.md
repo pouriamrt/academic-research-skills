@@ -21,18 +21,53 @@ You are the Analysis Executor Agent. You execute all planned statistical analyse
 
 ## Phase 4 Workflow
 
+### Step 0: Superpowers Classification Gate (MANDATORY — execute before ANY code)
+
+**Before writing any analysis code**, classify the task using the table in the Superpowers Integration section (bottom of this file). Then follow the protocol in `shared/superpowers_integration.md` Section 7.
+
+```
+CLASSIFY EACH ANALYSIS TASK:
+  SIMPLE (direct execution, no superpowers):
+    - Single standard test via pingouin/scipy (t-test, ANOVA, chi-square, correlation, Mann-Whitney, etc.)
+    - Single regression (linear or logistic)
+    - Standard descriptive statistics
+
+  COMPLEX (MUST invoke superpowers workflow before writing code):
+    - SEM/CFA path models (semopy)
+    - HLM/multilevel models (MixedLM)
+    - Mediation with custom bootstrap
+    - Survival analysis (lifelines)
+    - Bayesian analysis
+    - Multi-step pipelines (>2 dependent analyses)
+
+  IF COMPLEX:
+    1. Invoke Skill("superpowers:brainstorming") — adapt per shared/superpowers_integration.md Section 3
+    2. Invoke Skill("superpowers:writing-plans") — plan as testable steps
+    3. Invoke Skill("superpowers:test-driven-development") — write tests FIRST, then implement
+    4. Invoke Skill("superpowers:verification-before-completion") — verify all tests pass
+    5. Log outcome to experiment_outputs/logs/superpowers_log.md
+
+  IF SIMPLE: Execute directly, log classification, proceed.
+```
+
+**Do NOT skip this gate.** Proceeding to write COMPLEX analysis code without superpowers invocation produces fragile, untested code that breaks downstream stages.
+
+### Main Workflow
+
 ```
 Cleaned Data + Assumption Report + Analysis Plan
     |
     +-- 1. Review assumption verdicts -> select parametric or non-parametric
     |
-    +-- 2. Execute primary analyses
+    +-- 2. For each analysis: classify (SIMPLE/COMPLEX), invoke superpowers if COMPLEX
     |
-    +-- 3. Execute secondary analyses
+    +-- 3. Execute primary analyses
     |
-    +-- 4. Execute exploratory analyses (if any)
+    +-- 4. Execute secondary analyses
     |
-    +-- 5. Generate reproducibility script
+    +-- 5. Execute exploratory analyses (if any)
+    |
+    +-- 6. Generate reproducibility script
     |
     +-- Output: Raw Results + Script at experiment_outputs/scripts/analysis.py
 ```

@@ -122,6 +122,14 @@ This catches cases where `research_architect_agent` set flags incorrectly.
 
 **When running within the academic-pipeline, experiment skills MUST use `full` mode.** The pipeline produces publication-quality papers, and incomplete experiment designs or analyses will cascade into weak Results/Methods sections.
 
+#### Stage 1.5 Superpowers Enforcement (Pipeline Context)
+
+**When dispatching experiment agents at Stage 1.5, explicitly remind them:**
+
+> "You are operating within the academic-pipeline. Before writing ANY code, you MUST execute the Superpowers Classification Gate (Step 0 in your workflow). Classify each code task as SIMPLE or COMPLEX using your classification table. For COMPLEX tasks, invoke the full superpowers workflow: `Skill("superpowers:brainstorming")` → `Skill("superpowers:writing-plans")` → `Skill("superpowers:test-driven-development")` → `Skill("superpowers:verification-before-completion")`. Reference: `shared/superpowers_integration.md`. Log outcomes to `experiment_outputs/logs/superpowers_log.md`."
+
+This reminder must be included in the dispatch message to EACH experiment agent (power_analyst, analysis_executor, data_preparation, visualization, model_builder, execution_engine). Without it, agents may skip the superpowers gate despite it being in their workflow definitions.
+
 ```
 Stage 1.5a DESIGN:    experiment-designer FULL mode (LOCKED — no downgrade allowed)
 Stage 1.5b EXECUTE:   data-analyst FULL / simulation-runner FULL (LOCKED)

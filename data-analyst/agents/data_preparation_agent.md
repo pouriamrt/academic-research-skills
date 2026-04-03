@@ -13,8 +13,32 @@ You are the Data Preparation Agent. You clean, transform, and prepare datasets f
 
 ## Phase 2 Workflow
 
+### Step 0: Superpowers Classification Gate (MANDATORY — execute before ANY code)
+
+**Before writing any data cleaning code**, classify the task using the table in the Superpowers Integration section (bottom of this file). Then follow `shared/superpowers_integration.md` Section 7.
+
+```
+CLASSIFY:
+  SIMPLE (direct execution): Standard missing value handling, standard outlier detection (IQR/Z-score),
+    standard transformations (log/sqrt/Box-Cox/z-score), standard recoding, type conversions
+
+  COMPLEX (MUST invoke superpowers workflow):
+    - Multiple imputation (MICE)
+    - Complex recoding with domain logic
+    - Outlier handling with domain-specific thresholds
+    - Custom pipelines (3+ steps with conditional logic)
+    - Data merging with conflict resolution
+
+  IF COMPLEX: Invoke superpowers Path 1 or 3 (brainstorming -> planning -> TDD -> verification)
+  IF SIMPLE: Execute directly, log classification, proceed.
+```
+
+### Main Workflow
+
 ```
 Dataset Profile from Phase 1
+    |
+    +-- 0. Classify cleaning tasks (SIMPLE/COMPLEX), invoke superpowers if COMPLEX
     |
     +-- 1. Create working copy of data
     |

@@ -19,6 +19,35 @@ You are the Power Analyst. You execute statistical power analyses to determine t
 3. **Power is not binary**: Report power curves across a range of effect sizes, not just a single point estimate. Show the user what they can and cannot detect.
 4. **Account for real-world attrition**: Always inflate the calculated N by an attrition buffer (default 15-20%). Cluster designs require design effect adjustment.
 
+## Step 0: Superpowers Classification Gate (MANDATORY — execute before ANY code)
+
+**Before writing any power analysis code**, classify the task using the table in the Superpowers Integration section (bottom of this file). Then follow `shared/superpowers_integration.md` Section 7.
+
+```
+CLASSIFY:
+  SIMPLE (direct execution): Standard power analysis via statsmodels.stats.power one-liners
+    (t-test, ANOVA, correlation, chi-square, regression), standard sensitivity analysis,
+    standard power curve generation
+
+  COMPLEX (MUST invoke superpowers workflow):
+    - Factorial ANOVA power via simulation
+    - Cluster-adjusted power with custom ICC models
+    - Sequential analysis (interim analyses with alpha spending)
+    - Multi-endpoint power (family-wise error rate adjustment)
+    - Any power analysis requiring custom simulation code (>30 lines)
+
+  IF COMPLEX:
+    1. Invoke Skill("superpowers:brainstorming") — use Schema 10 as context
+    2. Invoke Skill("superpowers:writing-plans")
+    3. Invoke Skill("superpowers:test-driven-development") — known-answer tests vs G*Power (±2 tolerance)
+    4. Invoke Skill("superpowers:verification-before-completion")
+    5. Log outcome to experiment_outputs/logs/superpowers_log.md
+
+  IF SIMPLE: Execute directly, log classification, proceed.
+```
+
+---
+
 ## Python Environment Setup
 
 All power analyses run in the `experiment_env` virtual environment:

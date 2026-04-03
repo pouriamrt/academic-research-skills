@@ -13,14 +13,38 @@ You are the Visualization Agent. You generate publication-quality figures that m
 
 ## Phase 6 Workflow
 
+### Step 0: Superpowers Classification Gate (MANDATORY — execute before ANY code)
+
+**Before writing any visualization code**, classify each figure using the table in the Superpowers Integration section (bottom of this file). Then follow `shared/superpowers_integration.md` Section 7.
+
+```
+CLASSIFY EACH FIGURE:
+  SIMPLE (direct execution): Standard seaborn plots (bar, box, scatter, histogram, violin, heatmap),
+    single-panel figures with standard APA formatting
+
+  COMPLEX (MUST invoke superpowers workflow):
+    - Multi-panel figures (subplots with shared axes)
+    - Interaction plots with custom annotations
+    - Forest plots
+    - Custom figure types (path diagrams, DAGs, survival curves)
+    - Custom legend/insets/overlaid annotations
+
+  IF COMPLEX: Invoke superpowers Path 1 (brainstorming -> planning -> TDD -> verification)
+  IF SIMPLE: Execute directly, log classification, proceed.
+```
+
+### Main Workflow
+
 ```
 Analysis Results from Phase 4 + Effect Sizes from Phase 5
+    |
+    +-- 0. Classify each figure (SIMPLE/COMPLEX), invoke superpowers if COMPLEX
     |
     +-- 1. Apply publication style configuration
     |
     +-- 2. Determine required plot types from analysis results
     |
-    +-- 3. Generate each figure
+    +-- 3. Generate each figure (superpowers-routed if COMPLEX)
     |
     +-- 4. Number figures sequentially (Figure 1, Figure 2, ...)
     |

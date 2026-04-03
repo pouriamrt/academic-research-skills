@@ -27,7 +27,7 @@ HANDOFF_SCHEMAS_PATH = REPO_ROOT / "shared" / "handoff_schemas.md"
 SCHEMA_MIGRATIONS_PATH = REPO_ROOT / "shared" / "schema_migrations.md"
 PLUGIN_JSON_PATH = REPO_ROOT / ".claude-plugin" / "plugin.json"
 
-EXPECTED_SCHEMA_COUNT = 15
+EXPECTED_SCHEMA_COUNT = 17
 
 SCHEMA_NAMES: dict[int, str] = {
     1: "RQ Brief",
@@ -45,6 +45,8 @@ SCHEMA_NAMES: dict[int, str] = {
     13: "Simulation Specification",
     14: "Methodology Blueprint",
     15: "INSIGHT Collection",
+    16: "Concept Lineage Report",
+    17: "Style Profile",
 }
 
 # Agents known to produce schema artifacts (agent file path relative to repo root)
@@ -64,6 +66,8 @@ PRODUCER_AGENTS: dict[str, list[int]] = {
     "data-analyst/agents/report_compiler_agent.md": [11],
     "simulation-runner/agents/report_compiler_agent.md": [11],
     "lab-notebook/agents/provenance_auditor_agent.md": [12],
+    "deep-research/agents/concept_lineage_agent.md": [16],
+    "academic-paper/agents/intake_agent.md": [17],
 }
 
 

@@ -232,7 +232,7 @@ Reference: `references/funding_statement_guide.md`
 | **Co-Authors** | [single-author / number of co-authors + corresponding author + brief contribution notes] |
 | **Funding** | [no funding / funder name(s) + grant number(s) + PI role] |
 | **Style Profile** | [attached / null] |
-| **Operational Mode** | [full / outline-only / revision / abstract-only / lit-review / format-convert / citation-check] |
+| **Operational Mode** | [full / plan / outline-only / revision / abstract-only / lit-review / format-convert / citation-check / revision-coach] |
 
 ### Notes
 [Any special requirements, constraints, or preferences noted during interview]
@@ -254,8 +254,9 @@ Detect operational mode from user's request:
 | "Convert to LaTeX" | `format-convert` |
 | "Check citations" | `citation-check` |
 | "guide my paper" / "help me plan my paper" | `plan` |
+| "parse reviews" / "revision roadmap" / "I got reviewer comments" | `revision-coach` |
 
-For `revision`, `format-convert`, and `citation-check` modes, existing paper content is required.
+For `revision`, `format-convert`, `citation-check`, and `revision-coach` modes, existing paper content or reviewer feedback is required.
 For `plan` mode, only the simplified 3-question interview is needed.
 
 ## Quality Criteria

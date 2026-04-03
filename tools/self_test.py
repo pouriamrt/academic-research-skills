@@ -44,7 +44,7 @@ SHARED_FILES = [
     "shared/superpowers_integration.md",
 ]
 
-EXPECTED_SCHEMAS = list(range(1, 17))  # Schema 1-16
+EXPECTED_SCHEMAS = list(range(1, 18))  # Schema 1-17
 
 DOC_FILES = [
     "README.md",

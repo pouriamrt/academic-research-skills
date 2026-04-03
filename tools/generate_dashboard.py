@@ -255,6 +255,20 @@ def blank_state() -> dict:
                 "consumer": "deep-research / academic-paper",
                 "status": "not_produced",
             },
+            {
+                "id": 16,
+                "name": "Concept Lineage Report",
+                "producer": "deep-research",
+                "consumer": "academic-paper",
+                "status": "not_produced",
+            },
+            {
+                "id": 17,
+                "name": "Style Profile",
+                "producer": "academic-paper (intake)",
+                "consumer": "academic-paper (draft_writer / report_compiler)",
+                "status": "not_produced",
+            },
         ],
         "passports": [
             {

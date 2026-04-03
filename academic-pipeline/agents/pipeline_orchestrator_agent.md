@@ -398,6 +398,41 @@ When a sub-skill stage fails or produces unacceptable output:
 | Stage 1.5c: lab-notebook | Incomplete entries or low completeness score | Run audit mode; identify missing entries; supplement from available outputs |
 | Any stage | Agent timeout or crash | Save current state via state_tracker; allow manual resume from last checkpoint |
 
+### 3.5. Experiment Re-Entry Detection (Stage 3/3' -> 1.5-R/1.5-R2)
+
+After Stage 3 (REVIEW) or Stage 3' (RE-REVIEW) produces a Minor/Major Revision decision, the orchestrator MUST check for experiment re-entry requirements before proceeding to Stage 4/4':
+
+```
+EXPERIMENT RE-ENTRY PROTOCOL
+
+1. Read Revision Roadmap (Schema 7) from editorial_synthesizer_agent output
+2. Scan all RoadmapItems for `requires_new_experiment = true`
+3. If NO items found -> proceed directly to Stage 4/4' (text revision only)
+4. If items found:
+   a. Display to user:
+      "⚠ [N] revision item(s) require new experimental work: [REV-XXX, REV-YYY]
+       The pipeline will re-enter Stage 1.5 (EXPERIMENT) to address these items.
+       You can also opt out and mark them as Acknowledged Limitations instead.
+       Proceed with experiments? (yes / opt-out)"
+   b. If user says "yes" / "proceed":
+      - For each flagged item, extract `experiment_type`:
+        - `new_experiment` -> dispatch experiment-designer (full)
+        - `additional_analysis` -> dispatch data-analyst (full)
+        - `replication` -> dispatch experiment-designer + data-analyst
+        - `simulation` -> dispatch simulation-runner (full)
+      - Produce new Schema 11-R (Revision Results) and Schema 12-R (Revision Lab Record)
+      - Merge with existing materials for Stage 4/4'
+   c. If user says "opt-out" / "skip":
+      - Mark all flagged items as "Acknowledged Limitation" in Revision Roadmap
+      - Log opt-out decision in pipeline state
+      - Proceed to Stage 4/4' with text-only revision
+
+Stage 3 -> 1.5-R:  First experiment re-entry opportunity
+Stage 3' -> 1.5-R2: Final experiment re-entry opportunity (last chance)
+```
+
+**Reference**: See `editorial_synthesizer_agent.md` Step 5.5 for how `requires_new_experiment` flags are produced.
+
 ### 4. Transition Management
 
 **Before each transition, verify the output artifact conforms to its schema in `shared/handoff_schemas.md`.** If schema validation fails, request the producing agent to re-generate the artifact before proceeding.

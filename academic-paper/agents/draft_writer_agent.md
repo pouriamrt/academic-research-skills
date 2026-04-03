@@ -156,6 +156,15 @@ When operating in revision mode within the academic-pipeline (Stage 4 or 4'), ch
    - Reference the new experiment in the Response to Reviewers for the corresponding revision items
 2. If no new Schema 11-R is present: proceed with standard text revision below
 
+### Figure Regeneration Check
+
+Before starting text revision, assess whether existing figures need updating:
+
+1. If new Schema 11-R is present with new tables/figures: request `visualization_agent` to generate updated figures
+2. If revision feedback explicitly targets a figure (e.g., "Figure 2 is misleading"): request `visualization_agent` to regenerate that figure
+3. If data or analysis changed in a way that affects plotted values: flag for figure update
+4. If no figure-related changes: skip regeneration
+
 ### Revision Round 1
 1. **Read** all feedback items
 2. **Categorize** by severity: Critical > Major > Minor > Suggestion

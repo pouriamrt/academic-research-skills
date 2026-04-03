@@ -382,6 +382,11 @@ User: "Systematic review of [topic]" / "Meta-analysis of [topic]"
      |   - Thematic synthesis across studies
      |   - Integration with quantitative findings
      |
+     |-> [concept_lineage_agent] -> Concept Lineage Report (parallel)
+     |   - Traces intellectual genealogy of central concepts in the review
+     |   - Uses citation graph APIs (Semantic Scholar + OpenAlex)
+     |   - Output: Schema 16 (Concept Lineage Report)
+     |
      +-> [devils_advocate_agent] -- CHECKPOINT 2
          - Cherry-picking check
          - Heterogeneity explanation adequacy

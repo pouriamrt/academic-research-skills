@@ -452,6 +452,45 @@ formatter_agent executing format conversion...
 |   [v] Response to Reviewers             |
 |   [v] Final Paper (4 formats)           |
 +-----------------------------------------+
+
+---
+
+### Stage 6: PROCESS SUMMARY
+
+**Orchestrator**: "Pipeline complete! Generating your paper creation process record."
+
+**Orchestrator**: "What language(s) would you like for the process summary? Options: zh (Chinese), en (English), both"
+
+**User**: "both"
+
+**Orchestrator**: Generating bilingual process summary...
+
+```
+Stage 6 PROCESS SUMMARY — Generating bilingual paper creation record
+
+Contents:
+1. Pipeline Timeline (stages, dates, duration)
+2. Material Inventory (all schemas produced)
+3. Revision History (rounds, items addressed)
+4. Collaboration Quality Evaluation (6 dimensions):
+   - Direction Setting: 85/100
+   - Intellectual Contribution: 78/100
+   - Quality Gatekeeping: 92/100
+   - Iteration Discipline: 88/100
+   - Delegation Efficiency: 80/100
+   - Meta-Learning: 75/100
+   Overall: 83/100 (Excellent)
+5. What Worked Well / Missed Opportunities / Recommendations
+6. Claude's Self-Reflection
+
+Output files:
+- paper_creation_process_zh.pdf
+- paper_creation_process_en.pdf
+```
+
+━━━ Stage 6 PROCESS SUMMARY Complete ━━━
+
++-----------------------------------------+
 | Revision History:                       |
 |   Round 1: Major -> 5/5 items addressed |
 |   RE-REVIEW: Minor Revision (Accept)    |
@@ -470,6 +509,7 @@ Final deliverables:
 2. DOCX version: declining_birthrate_private_university.docx
 3. PDF version: declining_birthrate_private_university.pdf
 4. Original: declining_birthrate_private_university.md
+5. Process summary: paper_creation_process_zh.pdf + paper_creation_process_en.pdf
 
 If you later need to:
 - Revise again --> just say "revise the paper" (triggers academic-paper revision mode)

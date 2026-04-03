@@ -33,6 +33,8 @@ Every schema artifact (Schemas 1-15 as defined in `shared/handoff_schemas.md`) *
 | Schema 13 | Simulation Specification | 1.0 | v3.7.0 |
 | Schema 14 | Methodology Blueprint | 1.0 | v3.7.0 |
 | Schema 15 | INSIGHT Collection | 1.0 | v3.7.0 |
+| Schema 16 | Concept Lineage Report | 1.0 | v3.9.0 |
+| Schema 17 | Style Profile | 1.0 | v2.9.0 |
 
 ---
 

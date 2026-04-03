@@ -304,17 +304,17 @@ Pipeline orchestrator creates notebook (Stage 1.5 start)
   │
   ├── Passes notebook_path to each experiment skill
   │
-  ├── experiment-designer executes
-  │   └── At end of Phase 3: appends design record entry to notebook
+  ├── experiment-designer executes (4 phases: 0-3)
+  │   └── At end of Phase 3 (Protocol Compilation): appends design record entry to notebook
   │
-  ├── data-analyst executes
-  │   ├── At end of Phase 1: appends data preparation entry
-  │   ├── At end of Phase 3: appends analysis entry
-  │   └── At end of Phase 5: appends results summary entry
+  ├── data-analyst executes (7 phases: 1-7)
+  │   ├── At end of Phase 1 (Data Preparation): appends data preparation entry
+  │   ├── At end of Phase 3 (Analysis Execution): appends analysis entry
+  │   └── At end of Phase 5 (Visualization): appends results summary entry
   │
-  ├── simulation-runner executes
-  │   ├── At end of Phase 2: appends execution entry
-  │   └── At end of Phase 4: appends results summary entry
+  ├── simulation-runner executes (5 phases: 1-5)
+  │   ├── At end of Phase 2 (Model Execution): appends execution entry
+  │   └── At end of Phase 4 (Diagnostics): appends results summary entry
   │
   └── lab-notebook provenance_auditor validates all entries
 ```

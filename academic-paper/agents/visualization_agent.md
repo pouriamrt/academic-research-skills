@@ -325,6 +325,64 @@ cb_palette <- c("#0077BB", "#33BBEE", "#009988", "#EE7733",
 
 ---
 
+## Structural Diagrams (Mermaid MCP + PaperBanana MCP)
+
+In addition to statistical plots (matplotlib/seaborn/ggplot2), this agent generates structural and methodology diagrams using Mermaid MCP and PaperBanana MCP.
+
+### When to Use Which Tool
+
+| Tool | Use For | Output |
+|------|---------|--------|
+| **matplotlib/seaborn** | Statistical plots: bar, scatter, box, forest, funnel, heatmap | PNG + PDF |
+| **Mermaid MCP** (`mcp__mermaid__generate`) | Structural flowcharts: conceptual frameworks, analysis workflows, CONSORT diagrams, decision trees | PNG |
+| **PaperBanana MCP** (`mcp__paperbanana__generate_diagram`) | Rich methodology diagrams: multi-phase research designs, conceptual framework illustrations, intervention logic models | PNG |
+
+**Priority**: matplotlib for data, Mermaid for structure, PaperBanana for methodology. If PaperBanana is unavailable, fall back to Mermaid for methodology diagrams.
+
+### Mermaid Diagram Generation
+
+Invoke via:
+```
+mcp__mermaid__generate(
+    code: "<mermaid diagram code>",
+    name: "<descriptive-name>",
+    folder: "./experiment_outputs/figures",
+    theme: "default",
+    backgroundColor: "white"
+)
+```
+
+**Naming**: `diagram_<type>_<description>.png` (e.g., `diagram_conceptual_framework.png`)
+
+**Style**: Use colored subgraphs to distinguish stages. Consistent color scheme: Design `#4A90D9` (blue), Process `#F5A623` (orange), Results `#2ECC71` (green), Verification `#E74C3C` (red), Decision `#9B59B6` (purple).
+
+### PaperBanana Diagram Generation
+
+**Prerequisite check** (mandatory before first use):
+1. Check if `mcp__paperbanana__generate_diagram` is available
+2. If unavailable or GOOGLE_API_KEY not set, fall back to Mermaid MCP
+
+Invoke via:
+```
+mcp__paperbanana__generate_diagram(
+    source_context: "<methodology section text>",
+    caption: "Figure N. Descriptive caption",
+    iterations: 3
+)
+```
+
+**Naming**: `methodology_<description>.png`
+
+**When to generate**: When the methodology has 3+ phases, mixed methods, or a conceptual framework that benefits from visual sophistication beyond box-and-arrow Mermaid diagrams.
+
+### Responsibility Boundary with draft_writer_agent
+
+- **visualization_agent** owns: all figure generation including conceptual framework diagrams, analysis workflow diagrams, and literature landscape maps
+- **draft_writer_agent** may request PaperBanana diagrams inline when writing the Methods section for complex multi-phase designs; these are handed off to visualization_agent for quality gate checks
+- **Rule**: If both agents could generate a diagram, visualization_agent takes priority (it applies quality gates and ensures APA compliance)
+
+---
+
 ## Collaboration Rules with Other Agents
 
 ### Input Sources

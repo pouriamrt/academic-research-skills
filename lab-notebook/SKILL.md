@@ -443,6 +443,10 @@ lab-notebook (export, Schema 12) -> academic-paper          -> Methods section +
 lab-notebook (export, Schema 12) -> academic-pipeline       -> Pipeline orchestration
 ```
 
+### Auto-Logging Protocol (Pipeline Mode)
+
+When experiment skills execute within the academic-pipeline, they automatically log their activities to the active notebook via append-only file operations at designated phase endpoints. This auto-logging happens **without invoking lab-notebook agents**, avoiding circular dependencies. The `provenance_auditor_agent` validates all auto-logged entries during `audit` or `export` mode. When running standalone (outside the pipeline), auto-logging is disabled. See `shared/experiment_infrastructure.md` Section 6 for the full protocol.
+
 ---
 
 ## Version History

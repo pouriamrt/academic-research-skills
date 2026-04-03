@@ -464,6 +464,8 @@ Also references from `deep-research`:
 
 ## Templates
 
+The `intake_agent` dynamically selects the appropriate template based on the paper type determined during the Phase 0 configuration interview (IMRaD, Literature Review, Theoretical, Case Study, Policy Brief, or Conference Paper).
+
 | Template | Purpose |
 |----------|---------|
 | `templates/imrad_template.md` | IMRaD structure template |
@@ -472,7 +474,7 @@ Also references from `deep-research`:
 | `templates/theoretical_paper_template.md` | Theoretical paper template |
 | `templates/policy_brief_template.md` | Policy brief template |
 | `templates/conference_paper_template.md` | Conference paper template |
-| `templates/latex_article_template.tex` | LaTeX starter template |
+| `templates/latex_article_template.tex` | LaTeX starter template (generic `article` class; `formatter_agent` overrides to `apa7` class with proper options during format-convert) |
 | `templates/bilingual_abstract_template.md` | Bilingual abstract template |
 | `templates/credit_statement_template.md` | Author x Role contribution matrix + CRediT statement output |
 | `templates/funding_statement_template.md` | Funding source registration + statement output |
@@ -489,6 +491,7 @@ Also references from `deep-research`:
 | `examples/plan_mode_guided_writing.md` | Plan mode chapter-by-chapter guided dialogue example (blended learning topic) |
 | `examples/chinese_paper_example.md` | Complete Chinese academic paper example (IMRaD, Chinese APA 7.0 citations) |
 | `examples/revision_mode_example.md` | Revision mode complete workflow: peer review response + revision comparison table |
+| `examples/revision_recovery_example.md` | Major Revision recovery: revision tracking with 4 status types through to Accept |
 
 ---
 

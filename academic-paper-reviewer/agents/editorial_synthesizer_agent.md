@@ -211,10 +211,10 @@ Thank you for submitting your manuscript titled "[Paper Title]" to [Journal Name
 
 ### Required Revisions (Must Fix)
 
-| # | Revision Item | Source | Priority | Estimated Effort |
-|---|--------------|--------|----------|-----------------|
-| R1 | [Description] | [EIC/R1/R2/R3] | P1 | [Time] |
-| R2 | [Description] | [Source] | P1 | [Time] |
+| # | Revision Item | Flags | Source | Priority | Estimated Effort |
+|---|--------------|-------|--------|----------|-----------------|
+| R1 | [Description] | | [EIC/R1/R2/R3] | P1 | [Time] |
+| R2 | Collect validation data on algorithm bias | `requires_new_experiment: true`, `experiment_type: new_experiment` | R2 | P1 | 4 weeks |
 ...
 
 ### Suggested Revisions (Should Fix)

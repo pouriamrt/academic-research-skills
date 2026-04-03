@@ -4,6 +4,53 @@ Cross-skill fixes and update history.
 
 ---
 
+## 2026-04-03
+
+### v3.12.0 — Deep Plugin Audit: 16 Issues Fixed Across All Skills
+
+**Files changed**: 14 files across 7 skills + shared + tools + plugin config
+
+**Critical fixes**:
+- **Schema count alignment**: Updated `tools/self_test.py`, `tools/check_schema_versions.py`, and `tools/generate_dashboard.py` to recognize all 17 schemas (previously expected 15-16, missing Schema 16 Concept Lineage Report and Schema 17 Style Profile)
+- **Schema migrations**: Added Schema 16-17 to `shared/schema_migrations.md` Current Versions table
+- **Version synchronization**: Updated `README.md` badge (v3.9.1 -> v3.12.0), `marketplace.json` (v3.8.0 -> v3.12.0), added missing CHANGELOG entries for v3.9.1, v3.10.0, v3.11.0
+- **Systematic-review spec gap**: Added `concept_lineage_agent` to `deep-research/SKILL.md` systematic-review mode Phase 3 (was listed in mode table but missing from workflow diagram)
+
+**High-priority fixes**:
+- **Mode routing**: Added `revision-coach` mode to `academic-paper/agents/intake_agent.md` Mode Detection and Paper Configuration Record (was defined in SKILL.md but missing from intake routing)
+- **Visualization agent**: Added Mermaid MCP and PaperBanana MCP documentation to `academic-paper/agents/visualization_agent.md` with clear responsibility boundaries vs `draft_writer_agent`
+
+**Medium-priority fixes**:
+- Added Stage 6 (Process Summary) to `academic-pipeline/examples/full_pipeline_example.md`
+- Added Experiment Re-Entry Detection section to `academic-pipeline/agents/pipeline_orchestrator_agent.md`
+- Added `requires_new_experiment` flag example to `academic-paper-reviewer/agents/editorial_synthesizer_agent.md` Revision Roadmap template
+- Documented figure regeneration protocol in revision mode (`academic-paper/agents/draft_writer_agent.md`)
+- Documented user opt-out prompting for Stage 3' -> 1.5-R2 in orchestrator agent
+
+**Low-priority fixes**:
+- Added auto-logging protocol note to `lab-notebook/SKILL.md` Integration section
+- Added `revision_recovery_example.md` to `academic-paper/SKILL.md` examples table
+- Clarified LaTeX template vs formatter agent relationship
+- Documented dynamic template selection in academic-paper SKILL.md
+- Clarified auto-logging phase numbering in `shared/experiment_infrastructure.md`
+
+---
+
+### v3.11.0 (2026-04-03) — Visualization Pipeline & Superpowers Gates
+
+- Wired visualization pipeline for publication-ready papers with figures
+- Injected superpowers classification gates into experiment agent workflows
+
+### v3.10.0 (2026-03-28) — Experiment Pipeline Fix
+
+- Fixed experiment pipeline: auto-detection, full-mode enforcement, revision re-entry
+
+### v3.9.1 (2026-03-28) — Version Bump
+
+- Bumped version to 3.9.1 in plugin.json and CLAUDE.md
+
+---
+
 ## 2026-03-28
 
 ### v3.9.0 — Citation Graph APIs, Concept Lineage Agent & Literature Analysis Enhancements

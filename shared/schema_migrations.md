@@ -6,7 +6,7 @@
 
 ## 1. Schema Versioning Protocol
 
-Every schema artifact (Schemas 1-15 as defined in `shared/handoff_schemas.md`) **MUST** include a `schema_version` field at the top level of the artifact.
+Every schema artifact (Schemas 1-17 as defined in `shared/handoff_schemas.md`) **MUST** include a `schema_version` field at the top level of the artifact.
 
 ### Version Format
 
@@ -34,16 +34,17 @@ Every schema artifact (Schemas 1-15 as defined in `shared/handoff_schemas.md`) *
 | Schema 14 | Methodology Blueprint | 1.0 | v3.7.0 |
 | Schema 15 | INSIGHT Collection | 1.0 | v3.7.0 |
 | Schema 16 | Concept Lineage Report | 1.0 | v3.9.0 |
-| Schema 17 | Style Profile | 1.0 | v2.9.0 |
+| Schema 17 | Style Profile | 1.0 | v3.9.0 |
 
 ---
 
 ## 2. Version Compatibility Matrix
 
-| Plugin Version | Schema 1-13 | Schema 14-15 | Notes |
-|----------------|-------------|--------------|-------|
-| v3.7.0 | v1.0 | v1.0 | Baseline — all schemas established at v1.0 |
-| v3.7.1+ | v1.0 | v1.0 | Current — no schema changes since baseline |
+| Plugin Version | Schema 1-13 | Schema 14-15 | Schema 16-17 | Notes |
+|----------------|-------------|--------------|--------------|-------|
+| v3.7.0 | v1.0 | v1.0 | — | Baseline — Schemas 1-15 established at v1.0 |
+| v3.7.1–v3.8.x | v1.0 | v1.0 | — | No schema changes |
+| v3.9.0+ | v1.0 | v1.0 | v1.0 | Schema 16 (Concept Lineage) + Schema 17 (Style Profile) added |
 
 > **Reading this table**: Each row shows which schema versions that plugin version can produce and consume. A plugin version supports all schema versions from its row and all previous rows.
 

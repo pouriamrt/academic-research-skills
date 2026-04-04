@@ -298,6 +298,61 @@ Flag any discrepancies with verdict.
 - Mode 2 (final-check): 100% of claims
 ```
 
+### Phase F: Reproducibility Script Re-Execution (Experiment-Inclusive Papers Only)
+
+**Applies when**: The paper went through Stage 1.5 (experiment pipeline) and Schema 11 (Experiment Results) includes a `reproducibility` field containing a script or execution instructions.
+
+**Purpose**: Verify that the reproducibility script included with experiment results still produces outputs consistent with the reported results. This catches cases where data was modified during revision but the script was not updated, or vice versa.
+
+#### F1. Script Discovery
+```
+1. Check Schema 11 `reproducibility` field for script path or inline code
+2. Check Schema 12 (Lab Record) `file_manifest` for script files
+3. If no reproducibility script exists -> SKIP Phase F with note: "No reproducibility script provided"
+```
+
+#### F2. Script Execution
+```
+1. Use Bash tool to execute the reproducibility script in an isolated environment
+2. Capture stdout, stderr, and exit code
+3. Timeout: 5 minutes for local execution; 15 minutes if using Colab MCP
+
+Error handling:
+- Script fails to execute (missing dependencies) -> MEDIUM issue: "Reproducibility script has unmet dependencies: [list]"
+- Script times out -> MEDIUM issue: "Reproducibility script exceeds time limit"
+- Script produces errors -> MEDIUM issue: "Reproducibility script errors: [stderr]"
+```
+
+#### F3. Output Comparison
+```
+Compare script output against the paper's reported results:
+1. Extract key numerical results from script output
+2. Compare with corresponding values in the Results section
+3. Tolerance: exact match for integers; within rounding for decimals (e.g., p=0.043 vs p=0.04)
+
+Verdicts:
+- REPRODUCIBLE: Script output matches reported results within tolerance
+- DRIFT: Script output differs from reported results (numerical mismatch) -> SERIOUS issue
+- PARTIAL: Some results match, others differ -> MEDIUM issue with specific discrepancies listed
+```
+
+#### F4. Script-Paper Consistency Check
+```
+Verify that the script's methodology matches the paper's Methods description:
+- Same statistical tests referenced?
+- Same sample sizes?
+- Same variable names or clearly mapped equivalents?
+- Same exclusion criteria applied?
+
+Mismatch -> MEDIUM issue: "Methods description and reproducibility script diverge on [specific point]"
+```
+
+#### Sampling Strategy
+```
+- Mode 1 (pre-review, Stage 2.5): Execute script once; compare key results
+- Mode 2 (final-check, Stage 4.5): Execute script; full comparison of all reported results; verify script-paper consistency
+```
+
 ---
 
 ## Two Operating Modes
@@ -305,16 +360,17 @@ Flag any discrepancies with verdict.
 ### Mode 1: Initial Verification (Stage 2.5 — Pre-Review Integrity)
 
 **Goal**: Catch all integrity issues before submission for review
-- Execute Phase A (all) + Phase B (30%+ spot-check) + Phase C (all) + **Phase D (30%+ spot-check)** + **Phase E (30% claim spot-check)**
+- Execute Phase A (all) + Phase B (30%+ spot-check) + Phase C (all) + **Phase D (30%+ spot-check)** + **Phase E (30% claim spot-check)** + **Phase F (if experiment-inclusive; execute script once)**
 - Phase D executes D1 (paragraph-level originality check, sampling rate >= 30%) + D2 (self-plagiarism check, if author name provided)
 - Phase E executes E1 (claim extraction) + E2 (source tracing) + E3 (cross-referencing) on a 30% random sample of claims (minimum 10 claims)
+- Phase F executes F1-F3 (script discovery, execution, output comparison) if reproducibility script exists
 - Issues found -> produce correction list -> fix -> re-verify corrected items
 - **Must PASS to proceed to Stage 3 (REVIEW)**
 
 ### Mode 2: Final Verification (Stage 4.5 — Post-Revision Final Check)
 
 **Goal**: Confirm the revised paper is 100% correct
-- Execute Phase A (all, FRESH) + Phase B (100% full check) + Phase C (all) + **Phase D (50%+ spot-check)** + **Phase E (100% claim verification)**
+- Execute Phase A (all, FRESH) + Phase B (100% full check) + Phase C (all) + **Phase D (50%+ spot-check)** + **Phase E (100% claim verification)** + **Phase F (if experiment-inclusive; full comparison + script-paper consistency)**
 - **⚠️ Phase A must be a FRESH full verification of ALL references, not just re-checking Stage 2.5 fixes.** The Stage 2.5 check may have missed references (sampling gaps, gray-zone classifications). Stage 4.5 is the last line of defense — it must independently verify every reference as if Stage 2.5 never happened.
 - Phase D sampling rate increased to >= 50%, and all paragraphs newly added or substantially modified during revision are checked 100%
 - Phase E verifies 100% of all quantitative/factual claims against their cited sources; zero MAJOR_DISTORTION and zero UNVERIFIABLE required

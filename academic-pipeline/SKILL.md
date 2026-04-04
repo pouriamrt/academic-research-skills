@@ -746,7 +746,7 @@ The final chapter of the process record is a "Collaboration Quality Evaluation" 
 | `references/mode_advisor.md` | Unified cross-skill decision tree: maps user intent to optimal skill + mode |
 | `references/claim_verification_protocol.md` | Phase E claim verification protocol: claim extraction, source tracing, cross-referencing, verdict taxonomy |
 | `references/team_collaboration_protocol.md` | Multi-person team coordination: role definitions, handoff protocol, version control, conflict resolution |
-| `shared/handoff_schemas.md` | Cross-skill data contracts: 9 schemas for all inter-stage handoff artifacts |
+| `shared/handoff_schemas.md` | Cross-skill data contracts: 17 schemas for all inter-stage handoff artifacts |
 
 ---
 
@@ -837,8 +837,8 @@ Stage 5: academic-paper (format-convert mode)
 
 | Item | Content |
 |------|---------|
-| Skill Version | 2.7 |
-| Last Updated | 2026-03-18 |
+| Skill Version | 2.8 |
+| Last Updated | 2026-04-03 |
 | Maintainer | Cheng-I Wu |
 | Dependent Skills | deep-research v2.0+, academic-paper v2.0+, academic-paper-reviewer v1.1+ |
 | Role | Full academic research workflow orchestrator |

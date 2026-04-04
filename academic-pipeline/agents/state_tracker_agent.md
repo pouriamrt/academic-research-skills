@@ -37,6 +37,8 @@ Every material artifact produced by the pipeline carries a version label. These 
 | Experiment design | `experiment_design_v{N}` | `experiment_design_v1` (initial protocol) | Schema 10 |
 | Simulation spec | `simulation_spec_v{N}` | `simulation_spec_v1` (initial specification) | Schema 13 |
 | Experiment results | `experiment_results_v{N}` | `experiment_results_v1` (initial analysis) | Schema 11 |
+| Experiment results (revision) | `experiment_results_revision_v{N}` | `experiment_results_revision_v1` (Stage 1.5-R analysis) | Schema 11-R |
+| Experiment results (revision 2) | `experiment_results_revision2_v{N}` | `experiment_results_revision2_v1` (Stage 1.5-R2 analysis) | Schema 11-R2 |
 | Lab record | `lab_record_v{N}` | `lab_record_v1` (exported record) | Schema 12 |
 | Paper draft | `paper_draft_v{N}` | `paper_draft_v1` (initial), `paper_draft_v2` (post-review revision) | Schema 4 |
 | Integrity report | `integrity_{mid|final}_v{N}` | `integrity_mid_v1`, `integrity_final_v1` | Schema 5 |
@@ -60,7 +62,7 @@ Every material artifact produced by the pipeline carries a version label. These 
 {
   "topic": "Paper topic (determined by Stage 1 or user input)",
   "language": "en",
-  "pipeline_version": "2.7",
+  "pipeline_version": "2.8",
   "entry_point": 1,
   "current_stage": "2.5",
   "pipeline_state": "awaiting_confirmation",
@@ -357,6 +359,8 @@ Every material artifact produced by the pipeline carries a version label. These 
     "response_to_reviewers": true,
     "re_review_report": true,
     "re_revised_draft": false,
+    "experiment_results_revision": false,
+    "experiment_results_revision_2": false,
     "integrity_report_final": false,
     "final_paper": false,
     "process_record": false

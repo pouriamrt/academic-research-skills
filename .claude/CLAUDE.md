@@ -102,19 +102,19 @@ The experiment re-entry stages (1.5-R, 1.5-R2) are triggered when reviewers requ
 ## Handoff Protocol
 
 ### deep-research → academic-paper
-Materials: RQ Brief, Methodology Blueprint, Annotated Bibliography, Synthesis Report, Concept Lineage Report, INSIGHT Collection
+Materials: RQ Brief (Schema 1), Methodology Blueprint (Schema 14), Annotated Bibliography (Schema 2), Synthesis Report (Schema 3), INSIGHT Collection (Schema 15), Concept Lineage Report (Schema 16)
 
 ### academic-paper → academic-paper-reviewer
-Materials: Complete paper text. field_analyst_agent auto-detects domain and configures reviewers.
+Materials: Complete paper text (Schema 4). field_analyst_agent auto-detects domain and configures reviewers.
 
 ### academic-paper-reviewer → academic-paper (revision)
-Materials: Editorial Decision Letter, Revision Roadmap (with `requires_new_experiment` flags on applicable items), Per-reviewer detailed comments
+Materials: Editorial Decision Letter, Review Report (Schema 6), Revision Roadmap (Schema 7, with `requires_new_experiment` flags on applicable items), Per-reviewer detailed comments
 
 ### academic-paper-reviewer → pipeline orchestrator → experiment re-entry (NEW)
 When Revision Roadmap contains `requires_new_experiment = true` items: pipeline re-enters Stage 1.5-R before Stage 4. New Schema 11-R and Schema 12-R are produced and merged with existing experiment materials for integration into the revised paper.
 
 ### experiment-designer → data-analyst / simulation-runner
-Materials: Experiment Design (Schema 10), Simulation Specification (Schema 13, if simulation design)
+Materials: Experiment Design (Schema 10), Simulation Specification (Schema 13, if simulation design), Material Passport (Schema 9)
 
 ### data-analyst / simulation-runner → academic-paper
 Materials: Experiment Results (Schema 11) — APA-formatted statistics, tables, figures, reproducibility script
@@ -127,10 +127,10 @@ Materials: Complete paper draft (Schema 4). Integrity agent checks references, c
 
 ## Validation Tools
 
-Run `python tools/self_test.py` to validate plugin structural integrity (195 checks). See `tools/` for schema validation, dependency graph generation, pipeline dashboard, and reproducibility replay.
+Run `python tools/self_test.py` to validate plugin structural integrity (196 checks). See `tools/` for schema validation, dependency graph generation, pipeline dashboard, and reproducibility replay.
 
 ## Version Info
-- **Version**: 3.12.0
+- **Version**: 3.13.0
 - **Last Updated**: 2026-04-03
 - **Author**: Pouria Mortezaagha
 - **License**: CC-BY-NC 4.0

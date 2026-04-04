@@ -126,6 +126,15 @@ This document defines all legal states, transition conditions, transition action
                 |FINALIZE|                                 |
                 +---+----+                                 |
                     |                                      |
+               [checkpoint]                                |
+                    |                                      |
+                    v                                      |
+                +--------+                                 |
+                |Stage 6 |                                 |
+                |PROCESS |                                 |
+                |SUMMARY |                                 |
+                +---+----+                                 |
+                    |                                      |
                     v                                      |
                 +-------+                                  |
                 |  END  |                                  |

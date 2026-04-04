@@ -6,6 +6,31 @@ Cross-skill fixes and update history.
 
 ## 2026-04-03
 
+### v3.13.0 — 6-Agent Team Review: 24 Issues Fixed, Phase F Defined
+
+**Files changed**: 10 files across 5 skills + shared + pipeline agents + plugin config
+
+**High-priority fix**:
+- **Schema compatibility matrix**: Added Schema 16-17 columns to `shared/schema_migrations.md` Version Compatibility Matrix (previously only covered Schemas 1-15). Added v3.9.0+ row for full version coverage.
+
+**Medium-priority fixes**:
+- **Phase F defined**: Added complete reproducibility script re-execution protocol (F1-F4) to `academic-pipeline/agents/integrity_verification_agent.md`. Previously referenced but never defined. Includes script discovery, execution, output comparison, and script-paper consistency check with sampling strategies for both Mode 1 and Mode 2.
+- **Stage 4.5 fallback corrected**: Fixed `pipeline_orchestrator_agent.md` Skill Failure Fallback Matrix: Stage 4.5 FAIL was incorrectly routing to "Stage 5 (revision)" (Stage 5 is FINALIZE). Now correctly says "fix and re-verify within Stage 4.5 (max 3 rounds)".
+- **State machine diagram**: Added Stage 6 (PROCESS SUMMARY) to ASCII state diagram in `pipeline_state_machine.md` (was shown in legal transitions table but missing from diagram).
+- **Schema number annotations**: Added explicit Schema N references to `deep-research/SKILL.md` handoff protocol (Schemas 1-3, 14-16), `academic-paper/SKILL.md` handoff section (Schemas 1-3, 14-16), and `academic-paper-reviewer/SKILL.md` (Schemas 6-7 with cross-reference to `shared/handoff_schemas.md`).
+- **Stale counts fixed**: `CONTRIBUTING.md` (16 -> 17 schemas, Schema 1-15 -> 1-17, added 2 missing shared/ files), `schema_migrations.md` prose (1-15 -> 1-17), `academic-pipeline/SKILL.md` (9 schemas -> 17, version table 2.7 -> 2.8).
+- **Schema 17 version**: Fixed `schema_migrations.md` Schema 17 (Style Profile) established version from v2.9.0 to v3.9.0 (was pre-v3.x era typo).
+
+**Low-priority fixes**:
+- Added experiment re-entry material tracking (`experiment_results_revision`, `experiment_results_revision_2`) to `state_tracker_agent.md` materials registry and version control table
+- Fixed `state_tracker_agent.md` example JSON `pipeline_version` from "2.7" to "2.8"
+- Clarified `requires_data_collection` flag as informational (not a routing trigger) in orchestrator agent
+- Added Concept Lineage Report + INSIGHT Collection + Methodology Blueprint to pipeline orchestrator handoff material transfer table
+- Annotated all CLAUDE.md handoff protocol materials with Schema numbers
+- Fixed self_test check count in CLAUDE.md (195 -> 196)
+
+---
+
 ### v3.12.0 — Deep Plugin Audit: 16 Issues Fixed Across All Skills
 
 **Files changed**: 14 files across 7 skills + shared + tools + plugin config

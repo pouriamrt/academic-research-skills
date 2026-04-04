@@ -377,7 +377,15 @@ Output: Chapter Plan + INSIGHT Collection
 
 ## Handoff Protocol: deep-research -> academic-paper
 
-`intake_agent` automatically detects deep-research materials (RQ Brief / Bibliography / Synthesis / INSIGHT Collection) and skips redundant steps. See `deep-research/SKILL.md` Handoff Protocol for the complete handoff material format.
+`intake_agent` automatically detects deep-research materials and skips redundant steps:
+- **Schema 1 (RQ Brief)** — skip topic scoping
+- **Schema 2 (Annotated Bibliography)** — skip literature search
+- **Schema 3 (Synthesis Report)** — accelerate findings/discussion writing
+- **Schema 14 (Methodology Blueprint)** — routing flags for experiment detection, methodology context
+- **Schema 15 (INSIGHT Collection)** — key insights for argument building
+- **Schema 16 (Concept Lineage Report)** — intellectual genealogy for literature strategist
+
+See `deep-research/SKILL.md` Handoff Protocol and `shared/handoff_schemas.md` for full field definitions.
 
 ## Handoff Protocol: experiment skills -> academic-paper (v2.5)
 

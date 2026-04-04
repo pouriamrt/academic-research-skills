@@ -80,7 +80,7 @@ Locate the **Experiment Pipeline Routing** section in the Methodology Blueprint.
 EXPERIMENT ROUTING FLAGS (extracted from Methodology Blueprint):
   methodology_subtype:          [value or MISSING]
   requires_experiment_design:   [true/false or MISSING]
-  requires_data_collection:     [true/false or MISSING]
+  requires_data_collection:     [true/false or MISSING]  (informational — used by experiment-designer for instrument building, NOT a routing trigger)
   requires_simulation:          [true/false or MISSING]
   routing_justification:        [text or MISSING]
 ```
@@ -390,7 +390,7 @@ When a sub-skill stage fails or produces unacceptable output:
 | Stage 2: academic-paper | Draft quality below `adequate` threshold | Return to argument_builder for strengthening; if 2nd attempt fails, pause pipeline and request user input |
 | Stage 2.5: integrity (mid) | FAIL verdict | Mandatory: return to Stage 2 with integrity issues as revision requirements. Cannot skip or override |
 | Stage 3: reviewer | All reviewers reject | Pause pipeline; present rejection reasons; offer: (a) major revision and re-review, (b) pivot the paper's angle, (c) abort |
-| Stage 4.5: integrity (final) | FAIL verdict | Return to Stage 5 (revision) with final integrity issues. If 2nd integrity check also fails -> abort pipeline with detailed report |
+| Stage 4.5: integrity (final) | FAIL verdict | Fix and re-verify within Stage 4.5 (max 3 rounds). If 3rd integrity check also fails -> abort pipeline with detailed report |
 | Stage 5: revision | Author cannot address a must_fix item | Escalate to user; options: (a) provide additional data/evidence, (b) reframe the claim, (c) remove the problematic section |
 | Stage 1.5a: experiment-designer | Design too complex or unclear | Suggest guided mode; if 2nd attempt fails, ask user to simplify design scope |
 | Stage 1.5b: data-analyst | Analysis execution fails (data issues, convergence failure) | Check data format/availability; retry with simplified model; if persistent, pause and request user input |
@@ -453,8 +453,8 @@ Stage 3' -> 1.5-R2: Final experiment re-entry opportunity (last chance)
 | Stage 1 -> 1.5 (if experiment) | RQ Brief, Methodology Blueprint | Schema 1 (RQ Brief) + Blueprint routing flags | Pass to experiment-designer intake_agent |
 | Stage 1.5a -> 1.5b | Experiment Design (+ Simulation Spec if applicable) | Schema 10 (+ Schema 13) | Pass to data-analyst or simulation-runner intake_agent |
 | Stage 1.5b -> 1.5c | Accumulated notebook entries | Notebook entries | Pass to lab-notebook for export |
-| Stage 1.5 -> 2 | RQ Brief, Bibliography, Synthesis + Experiment Design + Experiment Results + Lab Record | Schema 1-3 + Schema 10 + Schema 11 + Schema 12 | Combined deep-research + experiment handoff |
-| Stage 1 -> 2 (no experiment) | RQ Brief, Annotated Bibliography, Synthesis Report | Schema 1 (RQ Brief), Schema 2 (Bibliography), Schema 3 (Synthesis) | deep-research handoff protocol |
+| Stage 1.5 -> 2 | RQ Brief, Bibliography, Synthesis, Concept Lineage, INSIGHT Collection + Experiment Design + Experiment Results + Lab Record | Schema 1-3 + Schema 14-16 + Schema 10 + Schema 11 + Schema 12 | Combined deep-research + experiment handoff |
+| Stage 1 -> 2 (no experiment) | RQ Brief, Annotated Bibliography, Synthesis Report, Methodology Blueprint, Concept Lineage Report, INSIGHT Collection | Schema 1-3 + Schema 14 (Blueprint) + Schema 15 (INSIGHT) + Schema 16 (Concept Lineage) | deep-research handoff protocol |
 | Stage 2 -> 2.5 | Complete Paper Draft + Figure Packages | Schema 4 (Paper Draft) + Figure Packages from Phase 4.5 | Verify figures are present (at least 1); pass to integrity_verification_agent |
 | Stage 2.5 -> 3 | Verified Paper Draft + Integrity Report | Schema 4 + Schema 5 (Integrity Report) | Pass to reviewer (with verification report attached) |
 | Stage 3 -> **experiment check** -> **coaching** -> 4 | Editorial Decision, Revision Roadmap, 5 Review Reports | Schema 6 (Review Report), Schema 7 (Revision Roadmap) | Check Roadmap for `requires_new_experiment` items -> if found, dispatch Stage 1.5-R -> then Socratic dialogue -> academic-paper revision mode input |

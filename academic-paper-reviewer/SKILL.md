@@ -349,6 +349,16 @@ The Editorial Decision Letter structure is detailed in `templates/editorial_deci
 
 ---
 
+## Cross-Skill Schema References
+
+This skill produces:
+- **Schema 6 (Review Report)**: Produced by `editorial_synthesizer_agent` — structured review reports from all 5 reviewers
+- **Schema 7 (Revision Roadmap)**: Produced by `editorial_synthesizer_agent` — prioritized revision items with `requires_new_experiment` flags
+
+See `shared/handoff_schemas.md` for full field definitions.
+
+---
+
 ## Integration
 
 ### Upstream/Downstream Relationships

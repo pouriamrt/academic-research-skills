@@ -4,7 +4,7 @@ This guide covers the conventions, structures, and processes that keep the plugi
 
 ## Project Overview
 
-Academic Research Skills is a Claude Code plugin covering the full academic research lifecycle. It comprises 8 skills, 58 agents, and 16 handoff schemas orchestrated through a multi-stage pipeline (research, experimentation, writing, review, revision, publication). Shared infrastructure in `shared/` provides cross-skill data contracts and integration specifications.
+Academic Research Skills is a Claude Code plugin covering the full academic research lifecycle. It comprises 8 skills, 58 agents, and 17 handoff schemas orchestrated through a multi-stage pipeline (research, experimentation, writing, review, revision, publication). Shared infrastructure in `shared/` provides cross-skill data contracts and integration specifications.
 
 ## Repository Structure
 
@@ -15,9 +15,11 @@ academic-research-skills/
   .claude/
     CLAUDE.md                # Project instructions and routing rules
   shared/
-    handoff_schemas.md       # Cross-skill data contracts (Schema 1-15)
+    handoff_schemas.md       # Cross-skill data contracts (Schema 1-17)
     experiment_infrastructure.md  # Experiment agent shared infrastructure
     superpowers_integration.md    # Superpowers plugin integration spec
+    style_calibration_protocol.md # Style Profile calibration and consumption protocol
+    schema_migrations.md          # Schema versioning, migration rules, staleness detection
   <skill-name>/              # Each skill follows this layout:
     SKILL.md                 #   Skill definition (frontmatter, modes, triggers)
     agents/                  #   Agent definitions (one .md per agent)
@@ -63,7 +65,7 @@ Modes are defined in each skill's `SKILL.md`. To add one:
 
 ## How to Create a New Schema
 
-Handoff schemas live in `shared/handoff_schemas.md`. Schemas 1-15 are defined data contracts. Section 16 is a rules section (Schema Versioning), not a schema definition. New schemas start at number 16.
+Handoff schemas live in `shared/handoff_schemas.md`. Schemas 1-17 are defined data contracts. New schemas start at number 18.
 
 Each schema entry requires:
 

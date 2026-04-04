@@ -484,12 +484,14 @@ See `references/literature_monitoring_strategies.md` for platform-specific setup
 
 After research is complete, the following materials can be handed off to `academic-paper`:
 
-1. **Research Question Brief** (from research_question_agent)
-2. **Methodology Blueprint** (from research_architect_agent) — includes `methodology_subtype` field (enum: `experimental`, `quasi_experimental`, `correlational`, `simulation`, `secondary_data_analysis`, `survey`, `case_study`, `content_analysis`, `literature_review`, `theoretical`, `mixed_methods`) and routing flags (`requires_experiment_design`, `requires_data_collection`, `requires_simulation`) used by academic-pipeline to auto-detect experiment stages
-3. **Annotated Bibliography** (from bibliography_agent)
-4. **Synthesis Report** (from synthesis_agent) — now includes methodology distribution and enriched gap analysis
-5. **Concept Lineage Report** (from concept_lineage_agent) — intellectual genealogy of central concepts with citation chain data
-6. **[If socratic mode] INSIGHT Collection and Research Plan Summary**
+1. **Schema 1: RQ Brief** (from research_question_agent)
+2. **Schema 14: Methodology Blueprint** (from research_architect_agent) — includes `methodology_subtype` field (enum: `experimental`, `quasi_experimental`, `correlational`, `simulation`, `secondary_data_analysis`, `survey`, `case_study`, `content_analysis`, `literature_review`, `theoretical`, `mixed_methods`) and routing flags (`requires_experiment_design`, `requires_data_collection`, `requires_simulation`) used by academic-pipeline to auto-detect experiment stages
+3. **Schema 2: Annotated Bibliography** (from bibliography_agent)
+4. **Schema 3: Synthesis Report** (from synthesis_agent) — now includes methodology distribution and enriched gap analysis
+5. **Schema 16: Concept Lineage Report** (from concept_lineage_agent) — intellectual genealogy of central concepts with citation chain data
+6. **Schema 15: INSIGHT Collection** [if socratic mode, also includes Research Plan Summary]
+
+See `shared/handoff_schemas.md` for full schema field definitions.
 
 **Trigger**: User says "now help me write a paper" or "write a paper based on this"
 

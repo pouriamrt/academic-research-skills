@@ -29,7 +29,7 @@ See the [Quick Reference Card](docs/QUICK_REFERENCE.md) for a full "I want to X 
 ## Pipeline
 
 <p align="center">
-  <img src="assets/pipeline.png" alt="Academic Research Pipeline" width="500"/>
+  <img src="assets/pipeline.png" alt="Academic Research Pipeline" width="700"/>
 </p>
 
 The experiment stages (1.5) are auto-detected from the methodology blueprint produced by deep-research. Literature reviews, theoretical papers, and policy analyses skip straight to writing.

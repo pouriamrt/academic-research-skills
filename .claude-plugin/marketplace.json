@@ -7,7 +7,7 @@
   "plugins": [
     {
       "name": "academic-research-skills",
-      "version": "3.13.0",
+      "version": "3.14.0",
       "description": "8 AI skills covering literature review, experiment design, statistical analysis, simulation, paper writing, and peer review. Optional PaperBanana and Google Colab MCP integrations.",
       "source": "./"
     }

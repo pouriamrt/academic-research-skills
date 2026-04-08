@@ -1,6 +1,6 @@
 {
   "name": "academic-research-skills",
-  "version": "3.13.0",
+  "version": "3.14.0",
   "description": "Suite of Claude Code skills for rigorous academic research, experimentation, paper writing, peer review, and pipeline orchestration. 8 skills covering the full research lifecycle from literature review to publication. Optional integrations: Semantic Scholar + OpenAlex (citation graph APIs), PaperBanana MCP (methodology diagrams), Google Colab MCP (GPU compute).",
   "author": {
     "name": "Pouria Mortezaagha"

@@ -4,6 +4,31 @@ Cross-skill fixes and update history.
 
 ---
 
+## 2026-04-07
+
+### v3.14.0 — Upstream Merge: Anti-Sycophancy, Cognitive Frameworks, Reference Extraction
+
+**Merged 8 upstream commits (origin v3.0-v3.1) into fork (v3.13).**
+
+**New content from upstream**:
+- 20+ new reference files: protocols, cognitive frameworks, review guides, changelogs
+- Devil's advocate agents with concession threshold protocol (1-5 scale, no concession below 4)
+- Socratic mentor intent detection layer + dialogue health indicator
+- Cross-model verification protocol (`shared/cross_model_verification.md`)
+- Argumentation reasoning framework (Toulmin, Bradford Hill, IBE)
+- QUICKSTART.md onboarding guide
+
+**Integration fixes**:
+- Renumbered R&R Traceability Matrix: Schema 11 -> Schema 18 (collision fix)
+- Wired 22 new reference files into 4 SKILL.md reference tables
+- Fixed cross-reference path format in devils_advocate_agent.md
+- Removed dead README.zh-TW.md link from QUICKSTART.md
+- Updated schema count 17 -> 18 across CLAUDE.md, README, CONTRIBUTING
+
+**Conflict resolution**: Kept fork's SKILL.md, CLAUDE.md, README as authoritative. Accepted upstream's new files and agent enhancements.
+
+---
+
 ## 2026-04-03
 
 ### v3.13.0 — 6-Agent Team Review: 24 Issues Fixed, Phase F Defined

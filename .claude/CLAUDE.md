@@ -130,7 +130,7 @@ Materials: Complete paper draft (Schema 4). Integrity agent checks references, c
 Run `python tools/self_test.py` to validate plugin structural integrity (196 checks). See `tools/` for schema validation, dependency graph generation, pipeline dashboard, and reproducibility replay.
 
 ## Version Info
-- **Version**: 3.13.0
-- **Last Updated**: 2026-04-03
+- **Version**: 3.14.0
+- **Last Updated**: 2026-04-07
 - **Author**: Pouria Mortezaagha
 - **License**: CC-BY-NC 4.0

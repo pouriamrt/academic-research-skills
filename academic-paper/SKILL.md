@@ -464,6 +464,10 @@ See `agents/intake_agent.md` for the complete field definitions of the Phase 0 c
 | `references/credit_authorship_guide.md` | CRediT 14 roles + ICMJE + AI policy + contribution matrix | intake, formatter, draft_writer |
 | `references/funding_statement_guide.md` | Taiwan/international funding formats + statement templates | intake, formatter, draft_writer |
 | `references/statistical_visualization_standards.md` | APA 7.0 figure guidelines, accessible color palettes, chart type decision tree, matplotlib/ggplot2 code templates | visualization |
+| `references/plan_mode_protocol.md` | Socratic chapter-by-chapter planning flow | intake, structure_architect |
+| `references/workflow_phase_details.md` | 8-phase orchestration detail | all agents |
+| `references/writing_judgment_framework.md` | Writing decision heuristics and trade-off guidance | draft_writer, peer_reviewer |
+| `references/changelog.md` | Skill version history and changelog | — |
 
 Also references from `deep-research`:
 - `deep-research/references/apa7_style_guide.md` — base APA 7 reference (this skill extends, not duplicates)

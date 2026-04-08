@@ -746,7 +746,15 @@ The final chapter of the process record is a "Collaboration Quality Evaluation" 
 | `references/mode_advisor.md` | Unified cross-skill decision tree: maps user intent to optimal skill + mode |
 | `references/claim_verification_protocol.md` | Phase E claim verification protocol: claim extraction, source tracing, cross-referencing, verdict taxonomy |
 | `references/team_collaboration_protocol.md` | Multi-person team coordination: role definitions, handoff protocol, version control, conflict resolution |
-| `shared/handoff_schemas.md` | Cross-skill data contracts: 17 schemas for all inter-stage handoff artifacts |
+| `shared/handoff_schemas.md` | Cross-skill data contracts: 18 schemas for all inter-stage handoff artifacts |
+| `references/external_review_protocol.md` | Real journal reviewer feedback handling (4-step protocol) |
+| `references/integrity_review_protocol.md` | Stage 2.5/4.5 integrity verification steps |
+| `references/process_summary_protocol.md` | Stage 6 process summary with collaboration quality evaluation |
+| `references/progress_dashboard_template.md` | Progress dashboard ASCII-art template |
+| `references/reinforcement_content.md` | Stage-transition reinforcement table |
+| `references/reproducibility_audit.md` | Audit trail template and reproducibility guarantees |
+| `references/two_stage_review_protocol.md` | Stage 3/3' two-stage review flow |
+| `references/changelog.md` | Skill version history and changelog |
 
 ---
 

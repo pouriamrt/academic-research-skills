@@ -1,6 +1,6 @@
 # Academic Research Skills
 
-A suite of Claude Code skills for rigorous academic research, experimentation, statistical analysis, paper writing, peer review, and pipeline orchestration. 8 skills, 58 agents, 17 handoff schemas.
+A suite of Claude Code skills for rigorous academic research, experimentation, statistical analysis, paper writing, peer review, and pipeline orchestration. 8 skills, 58 agents, 18 handoff schemas.
 
 ## Skills Overview
 

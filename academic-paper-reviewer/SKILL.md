@@ -418,6 +418,11 @@ Step 9: academic-paper (format-convert) -> Final paper
 | `references/editorial_decision_standards.md` | Accept/Minor/Major/Reject criteria and decision matrix | eic, editorial_synthesizer |
 | `references/statistical_reporting_standards.md` | Statistical reporting standards + APA 7.0 format quick reference + red flag list | methodology_reviewer |
 | `references/quality_rubrics.md` | Calibrated 0-100 scoring rubrics for 7 review dimensions with decision mapping | all reviewers |
+| `references/guided_mode_protocol.md` | Socratic guided review dialogue flow | eic, all reviewers |
+| `references/re_review_mode_protocol.md` | Verification review checklist and format | eic, editorial_synthesizer |
+| `references/review_quality_thinking.md` | Cognitive framework for reviewers: three lenses, traps, calibration | all reviewers |
+| `references/integration_guide.md` | Pipeline integration reference | eic |
+| `references/changelog.md` | Skill version history and changelog | — |
 
 ---
 

@@ -550,6 +550,11 @@ See `academic-pipeline/SKILL.md` for the complete workflow.
 | `references/systematic_review_toolkit.md` | Cochrane v6.4, PRISMA 2020, RoB 2, ROBINS-I, I² guide, GRADE, protocol registration | risk_of_bias, meta_analysis, bibliography, report_compiler |
 | `references/literature_monitoring_strategies.md` | Google Scholar alerts, PubMed alerts, RSS feeds, Retraction Watch, citation tracking, monitoring cadence | monitoring_agent |
 | `references/citation_graph_apis.md` | Semantic Scholar + OpenAlex API reference: endpoints, fields, rate limits, citation chain tracing patterns | concept_lineage_agent, bibliography_agent |
+| `references/argumentation_reasoning_framework.md` | Toulmin model, Bradford Hill criteria, inference to best explanation, epistemic status | devils_advocate, synthesis |
+| `references/cross_agent_quality_definitions.md` | Unified quality definitions table for cross-agent alignment | all agents |
+| `references/socratic_mode_protocol.md` | Socratic mode conversation protocol and dialogue flow | socratic_mentor |
+| `references/systematic_review_protocol.md` | PRISMA-compliant 5-phase systematic review pipeline | research_architect, bibliography |
+| `references/changelog.md` | Skill version history and changelog | — |
 
 ---
 

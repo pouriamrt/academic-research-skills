@@ -15,11 +15,12 @@ academic-research-skills/
   .claude/
     CLAUDE.md                # Project instructions and routing rules
   shared/
-    handoff_schemas.md       # Cross-skill data contracts (Schema 1-17)
+    handoff_schemas.md       # Cross-skill data contracts (Schema 1-18)
     experiment_infrastructure.md  # Experiment agent shared infrastructure
     superpowers_integration.md    # Superpowers plugin integration spec
     style_calibration_protocol.md # Style Profile calibration and consumption protocol
     schema_migrations.md          # Schema versioning, migration rules, staleness detection
+    mode_spectrum.md              # Fidelity vs Originality mode taxonomy
   <skill-name>/              # Each skill follows this layout:
     SKILL.md                 #   Skill definition (frontmatter, modes, triggers)
     agents/                  #   Agent definitions (one .md per agent)
@@ -29,7 +30,45 @@ academic-research-skills/
   assets/                    # Images for README
   docs/                      # Supplementary documentation
   tools/                     # Validation scripts
+  MODE_REGISTRY.md           # Single source of truth for all 24+ modes
+  POSITIONING.md             # Design philosophy and allowed/discouraged uses
 ```
+
+## How to Submit a Contribution
+
+ARS uses the standard **fork-and-PR** workflow. Fork the repo on GitHub, clone your fork, create a branch, make your changes, push to your fork, then open a PR.
+
+**Important**: You cannot push directly to this repo — you must fork it first and submit a PR from your fork.
+
+## What We Accept
+
+### Community-maintained (fast merge)
+
+These contributions can be merged quickly with minimal review:
+
+- **Typo and formatting fixes** — spelling, broken links, markdown rendering issues
+- **New examples** — pipeline output showcases, worked examples for specific disciplines
+- **Translation improvements** — better zh-TW or EN phrasing in READMEs or agent definitions
+
+### Requires maintainer review
+
+These need careful review because they affect system behavior:
+
+- **Journal and field reference lists** — additions to `top_journals_by_field.md`, new discipline glossaries
+- **Evaluation sets** — gold-standard papers for calibration mode, benchmark data
+- **New reference files** — methodology guides, citation format references, domain-specific protocols
+- **Bug and drift fixes** — version inconsistencies, broken cross-references, incorrect metadata
+- **Mode changes** — new modes, trigger keyword changes, oversight level adjustments
+
+### Requires maintainer approval + discussion
+
+Open an issue first before submitting a PR for these:
+
+- **Agent definition changes** — modifications to any file in `*/agents/*.md`
+- **IRON RULE modifications** — any change to rules marked with the IRON RULE marker
+- **Ethics and integrity rules** — changes to the failure mode checklist, integrity protocols, or ethics review
+- **Handoff schema changes** — modifications to `shared/handoff_schemas.md`
+- **New skills or modes** — additions to the pipeline
 
 ## How to Add or Modify an Agent
 
@@ -62,10 +101,11 @@ Modes are defined in each skill's `SKILL.md`. To add one:
    ```
 3. **Update routing rules** in `.claude/CLAUDE.md` if disambiguation with other modes/skills is needed.
 4. **Add an example** in the skill's `examples/` directory.
+5. **Update `MODE_REGISTRY.md`** with the new mode entry (spectrum position, output, oversight level, triggers).
 
 ## How to Create a New Schema
 
-Handoff schemas live in `shared/handoff_schemas.md`. Schemas 1-17 are defined data contracts. New schemas start at number 18.
+Handoff schemas live in `shared/handoff_schemas.md`. Schemas 1-18 are defined data contracts. New schemas start at number 19.
 
 Each schema entry requires:
 
@@ -105,6 +145,9 @@ Guidelines:
    metadata:
      version: "1.0"
      last_updated: "YYYY-MM-DD"
+     status: active
+     related_skills:
+       - <related-skill>
    ---
    ```
    The body should include: Quick Start, Trigger Conditions (bilingual), Mode Definitions, Agent Pipeline, and Output Schemas.
@@ -140,6 +183,14 @@ Manual checks:
 - YAML frontmatter in `SKILL.md` is valid.
 - Trigger keywords include both English and Traditional Chinese.
 
+## PR Guidelines
+
+- **One concern per PR** — don't mix unrelated changes
+- **Describe what and why** — explain the motivation, not just the change
+- **Reference issues** — if your PR addresses an open issue, link it
+- **Test your changes** — if you're modifying agent definitions, try running the skill to confirm it works as expected
+- **Keep READMEs in sync** — if your change affects user-facing documentation, update both `README.md` and `README.zh-TW.md`
+
 ## Commit Message Format
 
 Use [conventional commits](https://www.conventionalcommits.org/): `<type>: <description>`
@@ -153,6 +204,23 @@ Use [conventional commits](https://www.conventionalcommits.org/): `<type>: <desc
 | `chore` | Plugin manifest, CI, tooling |
 
 Examples: `feat: add bootstrap mode to simulation-runner`, `fix: correct Schema 11 required fields for effect size reporting`
+
+## Governance
+
+### Decision principles
+
+1. **Accuracy over completeness** — we'd rather have fewer, verified journal entries than a long unvetted list
+2. **Human-in-the-loop always** — contributions that reduce human oversight or enable fully autonomous paper generation will be declined
+3. **No detection evasion** — features designed to make AI-generated text harder to detect (as opposed to higher quality) are out of scope
+4. **Discipline diversity welcome** — ARS aims to be domain-agnostic across all academic fields. Discipline-specific modules are encouraged.
+
+## Academic Integrity Policy
+
+This repo is designed to be **assistive, not deceptive**. See [POSITIONING.md](POSITIONING.md) for the full design philosophy. Contributors must not add features designed to evade AI detection tools. If unsure, open an issue to discuss before submitting a PR.
+
+## Credit
+
+Contributors are credited in commit messages, CHANGELOG entries, and the Contributors section of the README. For significant contributions (new features, major reference files), we also add a mention in the relevant release notes.
 
 ## License
 

@@ -1,9 +1,18 @@
 ---
 name: academic-paper
-description: "Academic paper writing skill with 12-agent pipeline. v2.5: Experiment results integration (Schema 11/12) + Style Calibration (learn author's writing voice from past papers) + Writing Quality Check (writing quality checklist for natural prose) + LaTeX output formatting hardening. Supports IMRaD, literature review, theoretical, case study, policy brief, and conference paper structures. APA 7.0 (default), Chicago, MLA, IEEE, Vancouver citation formats. Bilingual abstracts (zh-TW + EN). Multi-format output (LaTeX, DOCX, PDF, Markdown). Triggers on: write paper, academic paper, paper outline, write abstract, revise paper, check citations, convert to LaTeX, guide my paper, parse reviews, revision roadmap, 寫論文, 學術論文, 論文大綱, 寫摘要, 修改論文, 檢查引用, 引導我寫論文, 帶我規劃論文, 逐章規劃, 論文架構, 審查意見, 修訂路線圖."
+description: "Academic paper writing skill with 12-agent pipeline. v3.0: 10 modes (full/plan/outline/revision/revision-coach/abstract/lit-review/format-convert/citation-check/disclosure). Experiment results integration (Schema 11/12) from data-analyst, simulation-runner, and lab-notebook. Style Calibration + Writing Quality Check + Anti-Leakage Protocol + VLM Figure Verification + Disclosure Mode (venue-specific AI usage statements). Supports IMRaD, literature review, theoretical, case study, policy brief, and conference paper structures. APA 7.0 (default), Chicago, MLA, IEEE, Vancouver citation formats. Bilingual abstracts (zh-TW + EN). Multi-format output (LaTeX, DOCX, PDF, Markdown). Triggers on: write paper, academic paper, paper outline, write abstract, revise paper, check citations, convert to LaTeX, guide my paper, parse reviews, revision roadmap, AI disclosure, 寫論文, 學術論文, 論文大綱, 寫摘要, 修改論文, 檢查引用, 引導我寫論文, 帶我規劃論文, 逐章規劃, 論文架構, 審查意見, 修訂路線圖."
 metadata:
-  version: "2.5"
-  last_updated: "2026-03-28"
+  version: "3.0"
+  last_updated: "2026-04-11"
+  status: active
+  related_skills:
+    - deep-research
+    - academic-paper-reviewer
+    - academic-pipeline
+    - experiment-designer
+    - data-analyst
+    - simulation-runner
+    - lab-notebook
 ---
 
 # Academic Paper — Academic Paper Writing Agent Team
@@ -260,22 +269,26 @@ See `references/mode_selection_guide.md` for details.
 | `citation-check` | "Check citations" | 6 only | Citation error report |
 | `plan` | "guide my paper" / "help me plan my paper" | 1->10->3->4 | Chapter Plan + INSIGHT Collection |
 | `revision-coach` | "parse reviews" / "revision roadmap" / "I got reviewer comments" | 12 only | Revision Roadmap + optional Tracking Template + Response Letter Skeleton |
+| **`disclosure`** (v3.2) | **"AI disclosure for Nature" / "generate AI usage statement"** | **9 only** | **Venue-specific AI-usage disclosure paragraph(s) + placement instructions** |
 
 ### Quick Mode Selection Guide
 
-| Your Situation | Recommended Mode |
-|----------------|-----------------|
-| Starting from scratch with a clear RQ | `full` |
-| Need help planning before writing | `plan` |
-| Just need an outline | `outline-only` |
-| Have a draft, received review feedback | `revision` |
-| Have unstructured reviewer comments | `revision-coach` |
-| Just need an abstract | `abstract-only` |
-| Need to check/fix citations | `citation-check` |
-| Need to convert format (LaTeX, DOCX) or citation style | `format-convert` |
-| Want a systematic literature review paper | `lit-review` |
+| Your Situation | Recommended Mode | Spectrum |
+|----------------|-----------------|----------|
+| Starting from scratch with a clear RQ | `full` | balanced |
+| Need help planning before writing | `plan` | originality |
+| Just need an outline | `outline-only` | balanced |
+| Have a draft, received review feedback | `revision` | fidelity |
+| Have unstructured reviewer comments | `revision-coach` | balanced |
+| Just need an abstract | `abstract-only` | fidelity |
+| Need to check/fix citations | `citation-check` | fidelity |
+| Need to convert format (LaTeX, DOCX) or citation style | `format-convert` | fidelity |
+| Want a systematic literature review paper | `lit-review` | fidelity |
+| Need a venue-specific AI-usage disclosure statement for submission | `disclosure` | fidelity |
 
-Not sure? Start with `plan` — it will guide you step by step.
+**Spectrum** (v3.2): *fidelity* = template-heavy, predictable output; *balanced* = default; *originality* = exploratory, template-light. See `shared/mode_spectrum.md` for the full cross-skill spectrum table.
+
+Not sure? Start with `plan` — it will guide you step by step. `disclosure` is a finishing step — run it after the paper is drafted, targeting the venue you plan to submit to.
 
 ### Mode Selection Logic
 
@@ -555,6 +568,17 @@ academic-paper + report-to-website    -> Interactive web version of the paper
 academic-paper + notebooklm-slides-generator -> Presentation slides from paper
 academic-paper + academic-paper-reviewer -> Peer review -> revision loop
 ```
+
+---
+
+## Version Info
+
+| Item | Content |
+|------|---------|
+| Skill Version | 3.0 |
+| Last Updated | 2026-04-11 |
+| Maintainer | Pouria Mortezaagha |
+| Dependent Skills | deep-research (upstream), academic-paper-reviewer (downstream), academic-pipeline (orchestrator), experiment-designer + data-analyst + simulation-runner + lab-notebook (upstream when methodology requires experiments) |
 
 ---
 

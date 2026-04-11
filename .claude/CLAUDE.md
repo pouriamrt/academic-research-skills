@@ -6,14 +6,39 @@ A suite of Claude Code skills for rigorous academic research, experimentation, s
 
 | Skill | Purpose | Key Modes |
 |-------|---------|-----------|
-| `deep-research` v2.5 | Universal 14-agent research team | full, quick, socratic, review, lit-review, fact-check, systematic-review |
+| `deep-research` v2.9 | Universal 14-agent research team (with concept lineage) | full, quick, socratic, review, lit-review, fact-check, systematic-review |
 | `experiment-designer` v1.0 | Experiment protocol and power analysis | full, guided, quick, power-only, instrument |
 | `data-analyst` v1.0 | Statistical analysis execution | full, guided, quick, assumption-check, exploratory, replication |
 | `simulation-runner` v1.0 | Computational experiments | full, guided, quick, power-sim, sensitivity, bootstrap |
 | `lab-notebook` v1.0 | Experiment research record | full, log-entry, deviation, snapshot, export, audit |
-| `academic-paper` v2.5 | 12-agent academic paper writing | full, plan, outline-only, revision, abstract-only, lit-review, format-convert, citation-check |
-| `academic-paper-reviewer` v1.4 | Multi-perspective paper review (5 reviewers) | full, re-review, quick, methodology-focus, guided |
-| `academic-pipeline` v2.8 | Full pipeline orchestrator | (coordinates all above) |
+| `academic-paper` v3.0 | 12-agent academic paper writing | full, plan, outline-only, revision, revision-coach, abstract-only, lit-review, format-convert, citation-check, disclosure |
+| `academic-paper-reviewer` v1.8 | Multi-perspective paper review (5 reviewers + optional cross-model) | full, re-review, quick, methodology-focus, guided, calibration |
+| `academic-pipeline` v3.3 | Full pipeline orchestrator | (coordinates all above) |
+
+## v3.15 Upstream Integration (PaperOrchestra + Lu 2026)
+
+Merged from upstream (Imbad0202) v2.9-v3.3 while preserving the fork's full experiment pipeline (4 experiment skills, schemas 10-18, validation tooling).
+
+### v3.3 — PaperOrchestra-inspired enhancements
+
+- **Semantic Scholar API Verification**: Tier 0 programmatic reference verification. See `deep-research/references/semantic_scholar_api_protocol.md`.
+- **Anti-Leakage Protocol**: Knowledge isolation prioritizing session materials over LLM memory. See `academic-paper/references/anti_leakage_protocol.md`.
+- **VLM Figure Verification**: Optional closed-loop figure verification via vision LLM. See `academic-paper/references/vlm_figure_verification.md`.
+- **Score Trajectory Protocol**: Per-dimension rubric score delta tracking across revision rounds. See `academic-pipeline/references/score_trajectory_protocol.md`.
+- **Stage 2 Parallelization**: Visualization and argument building can run in parallel after outline.
+
+### v3.2 — Lu 2026 integration
+
+- **7-mode AI Research Failure Mode Checklist**: blocks pipeline at Stage 2.5/4.5 on suspected failures (Lu 2026). See `academic-pipeline/references/ai_research_failure_modes.md`.
+- **Reviewer Calibration Mode**: opt-in FNR/FPR/balanced-accuracy measurement. See `academic-paper-reviewer/references/calibration_mode_protocol.md`.
+- **Disclosure Mode**: venue-specific AI-usage statement (ICLR/NeurIPS/Nature/Science/ACL/EMNLP). See `academic-paper/references/disclosure_mode_protocol.md`.
+- **Early-Stopping + Budget Transparency**: convergence check + token cost estimate at pipeline start.
+- **Fidelity-Originality Mode Spectrum**: classifies all modes. See `shared/mode_spectrum.md`.
+
+### v2.9 — Style & IS Senior Scholars' Basket
+
+- **Information Systems — Senior Scholars' Basket of 11**: complete AIS official premier journal list (added *Decision Support Systems*, *Information & Management*, *Information and Organization*).
+- **Style Calibration**: optional intake step to learn the author's writing voice from past papers. See `shared/style_calibration_protocol.md`.
 
 ## Routing Rules
 
@@ -130,7 +155,8 @@ Materials: Complete paper draft (Schema 4). Integrity agent checks references, c
 Run `python tools/self_test.py` to validate plugin structural integrity (196 checks). See `tools/` for schema validation, dependency graph generation, pipeline dashboard, and reproducibility replay.
 
 ## Version Info
-- **Version**: 3.14.0
-- **Last Updated**: 2026-04-07
+- **Version**: 3.15.0
+- **Last Updated**: 2026-04-11
 - **Author**: Pouria Mortezaagha
+- **Upstream**: Imbad0202 (merged through v3.3)
 - **License**: CC-BY-NC 4.0

@@ -4,6 +4,48 @@ Cross-skill fixes and update history.
 
 ---
 
+## 2026-04-11
+
+### v3.15.0 — Upstream Merge: PaperOrchestra + Lu 2026 Integration
+
+**Merged upstream (Imbad0202) commits through v3.3 into fork (v3.14).**
+
+**New content from upstream — preserved as new reference files**:
+
+*v3.3 — PaperOrchestra-inspired enhancements (a45e386)*
+- `deep-research/references/semantic_scholar_api_protocol.md` — Tier 0 programmatic citation verification (Levenshtein >= 0.70 title matching, DOI mismatch detection)
+- `academic-paper/references/anti_leakage_protocol.md` — Knowledge isolation directive prioritizing session materials over LLM parametric memory
+- `academic-paper/references/vlm_figure_verification.md` — Optional vision-LLM closed-loop figure verification (10-point checklist)
+- `academic-pipeline/references/score_trajectory_protocol.md` — Per-dimension rubric score delta tracking across revision rounds
+
+*v3.2 — Lu 2026 integration (006f785, 766b7b4, 40743fe, ef0866d, 9a17ce5)*
+- `academic-pipeline/references/ai_research_failure_modes.md` — 7-mode AI research failure checklist (extending the 5-type citation hallucination taxonomy)
+- `academic-paper-reviewer/references/calibration_mode_protocol.md` — Opt-in FNR/FPR/balanced-accuracy measurement against gold-standard sets
+- `academic-paper/references/disclosure_mode_protocol.md` — Venue-specific AI-usage disclosure mode
+- `academic-paper/references/venue_disclosure_policies.md` — v1 policy database (ICLR/NeurIPS/Nature/Science/ACL/EMNLP)
+- `shared/mode_spectrum.md` — Fidelity-Originality classification of all 24+ modes
+
+*v3.1.1 — IS Basket of 11 (7d2cf13)*
+- Information Systems Senior Scholars' Basket of 11 — completed AIS official premier journal list (added DSS, I&M, I&O)
+
+*Governance + meta*
+- Root-level `CHANGELOG.md` (restored from upstream)
+- `README.zh-TW.md` (restored from upstream)
+- `POSITIONING.md` — design philosophy, allowed/discouraged uses, license positioning
+- `MODE_REGISTRY.md` — single source of truth for all modes across the suite
+
+**Integration decisions**:
+- Kept all 4 fork-only experiment skills (`experiment-designer`, `data-analyst`, `simulation-runner`, `lab-notebook`) — origin split these into a separate `experiment-agent` repo, fork keeps them inline as part of the full pipeline
+- Kept all 18 handoff schemas (origin trimmed to 10 after removing experiment skills)
+- Kept all validation tooling (`tools/self_test.py`, `tools/validate_schemas.py`, `tools/replay_experiments.py`, etc.) — origin removed these
+- Kept `concept_lineage_agent` and `citation_graph_apis.md` (the 14th deep-research agent and Semantic Scholar+OpenAlex protocol)
+- Kept `shared/experiment_infrastructure.md`, `shared/superpowers_integration.md`, `shared/schema_migrations.md`
+- Kept `.claude-plugin/plugin.json` (origin removed plugin packaging)
+
+**Conflict resolution**: 9 files with conflicts. For SKILL.md files, kept fork's experiment-aware structure and merged in upstream's new feature references. For CHANGELOG, README, CLAUDE.md, kept fork content and added upstream additions section.
+
+---
+
 ## 2026-04-07
 
 ### v3.14.0 — Upstream Merge: Anti-Sycophancy, Cognitive Frameworks, Reference Extraction

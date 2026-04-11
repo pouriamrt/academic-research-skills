@@ -1,12 +1,17 @@
 ---
 name: academic-paper-reviewer
-description: "Multi-perspective academic paper review with dynamic reviewer personas. Simulates 5 independent reviewers (EIC + 3 peer reviewers + Devil's Advocate) with field-specific expertise. Supports full review, re-review (verification), quick assessment, methodology focus, and Socratic guided modes. Triggers on: review paper, peer review, manuscript review, referee report, review my paper, critique paper, simulate review, editorial review."
+description: "Multi-perspective academic paper review with dynamic reviewer personas. Simulates 5 independent reviewers (EIC + 3 peer reviewers + Devil's Advocate) with field-specific expertise. Supports full review, re-review (verification), quick assessment, methodology focus, Socratic guided, and calibration modes. Triggers on: review paper, peer review, manuscript review, referee report, review my paper, critique paper, simulate review, editorial review, calibrate reviewer, reviewer calibration, measure reviewer accuracy."
 metadata:
-  version: "1.4"
-  last_updated: "2026-03-08"
+  version: "1.8"
+  last_updated: "2026-04-11"
+  status: active
+  related_skills:
+    - academic-paper
+    - academic-pipeline
+    - deep-research
 ---
 
-# Academic Paper Reviewer v1.4 — Multi-Perspective Academic Paper Review Agent Team
+# Academic Paper Reviewer v1.8 — Multi-Perspective Academic Paper Review Agent Team
 
 Simulates a complete international journal peer review process: automatically identifies the paper's field, dynamically configures 5 reviewers (Editor-in-Chief + 3 peer reviewers + Devil's Advocate) who review from four non-overlapping perspectives — methodology, domain expertise, cross-disciplinary viewpoints, and core argument challenges — ultimately producing a structured Editorial Decision and Revision Roadmap.
 
@@ -40,7 +45,7 @@ Review this paper: [paste paper or provide file]
 
 ### Trigger Keywords
 
-**English**: review paper, peer review, manuscript review, referee report, review my paper, critique paper, simulate review, editorial review
+**English**: review paper, peer review, manuscript review, referee report, review my paper, critique paper, simulate review, editorial review, calibrate reviewer, reviewer calibration, measure reviewer accuracy
 
 ### Non-Trigger Scenarios
 
@@ -52,15 +57,18 @@ Review this paper: [paste paper or provide file]
 
 ### Quick Mode Selection Guide
 
-| Your Situation | Recommended Mode |
-|----------------|-----------------|
-| Need comprehensive review (first submission) | full |
-| Checking if revisions addressed comments | re-review |
-| Quick quality assessment (15 min) | quick |
-| Focus only on methods/statistics | methodology-focus |
-| Want to learn by doing (guided review) | guided |
+| Your Situation | Recommended Mode | Spectrum |
+|----------------|-----------------|----------|
+| Need comprehensive review (first submission) | full | balanced |
+| Checking if revisions addressed comments | re-review | fidelity |
+| Quick quality assessment (15 min) | quick | fidelity |
+| Focus only on methods/statistics | methodology-focus | fidelity |
+| Want to learn by doing (guided review) | guided | originality |
+| Want to know this reviewer's own error profile before trusting its scores | calibration | fidelity |
 
-Not sure? Use `full` for pre-submission review, `re-review` for post-revision verification.
+**Spectrum** (v3.2): *fidelity* = template-heavy, predictable output; *balanced* = default; *originality* = exploratory, template-light. See `shared/mode_spectrum.md` for the full cross-skill spectrum table.
+
+Not sure? Use `full` for pre-submission review, `re-review` for post-revision verification. `calibration` is opt-in — run it once per domain when you want to know the reviewer's FNR/FPR before relying on its rubric scores.
 
 ---
 
@@ -167,7 +175,7 @@ User: "Review this paper"
 
 ---
 
-## Operational Modes (5 Modes)
+## Operational Modes (6 Modes)
 
 | Mode | Trigger | Agents | Output |
 |------|---------|--------|--------|
@@ -176,6 +184,7 @@ User: "Review this paper"
 | `quick` | "quick review" | field_analyst + eic | EIC quick assessment + key issues list (15-minute version) |
 | `methodology-focus` | "check methodology" | field_analyst + methodology_reviewer | In-depth methodology review report |
 | `guided` | "guide me" | All + Socratic dialogue | Socratic issue-by-issue guided review |
+| **`calibration`** (v3.2) | **"calibrate reviewer" / "measure reviewer accuracy"** | **All 7 agents, 5x per gold paper, cross-model default-on** | **Calibration Report: FNR/FPR/balanced accuracy/AUC + per-dimension calibration error + session-scoped confidence disclosure** |
 
 ### Mode Selection Logic
 
@@ -187,6 +196,8 @@ User: "Review this paper"
 "Guide me to improve this paper"         -> guided
 "Walk me through the issues in my paper" -> guided
 "Verification review" / "Check revisions"-> re-review
+"How accurate is your review scoring?"   -> calibration
+"Calibrate against these 10 papers"      -> calibration
 ```
 
 ---
@@ -328,6 +339,14 @@ Phase 2: Does not produce full Editorial Decision; enters dialogue mode instead
 
 ---
 
+## Calibration Mode (v3.2)
+
+Opt-in mode that measures this reviewer's FNR / FPR / balanced accuracy against a user-supplied gold set (5-20 papers with known outcomes). Runs `full` 5x per paper with fresh context, cross-model default-on. Produces a Calibration Report attached as a confidence disclosure to subsequent reviews in the session.
+
+> See `references/calibration_mode_protocol.md` for full spec: intake rules, ensembling methodology, output format, and failure cases this mode does not fix.
+
+---
+
 ## Review Output Format
 
 Each reviewer's report structure is detailed in `templates/peer_review_report_template.md`.
@@ -418,11 +437,12 @@ Step 9: academic-paper (format-convert) -> Final paper
 | `references/editorial_decision_standards.md` | Accept/Minor/Major/Reject criteria and decision matrix | eic, editorial_synthesizer |
 | `references/statistical_reporting_standards.md` | Statistical reporting standards + APA 7.0 format quick reference + red flag list | methodology_reviewer |
 | `references/quality_rubrics.md` | Calibrated 0-100 scoring rubrics for 7 review dimensions with decision mapping | all reviewers |
-| `references/guided_mode_protocol.md` | Socratic guided review dialogue flow | eic, all reviewers |
-| `references/re_review_mode_protocol.md` | Verification review checklist and format | eic, editorial_synthesizer |
-| `references/review_quality_thinking.md` | Cognitive framework for reviewers: three lenses, traps, calibration | all reviewers |
-| `references/integration_guide.md` | Pipeline integration reference | eic |
-| `references/changelog.md` | Skill version history and changelog | — |
+| `references/review_quality_thinking.md` | Cognitive framework for review quality: three lenses (internal validity, external validity, contribution), common reviewer traps, calibration questions | all reviewers |
+| `references/re_review_mode_protocol.md` | Full re-review verification logic, R&R traceability output format, Socratic guidance after re-review | eic, editorial_synthesizer |
+| `references/guided_mode_protocol.md` | Guided mode dialogue flow, progressive revelation sequence, dialogue rules | all reviewers |
+| `references/calibration_mode_protocol.md` | Calibration mode: FNR/FPR/balanced accuracy measurement against user-supplied gold set, 5x ensembling, session-scoped confidence disclosure (v3.2) | all reviewers |
+| `references/integration_guide.md` | Complete 9-step pipeline usage example | — |
+| `references/changelog.md` | Full version history | — |
 
 ---
 

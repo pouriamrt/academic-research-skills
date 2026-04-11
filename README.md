@@ -43,7 +43,7 @@ v3.3 was inspired by [**PaperOrchestra**](https://arxiv.org/abs/2604.05018) (Son
 | **academic-paper-reviewer** v1.8 | 7 | Multi-perspective peer review (EIC + 3 reviewers + Devil's Advocate + optional cross-model) with calibration mode | full, re-review, quick, methodology-focus, guided, calibration |
 | **academic-pipeline** v3.3 | 3 | Full pipeline orchestrator with AI Research Failure Mode Checklist (Lu 2026), score trajectory tracking, early-stopping | auto-detected stages |
 
-See the [Quick Reference Card](docs/QUICK_REFERENCE.md) for a full "I want to X → use skill Y in mode Z" lookup table.
+See the [Quick Reference Card](docs/QUICK_REFERENCE.md) for a full "I want to X → use skill Y in mode Z" lookup table, [MODE_REGISTRY.md](MODE_REGISTRY.md) for the single source of truth on all 24+ modes (with spectrum / output / oversight / triggers), and [POSITIONING.md](POSITIONING.md) for the design philosophy and allowed/discouraged uses.
 
 ## Pipeline
 
@@ -98,21 +98,29 @@ Experiment skills (`experiment-designer`, `data-analyst`, `simulation-runner`) i
 | model_builder | Purity tests (same seed = same output), structure tests, edge case tests, distribution tests |
 | execution_engine | Reproducibility tests, convergence tests, parallel equivalence tests |
 
-## Companion: Experiment Agent
+## Built-in Experiment Pipeline
 
-If your research involves running experiments (code or human studies) before writing, the [Experiment Agent](https://github.com/Imbad0202/experiment-agent) skill fills the gap between ARS Stage 1 (RESEARCH) and Stage 2 (WRITE).
+This fork ships with **4 experiment skills** (22 agents) that auto-detect from the methodology blueprint and run inline within the pipeline. No external companion repo required.
 
 ```
-ARS Stage 1 RESEARCH  →  RQ Brief + Methodology Blueprint
+Stage 1 RESEARCH  →  RQ Brief + Methodology Blueprint
         ↓
-  experiment-agent     →  run/manage experiments → validate results
+Stage 1.5 EXPERIMENT (auto-detected)
+  ├─ experiment-designer → protocol, power analysis, instruments
+  ├─ data-analyst        → real-data statistics with APA reporting
+  ├─ simulation-runner   → Monte Carlo / bootstrap / SEM / HLM / ABM
+  └─ lab-notebook        → provenance tracking + deviation log
         ↓
-ARS Stage 2 WRITE     →  write paper with verified experiment results
+Stage 2 WRITE  →  paper with verified experiment results integrated
 ```
 
-**What it does**: executes code experiments (Python, R, etc.) with real-time monitoring, manages human study protocols with IRB ethics checklist, interprets statistics with 11-type fallacy detection, and verifies reproducibility.
+**Schema flow**: experiment-designer (Schema 10/13) → data-analyst / simulation-runner (Schema 11) → lab-notebook (Schema 12) → academic-paper (integrated into Methods + Results sections).
 
-**How to use together**: pause the ARS pipeline after Stage 1, run experiments in a separate experiment-agent session, then bring the results (with Material Passport) back to ARS Stage 2. ARS requires zero modification. See the [experiment-agent README](https://github.com/Imbad0202/experiment-agent) for setup instructions.
+**Reviewer-driven re-entry**: if reviewers request new experimental data, the editorial synthesizer flags items with `requires_new_experiment = true` and the pipeline re-enters Stage 1.5-R / 1.5-R2 before text revision. Users can opt out and convert items to Acknowledged Limitations.
+
+**Code discipline**: complex experiment code (custom DGPs, SEM, agent-based models, multi-step analysis pipelines) auto-invokes the [superpowers](https://github.com/obra/superpowers) plugin's TDD workflow with scientific test patterns (known-answer tests, synthetic data validation, reproducibility checks).
+
+> **Upstream alternative**: the upstream suite (Imbad0202) splits experiment work into a separate [experiment-agent](https://github.com/Imbad0202/experiment-agent) companion repo. This fork takes the opposite design: experiments are built in. If you prefer the lean writer-focused upstream + standalone experiment-agent, use the upstream repo instead.
 
 ---
 
@@ -177,7 +185,7 @@ The `tools/` directory contains automated validation scripts (Python stdlib only
 
 | Tool | Purpose | Command |
 |------|---------|---------|
-| **self_test.py** | Structural integrity check (195 checks across 7 categories) | `python tools/self_test.py` |
+| **self_test.py** | Structural integrity check (196 checks across 7 categories) | `python tools/self_test.py` |
 | **validate_schemas.py** | Handoff schema cross-reference validation | `python tools/validate_schemas.py` |
 | **check_schema_versions.py** | Schema versioning and migration registry check | `python tools/check_schema_versions.py` |
 | **generate_dependency_graph.py** | Auto-generate Mermaid agent dependency graph | `python tools/generate_dependency_graph.py --output file` |
@@ -220,30 +228,45 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines on adding agents, modes, s
 
 ## Skill Details
 
-### Deep Research (v2.5)
+### Deep Research (v2.9)
 
 14-agent pipeline for rigorous academic research:
 
 | Agent | Role |
 |-------|------|
 | Research Question Agent | FINER-scored RQ formulation |
-| Research Architect | Methodology design |
-| Bibliography Agent | Systematic literature search (Semantic Scholar + OpenAlex + WebSearch) |
-| Source Verification Agent | Evidence grading, predatory journal detection |
+| Research Architect | Methodology design + Methodology Blueprint (Schema 14) |
+| Bibliography Agent | Systematic literature search (Semantic Scholar + OpenAlex + WebSearch) with **Tier 0 S2 API verification** |
+| Source Verification Agent | Evidence grading, predatory journal detection, **DOI mismatch detection** |
 | Synthesis Agent | Cross-source integration + methodology distribution analysis |
 | Concept Lineage Agent | Intellectual genealogy tracing via citation graph APIs |
 | Report Compiler | APA 7.0 report drafting + optional Style Profile + Writing Quality Check |
 | Editor-in-Chief | Q1 journal editorial review |
-| Devil's Advocate | Assumption challenging (3 checkpoints) + literature assumption audit |
+| Devil's Advocate | Assumption challenging (3 checkpoints) + literature assumption audit + **concession threshold protocol (1-5 scale, no concession below 4)** |
 | Ethics Review Agent | AI disclosure, attribution integrity |
-| Socratic Mentor | Guided research dialogue with convergence criteria + SCR reflection (togglable) |
+| Socratic Mentor | Guided research dialogue with convergence criteria + SCR reflection (togglable) + **intent detection** |
 | Risk of Bias Agent | RoB 2 + ROBINS-I assessment, traffic-light output |
 | Meta-Analysis Agent | Effect sizes, heterogeneity, forest plot data, GRADE |
 | Monitoring Agent | Post-pipeline literature monitoring alerts |
 
-**Modes:** full, quick, paper-review, lit-review, fact-check, socratic, **systematic-review**
+**Modes:** full, quick, review, lit-review, fact-check, socratic, **systematic-review**
 
-### Academic Paper (v2.5)
+### Experiment Designer / Data Analyst / Simulation Runner / Lab Notebook (v1.0 each)
+
+Four experiment skills (22 agents total) auto-detected from the methodology blueprint:
+
+| Skill | Agents | Purpose |
+|-------|--------|---------|
+| **experiment-designer** | 6 | Protocol design, power analysis, instruments, randomization, EQUATOR/CONSORT compliance, simulation specification (Schema 13) |
+| **data-analyst** | 7 | Real-data statistical analysis, assumption testing, APA-formatted reporting, effect size interpretation, visualization |
+| **simulation-runner** | 5 | Monte Carlo, bootstrap, agent-based models, parameter sweeps, convergence diagnostics, parallel execution |
+| **lab-notebook** | 4 | Experiment record with provenance tracking, deviation logging, file manifest, reproducibility audit |
+
+**Schema flow:** experiment-designer (Schema 10/13) → data-analyst / simulation-runner (Schema 11) → lab-notebook (Schema 12) → academic-paper
+
+**Superpowers integration:** complex code (custom DGPs, SEM, ABM, multi-step pipelines) auto-invokes superpowers TDD workflow with scientific test patterns (known-answer, synthetic data, reproducibility).
+
+### Academic Paper (v3.0)
 
 12-agent pipeline for academic paper writing:
 
@@ -253,18 +276,18 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines on adding agents, modes, s
 | Literature Strategist | Search strategy + annotated bibliography |
 | Structure Architect | Paper outline + word allocation |
 | Argument Builder | Thesis + claim-evidence chains |
-| Draft Writer | Section-by-section writing + Writing Quality Check sweep + Style Profile application |
+| Draft Writer | Section-by-section writing + Writing Quality Check sweep + Style Profile application + **Anti-Leakage Protocol** (knowledge isolation) |
 | Citation Compliance | Multi-format citation audit + APA↔Chicago↔MLA↔IEEE↔Vancouver conversion |
 | Abstract Bilingual | EN + Chinese abstracts |
 | Peer Reviewer | 5-dimension review (max 2 rounds) |
 | Formatter | LaTeX/DOCX/PDF output — mandatory `apa7` class, XeCJK bilingual, `ragged2e` justification fix, tectonic compilation |
 | Socratic Mentor | Chapter-by-chapter guided planning with convergence criteria + SCR reflection (togglable) |
-| Visualization Agent | 9 chart types, matplotlib/ggplot2, APA 7.0 standards |
+| Visualization Agent | 9 chart types, matplotlib/ggplot2, APA 7.0 standards + **VLM Figure Verification** (optional closed-loop visual quality check) |
 | Revision Coach Agent | Parses unstructured reviewer comments → Revision Roadmap |
 
-**Modes:** full, plan, revision, citation-check, format-convert, bilingual-abstract, writing-polish, full-auto, **revision-coach**
+**Modes:** full, plan, outline-only, revision, revision-coach, abstract-only, lit-review, format-convert, citation-check, **disclosure** (venue-specific AI usage statement)
 
-### Academic Paper Reviewer (v1.4)
+### Academic Paper Reviewer (v1.8)
 
 7-agent multi-perspective review with **0-100 quality rubrics**:
 
@@ -275,55 +298,94 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines on adding agents, modes, s
 | Methodology Reviewer | Research design, statistics, reproducibility |
 | Domain Reviewer | Literature coverage, theoretical framework |
 | Perspective Reviewer | Cross-disciplinary, practical impact |
-| Devil's Advocate Reviewer | Core thesis challenge, logical fallacy detection, strongest counter-argument |
-| Editorial Synthesizer | Consensus analysis, revision roadmap, **rubric-based scoring** |
+| Devil's Advocate Reviewer | Core thesis challenge, logical fallacy detection, strongest counter-argument + **concession threshold protocol** + **attack intensity preservation** |
+| Editorial Synthesizer | Consensus analysis, revision roadmap with `requires_new_experiment` flags, **rubric-based scoring** + **R&R traceability matrix (Schema 18)** |
 
-**Modes:** full, re-review (verification), quick, methodology-focus, guided
+**Modes:** full, re-review (verification), quick, methodology-focus, guided, **calibration** (FNR/FPR/balanced accuracy measurement against gold-standard sets)
 
 **Decision mapping:** ≥80 Accept, 65-79 Minor Revision, 50-64 Major Revision, <50 Reject
 
-### Academic Pipeline (v2.7)
+**Optional cross-model verification:** set `ARS_CROSS_MODEL` to use GPT-5.4 Pro or Gemini 3.1 Pro as an independent second reviewer.
 
-10-stage orchestrator with integrity verification, two-stage review, Socratic coaching, and collaboration evaluation:
+### Academic Pipeline (v3.3)
+
+Pipeline orchestrator with integrity verification, two-stage review, experiment re-entry, Socratic coaching, and collaboration evaluation:
 
 | Stage | Skill | Purpose |
 |-------|-------|---------|
-| 1. RESEARCH | deep-research | Clarify RQ, find literature |
-| 2. WRITE | academic-paper | Draft the paper |
-| **2.5. INTEGRITY** | **integrity_verification_agent** | **100% reference & data verification (v2.0: anti-hallucination mandate)** |
+| 1. RESEARCH | deep-research | Clarify RQ, find literature, produce Methodology Blueprint |
+| **1.5. EXPERIMENT** *(auto-detected)* | experiment-designer → data-analyst / simulation-runner → lab-notebook | Run experiments if methodology requires them |
+| 2. WRITE | academic-paper | Draft the paper (with Anti-Leakage Protocol active) |
+| **2.5. INTEGRITY** | **integrity_verification_agent** | **100% reference & data verification + 7-mode AI Research Failure Mode Checklist (mandatory blocking)** |
 | 3. REVIEW | academic-paper-reviewer | 5-person review (EIC + R1/R2/R3 + Devil's Advocate) |
 | → | *Socratic Revision Coaching* | *Guide user through review feedback* |
-| 4. REVISE | academic-paper | Address review comments |
+| **1.5-R. EXPERIMENT RE-ENTRY** *(if `requires_new_experiment`)* | experiment-designer / data-analyst / simulation-runner | Run new experiments requested by reviewers |
+| 4. REVISE | academic-paper | Address review comments (with **Score Trajectory tracking**) |
 | 3'. RE-REVIEW | academic-paper-reviewer | Verification review of revisions |
 | → | *Socratic Residual Coaching* | *Guide user through remaining issues (if Major)* |
+| **1.5-R2. EXPERIMENT RE-ENTRY 2** *(final opportunity)* | experiment-designer / data-analyst / simulation-runner | Last chance for new experimental data |
 | 4'. RE-REVISE | academic-paper | Final revision (if needed) |
-| **4.5. FINAL INTEGRITY** | **integrity_verification_agent** | **100% final verification (zero issues required)** |
+| **4.5. FINAL INTEGRITY** | **integrity_verification_agent** | **100% final verification + 7-mode failure checklist (independent re-run, zero issues required)** |
 | 5. FINALIZE | academic-paper | Ask format style → MD + DOCX + LaTeX → tectonic → PDF |
-| **6. PROCESS SUMMARY** | **pipeline** | **Paper creation process record + Collaboration Quality Evaluation (1–100)** |
+| **6. PROCESS SUMMARY** | **pipeline** | **Paper creation process record + AI Self-Reflection Report + Collaboration Quality Evaluation (1–100)** |
 
 **Pipeline guarantees:**
-- Every stage requires user confirmation checkpoint
+- Every stage requires user confirmation checkpoint (FULL / SLIM / MANDATORY)
 - Integrity verification (Stage 2.5 + 4.5) cannot be skipped
+- 7-mode AI Research Failure Mode Checklist is mandatory and blocking; no `--no-block` escape hatch
+- Experiment stages auto-detected and conditional on methodology blueprint
+- Reviewer requests for new data trigger experiment re-entry (user can opt out → Acknowledged Limitation)
 - Reproducible — standardized process with full audit trail
 - Post-pipeline collaboration evaluation with honest, evidence-based scoring
+- Score trajectory tracking detects revision regressions across 7 quality dimensions
+- Early-stopping criterion + budget transparency at pipeline start
 
 ---
 
 ## Key Features
 
+### Pipeline orchestration
 1. Adaptive checkpoints (FULL / SLIM / MANDATORY) after every stage
-2. Pre-review integrity verification — 100% reference, data, and claim validation (Phase A-E)
-3. Two-stage review with Devil's Advocate + 0-100 quality rubrics
-4. Socratic revision coaching with SCR Loop (State-Challenge-Reflect, user-togglable) between review and revision stages
-5. Final integrity verification before publication
-6. Output: MD + DOCX + LaTeX (APA 7.0 `apa7` class / IEEE / Chicago) → PDF via tectonic
-7. Post-pipeline process summary with 6-dimension collaboration quality scoring (1–100)
-8. Material passport for mid-entry provenance tracking
-9. Cross-skill mode advisor (14 scenarios + user archetypes)
-10. Style Calibration — learn the author's writing voice from past papers (optional, intake Step 10)
-11. Writing Quality Check — writing quality checklist catching overused AI-typical patterns
-12. Concept Lineage — trace intellectual genealogy via Semantic Scholar + OpenAlex APIs
-13. Audible checkpoint alerts — ascending tones for FULL/MANDATORY checkpoints (cross-platform)
+2. Auto-detected experiment stages (1.5) — pipeline runs experiments only when the methodology requires them
+3. Experiment re-entry stages (1.5-R, 1.5-R2) — reviewer requests for new data trigger conditional re-execution
+4. Material passport for mid-entry provenance tracking
+5. Cross-skill mode advisor (14 scenarios + user archetypes)
+6. Audible checkpoint alerts — ascending tones for FULL/MANDATORY checkpoints (cross-platform)
+
+### Integrity & failure-mode prevention
+7. Pre-review integrity verification — 100% reference, data, and claim validation (Phase A-E)
+8. **7-mode AI Research Failure Mode Checklist** (Lu 2026) — mandatory blocking at Stage 2.5/4.5; covers implementation bugs, hallucinated results, shortcut reliance, bug-as-insight, methodology fabrication, frame-lock, and citation hallucinations
+9. **Semantic Scholar API verification** (Tier 0) — programmatic reference existence check with Levenshtein title matching and DOI mismatch detection
+10. **Anti-leakage protocol** — Knowledge Isolation Directive prioritizes session materials over LLM parametric memory; flags `[MATERIAL GAP]` for missing content
+11. Final integrity verification before publication (independent re-run, not just delta check)
+
+### Review & revision
+12. Two-stage review with Devil's Advocate + 0-100 quality rubrics + **concession threshold protocol** (1-5 scale, no concession below 4)
+13. **Reviewer calibration mode** — opt-in FNR/FPR/balanced-accuracy measurement against user-supplied gold-standard sets
+14. **Score trajectory tracking** — per-dimension rubric score delta tracking across revision rounds with regression detection
+15. Socratic revision coaching with SCR Loop (State-Challenge-Reflect, user-togglable) between review and revision stages
+16. **Cross-model verification** (optional) — set `ARS_CROSS_MODEL` to use GPT-5.4 Pro or Gemini 3.1 Pro as an independent second reviewer
+17. **R&R traceability matrix** (Schema 18) — every reviewer concern tracked with explicit status
+
+### Writing quality & disclosure
+18. Output: MD + DOCX + LaTeX (APA 7.0 `apa7` class / IEEE / Chicago) → PDF via tectonic
+19. **Disclosure mode** — venue-specific AI usage statement generator (v1 covers ICLR, NeurIPS, Nature, Science, ACL, EMNLP)
+20. **Style Calibration** — learn the author's writing voice from past papers (optional, intake Step 10)
+21. **Writing Quality Check** — writing quality checklist catching overused AI-typical patterns
+22. **VLM figure verification** (optional) — closed-loop visual quality check using a vision-capable LLM with 10-point checklist
+
+### Research depth
+23. **Concept lineage** — trace intellectual genealogy via Semantic Scholar + OpenAlex APIs
+24. **Argumentation reasoning framework** (Toulmin, Bradford Hill, IBE) for research design
+25. **Review quality thinking framework** (three lenses, reviewer traps, calibration questions)
+26. **Writing judgment framework** (clarity test, reader's journey, voice, revision matrix)
+27. **Fidelity-Originality mode spectrum** — classifies all 24+ modes for predictability vs exploration trade-offs
+
+### Process & meta
+28. Post-pipeline process summary with 6-dimension collaboration quality scoring (1–100)
+29. **AI Self-Reflection Report** (Stage 6) — concession rate, health alerts, sycophancy risk rating
+30. Early-stopping criterion + budget transparency estimate at pipeline start
+31. Mid-conversation reinforcement protocol with stage-specific IRON RULE + Anti-Pattern reminders
 
 ---
 
@@ -341,19 +403,29 @@ This work is licensed under [CC-BY-NC 4.0](https://creativecommons.org/licenses/
 
 **Attribution format:**
 ```
-Based on Academic Research Skills by Cheng-I Wu
+Based on Academic Research Skills (full-pipeline fork) by Pouria Mortezaagha
+https://github.com/pouriamrt/academic-research-skills
+Built on the upstream skills suite by Cheng-I Wu
 https://github.com/Imbad0202/academic-research-skills
 ```
 
 ---
 
-## Author
+## Authors & Contributors
 
-**Cheng-I Wu** (吳政宜)
+### Fork maintainer
 
-**[mchesbro1](https://github.com/mchesbro1)** — Contributor. Originally proposed and drafted the IS Basket of 8 journals for `academic-paper-reviewer/references/top_journals_by_field.md` ([Issue #5](https://github.com/Imbad0202/academic-research-skills/issues/5)).
+**Pouria Mortezaagha** ([pouriamrt](https://github.com/pouriamrt)) — Maintains the full-lifecycle fork. Designed and built the experiment pipeline (4 skills: `experiment-designer`, `data-analyst`, `simulation-runner`, `lab-notebook`), the visualization pipeline (Phase 4.5), the concept lineage agent + Semantic Scholar/OpenAlex protocol, the validation tooling (`tools/self_test.py`, `tools/validate_schemas.py`, `tools/check_schema_versions.py`, `tools/replay_experiments.py`, `tools/generate_dependency_graph.py`, `tools/generate_dashboard.py`, `tools/beep.sh`), the experiment-aware handoff schemas (10-18), the experiment re-entry stages, audible checkpoint alerts, and superpowers integration for code-heavy experiment skills. Continuously merges improvements from the upstream suite while preserving the full-pipeline scope.
 
-**[cloudenochcsis](https://github.com/cloudenochcsis)** — Contributor. Extended the IS section from the *Basket of 8* to the full *Senior Scholars' Basket of 11* — adding *Decision Support Systems*, *Information & Management*, and *Information and Organization* ([Issue #7](https://github.com/Imbad0202/academic-research-skills/issues/7), [PR #8](https://github.com/Imbad0202/academic-research-skills/pull/8)). Sourced from the [AIS Senior Scholars' List of Premier Journals](https://aisnet.org/page/SeniorScholarListofPremierJournals).
+### Upstream author
+
+**Cheng-I Wu** ([Imbad0202](https://github.com/Imbad0202)) — Original author of the [upstream skills suite](https://github.com/Imbad0202/academic-research-skills). Built the core writing-and-review skills (`deep-research`, `academic-paper`, `academic-paper-reviewer`, `academic-pipeline`) and contributes ongoing improvements that this fork integrates: anti-sycophancy protocols (v3.0), anti-context-rot refactoring + cognitive frameworks (v3.1), Lu 2026 failure-mode integration (v3.2 — 7-mode checklist, calibration mode, disclosure mode, mode spectrum), and PaperOrchestra integration (v3.3 — Semantic Scholar API, anti-leakage protocol, VLM figure verification, score trajectory).
+
+### External contributors (via upstream)
+
+**[mchesbro1](https://github.com/mchesbro1)** — Originally proposed and drafted the IS Basket of 8 journals for `academic-paper-reviewer/references/top_journals_by_field.md` ([Issue #5](https://github.com/Imbad0202/academic-research-skills/issues/5)).
+
+**[cloudenochcsis](https://github.com/cloudenochcsis)** — Extended the IS section from the *Basket of 8* to the full *Senior Scholars' Basket of 11* — adding *Decision Support Systems*, *Information & Management*, and *Information and Organization* ([Issue #7](https://github.com/Imbad0202/academic-research-skills/issues/7), [PR #8](https://github.com/Imbad0202/academic-research-skills/pull/8)). Sourced from the [AIS Senior Scholars' List of Premier Journals](https://aisnet.org/page/SeniorScholarListofPremierJournals).
 
 ---
 

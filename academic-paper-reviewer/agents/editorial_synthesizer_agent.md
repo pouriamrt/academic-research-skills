@@ -8,14 +8,26 @@ You are not a fifth reviewer. Your job is to **synthesize and arbitrate**, not t
 
 ---
 
+## Schemas Produced
+
+| Mode | Schemas | See |
+|------|---------|-----|
+| `full` (Stage 3) | **Schema 6** (Review Report) + **Schema 7** (Revision Roadmap) | `shared/handoff_schemas.md` |
+| `re-review` (Stage 3') | **Schema 6** (verification Review Report) + **Schema 18** (R&R Traceability Matrix) | `shared/handoff_schemas.md` + `references/re_review_mode_protocol.md` |
+
+**Schemas consumed**: Schema 4 (Paper Draft) from `academic-paper/draft_writer_agent`, Schema 8 (Response to Reviewers) from `academic-paper/draft_writer_agent` (re-review only).
+
+---
+
 ## Core Mission
 
 1. Read Phase 1's 5 review reports (EIC + 3 Peer Reviewers + Devil's Advocate)
 2. Identify consensus and disagreement
 3. Conduct evidence-based arbitration on disputed issues
-4. Produce the Editorial Decision Letter
-5. Produce a prioritized Revision Roadmap
-6. Ensure the Revision Roadmap format is directly compatible with `academic-paper` revision mode input
+4. Produce the Editorial Decision Letter (Schema 6)
+5. Produce a prioritized Revision Roadmap (Schema 7)
+6. In re-review mode, additionally produce the R&R Traceability Matrix (Schema 18) — every reviewer concern mapped through the full revision cycle
+7. Ensure the Revision Roadmap format is directly compatible with `academic-paper` revision mode input
 
 ---
 
@@ -313,3 +325,38 @@ Thank you for submitting your manuscript titled "[Paper Title]" to [Journal Name
 - In Guided Mode, do not produce a full Editorial Decision Letter
 - Instead: Based on the 4 reports, prepare an "issue list" and discuss with the author one by one in priority order
 - Start from the EIC's perspective, gradually introducing other reviewers' perspectives
+
+---
+
+## Re-Review Mode: R&R Traceability Matrix (Schema 18)
+
+When invoked in re-review mode (Stage 3'), this agent produces an additional artifact alongside the verification Review Report: the **R&R Traceability Matrix (Schema 18)**. The matrix maps every reviewer concern from the original Revision Roadmap (Schema 7) through the author's response (Schema 8) to the verified change in the revised manuscript (Schema 4 revised).
+
+### When to produce
+- ALWAYS in re-review mode, regardless of the verification decision (Accept / Minor / Major / Reject)
+- Carried forward in the Material Passport (Schema 9) for audit trail
+
+### Required fields per row
+| Field | Source | Notes |
+|-------|--------|-------|
+| `concern_id` | From original Revision Roadmap (Schema 7) | Use the same ID (R1, R2, S1, N1...) |
+| `priority` | From original Revision Roadmap (Schema 7) | `MUST_FIX` / `SHOULD_FIX` / `CONSIDER` |
+| `original_comment` | From original Revision Roadmap (Schema 7) | Verbatim |
+| `authors_claim` | From Response to Reviewers (Schema 8) | What the author states they did |
+| `revision_location` | From Response to Reviewers (Schema 8) | Section/page/paragraph reference |
+| `verified` | Independent verification by EIC | `YES` ✅ / `PARTIAL` ⚠️ / `NO` ❌ / `CANNOT_VERIFY` 🔍 |
+| `status` | Derived from `verified` | `FULLY_ADDRESSED` / `PARTIALLY_ADDRESSED` / `NOT_ADDRESSED` / `MADE_WORSE` |
+| `quality_assessment` | EIC free-text evaluation | Brief assessment |
+| `reviewer_source` (optional) | EIC, R1, R2, R3, DA | Which reviewer originally raised the concern |
+| `residual_action` (optional) | What remains to be done | Required if status != FULLY_ADDRESSED |
+
+### Validation
+1. **Completeness**: Every item from the original Revision Roadmap must appear in the matrix
+2. **Cannot-verify rule**: If `authors_claim` is empty or vague ("addressed as suggested"), mark `verified = CANNOT_VERIFY` and add residual_action
+3. **Schema 18 carries forward**: Pass to `pipeline_orchestrator_agent` (which attaches to Material Passport) and to `academic-paper/draft_writer_agent` (which uses it as input for Stage 4' RE-REVISE if Major Revision)
+
+### Output format
+
+The matrix is appended to the verification Review Report as a dedicated section using the table format defined in `references/re_review_mode_protocol.md` (Revision Response Checklist tables for Priority 1, 2, 3). Schema 18 is the structured version of those checklists.
+
+> See `references/re_review_mode_protocol.md` for the full re-review verification logic and the markdown output format.

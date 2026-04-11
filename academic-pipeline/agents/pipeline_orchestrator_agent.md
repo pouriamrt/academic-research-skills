@@ -22,7 +22,8 @@ Determine the entry point from the user's first message. Use the following keywo
 | Review, help me check, examine paper | Stage 2.5 (integrity check first, then review) |
 | Revise, reviewer feedback, reviewer comments | Stage 4 (REVISE) |
 | Format, LaTeX, DOCX, PDF, convert | Stage 5 (FINALIZE) |
-| Full workflow, end-to-end, pipeline, complete process | Stage 1 (start from beginning) |
+| Process record, collaboration record, paper creation history | Stage 6 (PROCESS SUMMARY) |
+| Full workflow, end-to-end, pipeline, complete process | Stage 1 (start from beginning, runs through Stage 6) |
 
 **Material detection logic:**
 - User mentions "I already have..." "I've written..." "This is my..." --> detect existing materials
@@ -53,17 +54,27 @@ Based on user preferences and material status, recommend the optimal mode for ea
 ```
 Based on your situation, I recommend the following pipeline configuration:
 
-Stage 1   RESEARCH:    [mode] -- [one-sentence explanation why]
-Stage 1.5 EXPERIMENT:  [auto-detected after Stage 1 from Methodology Blueprint routing flags]
-Stage 2   WRITE:       [mode] -- [one-sentence explanation why]
-Stage 2.5 INTEGRITY:   pre-review -- automatic (mandatory step)
-Stage 3   REVIEW:      [mode] -- [one-sentence explanation why]
+Stage 1     RESEARCH:        [mode] -- [one-sentence explanation why]
+Stage 1.5   EXPERIMENT:      [auto-detected after Stage 1 from Methodology Blueprint routing flags]
+Stage 2     WRITE:           [mode] -- [one-sentence explanation why]
+Stage 2.5   INTEGRITY:       pre-review -- automatic (mandatory step)
+Stage 3     REVIEW:          [mode] -- [one-sentence explanation why]
+Stage 1.5-R EXPERIMENT (R):  [conditional — triggered if Revision Roadmap has requires_new_experiment items]
+Stage 4     REVISE:          [mode] -- [one-sentence explanation why]
+Stage 3'    RE-REVIEW:       re-review mode (verifies Stage 4 against original roadmap)
+Stage 1.5-R2 EXPERIMENT (R2): [conditional — final experiment opportunity, last chance]
+Stage 4'    RE-REVISE:       max 1 round
+Stage 4.5   FINAL INTEGRITY: independent re-run (mandatory, cannot be skipped)
+Stage 5     FINALIZE:        format conversion (MD + DOCX + LaTeX → PDF)
+Stage 6     PROCESS SUMMARY: paper creation process record + Collaboration Quality Evaluation (auto)
 
 Note: Stage 1.5 (EXPERIMENT) is auto-detected after Stage 1 completes.
 If the Methodology Blueprint indicates experimental/simulation methodology,
 the pipeline will prompt you before entering the experiment design stage.
 
 Integrity checks (Stage 2.5 & 4.5) are mandatory and cannot be skipped.
+Stage 6 (PROCESS SUMMARY) runs automatically after Stage 5 to produce a
+bilingual paper creation record with the Collaboration Quality Evaluation.
 
 You can adjust any stage's mode at any time. Ready to begin?
 ```
@@ -460,8 +471,10 @@ Stage 3' -> 1.5-R2: Final experiment re-entry opportunity (last chance)
 | Stage 3 -> **experiment check** -> **coaching** -> 4 | Editorial Decision, Revision Roadmap, 5 Review Reports | Schema 6 (Review Report), Schema 7 (Revision Roadmap) | Check Roadmap for `requires_new_experiment` items -> if found, dispatch Stage 1.5-R -> then Socratic dialogue -> academic-paper revision mode input |
 | Stage 4 -> 3' | Revised Draft, Response to Reviewers | Schema 4 (revised) + Schema 8 (Response to Reviewers) | Pass to reviewer (marked as verification round) |
 | Stage 3' -> **experiment check** -> **coaching** -> 4' | New Revision Roadmap (if Major) | Schema 7 (Revision Roadmap) | Check Roadmap for `requires_new_experiment` items -> if found, dispatch Stage 1.5-R -> then Socratic dialogue -> academic-paper revision mode input |
+| Stage 3' -> Stage 4' (if Major) | Verification Review Report + R&R Traceability Matrix | Schema 6 + **Schema 18** (R&R Traceability Matrix) + Schema 7 | Pass Schema 18 to academic-paper draft_writer for targeted re-revision of unresolved items; max 1 round |
 | Stage 4/4' -> 4.5 | Revised/Re-Revised Draft | Schema 4 (revised) | Pass to integrity_verification_agent (final verification) |
 | Stage 4.5 -> 5 | Final Verified Draft + Final Integrity Report | Schema 4 + Schema 5 (Integrity Report) | Auto-produce MD + DOCX -> ask about LaTeX -> confirm -> PDF |
+| **Stage 5 -> 6** | **Final Paper (all formats) + Full pipeline transcript** | **Schema 4 (final) + Material Passport + dialogue history** | **Auto-dispatch Stage 6 (PROCESS SUMMARY) — see "Stage 6 Dispatch Protocol" below** |
 
 **All artifacts must carry a Material Passport (Schema 9)** with `origin_skill`, `origin_mode`, `origin_date`, `verification_status`, and `version_label`.
 
@@ -621,6 +634,76 @@ Step 1: Present Re-Review results and residual issues
 | Integrity check FAIL | Fix paper based on correction list, invoke verification again |
 | After Stage 4/4' completion | Invoke integrity_verification_agent (Mode 2: final-check) |
 | Final verification FAIL | Fix and re-verify (max 3 rounds) |
+
+---
+
+## Stage 6 Dispatch Protocol (PROCESS SUMMARY)
+
+**Trigger**: Automatic, after Stage 5 (FINALIZE) successfully produces the final paper artifacts (MD + DOCX + LaTeX + PDF).
+
+**Purpose**: Generate the bilingual paper creation process record with the mandatory Collaboration Quality Evaluation (1–100 across 6 dimensions), AI Self-Reflection Report (concession rate, health alerts, sycophancy risk rating from v3.0), and Failure Mode Audit Log (from v3.2 — overrides recorded at Stage 2.5/4.5 are reported here).
+
+**Reference**: See `references/process_summary_protocol.md` for the full protocol, content checklist, scoring criteria, and LaTeX/PDF compilation steps.
+
+### Dispatch Steps
+
+```
+After Stage 5 completes successfully:
+
+1. Confirm Stage 5 outputs are present:
+   - paper.md (Markdown)
+   - paper.docx (DOCX)
+   - paper.tex + paper.pdf (LaTeX + tectonic-compiled PDF)
+   IF any output is missing -> halt, report Stage 5 as INCOMPLETE, do NOT proceed to Stage 6
+
+2. Update state_tracker: stage_id "6" → "in_progress"
+
+3. Display to user:
+   "━━━ Stage 6: PROCESS SUMMARY ━━━
+    Pipeline complete. Now generating the paper creation process record:
+    - Stage-by-stage decisions and user interventions
+    - AI Self-Reflection Report (concession rate, health alerts, sycophancy risk)
+    - Failure Mode Audit Log (any overrides recorded at Stage 2.5/4.5)
+    - Collaboration Quality Evaluation (6 dimensions, 1-100 scale)
+    Which language version would you like first?
+    [1] Traditional Chinese (zh-TW)
+    [2] English
+    [3] Both (default — primary conversation language first)"
+
+4. Aggregate the following from session history and state_tracker:
+   - User's initial instructions (verbatim quote)
+   - Key decision points at each stage with user quotes
+   - Direction corrections and reasons
+   - Iteration counts (review rounds, integrity check rounds, experiment re-entries)
+   - Pipeline statistics (stages run, stages skipped, total time)
+   - DA dialogue health metrics from `[DA-DECISION]`, `[DA-REBUTTAL]`, `[HEALTH-CHECK]` log lines
+   - Failure Mode Checklist results from Stage 2.5 + 4.5 (verdicts + any user overrides with reasoning)
+   - Score trajectory deltas across review rounds (per-dimension)
+
+5. Generate paper_creation_process.md (Chinese) and/or paper_creation_process_en.md (English)
+   following the structure in references/process_summary_protocol.md
+
+6. Compile to PDF:
+   - pandoc MD → LaTeX body
+   - Wrap in article class with title page, TOC, headers/footers
+   - Chinese version uses xeCJK + Source Han Serif TC VF
+   - tectonic compile → paper_creation_process_zh.pdf / paper_creation_process_en.pdf
+
+7. Update state_tracker: stage_id "6" → "completed"; set pipeline_state → "complete"
+
+8. Display final delivery summary listing all artifacts:
+   - Final paper (MD + DOCX + LaTeX + PDF)
+   - Process record (MD + PDF, both languages if requested)
+   - Material Passport audit trail
+```
+
+### Stage 6 IRON RULES
+
+- **Mandatory after Stage 5**: Stage 6 cannot be skipped if Stage 5 completed successfully. The Collaboration Quality Evaluation is part of the v2.4 design contract.
+- **Honest scoring**: Evaluation scores must be evidence-based with verbatim quotes. No inflation. If a dimension cannot be evaluated (e.g., user skipped a stage), mark N/A.
+- **No fabrication**: If a stage was skipped or a metric is missing, report it as missing rather than fabricating values.
+- **Bidirectional reflection**: Stage 6 also reports Claude's own shortcomings during the process (areas requiring multiple corrections, mistakes, sycophancy incidents). Not just user-facing.
+- **Failure Mode Audit Log**: All Stage 2.5 + 4.5 failure mode flags AND user override reasoning MUST appear in the Stage 6 record. This is the audit trail for v3.2's mandatory blocking behavior.
 
 ---
 

@@ -77,13 +77,14 @@ This rule does NOT apply in `quick` mode (where limited materials are expected a
 7. References
 ```
 
-## Optional: Style Calibration
+## Optional: Style Calibration (Schema 17 — Style Profile)
 
-If a Style Profile is available from a prior `academic-paper` intake or provided by the user:
+If a **Schema 17** (Style Profile) is available from a prior `academic-paper/intake_agent` (Step 10) or provided by the user via the Material Passport:
 - Apply as a soft guide for the research report's writing voice
 - Discipline conventions and report objectivity take priority over personal style
 - Style Profile is most applicable to the Executive Summary and Synthesis sections
 - See `shared/style_calibration_protocol.md` for the full priority system
+- See `shared/handoff_schemas.md` Schema 17 for the field structure
 
 ## Writing Quality Check
 

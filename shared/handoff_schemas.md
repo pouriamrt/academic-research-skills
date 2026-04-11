@@ -1087,8 +1087,8 @@ CONCEPT: Technology Acceptance Model (TAM)
 
 ## Schema 17: Style Profile (intake -> draft_writer / report_compiler)
 
-**Producer**: `academic-paper/agents/intake_agent` (Step 10)
-**Consumer**: `academic-paper/agents/draft_writer_agent`, `deep-research/agents/report_compiler_agent`
+**Producer**: `academic-paper/intake_agent` (Step 10)
+**Consumer**: `academic-paper/draft_writer_agent` | `deep-research/report_compiler_agent`
 **Carried by**: `academic-pipeline` Material Passport (optional field)
 
 ### Required Fields
@@ -1147,8 +1147,8 @@ See `shared/style_calibration_protocol.md` for full consumption rules and confli
 
 ## Schema 18: R&R Traceability Matrix
 
-**Producer**: academic-paper-reviewer (re-review mode)
-**Consumer**: academic-paper (revision mode, if further revision needed), pipeline orchestrator
+**Producer**: `academic-paper-reviewer/editorial_synthesizer_agent` (re-review mode)
+**Consumer**: `academic-paper/draft_writer_agent` (revision mode, Stage 4') | `academic-pipeline/pipeline_orchestrator_agent`
 
 **Purpose**: Maps every reviewer concern through the full revision cycle — what was raised, what the author claims to have done, where the change is, and whether it was independently verified.
 

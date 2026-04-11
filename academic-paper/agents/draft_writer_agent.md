@@ -1,10 +1,23 @@
 # Draft Writer Agent — Full-Text Drafting
 
+## Schemas
+
+| Direction | Schema | Notes |
+|-----------|--------|-------|
+| **Input** | Argument Blueprint + outline + Style Profile (**Schema 17**) | From `argument_builder_agent`, `structure_architect_agent`, and `intake_agent` (if user provided style samples) |
+| **Input** (optional) | **Schema 11** (Experiment Results) + **Schema 12** (Lab Record) | From `data-analyst/report_compiler_agent`, `simulation-runner/report_compiler_agent`, `lab-notebook/provenance_auditor_agent`. Triggers Results + Methods integration. |
+| **Input** (revision mode) | **Schema 5** (Integrity Report) | From `academic-pipeline/integrity_verification_agent` — provides correction list when revising flagged issues |
+| **Input** (revision mode) | **Schema 6** (Review Report) + **Schema 7** (Revision Roadmap) | From `academic-paper-reviewer/editorial_synthesizer_agent` — used at Stage 4 |
+| **Input** (Stage 4' only) | **Schema 18** (R&R Traceability Matrix) | From `academic-paper-reviewer/editorial_synthesizer_agent` (re-review) — drives targeted re-revision of unresolved items |
+| **Input** (re-entry) | **Schema 11-R** + **Schema 12-R** | From Stage 1.5-R / 1.5-R2 experiment re-entry |
+| **Output** | **Schema 4** (Paper Draft) | Consumed by `integrity_verification_agent`, `peer_reviewer_agent`, `academic-paper-reviewer/*` |
+| **Output** (revision) | **Schema 8** (Response to Reviewers) | Consumed by `academic-paper-reviewer/editorial_synthesizer_agent` (re-review) |
+
 ## Required Tools
 
 | Tool | Purpose | Criticality |
 |------|---------|-------------|
-| `Read` | Read outline, argument blueprint, Schema 11/12, references | **CRITICAL** |
+| `Read` | Read outline, argument blueprint, Schema 4-8, Schema 11/12, Schema 17/18, references | **CRITICAL** |
 | `Write` | Write paper draft sections and revision outputs | **CRITICAL** |
 | `WebSearch` | Verify citation details during drafting (anti-hallucination) | Recommended |
 
@@ -145,6 +158,18 @@ Acceptable deviation: +/-15% per section, +/-10% overall.
 
 When receiving feedback from peer_reviewer_agent (Phase 6 -> back to Phase 4) OR from the academic-pipeline revision stages (Stage 4/4'):
 
+### Inputs in Revision Mode
+
+| Source | Schema | Required | Description |
+|--------|--------|----------|-------------|
+| Reviewer (Stage 3) | **Schema 6** (Review Report) | Yes (Stage 4) | 5 reviewer reports + Editorial Decision |
+| Reviewer (Stage 3) | **Schema 7** (Revision Roadmap) | Yes (Stage 4) | Prioritized revision items, may include `requires_new_experiment` flags |
+| Reviewer (Stage 3') | **Schema 18** (R&R Traceability Matrix) | Yes (Stage 4' only) | Per-item verification status from re-review; addresses items marked PARTIAL/NO/CANNOT_VERIFY |
+| Stage 1.5-R / 1.5-R2 | **Schema 11-R** (Experiment Results) | Optional | New experiment results from re-entry |
+| Stage 1.5-R / 1.5-R2 | **Schema 12-R** (Lab Record) | Optional | New lab record from re-entry |
+
+**Outputs**: Revised **Schema 4** (Paper Draft) + **Schema 8** (Response to Reviewers) — both passed back to `academic-paper-reviewer/editorial_synthesizer_agent` (Stage 3') and to `pipeline_orchestrator_agent`.
+
 ### Step 0: Check for New Experiment Results (Pipeline Revision Mode)
 
 When operating in revision mode within the academic-pipeline (Stage 4 or 4'), check whether **new Schema 11 materials from Stage 1.5-R** are available:
@@ -156,6 +181,16 @@ When operating in revision mode within the academic-pipeline (Stage 4 or 4'), ch
    - **Limitations section**: Remove or update any limitations that the new experiment addressed
    - Reference the new experiment in the Response to Reviewers for the corresponding revision items
 2. If no new Schema 11-R is present: proceed with standard text revision below
+
+### Step 0.5: Check for R&R Traceability Matrix (Stage 4' RE-REVISE)
+
+When operating in Stage 4' (RE-REVISE), the input includes **Schema 18 (R&R Traceability Matrix)** from the Stage 3' re-review:
+
+1. **Read** the matrix and identify rows where `verified` ∈ {`PARTIAL`, `NO`, `CANNOT_VERIFY`} OR `status` ∈ {`PARTIALLY_ADDRESSED`, `NOT_ADDRESSED`, `MADE_WORSE`}
+2. **Prioritize** these unresolved items for the second revision pass — these are concerns the reviewer specifically flagged as not yet addressed
+3. **Use the `residual_action`** field (when present) as the concrete fix to apply
+4. **Update** the corresponding rows in the new Response to Reviewers (Schema 8) with the new revision location and a clear claim
+5. After Stage 4' completes, the next re-review (if any) will produce a new Schema 18 — Stage 4' is the LAST revision opportunity (max 1 round); remaining items become Acknowledged Limitations
 
 ### Figure Regeneration Check
 

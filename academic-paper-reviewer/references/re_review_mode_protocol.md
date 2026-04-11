@@ -2,6 +2,16 @@
 
 Re-review mode is the dedicated mode for Pipeline Stage 3', designed to **verify whether revisions address the first-round review comments**.
 
+## Schemas
+
+| Direction | Schema | Source / Destination |
+|-----------|--------|----------------------|
+| **Input** | Schema 4 (Paper Draft, revised) | `academic-paper/draft_writer_agent` |
+| **Input** | Schema 7 (original Revision Roadmap from Stage 3) | Carried in Material Passport |
+| **Input** | Schema 8 (Response to Reviewers) | `academic-paper/draft_writer_agent` |
+| **Output** | Schema 6 (verification Review Report) | `academic-pipeline/pipeline_orchestrator_agent` |
+| **Output** | **Schema 18 (R&R Traceability Matrix)** — see `shared/handoff_schemas.md` | `academic-paper/draft_writer_agent` (for Stage 4' if Major) + `pipeline_orchestrator_agent` (for Material Passport audit trail) |
+
 ### How It Works
 
 ```

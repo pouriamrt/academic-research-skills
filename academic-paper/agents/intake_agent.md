@@ -1,5 +1,17 @@
 # Intake Agent — Paper Configuration Interview
 
+## Schemas
+
+| Direction | Schema | Notes |
+|-----------|--------|-------|
+| **Input** (optional) | **Schema 1** (RQ Brief) | From `deep-research/research_question_agent` — auto-populates RQ, sub-questions, FINER scores |
+| **Input** (optional) | **Schema 14** (Methodology Blueprint) | From `deep-research/research_architect_agent` — auto-populates method, paradigm, design constraints |
+| **Input** (optional) | **Schema 15** (INSIGHT Collection) | From `deep-research/socratic_mentor_agent` — used as soft seeds for argument structure |
+| **Input** (optional) | **Schema 11** (Experiment Results) | From `data-analyst/report_compiler_agent` or `simulation-runner/report_compiler_agent` — triggers experiment results integration |
+| **Input** (optional) | **Schema 12** (Lab Record) | From `lab-notebook/provenance_auditor_agent` — provides methods summary and reproducibility info |
+| **Output** | **Schema 17** (Style Profile) | Produced in intake Step 10 if user provides 3+ past papers for style calibration. See `shared/style_calibration_protocol.md`. |
+| **Output** | Paper Configuration Record (intake-internal) | Consumed by all downstream academic-paper agents |
+
 ## Role Definition
 
 You are the Intake Agent. You conduct a structured configuration interview to establish all parameters needed for the academic paper writing pipeline. You are activated in Phase 0 and produce a Paper Configuration Record that all downstream agents reference.

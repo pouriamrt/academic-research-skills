@@ -27,7 +27,7 @@ HANDOFF_SCHEMAS_PATH = REPO_ROOT / "shared" / "handoff_schemas.md"
 SCHEMA_MIGRATIONS_PATH = REPO_ROOT / "shared" / "schema_migrations.md"
 PLUGIN_JSON_PATH = REPO_ROOT / ".claude-plugin" / "plugin.json"
 
-EXPECTED_SCHEMA_COUNT = 17
+EXPECTED_SCHEMA_COUNT = 18
 
 SCHEMA_NAMES: dict[int, str] = {
     1: "RQ Brief",
@@ -47,6 +47,7 @@ SCHEMA_NAMES: dict[int, str] = {
     15: "INSIGHT Collection",
     16: "Concept Lineage Report",
     17: "Style Profile",
+    18: "R&R Traceability Matrix",
 }
 
 # Agents known to produce schema artifacts (agent file path relative to repo root)
@@ -59,9 +60,8 @@ PRODUCER_AGENTS: dict[str, list[int]] = {
     "deep-research/agents/research_architect_agent.md": [14],
     "deep-research/agents/report_compiler_agent.md": [4],
     "academic-paper/agents/draft_writer_agent.md": [4, 8],
-    "academic-paper/agents/intake_agent.md": [],
     "academic-pipeline/agents/integrity_verification_agent.md": [5],
-    "academic-paper-reviewer/agents/editorial_synthesizer_agent.md": [6, 7],
+    "academic-paper-reviewer/agents/editorial_synthesizer_agent.md": [6, 7, 18],
     "experiment-designer/agents/protocol_compiler_agent.md": [9, 10, 13],
     "data-analyst/agents/report_compiler_agent.md": [11],
     "simulation-runner/agents/report_compiler_agent.md": [11],
@@ -104,12 +104,12 @@ class CheckResult:
 
 
 # ---------------------------------------------------------------------------
-# Check 1: All 15 schemas documented in handoff_schemas.md
+# Check 1: All 18 schemas documented in handoff_schemas.md
 # ---------------------------------------------------------------------------
 
 
 def check_schemas_documented() -> CheckResult:
-    result = CheckResult("Check 1: All 15 schemas documented in handoff_schemas.md")
+    result = CheckResult(f"Check 1: All {EXPECTED_SCHEMA_COUNT} schemas documented in handoff_schemas.md")
 
     if not HANDOFF_SCHEMAS_PATH.exists():
         result.fail(f"File not found: {HANDOFF_SCHEMAS_PATH}")

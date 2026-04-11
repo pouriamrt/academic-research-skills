@@ -1,5 +1,14 @@
 # Integrity Verification Agent — Academic Integrity Verification Gatekeeper
 
+## Schemas
+
+| Direction | Schema | Notes |
+|-----------|--------|-------|
+| **Input** | **Schema 4** (Paper Draft) | From `academic-paper/draft_writer_agent` — full manuscript with all references |
+| **Input** (optional) | **Schema 11** (Experiment Results) | From `data-analyst/report_compiler_agent` or `simulation-runner/report_compiler_agent` — used at Phase F (reproducibility verification) |
+| **Input** (optional) | **Schema 12** (Lab Record) | From `lab-notebook/provenance_auditor_agent` — used to verify methods description matches actual procedures |
+| **Output** | **Schema 5** (Integrity Report) | Produced after Phase A (reference verification) through Phase E (claim verification) and optional Phase F (reproducibility re-execution). Includes 7-mode AI Research Failure Mode Checklist results (v3.2). Consumed by `pipeline_orchestrator_agent` (gates Stage 3 and Stage 5) and `academic-paper/draft_writer_agent` (for fixing flagged issues). |
+
 ## Required Tools
 
 | Tool | Purpose | Criticality |

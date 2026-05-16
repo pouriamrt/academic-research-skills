@@ -2,9 +2,11 @@
 name: deep-research
 description: "Universal deep research agent team. 14-agent pipeline for rigorous academic research on any topic. 7 modes: full research, quick brief, paper review, lit-review, fact-check, Socratic guided research dialogue, and systematic review with optional meta-analysis. Covers research question formulation, Socratic mentoring, methodology design, systematic literature search (Semantic Scholar + OpenAlex + WebSearch), source verification, cross-source synthesis, concept lineage tracing, risk of bias assessment, meta-analysis, APA 7.0 report compilation, editorial review, devil's advocate challenges, ethics review, and post-research literature monitoring. Triggers on: research, deep research, literature review, systematic review, meta-analysis, PRISMA, evidence synthesis, fact-check, guide my research, help me think through, citation chain, concept lineage, 研究, 深度研究, 文獻回顧, 文獻探討, 系統性回顧, 後設分析, 事實查核, 引導我的研究, 幫我釐清, 幫我想想, 我不確定要研究什麼, 研究方向, 研究主題, 引用鏈, 概念系譜."
 metadata:
-  version: "2.9"
-  last_updated: "2026-04-11"
+  version: "2.9.3"
+  last_updated: "2026-05-15"
   status: active
+  data_access_level: raw
+  task_type: open-ended
   related_skills:
     - academic-paper
     - academic-paper-reviewer
@@ -329,11 +331,17 @@ User: "Guide my research on [topic]"
 - If dialogue exceeds 15 rounds -> automatically compile INSIGHTs and end
 - If user requests direct answers -> gently decline, explain the value of guided learning
 
+### Opt-in Reading Probe (v3.5.1)
+
+Setting `ARS_SOCRATIC_READING_PROBE=1` enables a one-time honesty probe during **goal-oriented** Socratic sessions. When the user cites a specific paper, the Mentor asks them to paraphrase one passage. Decline is logged without penalty. Default OFF. See `agents/socratic_mentor_agent.md` §"Optional Reading Probe Layer".
+
 ---
 
 ## Systematic Review Mode
 
 Full PRISMA-compliant systematic literature review with optional meta-analysis. This mode extends the standard 6-phase pipeline with specialized agents for risk of bias assessment (RoB 2, ROBINS-I) and quantitative synthesis.
+
+> **v3.4.0 compliance:** `systematic-review` mode triggers `compliance_agent` at Stage 2.5 (Methods items) and Stage 4.5 (remaining items + RAISE 8-role matrix). PRISMA-trAIce Mandatory failures block the pipeline. See `shared/compliance_checkpoint_protocol.md`.
 
 See `agents/risk_of_bias_agent.md` and `agents/meta_analysis_agent.md` for detailed agent definitions.
 See `references/systematic_review_toolkit.md` for the Cochrane/PRISMA/GRADE reference guide.
@@ -429,6 +437,7 @@ User: "Systematic review of [topic]" / "Meta-analysis of [topic]"
 3. **Risk of bias must be completed for all studies** before Phase 3
 4. **GRADE assessment required** for every pooled outcome
 5. **PRISMA checklist compliance** verified in Phase 5
+> See `references/systematic_review_protocol.md` for full PRISMA pipeline, checkpoint rules, and meta-analysis procedures.
 
 ---
 
@@ -645,9 +654,9 @@ deep-research (systematic-review) + academic-paper -> PRISMA systematic review p
 
 | Item | Content |
 |------|---------|
-| Skill Version | 2.9 |
-| Last Updated | 2026-04-11 |
-| Maintainer | Pouria Mortezaagha |
+| Skill Version | 2.9.3 |
+| Last Updated | 2026-05-15 |
+| Maintainer | Pouria Mortezaagha (fork) / Cheng-I Wu (upstream) |
 | Dependent Skills | academic-paper, academic-paper-reviewer, academic-pipeline (downstream); experiment-designer (downstream when methodology requires experiments) |
 
 ---

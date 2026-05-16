@@ -525,6 +525,12 @@ score_trajectory: {
 | `integrity_pass_date` | string | ISO 8601 timestamp of last integrity verification pass (if applicable) |
 | `content_hash` | string | SHA-256 hash of the content (for change detection) |
 | `upstream_dependencies` | list[string] | Version labels of artifacts this one depends on |
+| `repro_lock` | object \| null | configuration lockfile for artifact reproducibility. See [`artifact_reproducibility_pattern.md`](artifact_reproducibility_pattern.md). `null` = honest opt-out. Required from v3.3.5+ — omitted key fails lint. |
+| `compliance_history` | list[object] | Append-only audit trail of `compliance_report` entries (Schema 12). Added v3.4.0+. See [Schema 12](#schema-12--compliance-report-v340) and [`shared/compliance_report.schema.json`](compliance_report.schema.json). |
+| `reset_boundary` | list[object] | Append-only ledger. Two entry kinds: `boundary` (recorded at FULL checkpoints when `ARS_PASSPORT_RESET=1`) and `resume` (recorded when `resume_from_passport` consumes a boundary). Added v3.6.3+. Entry shape: [`shared/contracts/passport/reset_ledger_entry.schema.json`](contracts/passport/reset_ledger_entry.schema.json). See [`academic-pipeline/references/passport_as_reset_boundary.md`](../academic-pipeline/references/passport_as_reset_boundary.md). |
+| `literature_corpus` | list[object] | Optional append-friendly literature corpus. Each entry conforms to [`shared/contracts/passport/literature_corpus_entry.schema.json`](contracts/passport/literature_corpus_entry.schema.json). Produced by user-written adapters (see [`academic-pipeline/references/adapters/overview.md`](../academic-pipeline/references/adapters/overview.md)); ARS does not produce these entries itself. Added v3.6.4+. |
+| `audit_artifact` | list[object] | Optional append-only ledger of cross-model audit runs for v3.6.7 downstream-agent deliverables. Each entry conforms to [`shared/contracts/passport/audit_artifact_entry.schema.json`](contracts/passport/audit_artifact_entry.schema.json). Produced by the pipeline orchestrator after Layer 2 + Layer 3 verification of wrapper-emitted proposal entries; only `persisted` entries are stored here. Added v3.6.7+. |
+| `slr_lineage` | boolean | Run-level provenance flag set by `pipeline_orchestrator_agent` at the Stage 1 → Stage 2 handoff. `true` iff any stage in this run history was produced by `deep-research` in systematic-review mode. Consumed by `disclosure` mode renderer (`--policy-anchor=prisma-trAIce` track gate per `policy_anchor_disclosure_protocol.md` §3.1). Absence = `false` = cold-start path (renderer requires explicit `mode=` per §4.3 G2 invariant fallback rule). Added v3.7.4+. See [Run-level lineage signal (v3.7.4)](#run-level-lineage-signal-v374) below. |
 
 ### Example
 
@@ -540,6 +546,128 @@ score_trajectory: {
 - Content Hash: a3f2b7c9...
 - Upstream Dependencies: [deep_research_v1.0, deep_research_v1.0, deep_research_v1.0]
 ```
+
+### Reset Boundary Extension (v3.6.3)
+
+When `ARS_PASSPORT_RESET=1`, Schema 9 gains an append-only `reset_boundary[]` ledger with two entry kinds: `boundary` (recorded at FULL checkpoints) and `resume` (recorded when a boundary is consumed):
+
+```yaml
+reset_boundary:
+  # Kind 1: boundary entry at Stage 2 FULL checkpoint
+  - kind: boundary
+    hash: a3f2b7c9d0e1
+    stage: "2"
+    next: "2.5"
+    generated_at: 2026-04-23T14:00:00Z
+    session_marker: sess-20260423-1a2b
+    version_label: paper_draft_v1
+    mode: full
+    verification_status: VERIFIED
+
+  # Kind 1 with pending_decision: Stage 3 rejection case
+  - kind: boundary
+    hash: b4c2d8e7f0a1
+    stage: "3"
+    next: "4"
+    generated_at: 2026-04-24T10:00:00Z
+    session_marker: sess-20260424-3c4d
+    version_label: paper_draft_v2
+    mode: full
+    pending_decision:
+      question: "Stage 3 reviewer decision"
+      options:
+        - value: revise
+          next_stage: "4"
+          next_mode: revision
+        - value: restructure
+          next_stage: "2"
+          next_mode: plan
+        - value: abort
+          next_stage: null   # null = terminate pipeline
+
+  # Kind 2: resume event consuming the first boundary (Stage 2 → 2.5)
+  - kind: resume
+    consumes_hash: a3f2b7c9d0e1
+    generated_at: 2026-04-23T15:00:00Z
+    session_marker: sess-20260423-5e6f
+  # append-only; never overwrite, never reorder
+```
+
+Consumers match `resume_from_passport=<hash>` against `boundary` entries. A `boundary` is **awaiting resume** iff no later `resume` entry carries `consumes_hash == <boundary hash>`. Hash mismatch on resume is a hard error.
+
+See [`academic-pipeline/references/passport_as_reset_boundary.md`](../academic-pipeline/references/passport_as_reset_boundary.md) for the full protocol.
+
+### Literature Corpus Input Port (v3.6.4)
+
+The optional `literature_corpus[]` field is Schema 9's input port for user-owned literature. Each entry is a bibliographic record conforming to `literature_corpus_entry.schema.json` (CSL-JSON author format, β required set).
+
+ARS does not produce these entries. User-written adapters read their own corpus source (Zotero, Obsidian, folder, Notion, etc.) and emit a passport with `literature_corpus[]` populated. Three reference adapters ship with v3.6.4 under [`scripts/adapters/`](../scripts/adapters/).
+
+Consumer integration ships in v3.6.5: `bibliography_agent` (deep-research, Phase 1) and `literature_strategist_agent` (academic-paper, Phase 1) read `literature_corpus[]` via the corpus-first, search-fills-gap flow. See [`academic-pipeline/references/literature_corpus_consumers.md`](../academic-pipeline/references/literature_corpus_consumers.md) for the full consumer protocol, the four Iron Rules, and per-consumer reading instructions.
+
+See [`academic-pipeline/references/adapters/overview.md`](../academic-pipeline/references/adapters/overview.md) for the adapter contract.
+
+### Audit Artifact Ledger (v3.6.7)
+
+Schema 9 gains an optional append-only `audit_artifact[]` ledger recording cross-model audit runs that gate the three v3.6.7 downstream agents (`synthesis_agent`, `research_architect_agent` survey-designer mode, `report_compiler_agent` abstract-only mode). Each entry conforms to [`shared/contracts/passport/audit_artifact_entry.schema.json`](contracts/passport/audit_artifact_entry.schema.json).
+
+The ledger stores only `persisted` entries — those merged by `pipeline_orchestrator_agent` after Layer 2 (JSONL schema) + Layer 3 (sidecar metadata) anti-fake-audit checks pass per the eleven gating checks at [`docs/design/2026-04-30-ars-v3.6.7-step-6-orchestrator-hooks-spec.md`](../docs/design/2026-04-30-ars-v3.6.7-step-6-orchestrator-hooks-spec.md) §5.2. Wrapper-emitted `proposal` entries live under `audit_artifacts/<run_id>.audit_artifact_entry.json` until orchestrator consumes them; they never reach the passport.
+
+```yaml
+audit_artifact:
+  - stage: 2                                   # destination stage gated by this audit
+    agent: synthesis_agent                     # one of the three v3.6.7 agents
+    deliverable_path: chapter_4/synthesis.md
+    deliverable_sha: a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2
+    run_id: 2026-04-30T15-22-04Z-d8f3
+    bundle_id: phase2-chapter4-2026-04-30
+    bundle_manifest_sha: 9a8b7c6d5e4f3b2a1c0d9e8f7a6b5c4d3e2f1a0b9c8d7e6f5a4b3c2d1e0f9876
+    artifact_paths:
+      jsonl: audit_artifacts/2026-04-30T15-22-04Z-d8f3.jsonl
+      sidecar: audit_artifacts/2026-04-30T15-22-04Z-d8f3.meta.json
+      verdict: audit_artifacts/2026-04-30T15-22-04Z-d8f3.verdict.yaml
+    verdict:
+      status: MINOR                            # persisted enum: PASS | MINOR | MATERIAL
+      round: 2
+      target_rounds: 3
+      finding_counts:
+        p1: 0
+        p2: 0
+        p3: 1
+      verified_at: "2026-04-30T15:23:11.847Z"  # RFC 3339 UTC string, ms precision (quoted: schema is `string` + regex, not YAML datetime); strict-monotonic per scripts/_next_verified_at_ms.py
+      verified_by: pipeline_orchestrator_agent
+  # append-only; never overwrite, never reorder
+```
+
+**Semantics:**
+
+- `stage` is the **destination stage** the just-completed deliverable is about to enter (synthesis_agent → 2, research_architect_agent survey-designer → 2, report_compiler_agent abstract-only → 5).
+- `verdict.status` enum is `["PASS", "MINOR", "MATERIAL"]` for persisted entries. `AUDIT_FAILED` is reachable only in the proposal arm and never persists; see [`audit_artifact_entry.schema.json`](contracts/passport/audit_artifact_entry.schema.json) Lifecycle-conditional fields for the rationale.
+- `verdict.verified_at` and `verdict.verified_by` are required on persisted entries (orchestrator-written) and forbidden on proposal entries (wrapper-emitted).
+- Multiple entries for the same `(stage, agent, deliverable_sha)` represent multiple audit rounds; orchestrator selects the latest by `verified_at` for verdict reads.
+- If `deliverable_sha` changes (deliverable mutated), prior entries become stale but remain as audit history; orchestrator only honors entries whose `deliverable_sha` matches the current deliverable.
+
+**This mirrors the v3.6.3 `reset_boundary[]` append-only pattern**: history preserved, freshness computed by ledger scan. Deletion or reordering is forbidden; lint at `scripts/check_audit_artifact_consistency.py` enforces the invariant family at [`docs/design/2026-04-30-ars-v3.6.7-step-6-orchestrator-hooks-spec.md`](../docs/design/2026-04-30-ars-v3.6.7-step-6-orchestrator-hooks-spec.md) §3.7.
+
+For the orchestrator-side gate procedure (Path A latest-by-`verified_at` selection, Path B proposal merge after Layer 2 + Layer 3 verification), the canonical contract is [`docs/design/2026-04-30-ars-v3.6.7-step-6-orchestrator-hooks-spec.md`](../docs/design/2026-04-30-ars-v3.6.7-step-6-orchestrator-hooks-spec.md) §5.6 (Path A/B fall-through with the §5.6 A1.5 superseding-proposal preflight) plus §5.2 (eleven Layer 2 + Layer 3 gating checks). Implementation lands as a subsection of `academic-pipeline/agents/pipeline_orchestrator_agent.md` (Phase 6.6 deliverable). For the resume-time re-verification semantics, see [`academic-pipeline/references/passport_as_reset_boundary.md`](../academic-pipeline/references/passport_as_reset_boundary.md).
+
+### Run-level lineage signal (v3.7.4)
+
+Schema 9 gains an optional boolean `slr_lineage` field carrying run-level provenance for downstream renderers that need to know whether the pipeline run included a systematic-review stage.
+
+```yaml
+slr_lineage: true   # any pipeline stage was deep-research in systematic-review mode
+```
+
+**Semantics:**
+
+- `true` iff `bool(incoming_passport.slr_lineage) or any(stage.skill == "deep-research" and stage.mode in {"systematic-review", "slr"} for stage in state_tracker.stages.values())` at the time the passport is written. The OR is monotonic — a true value persists across resume / mid-entry passports whose `state_tracker.stages` was reconstructed from the ledger and may be empty. Run-level, not artifact-level — distinct from `origin_mode` which records the directly-producing skill's mode.
+- Producer: `pipeline_orchestrator_agent` writes the field at every handoff transition; in practice only the Stage 1 → Stage 2 transition can flip `false` → `true`, and the OR keeps the value monotonic thereafter. Reference helper: `scripts/slr_lineage.py` `emit(stages, incoming_slr_lineage)` (or the underlying `resolve_from_stages(stages)` when callers need the pre-OR fragment alone).
+- Consumer: `disclosure` mode renderer reads it as `RendererInput.slr_lineage` to dispatch `--policy-anchor=prisma-trAIce` per the §4.3 G2 invariant track gate documented in [`academic-paper/references/policy_anchor_disclosure_protocol.md`](../academic-paper/references/policy_anchor_disclosure_protocol.md) §3.1.
+- Backward compat: passports written before v3.7.4 lack the field; renderer treats absence as `false` (cold-start path requiring explicit `mode_param='systematic-review'`). Identical to pre-v3.7.4 behavior.
+- G1 boundary: this is a passport-level (run-level provenance) field, distinct from corpus-entry-level fields. The §4.4 #11 G1 invariant scope is `literature_corpus_entry.schema.json` (corpus entry data schema, frozen by Decision Doc §2.1); passport-schema extensions follow the v3.6.3 / v3.6.4 / v3.6.7 precedent and are permitted per Decision Doc §4.4 #11.
+
+Spec: [`docs/design/2026-05-15-issue-111-slr-lineage-emission-design.md`](../docs/design/2026-05-15-issue-111-slr-lineage-emission-design.md). Conformance test: `scripts/test_slr_lineage_emission.py`.
 
 ---
 
@@ -1173,6 +1301,60 @@ See `shared/style_calibration_protocol.md` for full consumption rules and confli
 
 ---
 
+## Schema 19 — Compliance Report (v3.4.0+, renumbered from upstream Schema 12 to avoid collision with fork's Schema 12 Lab Record)
+
+**Source of truth:** [`shared/compliance_report.schema.json`](compliance_report.schema.json)
+
+Mode-aware output of [`compliance_agent`](agents/compliance_agent.md). Three top-level subtrees: `prisma_trAIce` (null for primary research), `raise` (always present), and decision aggregation fields.
+
+- **Emitted by:** `compliance_agent` at Stage 2.5 / 4.5 (pipeline) or pre-finalize (standalone skills)
+- **Consumed by:** orchestrator (for checkpoint dashboard), `report_compiler_agent` (for AI Self-Reflection Report compliance summary at Stage 6)
+- **Appended to:** `material_passport.compliance_history[]` (append-only)
+
+### Key fields
+
+- `mode`: dispatches payload (see [`shared/agents/compliance_agent.md`](agents/compliance_agent.md) §Dispatch logic)
+- `stage`: `"2.5"` or `"4.5"`
+- `prisma_trAIce`: `null` when `mode != "systematic_review"`; otherwise tier-bucketed item results
+- `prisma_trAIce.protocol_maturity` *(optional, added per issue #95)*: snapshot of the upstream protocol's self-described maturity status (`foundational_proposal` / `delphi_consensus` / `empirically_validated`) plus citation, snapshot date, and a one-paragraph caveat summary. Populated by `compliance_agent` from [`shared/prisma_trAIce_protocol.md`](prisma_trAIce_protocol.md) — its frontmatter (`citation`, `snapshot_date`) is the deterministic source for `upstream_citation` and `snapshot_date`; `status` is derived from the protocol authors' self-description (currently `foundational_proposal` per Holst et al. 2025, until upstream graduates the checklist via formal consensus); `caveat_summary` is composed from the protocol's framing. (Issue #93 / PR #94 add a `§ Status disclaimer` section to the protocol file as the canonical prose source for `caveat_summary`; until that PR lands, agents derive the summary from the Holst 2025 framing.) Omittable for byte-equivalent compatibility with pre-#95 entries (zero-touch).
+- `raise.mode`: `"full"` (SR + other_evidence_synthesis) or `"principles_only"` (primary_research)
+- `raise.principles`: 4 keys, each with `pass` / `warn` / `fail`
+- `raise.roles`: 8 keys, populated only when `raise.mode == "full"`
+- `overall_decision`: aggregate across compliance + legacy integrity + v3.2 failure mode
+- `user_override`: only present after a user overrides a block; rationale required
+- `upstream_sync_status`: `"current"` or `"stale"` (from freshness check)
+
+Full field spec: [`shared/compliance_report.schema.json`](compliance_report.schema.json).
+
+### Material Passport extension
+
+Schema 9 Material Passport gains one optional field, `compliance_history`:
+
+```yaml
+compliance_history:
+  - <compliance_report entry>
+  - <compliance_report entry>
+  # append-only; never overwrite, never reorder
+```
+
+Ordering: chronological by `generated_at`. A Stage 2.5 FAIL followed by backfill + retry-pass produces two adjacent entries for Stage 2.5 — both preserved.
+
+---
+
+## Schema 20 — Sprint Contract (v3.6.2+, renumbered from upstream Schema 13/13.1 to avoid collision with fork's Schema 13 Simulation Specification)
+
+**Source of truth:** [`shared/sprint_contract.schema.json`](sprint_contract.schema.json)
+
+Machine-checkable pre-registered acceptance criterion for reviewer / writer / evaluator runs. Phase 1 (paper-content-blind) commits the scoring plan; Phase 2 (paper-visible) executes the scored review. Schema 20.1 (v3.6.6) adds writer/evaluator modes via mode-conditional `allOf` branches.
+
+- **Emitted by:** orchestrator (loads template, inlines `generated_at` + optional `agent_amendments`)
+- **Consumed by:** reviewer agents (`eic_agent`, `methodology_reviewer_agent`, `domain_reviewer_agent`, `perspective_reviewer_agent`, `devils_advocate_reviewer_agent`), `editorial_synthesizer_agent`, `draft_writer_agent` (`writer_full` mode), evaluator agents (`evaluator_full` mode)
+- **Templates:** `shared/contracts/<domain>/<mode>.json` (reviewer/full, reviewer/methodology_focus, writer/full, evaluator/full)
+
+See `academic-paper-reviewer/references/sprint_contract_protocol.md` for orchestration reference.
+
+---
+
 ## Validation Rules
 
 1. **Required field check**: All schema fields marked without "(optional)" or "No" in the Required column are REQUIRED. Consumer agents MUST verify all required fields are present before proceeding
@@ -1194,7 +1376,7 @@ See `shared/style_calibration_protocol.md` for full consumption rules and confli
 
 ---
 
-## 16. Schema Versioning
+## Schema Versioning
 
 All handoff artifacts MUST include a `schema_version` field at the top level.
 
@@ -1205,3 +1387,34 @@ All handoff artifacts MUST include a `schema_version` field at the top level.
 Current version for all schemas: `1.0`
 
 See `shared/schema_migrations.md` for the complete versioning protocol, migration rules, and staleness detection.
+
+---
+
+## `data_access_level` (v3.3.2+, from upstream)
+
+Every top-level `SKILL.md` declares `metadata.data_access_level` with one of three values:
+
+- `raw` — consumes unverified sources; must assume adversarial/hallucinated input
+- `redacted` — operates on sanitized material; no new raw ingestion
+- `verified_only` — runs only after upstream integrity gates
+
+This is a declarative signal (not a runtime permission system). Enforced by `scripts/check_data_access_level.py` in CI. When adding a new skill, pick the value matching the *dirtiest* input the skill may legitimately consume.
+
+## `task_type` (v3.3.2+, from upstream)
+
+Every top-level `SKILL.md` declares `metadata.task_type` with one of two values:
+
+- `outcome-gradable` — the task has an objective scalar metric the skill optimizes against; a third party can score the output without deep context
+- `open-ended` — the task's quality depends on domain judgment, interpretive work, or context no metric captures
+
+This is a declarative truth-in-advertising signal. All current ARS skills are `open-ended` because ARS targets humanities/QA/policy work, not benchmark tasks. When adding a new skill, do not invent a third value; if the skill genuinely spans both, split it into two skills.
+
+Enforced by `scripts/check_task_type.py` in CI.
+
+See [`ground_truth_isolation_pattern.md`](ground_truth_isolation_pattern.md) for the rationale and rules behind this annotation.
+
+
+## v3.3.5 additions (from upstream)
+
+- `benchmark_report.schema.json` + [`benchmark_report_pattern.md`](benchmark_report_pattern.md) — schema for publishing ARS benchmark comparisons with required human baseline + independence fields.
+- `repro_lock` sub-block on Material Passport + [`artifact_reproducibility_pattern.md`](artifact_reproducibility_pattern.md) — configuration lockfile (NOT replay guarantee).

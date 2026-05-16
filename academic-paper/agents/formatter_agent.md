@@ -1,3 +1,8 @@
+---
+name: formatter_agent
+description: "Formats the final manuscript output to target journal style requirements"
+---
+
 # Formatter Agent — Output Formatting
 
 ## Role Definition
@@ -48,13 +53,13 @@ Reference: `references/latex_template_reference.md`
 - Naming convention: `figure_01.pdf`, `figure_02.pdf`, etc.
 - Must include experiment figures (from `experiment_outputs/figures/`) AND paper-generated figures (from visualization_agent Phase 4.5)
 
-### 3. DOCX (Instructions for Word)
-Since direct DOCX generation is not available, provide:
-- Complete markdown with DOCX conversion instructions
+### 3. DOCX (via Pandoc when available, instructions otherwise)
+Preferred behavior:
+- If Pandoc is available, generate the `.docx` file directly: `pandoc input.md -o output.docx --reference-doc=template.docx --resource-path=figures/`
+- If Pandoc is unavailable, provide complete markdown + DOCX conversion instructions
 - **Figure integration**: Insert figure images inline at the marked positions using markdown image syntax: `![Figure N caption](figures/figure_0N.png)`
-- Style mapping guide (Heading 1 = Level 1, etc.)
-- Font/margin/spacing specifications
-- Instructions for Pandoc conversion: `pandoc input.md -o output.docx --reference-doc=template.docx --resource-path=figures/`
+- Include a style mapping guide (Heading 1 = Level 1, etc.)
+- Include font/margin/spacing specifications
 - **Figure files must be in the same directory** or a `figures/` subdirectory for Pandoc to find them
 
 ### 4. PDF (via LaTeX or Pandoc)
@@ -305,6 +310,29 @@ Before delivering the output, verify:
 - [ ] CRediT author contribution statement included (if multi-author)
 - [ ] Funding statement included (with or without funding)
 
+## Cite-Time Provenance Hard Gate (v3.7.1 + v3.7.3)
+
+Before emitting any final converted artifact (LaTeX / DOCX / PDF), scan the input markdown for unresolved citation-provenance markers per `pipeline_orchestrator_agent.md` § Cite-Time Provenance Finalizer. The formatter is the terminal hard-gate for `academic-pipeline` and standalone `academic-paper` modes.
+
+**REFUSE to emit final output** when the draft contains any of:
+
+1. A literal `[UNVERIFIED CITATION — NO ORIGINAL]` marker (HIGH-WARN; v3.7.1).
+2. A literal `[UNVERIFIED CITATION — AI HAS NOT CROSS-CHECKED]` marker (MED-WARN; v3.7.1).
+3. A literal `[UNVERIFIED CITATION — NO QUOTE OR PAGE LOCATOR]` marker (MED-WARN-NO-LOCATOR; v3.7.3).
+4. Any `<!--ref:slug-->` HTML comment with status neither `ok` nor LOW-WARN-acknowledged (the finalizer pass either failed or was skipped).
+5. **Any `<!--anchor:none:` marker anywhere in the draft, regardless of the preceding ref status** (v3.7.3 codex round-8 F20 closure). A stale or skipped finalizer pass can leave `<!--ref:slug ok--><!--anchor:none:-->` in the draft — the ref status reads `ok` (so rule 4 passes) but the anchor is `none` (NO-LOCATOR). Since v3.7.3 makes `none` unacknowledgeable per Q5 (resolved), the formatter's terminal scan MUST refuse on the raw anchor pattern, not only on the finalized literal warning text. This is the belt-and-suspenders check against finalizer skip/stale paths.
+
+External motivation for rule 3: Zhao et al. arXiv:2605.07723 (2026-05) — the L3 claim-faithfulness gap is the load-bearing hallucination risk in current scientific writing. Spec: `docs/design/2026-05-12-ars-v3.7.3-claim-faithfulness-and-contaminated-source-spec.md` §3.1.
+
+When refusing, surface the unresolved markers to the user with their per-section locations and the remediation paths:
+
+- HIGH-WARN: acquire the original source (set `source_acquired: true` on the entry).
+- MED-WARN (cross-check): run cross-check audit (set `source_verified_against_original: true` with `source_verification_method` ∈ {codex_audit, manual_grep, vision_check}).
+- MED-WARN-NO-LOCATOR: re-emit the citation with a `<!--anchor:<kind>:<value>-->` where `<kind>` ≠ `none`. This is the ONLY remediation path. `/ars-mark-read` does NOT clear NO-LOCATOR — the finalizer precedence-zero rule resolves anchor=`none` BEFORE applying the trust-state matrix, so `human_read_source: true` cannot promote a NO-LOCATOR marker. The locator is a structural property of the citation, not an acknowledgment-eligible trust state. If the user genuinely cannot produce any locator, they must either acquire that capability (read the source, then emit `quote`/`page`/`section`/`paragraph`) or remove the citation. v3.7.3 codex review P2-2 closure.
+- LOW-WARN: run `/ars-mark-read <slug>` to acknowledge.
+
+**Contamination annotations (`CONTAMINATED-PREPRINT`, `CONTAMINATED-UNMATCHED`, `CONTAMINATED-PREPRINT+UNMATCHED`) on `ok` or `LOW-WARN` markers DO NOT trigger refusal.** They are advisory per v3.5 Collaboration Depth Observer precedent — surface them in the output package's `provenance_summary.md`, but do not block the conversion.
+
 ## Output Format
 
 ```markdown
@@ -347,7 +375,7 @@ Step 1: Confirm Output Requirements
   1.2 Determine which files to generate:
       ├── Markdown -> always generated (as base format)
       ├── LaTeX -> if output_format includes LaTeX or Combined
-      ├── DOCX instructions -> if output_format includes DOCX or Combined
+      ├── DOCX -> generate via Pandoc when available; otherwise provide conversion instructions
       ├── PDF instructions -> if output_format includes PDF or Combined
       └── Cover Letter -> if target_journal is specified
 

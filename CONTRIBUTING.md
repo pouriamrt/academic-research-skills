@@ -70,6 +70,22 @@ Open an issue first before submitting a PR for these:
 - **Handoff schema changes** — modifications to `shared/handoff_schemas.md`
 - **New skills or modes** — additions to the pipeline
 
+### Platform ports (community-maintained only)
+
+This repository is the reference distribution of ARS, built for Claude Code. Ports to other agent platforms (Opencode, Cursor, Continue, Aider, etc.) are accepted as community-maintained contributions. Two structural shapes are acceptable — both keep core ARS content as the source of truth:
+
+- **In-tree wrapper.** Add a top-level `<platform>/` directory in this repo (e.g. `opencode/`) containing the manifest, plugin entry, and dispatch shims. Core ARS files (`skills/*/SKILL.md`, `agents/*.md`, `shared/`, `scripts/`) remain unmodified.
+- **Sibling distribution.** A separate repository that vendors ARS workflow content with: (1) upstream commit hash pinned (e.g. in a `manifest.json`); (2) a written update / sync policy; (3) vendored content unmodified — only the outer routing / adapter layer is platform-specific.
+
+Either shape is accepted under the same maintainer-facing conditions:
+
+- **Named maintainer.** The PR description (in-tree) or repo README (sibling) must identify who will keep the port in sync with ARS minor releases (~6-week cadence) and triage platform-specific bug reports. Platform-specific issues will be redirected to that maintainer.
+- **End-to-end evidence.** Include at least one full `academic-pipeline` run on the target platform, committed under `examples/<platform>/` (in-tree) or under an `examples/` path in the sibling repo, so regressions are detectable.
+- **Model-portability note.** ARS prompts are calibrated against Claude (Opus for architecture/review, Sonnet for execution; never Haiku). The PR must document which providers/models were tested and where downstream-agent behavior diverged from the Claude baseline.
+- **Open a design issue first** before submitting the PR (for in-tree) or before requesting sibling-distribution recognition in this repo's README.
+
+---
+
 ## How to Add or Modify an Agent
 
 Agent files use the pattern `{domain}_{role}_agent.md` and live in `<skill-name>/agents/`.
@@ -224,6 +240,10 @@ Contributors are credited in commit messages, CHANGELOG entries, and the Contrib
 
 ## License
 
-[CC-BY-NC 4.0](https://creativecommons.org/licenses/by-nc/4.0/) -- free to share and adapt with attribution for non-commercial use. By contributing, you agree that your contributions will be licensed under the same terms.
+[CC-BY-NC 4.0](https://creativecommons.org/licenses/by-nc/4.0/) — free to share and adapt with attribution for non-commercial use. By contributing, you agree that your contributions will be licensed under the same terms. See [POSITIONING.md](POSITIONING.md) for usage terms.
 
-**Author**: Pouria Mortezaagha
+**Author**: Pouria Mortezaagha (fork) — upstream maintainer: Cheng-I Wu (Imbad0202).
+
+## When adding a new skill
+
+Read [`shared/ground_truth_isolation_pattern.md`](shared/ground_truth_isolation_pattern.md) before writing the SKILL.md. It explains the three-layer model behind the `data_access_level` and `task_type` frontmatter fields and lists the do/don't rules for handling evaluation rubrics, gold labels, and answer keys.

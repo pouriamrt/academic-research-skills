@@ -2,10 +2,12 @@
 name: academic-pipeline
 description: "Orchestrator for the full academic research pipeline: research -> experiment (optional) -> write -> integrity check -> review -> revise -> re-review -> re-revise -> final integrity check -> finalize -> process summary. Coordinates deep-research, experiment-designer, data-analyst, simulation-runner, lab-notebook, academic-paper, and academic-paper-reviewer into a seamless workflow with auto-detected experiment stages, mandatory integrity verification, two-stage peer review, AI Research Failure Mode Checklist (Lu 2026), Score Trajectory tracking, Early-Stopping criterion, and reproducible quality gates. Triggers on: academic pipeline, research to paper, full paper workflow, paper pipeline, end-to-end paper, research-to-publication, complete paper workflow."
 metadata:
-  version: "3.3"
-  last_updated: "2026-04-11"
+  version: "3.7.0"
+  last_updated: "2026-05-15"
   depends_on: "deep-research, experiment-designer, data-analyst, simulation-runner, lab-notebook, academic-paper, academic-paper-reviewer"
   status: active
+  data_access_level: verified_only
+  task_type: open-ended
   related_skills:
     - deep-research
     - experiment-designer
@@ -16,9 +18,11 @@ metadata:
     - academic-paper-reviewer
 ---
 
-# Academic Pipeline v3.3 — Full Academic Research Workflow Orchestrator
+# Academic Pipeline v3.7.0 — Full Academic Research Workflow Orchestrator
 
 A lightweight orchestrator that manages the complete academic pipeline from research exploration to final manuscript. It does not perform substantive work — it only detects stages, recommends modes, dispatches skills, manages transitions, and tracks state.
+
+**v3.6.3 (opt-in):** Set `ARS_PASSPORT_RESET=1` to promote FULL checkpoints to context-reset boundaries. Use `resume_from_passport=<hash>` in a fresh session to continue from the recorded stage. See [`references/passport_as_reset_boundary.md`](references/passport_as_reset_boundary.md).
 
 **v2.0 Core Improvements**:
 1. **Mandatory user confirmation checkpoints** — Each stage completion requires user confirmation before proceeding to the next step
@@ -47,6 +51,17 @@ I already have a paper, help me review it
 I received reviewer comments, help me revise
 ```
 --> academic-pipeline detects, starting from Stage 4 (REVISE)
+
+**Resume from passport (cross-session context reset, opt-in):**
+```
+resume_from_passport=<hash> [stage=<n>] [mode=<m>]
+```
+--> Loads the Material Passport (Schema 9), locates the `kind: boundary` entry matching `<hash>`, and confirms it has no later `kind: resume` entry consuming it. If `pending_decision` is set, the decision prompt fires first to capture the user's branch choice for the audit ledger; the prompt is never skipped, even when the user supplies `stage=`. After the prompt (or immediately if no `pending_decision`), the next stage is determined by: (a) `stage=<n>` CLI override if provided, else (b) the matched option's `next_stage`, else (c) the `next` field recorded in the boundary entry. CLI `stage=`/`mode=` overrides win over option routing.
+- **Gate (emit)**: `ARS_PASSPORT_RESET=1` must be set in the emitting session. Without the flag, no `kind: boundary` entries are written and there is nothing to resume from.
+- **Gate (resume)**: No flag required. Any session can invoke `resume_from_passport=<hash>` against a passport that carries a valid boundary entry matching the hash.
+- **Intent**: Invoke in a *fresh* Claude Code session. Resuming within the same session that emitted the boundary provides no token savings and may drop still-live in-session context.
+- **Stage**: Any. Resumes at whatever stage the routing rules above determine.
+- **Reference**: [`references/passport_as_reset_boundary.md`](references/passport_as_reset_boundary.md) — see §"`resume_from_passport` mode contract".
 
 **Execution flow:**
 1. Detect the user's current stage and available materials
@@ -79,7 +94,7 @@ I received reviewer comments, help me revise
 ### Trigger Exclusions
 
 - If the user only needs a single function (just search materials, just check citations), no pipeline is needed — directly trigger the corresponding skill
-- If the user is already using a specific mode of a skill, do not force them into the pipeline
+- If the user is already using a specific mode of a skill, respect that entry point; the pipeline is opt-in
 - The pipeline is optional, not mandatory
 
 ---
@@ -97,7 +112,7 @@ I received reviewer comments, help me revise
 | **3'** | **RE-REVIEW** | **`academic-paper-reviewer`** | **re-review** | **Verification review report: revision response checklist + residual issues** |
 | **4'** | **RE-REVISE** | **`academic-paper`** | **revision** | **Second revised draft (if needed)** |
 | **4.5** | **FINAL INTEGRITY** | **`integrity_verification_agent`** | **final-check** | **Final verification report (must achieve 100% pass to proceed)** |
-| 5 | FINALIZE | `academic-paper` | format-convert | Final Paper (default MD + DOCX; ask about LaTeX; confirm correctness; PDF) |
+| 5 | FINALIZE | `academic-paper` | format-convert | Final Paper (default MD; DOCX via Pandoc when available, otherwise conversion instructions; ask about LaTeX; confirm correctness; PDF) |
 | **6** | **PROCESS SUMMARY** | **orchestrator** | **auto** | **Paper creation process record MD + LaTeX to PDF (bilingual)** |
 
 **Parallelization opportunity (v3.3)**: Within Stage 2, the `academic-paper` skill's Phase 1 (`academic-paper/literature_strategist_agent`) and the `academic-paper/visualization_agent` can operate in parallel after Phase 2 (`academic-paper/structure_architect_agent`) completes the outline. Specifically:
@@ -128,7 +143,7 @@ This mirrors PaperOrchestra's parallel execution of Plot Generation (Step 2) and
 6. **Stage 3' RE-REVIEW** -> Accept|Minor -> Stage 4.5 / Major -> **Experiment Re-Entry Check** -> Stage 4' (last experiment opportunity)
 7. **Stage 4' RE-REVISE** -> user confirmation -> Stage 4.5 (no return to review)
 8. **Stage 4.5 FINAL INTEGRITY** -> PASS (zero issues) -> Stage 5 (FAIL -> fix and re-verify)
-9. **Stage 5 FINALIZE** -> MD + DOCX -> ask about LaTeX -> confirm -> PDF -> Stage 6
+9. **Stage 5 FINALIZE** -> MD -> DOCX via Pandoc when available (otherwise instructions) -> ask about LaTeX -> confirm -> PDF -> Stage 6
 10. **Stage 6 PROCESS SUMMARY** -> ask language version -> generate process record MD -> LaTeX -> PDF -> end
 
 See `references/pipeline_state_machine.md` for complete state transition definitions.
@@ -144,7 +159,7 @@ See `references/pipeline_state_machine.md` for complete state transition definit
 | Type | When Used | Content |
 |------|-----------|---------|
 | FULL | First checkpoint; after integrity boundaries; before finalization | Full deliverables list + decision dashboard + all options |
-| SLIM | After 2+ consecutive "continue" responses on non-critical stages | One-line status + auto-continue in 5 seconds |
+| SLIM | After 2+ consecutive "continue" responses on non-critical stages | One-line status + explicit continue/pause prompt |
 | MANDATORY | Integrity FAIL; Review decision; Stage 5 | Cannot be skipped; requires explicit user input |
 
 ### Decision Dashboard (shown at FULL checkpoints)
@@ -174,7 +189,7 @@ Ready to proceed to Stage [Y]? You can also:
 ### Adaptive Rules
 
 1. **First checkpoint**: always FULL
-2. **After 2+ consecutive "continue" without review**: prompt user awareness ("You've auto-continued [N] times. Want to review progress?")
+2. **After 2+ consecutive "continue" without review**: prompt user awareness ("You've continued [N] times in a row. Want to review progress?")
 3. **Integrity boundaries (Stage 2.5, 4.5)**: always MANDATORY
 4. **Review decisions (Stage 3, 3')**: always MANDATORY
 5. **Before finalization (Stage 5)**: always MANDATORY
@@ -189,15 +204,28 @@ Ready to proceed to Stage [Y]? You can also:
 5. **Awareness guard**: After 4+ consecutive auto-continues, the system inserts a FULL checkpoint regardless of stage type to ensure user remains engaged
 6. **Audible alert**: At FULL and MANDATORY checkpoints (where the pipeline pauses for human input), the orchestrator runs `bash tools/beep.sh` to play a short audible alert (~2 seconds, three ascending tones) before displaying the checkpoint prompt. SLIM checkpoints (auto-continue) do not beep
 
+### Self-Check Questions (at every FULL checkpoint)
+
+Before presenting the checkpoint to the user, the orchestrator asks itself:
+
+1. **Citation integrity**: Are there any unverified citations in the latest output?
+2. **Sycophantic concession**: Did the latest stage uncritically accept all feedback without pushback?
+3. **Quality trajectory**: Is the latest output ≥ the quality of the previous stage? If declining, PAUSE and flag.
+4. **Scope discipline**: Did the latest stage add content not requested by the user or the revision roadmap?
+5. **Completeness**: Are all required deliverables for this stage present?
+
+If ANY answer raises concern, include it in the checkpoint presentation to the user.
+
 ---
 
-## Agent Team (3 Agents)
+## Agent Team (4 Agents)
 
 | # | Agent | Role | File |
 |---|-------|------|------|
 | 1 | `pipeline_orchestrator_agent` | Main orchestrator: detects stage, recommends mode, triggers skill, manages transitions | `agents/pipeline_orchestrator_agent.md` |
 | 2 | `state_tracker_agent` | State tracker: records completed stages, produced materials, revision loop count | `agents/state_tracker_agent.md` |
-| 3 | `integrity_verification_agent` | Integrity verifier: 100% reference/citation/data verification | `agents/integrity_verification_agent.md` |
+| 3 | `integrity_verification_agent` | Integrity verifier: 100% reference/citation/data verification (blocking) | `agents/integrity_verification_agent.md` |
+| 4 | `collaboration_depth_agent` | **Observer (advisory only — never blocks).** Reads dialogue log and scores user-AI collaboration pattern against `shared/collaboration_depth_rubric.md`. Invoked at FULL/SLIM checkpoints and at pipeline completion. Based on Wang & Zhang (2026). | `agents/collaboration_depth_agent.md` |
 
 ---
 
@@ -334,6 +362,10 @@ See `academic-paper-reviewer/SKILL.md` for review process details.
 
 > See `references/integrity_review_protocol.md` for the 5-phase citation/claim verification procedures.
 > See `references/ai_research_failure_modes.md` for the 7-mode AI research failure checklist and block/override logic.
+
+- [v3.4.0] `compliance_agent` runs mode-aware PRISMA-trAIce + RAISE compliance check at Stage 2.5 / 4.5; tier-based block semantics. See `shared/compliance_checkpoint_protocol.md`.
+
+---
 
 ### Stage 3 -> 4 Transition: Revision Coaching
 
@@ -722,6 +754,34 @@ The final chapter of the process record is a "Collaboration Quality Evaluation" 
 
 ---
 
+## Collaboration Depth Observer (v3.5.0, advisory only — never blocks)
+
+The `collaboration_depth_agent` observes the user's collaboration pattern with the pipeline. It is **advisory only** and **never blocks** progression at any checkpoint. It is `non-blocking` by design and carries `blocking: false` in its frontmatter as a structural guarantee.
+
+**When invoked**: every FULL checkpoint, every SLIM checkpoint, and after Stage 6 (pipeline completion). MANDATORY checkpoints (Stages 2.5 / 4.5 integrity gates) **do not** invoke the observer — those are integrity concerns and must not be diluted.
+
+**What it does**: reads the dialogue range for the just-completed stage (at checkpoints) or the whole pipeline (at completion), scores the pattern against the canonical rubric at `shared/collaboration_depth_rubric.md`, and emits an advisory block/chapter. Dimensions: Delegation Intensity, Cognitive Vigilance, Cognitive Reallocation, Zone Classification (Zone 1 / Zone 2 / Zone 3). Rubric is based on Wang & Zhang (2026) IJETHE 23:11 (DOI 10.1186/s41239-026-00585-x).
+
+**Distinction from existing mechanisms**:
+
+| Mechanism | What it evaluates | Blocking? |
+|---|---|---|
+| `integrity_verification_agent` (Stages 2.5 / 4.5) | Paper content — references, citations, data | Yes (blocking gate) |
+| Stage 6 Collaboration Quality Evaluation (6 dims, 1–100) | AI's self-reflection on its own behaviour | No, but produced once only |
+| `collaboration_depth_agent` (this observer) | The **user's** collaboration pattern (delegation intensity, vigilance, reallocation) | **No — never blocks. Advisory only.** |
+
+**Non-blocking guarantees**:
+- Observer output never appears on the "Flagged" line of any checkpoint.
+- The `Ready to proceed?` prompt is unchanged by observer output.
+- `blocked_by: collaboration_depth_agent` is never a legal state in `state_tracker`.
+- If observer frontmatter ever asserts `blocking: true`, the orchestrator must refuse to dispatch it.
+
+**Cross-model**: when `ARS_CROSS_MODEL` is set, the observer runs on both models and flags any dimension divergence > 2 points. Scores are never silently averaged across models.
+
+> See `agents/collaboration_depth_agent.md` for full scoring procedure and anti-sycophancy discipline; `shared/collaboration_depth_rubric.md` for the canonical 4-dimension rubric.
+
+---
+
 ## Anti-Patterns
 
 | # | Anti-Pattern | Why It Fails | Correct Behavior |
@@ -772,7 +832,7 @@ The final chapter of the process record is a "Collaboration Quality Evaluation" 
 | Stage 4' | Issues remain after revision | Mark as Acknowledged Limitations; proceed to Stage 4.5 |
 | Stage 4.5 | Final verification FAIL | Fix and re-verify (max 3 rounds) |
 | Any | User leaves midway | Save pipeline state; can resume from breakpoint next time |
-| Any | Skill execution failure | Report error; suggest retry or skip |
+| Any | Skill execution failure | Report error; suggest retry, pause, or mode switch. Do not skip mandatory integrity or failure-mode gates |
 
 ---
 
@@ -783,6 +843,7 @@ The final chapter of the process record is a "Collaboration Quality Evaluation" 
 | pipeline_orchestrator_agent | `agents/pipeline_orchestrator_agent.md` |
 | state_tracker_agent | `agents/state_tracker_agent.md` |
 | integrity_verification_agent | `agents/integrity_verification_agent.md` |
+| collaboration_depth_agent | `agents/collaboration_depth_agent.md` |
 
 ---
 
@@ -796,15 +857,18 @@ The final chapter of the process record is a "Collaboration Quality Evaluation" 
 | `references/claim_verification_protocol.md` | Phase E claim verification protocol: claim extraction, source tracing, cross-referencing, verdict taxonomy |
 | `references/ai_research_failure_modes.md` | 7-mode AI research failure checklist (Lu 2026), run at Stage 2.5 + 4.5 with blocking behaviour, reported at Stage 6 |
 | `references/team_collaboration_protocol.md` | Multi-person team coordination: role definitions, handoff protocol, version control, conflict resolution |
-| `shared/handoff_schemas.md` | Cross-skill data contracts: 18 schemas for all inter-stage handoff artifacts |
+| `shared/handoff_schemas.md` | Cross-skill data contracts: 20 schemas for all inter-stage handoff artifacts (fork's 1–18 + upstream's 19 Compliance Report + 20 Sprint Contract) |
 | `references/external_review_protocol.md` | Real journal reviewer feedback handling (4-step protocol) |
-| `references/integrity_review_protocol.md` | Stage 2.5/4.5 integrity verification steps |
-| `references/process_summary_protocol.md` | Stage 6 process summary with collaboration quality evaluation |
+| `references/integrity_review_protocol.md` | Stage 2.5/4.5 integrity verification steps (5-phase protocol details) |
+| `references/process_summary_protocol.md` | Stage 6 process summary with collaboration quality evaluation + AI self-reflection report |
 | `references/progress_dashboard_template.md` | Progress dashboard ASCII-art template |
 | `references/reinforcement_content.md` | Stage-transition reinforcement table |
 | `references/reproducibility_audit.md` | Audit trail template and reproducibility guarantees |
 | `references/two_stage_review_protocol.md` | Stage 3/3' two-stage review flow |
+| `references/passport_as_reset_boundary.md` | v3.6.3 opt-in passport reset boundary protocol |
+| `references/literature_corpus_consumers.md` | v3.6.5 corpus-first consumer protocol for bibliography/literature_strategist agents |
 | `references/changelog.md` | Skill version history and changelog |
+| `shared/collaboration_depth_rubric.md` | Collaboration Depth Observer rubric (v1.0): 4 dimensions based on Wang & Zhang (2026) IJETHE 23:11 |
 
 ---
 
@@ -868,7 +932,7 @@ Stage 3': academic-paper-reviewer
 Stage 4/4': academic-paper (revision mode)
 Stage 5: academic-paper (format-convert mode)
   - Step 1: Ask user which academic formatting style (APA 7.0 / Chicago / IEEE, etc.)
-  - Step 2: Auto-produce MD + DOCX
+  - Step 2: Produce MD, then generate DOCX via Pandoc when available (otherwise provide conversion instructions)
   - Step 3: Produce LaTeX (using corresponding document class, e.g., apa7 class for APA 7.0)
   - Step 4: After user confirms content is correct, tectonic compiles PDF (final version)
   - Fonts: Times New Roman (English) + Source Han Serif TC VF (Chinese) + Courier New (monospace)
@@ -895,11 +959,11 @@ Stage 5: academic-paper (format-convert mode)
 
 | Item | Content |
 |------|---------|
-| Skill Version | 3.3 |
-| Last Updated | 2026-04-11 |
-| Maintainer | Pouria Mortezaagha |
+| Skill Version | 3.7.0 |
+| Last Updated | 2026-05-15 |
+| Maintainer | Pouria Mortezaagha (fork) / Cheng-I Wu (upstream) |
 | Dependent Skills | deep-research v2.0+, experiment-designer v1.0+, data-analyst v1.0+, simulation-runner v1.0+, lab-notebook v1.0+, academic-paper v2.0+, academic-paper-reviewer v1.1+ |
-| Role | Full academic research workflow orchestrator (research → experiment → write → review → revise → finalize → process summary) |
+| Role | Full academic research workflow orchestrator (research → experiment → write → integrity/compliance → review with sprint contract → revise → finalize → process summary) |
 
 ---
 

@@ -36,17 +36,20 @@ Every schema artifact (Schemas 1-17 as defined in `shared/handoff_schemas.md`) *
 | Schema 16 | Concept Lineage Report | 1.0 | v3.9.0 |
 | Schema 17 | Style Profile | 1.0 | v3.9.0 |
 | Schema 18 | R&R Traceability Matrix | 1.0 | v3.14.0 |
+| Schema 19 | Compliance Report (PRISMA-trAIce + RAISE) | 1.0 | v3.16.0 (upstream v3.4.0; renumbered from upstream Schema 12) |
+| Schema 20 | Sprint Contract (reviewer + writer/evaluator) | 1.1 | v3.16.0 (upstream v3.6.2 / v3.6.6; renumbered from upstream Schema 13 / 13.1) |
 
 ---
 
 ## 2. Version Compatibility Matrix
 
-| Plugin Version | Schema 1-13 | Schema 14-15 | Schema 16-17 | Schema 18 | Notes |
-|----------------|-------------|--------------|--------------|-----------|-------|
-| v3.7.0 | v1.0 | v1.0 | — | — | Baseline — Schemas 1-15 established at v1.0 |
-| v3.7.1–v3.8.x | v1.0 | v1.0 | — | — | No schema changes |
-| v3.9.0–v3.13.x | v1.0 | v1.0 | v1.0 | — | Schema 16 (Concept Lineage) + Schema 17 (Style Profile) added |
-| v3.14.0 | v1.0 | v1.0 | v1.0 | v1.0 | Schema 18 (R&R Traceability Matrix) added in upstream merge |
+| Plugin Version | Schema 1-13 | Schema 14-15 | Schema 16-17 | Schema 18 | Schema 19-20 | Notes |
+|----------------|-------------|--------------|--------------|-----------|--------------|-------|
+| v3.7.0 | v1.0 | v1.0 | — | — | — | Baseline — Schemas 1-15 established at v1.0 |
+| v3.7.1–v3.8.x | v1.0 | v1.0 | — | — | — | No schema changes |
+| v3.9.0–v3.13.x | v1.0 | v1.0 | v1.0 | — | — | Schema 16 (Concept Lineage) + Schema 17 (Style Profile) added |
+| v3.14.0 | v1.0 | v1.0 | v1.0 | v1.0 | — | Schema 18 (R&R Traceability Matrix) added in upstream merge |
+| v3.16.0 | v1.0 | v1.0 | v1.0 | v1.0 | v1.0 / v1.1 | Schema 19 (Compliance Report) + Schema 20 (Sprint Contract) added via upstream v3.4.0–v3.7.3 sync; renumbered from upstream Schema 12 / 13 to avoid collision with fork's experiment Schemas |
 | v3.15.0 | v1.0 | v1.0 | v1.0 | v1.0 | Upstream merge: PaperOrchestra (Semantic Scholar API, anti-leakage, VLM verification, score trajectory) + Lu 2026 (failure mode checklist, calibration, disclosure, mode spectrum). No schema breaking changes; Schema 5 gains optional `score_trajectory` substructure (backwards-compatible). |
 
 > **Reading this table**: Each row shows which schema versions that plugin version can produce and consume. A plugin version supports all schema versions from its row and all previous rows.

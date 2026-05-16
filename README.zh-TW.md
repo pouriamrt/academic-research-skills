@@ -1,6 +1,6 @@
 # Academic Research Skills for Claude Code
 
-[![Version](https://img.shields.io/badge/version-v3.3-blue)](https://github.com/Imbad0202/academic-research-skills/releases/tag/v3.3)
+[![Version](https://img.shields.io/badge/version-v3.7.0-blue)](https://github.com/Imbad0202/academic-research-skills/releases/tag/v3.7.0)
 [![License: CC BY-NC 4.0](https://img.shields.io/badge/license-CC%20BY--NC%204.0-lightgrey)](https://creativecommons.org/licenses/by-nc/4.0/)
 [![Sponsor](https://img.shields.io/badge/sponsor-Buy%20Me%20a%20Coffee-orange?logo=buy-me-a-coffee)](https://buymeacoffee.com/crucify020v)
 
@@ -8,31 +8,61 @@
 
 一套完整的學術研究 Claude Code 技能包，涵蓋從研究到論文出版的全流程。
 
+**30 秒安裝**（Claude Code CLI / VS Code / JetBrains，v3.7.0+）：
+
+```text
+/plugin marketplace add Imbad0202/academic-research-skills
+/plugin install academic-research-skills
+```
+
+裝完跑 `/ars-plan`，ARS 會用蘇格拉底對話幫你規劃章節結構。需要前置條件或傳統 symlink 安裝請看 [快速安裝](#快速安裝)。
+
 > **AI 是你的副駕駛，不是機長。** 這工具不會幫你寫論文。它處理苦工 — 搜文獻、排格式、驗數據、查邏輯一致性 — 讓你專注在真正需要你腦子的事：定義問題、選方法、詮釋數據的意義、寫出「我認為」後面那句話。
 >
 > 跟 humanizer 不同，這工具不是幫你隱藏用 AI 協作的事實，而是幫你把關文章品質。風格校準從你過去的文章學習你的聲音，寫作品質檢查抓出讓文字讀起來像機器產的模式。目標是品質，不是遮掩。
 
 ### 為什麼選「人機協作」而不是「全自動」？
 
-Lu 等人（2026，*Nature* 651:914-919）發表的 **The AI Scientist** 是第一個端到端全自動的 AI 研究系統，其生成的論文通過 ICLR 2025 workshop 的盲審（評分 6.33/10，workshop 平均 4.87）。這是截至 2026 年「全自動 AI 研究」能達到的最強公開基準。
+Lu 等人（2026，*Nature* 651:914-919）發表的 **The AI Scientist** 是第一個端到端全自動的 AI 研究系統，其生成的論文通過 ICLR 2025 workshop 的盲審（評分 6.33/10，workshop 平均 4.87）。他們自己的 Limitations 段落也列出了這類系統會遇到的結構性失敗模式：實作錯誤、幻覺實驗結果、取巧特徵依賴、實作錯誤被包裝成「意外發現」、方法論偽造、框架鎖定、引用幻覺。
 
-但他們自己的 Limitations 段落也列出這類系統會遇到的結構性失敗模式：
+ARS 建立在這個前提上：**人類研究者 + AI 的組合，比純自動或純人工都更能避開這些失敗模式**。Stage 2.5 與 Stage 4.5 誠信閘門執行 7 類阻斷式檢查清單（見 [`academic-pipeline/references/ai_research_failure_modes.md`](academic-pipeline/references/ai_research_failure_modes.md)），reviewer 也提供 opt-in 的 calibration mode 用使用者自備的 gold set 測量 FNR/FPR。
 
-- 實作錯誤通過 AI 自我審查，污染後續結果
-- 幻覺的實驗數字（看起來合理但沒有對應的實際 run）
-- 模型靠虛假特徵取巧，論文卻宣稱「解決了任務」
-- 實作錯誤被重新包裝成「意外發現」
-- 方法章節飄離實際執行的內容（methodology fabrication）
-- 早期階段的框架鎖定（選錯方向後整個 pipeline 無法回頭）
-- 引用幻覺
+[**Zhao 等人**](https://arxiv.org/abs/2605.07723)（2026-05）盤點了 arXiv、bioRxiv、SSRN、PMC 上 250 萬篇論文裡的 1.11 億筆引用，保守估計 2025 年單年就有 146,932 筆幻覺引用，並觀察到 2024 年中是上升的拐點；bioRxiv-to-PMC 這條配對的「預印本進到正式發表」幻覺存活率達 85.3%。他們把「真實引用被用來支撐被引文獻其實沒有提出的主張」描述為當前未解的問題。ARS v3.7.1 為來源 provenance 加上 trust-chain frontmatter，v3.7.3 為未來的 claim-level 稽核鋪上 locator 基礎建設（三層引用 anchor），並在引用時段帶出 advisory 風險訊號（ARS 內部把這條 claim-faithfulness 缺口標記為「L3」，此為 ARS 的用詞，不是論文的用詞）。v3.7.x 的設計動機來自 Zhao 等人的 corpus-scale 發現；ARS 本身的 corpus-scale 評估仍是未來工作。
 
-ARS 建立在這個前提上：**人類研究者 + AI 的組合，比純自動或純人工都更能避開這些失敗模式**。v3.2 把 Lu 2026 的失敗模式清單直接操作化：pipeline 的 Stage 2.5 與 Stage 4.5 integrity gate 新增一份 7 類阻斷式檢查清單（見 `academic-pipeline/references/ai_research_failure_modes.md`），reviewer 也提供一個 opt-in 的 calibration mode，用使用者自備的 gold set 測量這個 reviewer 本身的 FNR/FPR（見 `academic-paper-reviewer/references/calibration_mode_protocol.md`）。
-
-The AI Scientist 證明了自動 AI 研究已經可行。ARS 的設計是讓你拿到這種能力的槓桿，但不用繼承它的失敗模式。
-
-v3.3 的靈感來自 [**PaperOrchestra**](https://arxiv.org/abs/2604.05018)（Song, Song, Pfister & Yoon, 2026, Google）— 一個能從原始研究素材自動生成 LaTeX 論文的多 Agent 框架。我們整合了其中幾項技術：**Semantic Scholar API 驗證**提供程式化引用查核、**反洩漏協議**防止 LLM 用訓練記憶偷偷填補空缺、**VLM 圖表驗證**用視覺模型閉環檢查生成的圖表品質、**分數軌跡追蹤**偵測修訂是否意外損害特定品質維度。
+v3.3 的靈感來自 [**PaperOrchestra**](https://arxiv.org/abs/2604.05018)（Song, Song, Pfister & Yoon, 2026, Google）：Semantic Scholar API 驗證、反洩漏協議、VLM 圖表驗證、分數軌跡追蹤。
 
 ---
+
+## 架構與 pipeline
+
+**👉 [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)** — 完整 pipeline 視圖：流程圖、階段 × 維度矩陣、資料存取流、skill 依賴圖、品質閘門、模式清單。
+
+這份架構文件取代了原本散在 README 各處的 pipeline 描述。關於「哪個階段跑什麼」的所有資訊都集中在一個地方。
+
+## 快速安裝
+
+**前置條件**
+
+- [Claude Code](https://claude.ai/install.sh)（建議最新版；plugin packaging 需要近期版本）
+- 已 export `ANTHROPIC_API_KEY`，或第一次跑 `claude` 時設定
+- *選用：* Pandoc 用於 DOCX 輸出，tectonic + 思源宋體 TC 用於 APA 7.0 PDF（純 Markdown 輸出兩個都不需要）
+
+**Plugin 安裝（v3.7.0+，推薦）：**
+
+```text
+/plugin marketplace add Imbad0202/academic-research-skills
+/plugin install academic-research-skills
+```
+
+**驗證可用：** 跑 `/ars-plan` 並描述你正在寫的論文，ARS 會用蘇格拉底對話幫你規劃章節結構。想要單次測試的話改跑 `/ars-lit-review "你的主題"`。
+
+**👉 [docs/SETUP.zh-TW.md](docs/SETUP.zh-TW.md)** — 完整指南：安裝 Claude Code、設定 API key、選用的 Pandoc/tectonic（DOCX/PDF）、跨模型驗證（`ARS_CROSS_MODEL`），以及五種安裝方式（Plugin、專案 skills、全域 skills、claude.ai Project、repo clone）。
+
+**用 Codex CLI？** 請改裝姊妹版：[`Imbad0202/academic-research-skills-codex`](https://github.com/Imbad0202/academic-research-skills-codex)。同一套 workflow 內容，Codex 原生包裝為單一 `$academic-research-suite` skill，提供 `ars-*` 別名。
+
+## 效能與費用
+
+**👉 [docs/PERFORMANCE.zh-TW.md](docs/PERFORMANCE.zh-TW.md)** — 各模式 token 預算、完整 pipeline 估算（~$4–6 for 一篇 15k 字論文），以及建議的 Claude Code 設定（Skip Permissions；Agent Team 選用）。
 
 ## 使用指南與文章
 
@@ -41,87 +71,16 @@ v3.3 的靈感來自 [**PaperOrchestra**](https://arxiv.org/abs/2604.05018)（So
 
 ---
 
-## 功能特色
+## 功能特色一覽
 
-- **Deep Research** — 13 個 Agent 組成的研究團隊，支援蘇格拉底引導（含 SCR 反思機制）+ 系統性文獻回顧 / PRISMA + **意圖偵測** + **對話健康度監控** + **可選跨模型 DA** + **論證與推理認知框架** + **Semantic Scholar API 驗證**
-- **Academic Paper** — 12 個 Agent 的論文撰寫團隊，含風格校準、寫作品質檢查、LaTeX 輸出強化、視覺化、修訂教練、引用格式轉換、**寫作判斷力框架**、**反洩漏協議**、**VLM 圖表驗證**
-- **Academic Paper Reviewer** — 多視角同儕審查，0-100 品質量表（主編 + 3 位動態審查者 + 魔鬼代言人，含**讓步門檻協議** + **攻擊強度保持** + **可選跨模型審查**）+ **R&R 追溯矩陣** + **唯讀約束** + **審查品質思維框架**
-- **Academic Pipeline** — 10 階段全流程調度器，含自適應 checkpoint、宣稱驗證、素材護照、**可選跨模型誠信驗證**、**中途強化機制**、**自我檢查問題**、**分數軌跡追蹤**
-
-### 完整 Pipeline
-
-```
-研究 → 撰寫 → 誠信審查 → 審稿（5人）→ 蘇格拉底指導
-  → 修訂 → 再審 → 再修訂 → 最終誠信審查 → 定稿
-```
-
-**核心特點：**
-1. 自適應 checkpoint（FULL / SLIM / MANDATORY）
-2. 審稿前誠信驗證 — 100% 引用、數據、宣稱驗證（Phase A-E）
-3. 兩階段審查，含魔鬼代言人 + 0-100 品質量表
-4. 審稿與修訂之間的蘇格拉底修訂指導（含 SCR 表態-挑戰-反思機制，可隨時開關）
-5. 出版前最終誠信驗證
-6. 輸出格式：MD + DOCX + LaTeX（APA 7.0 `apa7` class / IEEE / Chicago）→ tectonic 編譯 PDF
-7. Pipeline 完成後自動產出協作品質評估（6 維度 1-100 分）
-8. 素材護照（Material Passport）支援中途進入流程的來源追蹤
-9. 跨 skill 模式顧問（14 種情境 + 使用者典型）
-10. 風格校準 — 從過去的論文學習作者寫作風格（可選，intake Step 10）
-11. 寫作品質檢查 — 偵測 AI 文字常見的高頻詞彙、標點模式、結構問題
-12. **跨模型驗證（可選）** — 用 GPT-5.4 Pro 或 Gemini 3.1 Pro 作為獨立第二審查者，驗證引用、挑戰魔鬼代言人、審查論文
-13. **Semantic Scholar API 驗證** — 程式化 Tier 0 引用存在性查核，Levenshtein 標題比對 + DOI 不符偵測
-14. **反洩漏協議** — 知識隔離指令優先使用 session 內材料，缺少的內容標記 `[MATERIAL GAP]` 而非用 LLM 記憶填補
-15. **VLM 圖表驗證（可選）** — 用視覺模型閉環檢查生成圖表，10 項檢核清單
-16. **分數軌跡追蹤** — 跨修訂輪次的逐維度評分差異追蹤，偵測退步（delta < -3 觸發強制 checkpoint）
-
----
-
-## v3.0 優化：我們發現了 AI 的哪些結構性限制
-
-在使用 ARS 撰寫一篇關於 AI 與高教的反思文章時，我們遇到了三個結構性問題：
-
-1. **框架鎖定**：AI 在給定框架內越來越精緻，但無法質疑框架本身
-2. **諂媚傾向**：每次挑戰魔鬼代言人的攻擊，它都讓步得太快
-3. **意圖偵測錯誤**：蘇格拉底模式在使用者仍在探索時就急著收束
-
-### 改了什麼
-
-- **魔鬼代言人讓步門檻**：反駁必須評分 1-5，≥4 才允許讓步。不允許連續讓步。框架鎖定偵測。
-- **蘇格拉底意圖偵測**：偵測使用者是「探索型」還是「目標型」。探索型模式停用自動收束。
-- **對話健康度指標**：每 5 輪靜默自檢，偵測持續同意、迴避衝突、過早收束。
-- **跨模型驗證**：設定 `ARS_CROSS_MODEL` 啟用第二 AI 模型獨立審查。見下方設定指南。
-- **AI 自我反思報告**：Pipeline 結束後自動產出 AI 行為自評。
-
-這些優化不能完全解決 AI 的結構性限制——它們讓限制變得可見、可追蹤、可被人類介入。
-
----
-
-## 跨模型驗證（可選）
-
-ARS 使用 Claude Opus 4.6 即可完整運作。想要更高信心，可選擇啟用第二 AI 模型獨立驗證。
-
-### 快速設定
-
-```bash
-# 設定 API key（擇一或兩者皆設）
-export OPENAI_API_KEY="sk-your-key-here"        # GPT-5.4 Pro
-export GOOGLE_AI_API_KEY="AIza-your-key-here"    # Gemini 3.1 Pro
-
-# 選擇跨驗證模型
-export ARS_CROSS_MODEL="gpt-5.4-pro"
-
-# 照常啟動 Claude Code
-claude
-```
-
-### 啟用後的差異
-
-| 功能 | 未啟用 | 啟用後 |
-|------|-------|--------|
-| 誠信驗證 | 單模型 100% 檢查 | + 30% 樣本由第二模型獨立驗證 |
-| 魔鬼代言人 | 單模型 DA | + 跨模型獨立 critique，新發現自動加入 |
-| 同儕審查 | 5 位審稿人（同模型） | + 來自第二模型的獨立 DA critique |
-
-沒有設定 `ARS_CROSS_MODEL`？一切照舊運作，無任何額外開銷。
+- **Deep Research** — 13 個 Agent 的研究團隊，支援蘇格拉底引導、PRISMA 系統性回顧、意圖偵測、對話健康度監控、可選跨模型 DA、Semantic Scholar API 驗證。
+- **Academic Paper** — 12 個 Agent 的論文撰寫團隊，含風格校準、寫作品質檢查、LaTeX 輸出強化、視覺化、修訂教練、引用格式轉換、反洩漏協議、VLM 圖表驗證。
+- **Academic Paper Reviewer** — 7 個 Agent 的多視角同儕審查，0-100 品質量表（主編 + 3 位動態審查者 + 魔鬼代言人），含讓步門檻協議、攻擊強度保持、可選跨模型 DA critique / calibration、R&R 追溯矩陣、唯讀約束。
+- **Academic Pipeline** — 10 階段全流程調度器，含自適應 checkpoint、宣稱驗證、素材護照、可選 `repro_lock`、可選跨模型誠信驗證、中途強化機制、分數軌跡追蹤。
+- **資料存取層級標註**（v3.3.2+）— 每個 skill 宣告 `data_access_level`（`raw` / `redacted` / `verified_only`），由 `scripts/check_data_access_level.py` 強制執行。設計靈感來自 Anthropic 的 automated-w2s-researcher（2026）。詳見 [`shared/ground_truth_isolation_pattern.md`](shared/ground_truth_isolation_pattern.md)。
+- **任務類型標註**（v3.3.2+）— 每個 skill 宣告 `task_type`（`open-ended` 或 `outcome-gradable`）。目前 ARS 所有 skills 皆為 `open-ended`。
+- **Benchmark 報告 Schema**（v3.3.5+）— JSON Schema + lint script，要求誠實的 benchmark 比較報告。詳見 [`shared/benchmark_report_pattern.md`](shared/benchmark_report_pattern.md)。
+- **Artifact 可重現性 Lockfile**（v3.3.5+）— Material Passport 新增可選 `repro_lock` 子區塊。**是設定文件化，不是重播保證** — LLM 輸出不是位元可重現。詳見 [`shared/artifact_reproducibility_pattern.md`](shared/artifact_reproducibility_pattern.md)。
 
 ---
 
@@ -132,7 +91,7 @@ claude
 **[瀏覽所有 pipeline 產出 →](examples/showcase/)**
 
 | 產出物 | 說明 |
-|--------|------|
+|---|---|
 | [完稿論文（英文）](examples/showcase/full_paper_apa7.pdf) | APA 7.0 格式，LaTeX 編譯 |
 | [完稿論文（中文）](examples/showcase/full_paper_zh_apa7.pdf) | 中文版，APA 7.0 |
 | [誠信報告 — 審稿前](examples/showcase/integrity_report_stage2.5.pdf) | Stage 2.5：抓出 15 個虛構引用 + 3 個統計錯誤 |
@@ -141,106 +100,7 @@ claude
 | [複審](examples/showcase/stage3prime_rereview_report.pdf) | 修訂後驗證審查 |
 | [同儕審查第二輪](examples/showcase/stage3_review_report_r2.pdf) | 追蹤審查 |
 | [回覆審查意見](examples/showcase/response_to_reviewers_r2.pdf) | 逐點回覆 |
-| [出版後稽核報告](examples/showcase/post_publication_audit_2026-03-09.md) | 獨立全引用稽核：發現 21/68 篇問題，通過了 3 輪誠信審查仍漏網 |
-
----
-
-## 效能說明
-
-> **建議模型：Claude Opus 4.6**，搭配 **Max plan**（或同等的延伸思考設定）。
->
-> 完整學術 pipeline（10 階段）會消耗**大量 token** — 單次完整執行可能超過 200K 輸入 + 100K 輸出 token，視論文長度和修訂輪數而定。請依預算斟酌使用。
->
-> 單獨使用個別 skill（如只用 `deep-research` 或 `academic-paper-reviewer`）的消耗明顯較少。
-
-### 各模式 Token 消耗估算
-
-| Skill / 模式 | 輸入 Token | 輸出 Token | 估算費用（Opus 4.6）|
-|-------------|-----------|-----------|-------------------|
-| `deep-research` socratic | ~30K | ~15K | ~$0.60 |
-| `deep-research` full | ~60K | ~30K | ~$1.20 |
-| `deep-research` systematic-review | ~100K | ~50K | ~$2.00 |
-| `academic-paper` plan | ~40K | ~20K | ~$0.80 |
-| `academic-paper` full | ~80K | ~50K | ~$1.80 |
-| `academic-paper-reviewer` full | ~50K | ~30K | ~$1.10 |
-| `academic-paper-reviewer` quick | ~15K | ~8K | ~$0.30 |
-| **完整 pipeline（10 階段）** | **~200K+** | **~100K+** | **~$4-6** |
-| + 跨模型驗證 | +~10K（外部）| +~5K（外部）| +~$0.60-1.10 |
-
-*以 ~15,000 字論文、~60 篇引用為基準估算。實際消耗隨論文長度、修訂輪數、對話深度而異。*
-
-### 建議設定
-
-為獲得最佳使用體驗，建議啟用以下 Claude Code 功能：
-
-| 設定 | 功能說明 | 啟用方式 | 官方文件 |
-|------|---------|---------|---------|
-| **Agent Team** | 產生子代理（subagent）平行執行研究、撰寫、審查 — 多 Agent pipeline 的核心機制 | 設定 `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1`（研究預覽） | 實驗性功能 — 尚無穩定文件 |
-| **Ralph Loop** | 在長時間 pipeline 階段保持 session 持續運作，讓 Claude 能自主執行而不會逾時中斷 | 使用 `/ralph-loop` 啟動 | 社群插件 — 實驗性 |
-| **Skip Permissions** | 跳過每次工具使用的確認提示，實現全 pipeline 不中斷的自主執行 | 啟動時加上 `claude --dangerously-skip-permissions` | [Permissions](https://docs.anthropic.com/en/docs/claude-code/cli-reference) · [Advanced Usage](https://docs.anthropic.com/en/docs/claude-code/advanced) |
-
-> **⚠️ Skip Permissions 注意事項**：此旗標會停用所有工具使用的確認對話框。請自行斟酌使用 — 在可信任的長時間 pipeline 中非常方便，但會移除手動審核的安全機制。僅在你確定接受 Claude 自動執行檔案讀寫、shell 指令等操作時才啟用。
-
----
-
-## 前置需求
-
-### 安裝 Claude Code
-
-**建議：原生安裝程式**（不需要 Node.js，自動更新）：
-
-```bash
-# macOS / Linux
-curl -fsSL https://claude.ai/install.sh | bash
-
-# Windows（PowerShell）
-irm https://claude.ai/install.ps1 | iex
-```
-
-<details>
-<summary>替代方案：npm 安裝（已棄用）</summary>
-
-需要 Node.js 18+。
-
-```bash
-npm install -g @anthropic-ai/claude-code
-```
-
-</details>
-
-### 設定 API Key
-
-你需要一個 Anthropic API key，請至 https://console.anthropic.com/ 取得。
-
-```bash
-# Claude Code 首次執行時會提示輸入 API key
-claude
-```
-
-或設定環境變數：
-
-```bash
-export ANTHROPIC_API_KEY=sk-ant-xxxxx
-```
-
-### LaTeX / PDF 輸出（選用）
-
-PDF 輸出需要 [tectonic](https://tectonic-typesetting.github.io/) 和特定字型。**這是選用的** — MD 和 DOCX 輸出不需要這些。
-
-```bash
-# macOS
-brew install tectonic
-
-# Linux (Debian/Ubuntu)
-curl --proto '=https' --tlsv1.2 -fsSL https://drop-sh.fullyjustified.net | sh
-```
-
-**所需字型**（APA 7.0 中文輸出）：
-- **Times New Roman** — macOS/Windows 通常已內建；Linux 安裝 `ttf-mscorefonts-installer`
-- **思源宋體 VF**（Source Han Serif TC VF）— 從 [Google Fonts](https://fonts.google.com/specimen/Noto+Serif+TC) 或 [Adobe GitHub](https://github.com/adobe-fonts/source-han-serif) 下載
-- **Courier New** — 通常已內建
-
-> 如果只需要 MD/DOCX 輸出，可完全跳過此步驟。Pipeline 會在嘗試 LaTeX 編譯前先詢問。
+| [出版後稽核報告](examples/showcase/post_publication_audit_2026-03-09.pdf) | 獨立全引用稽核：發現 21/68 篇問題，通過了 3 輪誠信審查仍漏網 |
 
 ---
 
@@ -259,122 +119,6 @@ ARS Stage 2 寫作      →  用驗證過的實驗結果撰寫論文
 **功能**：執行程式碼實驗（Python、R 等）並即時監控、管理人工研究 protocol 與 IRB 倫理審查、11 種統計謬誤偵測、重現性驗證。
 
 **搭配使用方式**：ARS pipeline 跑完 Stage 1 後暫停，在另一個 experiment-agent session 中跑實驗，完成後將結果（含 Material Passport）帶回 ARS Stage 2。ARS 不需要任何修改。詳見 [experiment-agent README](https://github.com/Imbad0202/experiment-agent)。
-
----
-
-## 安裝方式
-
-### 方法一：作為專案 Skills（推薦）
-
-將此 repo clone 到專案的 `.claude/skills/` 目錄：
-
-```bash
-# 切換到你的專案根目錄
-cd /path/to/your/project
-
-# 建立 skills 目錄（若不存在）
-mkdir -p .claude/skills
-
-# Clone skills
-git clone https://github.com/Imbad0202/academic-research-skills.git .claude/skills/academic-research-skills
-```
-
-接著將 `.claude/CLAUDE.md` 的內容複製到你專案的 `.claude/CLAUDE.md`（若已有則合併）。
-
-> **全域安裝：** 若希望所有專案都能使用這些 skills，可安裝到 `~/.claude/skills/`：
-> ```bash
-> mkdir -p ~/.claude/skills
-> git clone https://github.com/Imbad0202/academic-research-skills.git ~/.claude/skills/academic-research-skills
-> ```
-
-### 方法二：作為獨立專案
-
-```bash
-# Clone repo
-git clone https://github.com/Imbad0202/academic-research-skills.git
-
-# 進入專案
-cd academic-research-skills
-
-# 啟動 Claude Code
-claude
-```
-
-<details>
-<summary><strong>沒有安裝 Git？</strong>直接下載 ZIP</summary>
-
-1. 前往 https://github.com/Imbad0202/academic-research-skills
-2. 點擊綠色 **Code** 按鈕 → **Download ZIP**
-3. 解壓縮到你想要的位置
-4. 方法一：將解壓後的資料夾移動到你專案內的 `.claude/skills/academic-research-skills`
-5. 獨立使用：在解壓後的資料夾中開啟終端機，執行 `claude`
-
-</details>
-
-### 方法三：Claude Cowork（桌面版）
-
-在 [Claude Cowork](https://claude.com/product/cowork) 中使用這些 skills — Claude Desktop 的 AI 自主工作區。
-
-**選項 A：資料夾存取（最快）**
-
-1. 將此 repo clone 到本機：
-   ```bash
-   git clone https://github.com/Imbad0202/academic-research-skills.git ~/academic-research-skills
-   ```
-2. 開啟 Claude Desktop → 點擊上方 **Cowork** 分頁
-3. 選擇 clone 下來的 `academic-research-skills` 資料夾作為工作目錄
-4. Claude 會自動從 `SKILL.md` 偵測並載入 skills
-
-**選項 B：作為專案 Skills**
-
-若你已有 Cowork 專案資料夾：
-```bash
-cd /path/to/your/project
-mkdir -p .claude/skills
-git clone https://github.com/Imbad0202/academic-research-skills.git .claude/skills/academic-research-skills
-```
-
-Skills 會在對話相關時自動載入 — 例如說「幫我寫論文」會觸發 `academic-paper`。
-
-**需求：**
-- Claude Desktop（最新版本）且已啟用 Cowork
-- 付費方案（Pro、Max、Team 或 Enterprise）
-
-### 方法四：上傳至 claude.ai
-
-claude.ai 的 Project 功能可以載入這些 skills，不需要安裝 Claude Code。
-
-**步驟：**
-
-1. 從這個 repo 下載所有 `SKILL.md` 檔案（共 4 個）：
-   - `deep-research/SKILL.md`
-   - `academic-paper/SKILL.md`
-   - `academic-paper-reviewer/SKILL.md`
-   - `academic-pipeline/SKILL.md`
-
-2. 登入 [claude.ai](https://claude.ai)
-
-3. 建立新 Project：
-   - 點擊左側欄 **Projects** → **Create Project**
-   - 命名為「Academic Research」（或任意名稱）
-
-4. 上傳 SKILL.md 檔案：
-   - 進入 Project → 點擊 **Project Knowledge**（右側面板）
-   - 點擊 **Add Content** → **Upload Files**
-   - 上傳 4 個 `SKILL.md` 檔案
-
-5. （選用）上傳 reference 和 template 檔案以獲得更好效果：
-   - `deep-research/references/` 下的檔案（APA 指南、方法論模板等）
-   - `academic-paper/references/` 下的檔案（引用格式、寫作風格等）
-   - `academic-paper/templates/` 下的檔案（論文結構模板）
-
-6. 開始對話：在 Project 中開啟新對話，直接說「引導我研究 X」或「幫我寫論文」
-
-**claude.ai 限制：**
-- Project Knowledge 檔案大小上限為每個檔案 200KB
-- SKILL.md 的 YAML frontmatter 中 `version` 和 `last_updated` 必須在 `metadata:` 下，否則上傳會失敗
-- claude.ai 不支援多 agent 平行執行，效果不如 Claude Code 完整
-- 建議至少上傳 4 個 SKILL.md + 核心 references，以獲得最佳效果
 
 ---
 
@@ -402,44 +146,51 @@ claude.ai 的 Project 功能可以載入這些 skills，不需要安裝 Claude C
 ### 個別 Skill 使用
 
 #### Deep Research（深度研究，7 種模式）
+
 ```
 "研究 AI 對高等教育的影響"                    → full mode（完整研究）
 "給我一份 X 的快速摘要"                       → quick mode（快速簡報）
-"幫我做 X 的系統性文獻回顧，含 PRISMA"        → systematic-review mode（新增）
+"幫我做 X 的系統性文獻回顧，含 PRISMA"        → systematic-review mode
 "引導我研究 X"                                → socratic mode（蘇格拉底引導）
 "幫我查核這些說法"                            → fact-check mode（事實查核）
 "幫我做文獻回顧"                              → lit-review mode（文獻回顧）
 "審查這篇論文的研究品質"                      → review mode（論文審查）
 ```
 
-#### Academic Paper（學術論文撰寫，9 種模式）
+#### Academic Paper（學術論文撰寫，10 種模式）
+
 ```
 "幫我寫一篇論文"                              → full mode（完整撰寫）
 "引導我寫論文"                                → plan mode（引導規劃）
+"先幫我搭論文大綱"                            → outline-only mode（只做大綱）
 "我有初稿，這是審稿意見"                      → revision mode（修訂）
-"幫我整理這些審稿意見成修訂路線圖"            → revision-coach mode（新增）
+"幫我整理這些審稿意見成修訂路線圖"            → revision-coach mode
+"幫我寫這篇的摘要"                            → abstract-only mode（摘要）
+"把這批資料寫成文獻回顧論文"                  → lit-review mode（文獻回顧論文）
 "轉換成 LaTeX" / "引用格式轉 IEEE"            → format-convert mode（格式轉換）
 "檢查引用格式"                                → citation-check mode（引用檢查）
-"寫一份中英雙語摘要"                          → bilingual-abstract mode（雙語摘要）
-"潤飾我的寫作風格"                            → writing-polish mode（寫作潤飾）
-"自動完成整篇論文"                            → full-auto mode（全自動撰寫）
+"幫我生成 NeurIPS 的 AI 使用揭露"             → disclosure mode（AI 揭露）
 ```
 
-#### Academic Paper Reviewer（論文審查，5 種模式）
+#### Academic Paper Reviewer（論文審查，6 種模式）
+
 ```
 "審查這篇論文"                                → full mode（主編 + R1/R2/R3 + 魔鬼代言人）
 "快速評估這篇論文"                            → quick mode（快速評估）
 "引導我改進這篇論文"                          → guided mode（引導改進）
 "檢查研究方法"                                → methodology-focus mode（方法論聚焦）
 "驗收修訂"                                    → re-review mode（再審驗收）
+"用我的 gold set 校準 reviewer"               → calibration mode（校準）
 ```
 
 #### Academic Pipeline（全流程調度器）
+
 ```
 "我想做一篇完整的研究論文"                    → 從 Stage 1 開始完整 pipeline
 "我已經有論文，幫我審查"                      → 從 Stage 2.5 進入（先做誠信審查）
 "我收到審稿意見了"                            → 從 Stage 4 進入
 ```
+
 > Pipeline 結束時自動產出 **Stage 6：過程紀錄** — 含論文創建過程紀錄與 6 維度協作品質評估（1–100 分）。
 
 ### 支援語言
@@ -473,93 +224,43 @@ claude.ai 的 Project 功能可以載入這些 skills，不需要安裝 Claude C
 
 ## Skill 詳細資訊
 
-### Deep Research (v2.7)
+各 agent 的職責與各階段產出物現已移至 [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)。版本號保留在此以維持 release metadata 集中管理。
 
-13 個 Agent 的嚴謹學術研究 pipeline：
+### Deep Research (v2.8)
 
-| Agent | 角色 |
-|-------|------|
-| Research Question Agent | FINER 評分的研究問題制定 |
-| Research Architect | 研究方法設計 |
-| Bibliography Agent | 系統性文獻搜尋 |
-| Source Verification Agent | 證據分級、掠奪性期刊偵測 |
-| Synthesis Agent | 跨來源整合 |
-| Report Compiler | APA 7.0 報告撰寫 + 風格校準 + 寫作品質檢查（可選）|
-| Editor-in-Chief | Q1 期刊主編審查 |
-| Devil's Advocate | 假設挑戰（3 個檢查點） |
-| Ethics Review Agent | AI 揭露、引用誠信 |
-| Socratic Mentor | 蘇格拉底引導式研究對話，含收斂準則 + SCR 反思機制（可開關） |
-| Risk of Bias Agent | RoB 2 + ROBINS-I 偏誤風險評估 |
-| Meta-Analysis Agent | 效果量、異質性、森林圖、GRADE |
-| Monitoring Agent | Pipeline 完成後的文獻監測警報 |
+13 個 Agent 的研究團隊。模式：full、quick、review、lit-review、fact-check、socratic、systematic-review。完整 agent 名單與產出物：見 ARCHITECTURE.md §3。
 
-**模式：** full、quick、paper-review、lit-review、fact-check、socratic、**systematic-review**（新增）
+### Academic Paper (v3.0)
 
-### Academic Paper (v2.8)
+12 個 Agent 的論文撰寫 pipeline。模式：full、plan、outline-only、revision、revision-coach、abstract-only、lit-review、format-convert、citation-check、disclosure。輸出：MD + DOCX（Pandoc 可用時）+ LaTeX（APA 7.0 `apa7` class / IEEE / Chicago）→ tectonic 編譯 PDF。完整 agent 名單與各 phase 職責：見 ARCHITECTURE.md §3。
 
-12 個 Agent 的學術論文撰寫 pipeline：
+### Academic Paper Reviewer (v1.8)
 
-| Agent | 角色 |
-|-------|------|
-| Intake Agent | 組態訪談 + 上游銜接偵測 + 風格校準（可選）|
-| Literature Strategist | 搜尋策略 + 注釋書目 |
-| Structure Architect | 論文大綱 + 字數分配 |
-| Argument Builder | 論點 + 主張-證據鏈 |
-| Draft Writer | 逐章撰寫 + 寫作品質檢查 + 風格校準套用 |
-| Citation Compliance | 多格式引用審核 + APA↔Chicago↔MLA↔IEEE↔Vancouver 轉換 |
-| Abstract Bilingual | 中英雙語摘要 |
-| Peer Reviewer | 5 維度審查（最多 2 輪） |
-| Formatter | LaTeX/DOCX/PDF 輸出 — 強制 `apa7` class、XeCJK 雙語、`ragged2e` 對齊修正、tectonic 編譯 |
-| Socratic Mentor | 逐章引導規劃，含收斂準則 + SCR 反思機制（可開關） |
-| Visualization Agent | 9 種圖表類型、matplotlib/ggplot2、APA 7.0 標準 |
-| Revision Coach Agent | 解析非結構化審稿意見 → 修訂路線圖 |
+7 個 Agent 的多視角審查，搭配 **0-100 品質量表**。模式：full、re-review、quick、methodology-focus、guided、calibration。**決策對照：** ≥80 接受、65-79 小修、50-64 大修、<50 退稿。第一輪審查團隊 vs. 精簡再審團隊的分界：見 ARCHITECTURE.md §3 Stage 3 / Stage 3'。
 
-**模式：** full、plan、revision、citation-check、format-convert、bilingual-abstract、writing-polish、full-auto、**revision-coach**（新增）
+### Academic Pipeline (v3.7)
 
-### Academic Paper Reviewer (v1.7)
+10 階段調度器，含誠信驗證、兩階段審查、蘇格拉底指導、協作品質評估。Pipeline 保證：每個階段都需使用者確認 checkpoint；誠信驗證（Stage 2.5 + 4.5）不可跳過；R&R 追溯矩陣（Schema 11）獨立驗證作者修訂宣稱。v3.4 新增 Compliance Agent（PRISMA-trAIce + RAISE）於 Stage 2.5 / 4.5。v3.5 新增 **協作深度觀察員**（`collaboration_depth_agent`，僅諮詢性質、永不阻擋流程）於每一次 FULL/SLIM checkpoint 與 pipeline 完成時。MANDATORY 誠信閘門（2.5 / 4.5）明確跳過觀察員，避免稀釋合規檢查。理論基礎：Wang & Zhang (2026), IJETHE 23:11。逐階段矩陣（agent、產出物、閘門）：見 ARCHITECTURE.md §3。
 
-7 個 Agent 的多視角審查，搭配 **0-100 品質量表**：
+---
 
-| Agent | 角色 |
-|-------|------|
-| Field Analyst | 辨識領域、配置審查者 persona |
-| Editor-in-Chief | 期刊適配性、新穎性、重要性 |
-| Methodology Reviewer | 研究設計、統計、可重現性 |
-| Domain Reviewer | 文獻涵蓋率、理論框架 |
-| Perspective Reviewer | 跨領域觀點、實務影響 |
-| Devil's Advocate Reviewer | 核心論點挑戰、邏輯謬誤偵測、最強反論 |
-| Editorial Synthesizer | 共識分析、修訂路線圖、**量表評分** |
+## v3.0 優化：我們發現了 AI 的哪些結構性限制
 
-**模式：** full、re-review（驗收）、quick、methodology-focus、guided
+在使用 ARS 撰寫一篇關於 AI 與高教的反思文章時，我們遇到了三個結構性問題：
 
-**決策對照：** ≥80 接受、65-79 小修、50-64 大修、<50 退稿
+1. **框架鎖定**：AI 在給定框架內越來越精緻，但無法質疑框架本身
+2. **諂媚傾向**：每次挑戰魔鬼代言人的攻擊，它都讓步得太快
+3. **意圖偵測錯誤**：蘇格拉底模式在使用者仍在探索時就急著收束
 
-### Academic Pipeline (v3.0)
+### 改了什麼
 
-10 階段調度器，含誠信驗證、兩階段審查、蘇格拉底指導、協作品質評估：
+- **魔鬼代言人讓步門檻**：反駁必須評分 1-5，≥4 才允許讓步。不允許連續讓步。框架鎖定偵測。
+- **蘇格拉底意圖偵測**：偵測使用者是「探索型」還是「目標型」。探索型模式停用自動收束。
+- **對話健康度指標**：每 5 輪靜默自檢，偵測持續同意、迴避衝突、過早收束。
+- **跨模型驗證**：設定 `ARS_CROSS_MODEL` 啟用第二 AI 模型獨立審查。詳見 [docs/SETUP.zh-TW.md](docs/SETUP.zh-TW.md)。
+- **AI 自我反思報告**：Pipeline 結束後自動產出 AI 行為自評。
 
-| 階段 | Skill | 目的 |
-|------|-------|------|
-| 1. 研究 | deep-research | 釐清研究問題、搜尋文獻 |
-| 2. 撰寫 | academic-paper | 撰寫論文初稿 |
-| **2.5. 誠信審查** | **integrity_verification_agent** | **100% 引用與數據驗證（v2.0：反幻覺強制令）** |
-| 3. 審稿 | academic-paper-reviewer | 5 人審查（主編 + R1/R2/R3 + 魔鬼代言人） |
-| → | *蘇格拉底修訂指導* | *引導使用者理解審稿意見* |
-| 4. 修訂 | academic-paper | 回應審稿意見 |
-| 3'. 再審 | academic-paper-reviewer | 驗收修訂內容 |
-| → | *蘇格拉底殘餘指導* | *引導處理剩餘問題（若為 Major）* |
-| 4'. 再修訂 | academic-paper | 最終修訂（若需要） |
-| **4.5. 最終誠信審查** | **integrity_verification_agent** | **100% 最終驗證（零問題要求）** |
-| 5. 定稿 | academic-paper | 詢問格式風格 → MD + DOCX + LaTeX → tectonic → PDF |
-| **6. 過程紀錄** | **pipeline** | **論文創建過程紀錄 + 協作品質評估（1–100 分）** |
-
-**Pipeline 保證：**
-- 每個階段都需使用者確認 checkpoint
-- 誠信驗證（Stage 2.5 + 4.5）不可跳過
-- 可重現 — 標準化流程，含完整稽核軌跡
-- Pipeline 完成後自動產出協作品質評估，含 6 維度誠實評分
-- 每次 stage 轉換注入中途強化（IRON RULE + Anti-Pattern 提醒）
-- R&R 追溯矩陣（Schema 11）獨立驗證作者修訂宣稱
+這些優化不能完全解決 AI 的結構性限制——它們讓限制變得可見、可追蹤、可被人類介入。
 
 ---
 
@@ -596,6 +297,145 @@ https://github.com/Imbad0202/academic-research-skills
 ---
 
 ## 更新紀錄
+
+### v3.7.0（2026-05-05）— Claude Code Plugin 打包
+
+> Plugin 打包升級：ARS 現可在 Claude Code CLI / VS Code / JetBrains 一行裝（`/plugin marketplace add Imbad0202/academic-research-skills` + `/plugin install academic-research-skills`）。原本的 `git clone + symlink 到 ~/.claude/skills/` 安裝流程不變、繼續支援；雙軌都是一級公民。
+
+- **Plugin manifest 與 marketplace metadata**（Phase 1，PR #68）：`.claude-plugin/plugin.json` 宣告整個 suite（4 個 skill 透過 `skills/` 目錄相對 symlink 自動探索）；`.claude-plugin/marketplace.json` 註冊 plugin，使單一 GitHub-hosted endpoint 同時提供 marketplace listing 與 plugin 來源。README、`README.zh-TW.md`、`docs/SETUP.md` 都加入雙軌安裝指引。
+- **10 個 slash command** 在 `commands/ars-*.md`（Phase 2.1，PR #69）將 `MODE_REGISTRY.md` 的條目對映到 `/ars-<mode>` 觸發。每個 command frontmatter 釘住模型路由：`opus` 給 `full` 與 `revision-coach`（架構與審稿解讀深度），`sonnet` 給其他 8 個。任何情境不用 Haiku。
+- **3 個 plugin-shipped agent** 在 `agents/*_agent.md`（Phase 2.1，PR #69）以相對 symlink 指向 `deep-research/agents/` 內 v3.6.7 已 hardened 的下游 agent：`synthesis_agent`、`research_architect_agent`、`report_compiler_agent`。底線檔名保留以對齊 `scripts/check_v3_6_7_pattern_protection.py` hard-pin 路徑與 INV-3 manifest-confined Clause 1 不變式。Symlink（不複製）維持 single source of truth，避免 v3.6.7 §6 inversion sweep + INV-1/2/3 lint 已關閉的 Pattern C3 攻擊面再開。
+- **`model: inherit`** 加在這三個 source agent frontmatter 上。選 inherit 而非 pin `sonnet` 是為了讓 Opus session 跑 ARS full pipeline 時 agent 仍是 Opus（不被降）。使用者的 `~/.claude/hooks/warn-agent-no-model.sh` PreToolUse hook 在派工邊界已 gate Haiku，所以 inherit 解析到的是已經沒 Haiku 的模型。
+- **SessionStart announce hook** 在 `hooks/hooks.json` + `scripts/announce-ars-loaded.sh`（Phase 2.2，PR #70）。Plugin 載入時，hook 把 10 個 slash command、3 個 plugin agent、token 預算指引以 `additionalContext` 注入 LLM 第一輪。`startup` 與 `clear` 拿完整 announce；`resume` 與 `compact` 只拿一行確認，避免每次 resume 都燒 context。Bash 3.2 兼容 — macOS stock `/bin/bash` 直接跑，不需 `brew install bash`。
+- **Phase 2.2 範圍縮減**：原本規劃的 `SubagentStop → run_codex_audit.sh` codex audit hook 在 v3.7.0 被排除，因為 (a) contract gap：SubagentStop payload 沒帶 stage / deliverable，wrapper 必要參數無法從 hook 推出；(b) invoker 邊界：`run_codex_audit.sh` lines 4–7 明禁同 session in-LLM 呼叫，PostToolUse 在產出 deliverable 的 LLM session 內觸發。真正的 audit-hook 整合留到後續版本，等 ARS 有 stage / deliverable propagation contract 再做。詳見 `docs/design/2026-04-30-ars-v3.7.0-plugin-packaging-roadmap.md` Update note 2026-05-05（Phase 2.2 scope reduction）。
+- **`docs/PERFORMANCE.md` + `.zh-TW.md`** 新增「v3.7.0 Plugin agent 與模型路由」節，說明 inherit 語意與目前 3-agent scope 邊界。
+- **跨三個 PR 的 codex review chain**：8 輪 inline iterative review + 3 輪 fresh PR-level review，全部在 merge 前收斂到 0 個 P0/P1/P2 finding。Phase 2.2 fresh PR review 抓到一個 P2（`${CLAUDE_PLUGIN_ROOT}` 沒 quote，含空白的安裝路徑會 break）— inline 輪次抓不到，證實「實作 review（inline）」與「contract review（fresh）」分離的價值。
+- **沒動的東西**：4 個 skill 目錄、25 個 mode、agent prompt、schema 檔案、lint contract 全不變。Plugin 打包只**新增**頂層介面（`commands/`、`agents/`、`hooks/`、`.claude-plugin/`、`skills/` symlink dir、3 個 source agent frontmatter 加 `model: inherit`）。既有 4.3k clone 安裝用戶完全不破。
+
+### v3.6.8（2026-05-03）— Generator-Evaluator Contract Gate（v3.6.6 spec ship）
+
+> 命名說明：本次發行交付 **v3.6.6 generator-evaluator contract** spec 與實作。
+> v3.6.6 因專案排序晚於 v3.6.7 才落地；design doc 內仍保留 v3.6.6 內部命名作為
+> contract gate 版本，suite release 標 v3.6.8 維持 CHANGELOG 單調遞增。
+
+- **Schema 13.1**（`shared/sprint_contract.schema.json`）在 Schema 13 之上加兩個 `mode` enum 值（`writer_full` + `evaluator_full`）、兩個新 optional top-level 欄位（`pre_commitment_artifacts` writer-only、`disagreement_handling` evaluator-only）、12 條 `allOf` branch 強制 reviewer- / writer- / evaluator-conditional gate。既有 reviewer contract 在 Schema 13.1 下 byte-equivalent validate（§3.6 zero-touch promise）。
+- **兩個新 shipped contract template**：`shared/contracts/writer/full.json`（D1–D7、F1/F4/F2/F3/F0）+ `shared/contracts/evaluator/full.json`（D1–D5、F1/F2/F3/F6/F4/F5/F0）。Spec branch 上原是 design-time artefact，本次發行 atomically promote 為 live shipped。
+- **`academic-paper full` 模式內加入 two-phase orchestration**：Phase 4 拆成 Phase 4a（writer paper-blind 預先承諾）+ Phase 4b（writer paper-visible 撰稿 + 自評）；Phase 6 拆成 Phase 6a（evaluator paper-blind 預先承諾）+ Phase 6b（evaluator paper-visible 評分 + 決策）。phase-numbered `<phase4a_output>` / `<phase6a_output>` data delimiter 沿用 v3.6.2 reviewer pattern。Lint count summary：writer 3+4 / evaluator 5+5 / reviewer 5+6（reviewer 維持 zero-touch）。
+- **`academic-paper` SKILL + agent file 新增 `## v3.6.6 Generator-Evaluator Contract Protocol` 區塊**（SKILL.md 101 行 + `draft_writer_agent.md` 47 行 + `peer_reviewer_agent.md` 57 行）。SKILL.md 另加 `## Known limitations` 區塊承載 graceful-degradation + cross-session resume v3.6.7+ forward note。
+- **Validator 擴充**：`scripts/check_sprint_contract.py` 做 SC-* mode-gating audit（SC-5 + SC-11 reviewer-only；SC-9 跨三個 mode family 各讀對應欄位）。validator 單元測試從 54 條增加到 71 條（4 positive + 5 schema-branch negative + 2 §3.6 reviewer regression + 6 mode-gating）。
+- **Manifest CI lint**：`scripts/check_v3_6_6_ab_manifest.py` 強制 `tests/fixtures/v3.6.6-ab/manifest.yaml` 的 §6.2 manifest schema + §6.5 git-tracked invariant。`.github/workflows/spec-consistency.yml` 把 sprint contract validation loop 擴成同時跑 reviewer + writer + evaluator 三個 template directory，並加入新的 manifest CI lint 步驟。
+- **A/B evidence fixture stub**（`tests/fixtures/v3.6.6-ab/`，30 個檔案）：manifest + README + 6 paper-A inputs/baseline + 1 paper-C inputs/baseline + Stage 3 reviewer excerpt + 6 codex-judge baseline placeholder。真實 fixture data 在後續 commit populate。
+
+### v3.6.7（2026-04-30）— 下游 agent pattern protection（Step 1+2）
+
+- **三個下游 agent 收緊 13 / 18 個已知幻覺與漂移 pattern**：`synthesis_agent`（A1–A5 敘事側）、`research_architect_agent` survey-designer 模式（B1–B5 工具側）、`report_compiler_agent` abstract-only 模式（C1–C3 出版側）。三個 agent prompt 各自加上 `PATTERN PROTECTION (v3.6.7)` 區塊。
+- **`shared/references/` 增加四份 reference 文件**：`irb_terminology_glossary.md`、`psychometric_terminology_glossary.md`、`protected_hedging_phrases.md`、`word_count_conventions.md`。protection 條款引用這些檔案路徑做為 operational contract。
+- **跨模型 audit prompt 模板** 在 `shared/templates/codex_audit_multifile_template.md`，含七個 audit dimension 與 `report_compiler_agent` bundle 必跑的三段式 Section 4(f) 檢查。任一 sub-check 失敗即 P1 finding。
+- **靜態 lint + 29 條 mutation 測試**：`scripts/check_v3_6_7_pattern_protection.py` 強制 protection 條款存在性與 obligation phrase 形狀；`scripts/test_check_v3_6_7_pattern_protection.py` 把 codex review 的 mutation 證據封存為 unit test，未來 lint 退化會在 CI 浮上來。兩者都接進 `.github/workflows/spec-consistency.yml`。
+- **Codex review 紀錄**：七輪 `gpt-5.5` + `xhigh` 跨模型 review 收斂到 0 P1+P2 finding 才 SHIP。Step 6（orchestrator runtime hook）與 Step 8（合成 eval case）走 follow-up PR。
+
+### v3.6.5（2026-04-27）— Material Passport `literature_corpus[]` Consumer 整合
+
+- **Phase 1 兩個文獻 consumer** 接上：`deep-research/agents/bibliography_agent.md` 與 `academic-paper/agents/literature_strategist_agent.md`。當 passport 帶有非空 `literature_corpus[]` 時，兩者都走相同的五步 **corpus-first、search-fills-gap** 流程，並遵守相同的四條 Iron Rule（Same criteria / No silent skip / No corpus mutation / Graceful fallback on parse failure）。
+- **PRE-SCREENED 可重現區塊** 進 Search Strategy 報告：列出已納入／排除／略過的 corpus entry，附 F3 zero-hit 註解與 F4a–F4f provenance 報告（針對 `obtained_via` / `obtained_at` 部分宣告情境）。`final_included = pre_screened_included[] ∪ external_included[]` 維持 neutral — bibliography entry 與 literature matrix row 不掛 provenance 標籤。
+- **Consumer 協定參考文件** 在 `academic-pipeline/references/literature_corpus_consumers.md`，包含 PRE-SCREENED 模板、BAD/GOOD 範例、四條 Iron Rule 與 per-consumer 讀取指示。
+- **CI lint** `scripts/check_corpus_consumer_protocol.py` 透過 manifest 驅動的 consumer 清單（`scripts/corpus_consumer_manifest.json`）強制九條協定不變式。
+- **Schema 9 caveat 退役**：`shared/handoff_schemas.md` 移除 v3.6.4「Consumer-side integration deferred to v3.6.5+」一行，改成指向 consumer 協定的 backpointer。
+- 採 presence-based 啟動，不變更 schema、不引入新 env flag。Parse 失敗 fallback 到 external-DB-only flow，並 surface `[CORPUS PARSE FAILURE]`。`citation_compliance_agent` 的 corpus 整合延到 v3.6.6+。
+- 無破壞性變更，既有使用者 adapter 不需修改。
+
+### v3.6.4（2026-04-25）— Material Passport `literature_corpus[]` 輸入埠
+
+- **Schema 9 新增 `literature_corpus[]`** 選填欄位作為使用者文獻的輸入埠。每筆 entry 符合 `shared/contracts/passport/literature_corpus_entry.schema.json`（CSL-JSON authors / year / title / source_pointer，加上 PRIVATE 選填的 `abstract` / `user_notes`）。
+- **語言中性的 adapter 契約** 放在 `academic-pipeline/references/adapters/overview.md`：任何語言寫的程式都能讀使用者自己的 corpus source 並產出符合契約的 `passport.yaml` + `rejection_log.yaml`。Entry-level 錯誤 fail-soft、adapter-level 錯誤 fail-loud、輸出順序確定。
+- **三個 reference Python adapter** 在 `scripts/adapters/`：`folder_scan.py`（檔案系統的 PDF 資料夾）、`zotero.py`（Better BibTeX JSON export）、`obsidian.py`（vault frontmatter）。僅供起點參考；非 reference source 預期使用者自行實作 adapter。
+- **Rejection log 契約** 在 `shared/contracts/passport/rejection_log.schema.json`，採用封閉 enum 的 categorical reason 值；永遠輸出（無 rejection 時為空）。
+- **CI 把關**：`scripts/check_literature_corpus_schema.py` 驗 schemas + adapter examples；`scripts/sync_adapter_docs.py --check` 防 schema→docs drift；新 `pytest.yml` workflow 在 path-filtered 觸發跑 `scripts/adapters/tests/`。
+- **僅輸入埠**：v3.6.4 只定義 schema 與 adapter 契約，consumer 整合到 v3.6.5 才接上 `bibliography_agent` 與 `literature_strategist_agent`。
+- 無破壞性變更。
+
+### v3.6.3（2026-04-23）— 選用式 Passport 重置邊界
+
+- **Opt-in passport 重置邊界**（`ARS_PASSPORT_RESET=1`）。把每個 FULL checkpoint 提升為 context 重置邊界。新增 `resume_from_passport=<hash>` 模式，讓使用者在新的 Claude Code session 單憑 Material Passport ledger 就恢復 pipeline，不重播先前對話。`systematic-review` 模式 flag ON 時，每個 FULL checkpoint 一律強制重置；其他模式視重置為 flag 開啟後的強預設。Flag OFF 時 byte-for-byte 維持 pre-v3.6.3 行為。
+- Schema 9 新增 append-only `reset_boundary[]` ledger，兩種 entry kind（`kind: boundary` + `kind: resume`）。Hash 用 JSON Canonical Form + SHA-256，搭配 canonical placeholder 處理自我參照問題。選填 `pending_decision` 負責 MANDATORY 分支決策。
+- 新 CI lint `scripts/check_passport_reset_contract.py`：任何提到 flag 的檔案都必須指向權威協議文件。
+- 協議文件：`academic-pipeline/references/passport_as_reset_boundary.md`。
+- `docs/PERFORMANCE.zh-TW.md` 更新 long-running session 指引。
+- 無破壞性變更，flag 預設關閉。
+
+### v3.6.2（2026-04-23）— 審稿 Sprint Contract Hard Gate
+
+v3.6.2 引入 Schema 13 sprint contract 與 hard-gate 編排，強制審稿人在閱讀論文前先承諾評分準則。本次只動審稿端（reviewer-only first test case）；writer/evaluator 留到 v3.6.4。詳見 CHANGELOG。
+
+- **Schema 13 sprint contract**：`panel_size`、`acceptance_dimensions`、`failure_conditions`（含 `severity` 優先序 + 隨 panel 變動的 `cross_reviewer_quantifier`）、`measurement_procedure`、選用 `override_ladder`、限定 `agent_amendments`。驗證器：`scripts/check_sprint_contract.py`。
+- **兩段 hard gate**：審稿人先在「論文內容盲」Phase 1 預先承諾評分計畫，Phase 2 才看到論文；Phase 1 輸出包在 `<phase1_output>...</phase1_output>` 資料分隔符內，縮窄 self-injection 面。
+- **合成者三步機械協議**：建構跨審稿矩陣 → 依 panel-relative quantifier + 認可表達式詞彙評估每條 `failure_condition` → 用 `severity` 決優先。禁止操作清單寫在 `editorial_synthesizer_agent`。
+- **出貨兩份審稿模板**：`shared/contracts/reviewer/full.json`（panel 5）與 `shared/contracts/reviewer/methodology_focus.json`（panel 2）。`reviewer_re_review`、`reviewer_calibration`、`reviewer_guided` 三個 mode 在 schema enum 中保留，但 v3.6.2 不出 template，繼續沿用 pre-v3.6.2 行為；`reviewer_quick` 完全排除於 enum 外。
+- `academic-paper-reviewer` SKILL 版本：`1.8.1 → 1.9.0`。`academic-pipeline` SKILL 版本：`3.5.1 → 3.6.2`（suite-version invariant）。Suite 版本升至 `3.6.2`。
+- 詳見設計稿 [`docs/design/2026-04-23-ars-v3.6.2-sprint-contract-design.md`](docs/design/2026-04-23-ars-v3.6.2-sprint-contract-design.md) 與協定 [`academic-paper-reviewer/references/sprint_contract_protocol.md`](academic-paper-reviewer/references/sprint_contract_protocol.md)。
+
+### v3.5.1（2026-04-22）— 選用式 Socratic 誠實探測
+
+v3.5.1 新增 Socratic Mentor 的選用式誠實探測（設定 `ARS_SOCRATIC_READING_PROBE=1` 啟用）。預設關閉。詳見 CHANGELOG。
+
+- **選用式閱讀誠實探測**：設定 `ARS_SOCRATIC_READING_PROBE=1` 後，Socratic Mentor 在目標導向 session 中引用特定論文時，觸發一次性誠實探測，請使用者摘述一段文字。拒絕回答僅記錄，不扣分。探測結果寫入研究計畫摘要，並帶入 Stage 6 AI 自我反思報告。不新增 agent，不變更 schema。
+- `deep-research` SKILL 版本：`2.9.0 → 2.9.1`。`academic-pipeline` SKILL 版本：`3.5.0 → 3.5.1`。Suite 版本升至 `3.5.1`。
+
+### v3.5.0（2026-04-21）— 協作深度觀察員（Collaboration Depth Observer）
+
+- **新增 agent**：`academic-pipeline` 新增 `collaboration_depth_agent`（Agent Team 從 3 成長為 4）。每個 FULL/SLIM checkpoint 與 pipeline 完成後（Stage 6 之後）觸發，依 4 維度 rubric 對使用者與 AI 的協作模式評分。**純觀察建議，永不阻擋流程**。MANDATORY checkpoints（Stages 2.5 / 4.5 的完整性檢查）**不**觸發 observer，完整性閘門完全保留。
+- **新增 rubric**：[`shared/collaboration_depth_rubric.md`](shared/collaboration_depth_rubric.md) v1.0。四個維度：Delegation Intensity、Cognitive Vigilance、Cognitive Reallocation、Zone Classification（Zone 1 / Zone 2 / Zone 3）。理論依據為 Wang, S., & Zhang, H. (2026). "Pedagogical partnerships with generative AI in higher education: how dual cognitive pathways paradoxically enable transformative learning." *International Journal of Educational Technology in Higher Education*, 23:11. DOI [10.1186/s41239-026-00585-x](https://doi.org/10.1186/s41239-026-00585-x)。
+- **Cross-model 分歧顯式標示，不默默平均**：當 `ARS_CROSS_MODEL` 設定時，observer 於兩個模型同時執行；若任一維度分差 > 2 分即標記為 `cross_model_divergence`。另提供 `ARS_CROSS_MODEL_SAMPLE_INTERVAL` 調控成本。
+- **Short-stage guard**：stage 內使用者 turn < 5 時注入靜態 `insufficient_evidence` 區塊，不派發全模型 observer call。
+- **反諂媚規範**：分數 ≥ 7 必須附具體對話 turn 引用；Zone 3 觸發 re-audit；禁止鼓勵性語言。
+- `academic-pipeline` SKILL 版本：`3.3.0 → 3.4.0`。Suite 版本升至 `3.5.0`。新增 lint `scripts/check_collaboration_depth_rubric.py` 加 10 個測試。
+
+### v3.4.0（2026-04-20）— Compliance Agent + Schema 12
+
+- **Compliance Agent（shared）**：單一 mode-aware agent，同時跑 PRISMA-trAIce 17 項（限 SR mode）+ RAISE 四原則 + 8-role matrix。掛載既有 Stage 2.5 / 4.5 Integrity Gate；tier-based block（Mandatory → block、HR → warn、R/O → info）。非 SR 入口只跑原則、warn-only。
+- **Schema 12 compliance_report** 附加到 Material Passport 的 `compliance_history[]`（append-only）。
+- **三回合 user-override 階梯**，自動注入 `disclosure_addendum` 到 manuscript。無法規避揭露。
+- **Calibration 以透明公布取代硬門檻**，與 `task_type: open-ended` 自洽。
+- **Upstream freshness CI** 偵測 PRISMA-trAIce 上游漂移（non-blocking）。
+- **長時間 session 文件**：Material Passport 作為跨 session 續跑機制。
+
+### v3.3.6 (2026-04-15) — README 精簡 + ARCHITECTURE 文件
+
+- 新增 `docs/ARCHITECTURE.md` 作為 pipeline 結構的單一來源（流程、矩陣、資料存取、依賴圖、品質閘門、模式）。透過 PR #18 合併入 main。
+- 新增 `docs/SETUP.md` / `docs/SETUP.zh-TW.md`（前置需求、API key、Pandoc/tectonic、跨模型驗證、四種安裝方式），以及 `docs/PERFORMANCE.md` / `docs/PERFORMANCE.zh-TW.md`（token 預算、建議 Claude Code 設定）。README 以連結取代內嵌。
+- 精簡 README：移除 ASCII pipeline 圖與 16 項 key-feature 清單（已被 ARCHITECTURE.md 取代）；Skill 詳細資訊維持版本號錨點，讀者跳到 ARCHITECTURE.md §3 看各 agent 名單。
+- 註記：沒有任何 skill 的功能變動，純文件重構。suite version 升級至 `3.3.6`。
+
+### v3.3.5 (2026-04-15)
+- 新增 `benchmark_report.schema.json` 與 Material Passport 的 `repro_lock` 可選區塊。兩者都附 pattern 文件、lint、範例。首次引入正式的 Python 開發依賴清單（`requirements-dev.txt`）。
+
+### v3.3.4 (2026-04-15) — README 更新紀錄同步修補
+
+- 同步 `README.md` 與 `README.zh-TW.md` 內嵌的 changelog 區塊，補上原本缺漏的 `v3.3.3` 與 `v3.3.2` 發版摘要。
+- 擴充 `scripts/check_spec_consistency.py`，之後 README changelog 若再漂移，CI 會直接 fail。
+### v3.3.3 (2026-04-15) — Release Prep + Lint 強化
+
+- 強化 SKILL frontmatter lint：缺少 closing `---` fence 時，現在會明確報錯，不再把整份檔案後半段誤當成合法 YAML。
+- frontmatter 若可被 YAML 解析但不是 mapping，現在會回報可讀錯誤，而不是直接 crash。
+- 修正中英文 README 中 post-publication audit showcase 連結失效的問題。
+- 在 spec consistency check 補上 README 相對連結驗證，之後 dead link 會直接讓 CI fail。
+- 將 DOCX 輸出契約在文件中統一：直接產出 `.docx` 依賴 Pandoc，否則回退為 Markdown + 轉換說明。
+- 完成 `v3.3.3` 發版準備：suite version bump，`academic-paper` -> v3.0.2，`academic-pipeline` -> v3.2.2。
+
+### v3.3.2 (2026-04-15) — Data Access Level + Task Type Metadata
+
+- 所有頂層 `SKILL.md` 新增 `metadata.data_access_level`，並以 `raw`、`redacted`、`verified_only` 為強制詞彙。
+- 所有頂層 `SKILL.md` 新增 `metadata.task_type`，並以 `open-ended`、`outcome-gradable` 為強制詞彙。
+- 為兩個 metadata 欄位新增 lint script 與單元測試，並接到 GitHub Actions spec consistency workflow。
+- 新增 `shared/ground_truth_isolation_pattern.md`，並在 `shared/handoff_schemas.md` 中補上對新詞彙的說明入口。
+
+### v3.3.1 (2026-04-14) — 規格一致性修補
+
+- 同步 README、`.claude/CLAUDE.md`、`MODE_REGISTRY.md` 與各 `SKILL.md` 的 mode 數量與公開版本標示。
+- 修正跨模型敘述：目前已實作的是誠信抽樣查核與獨立 DA critique；同儕審查第六位 reviewer 仍在規劃中。
+- 釐清 adaptive checkpoint 語意：SLIM checkpoint 仍然必須等待使用者明確確認。
+- 再次明確化 Stage 2.5 與 Stage 4.5 誠信關卡不可跳過。
+- 新增輕量 spec consistency 檢查與 GitHub Actions workflow，避免後續再發生文件漂移。
 
 ### v3.3 (2026-04-09) — PaperOrchestra 啟發的強化
 
@@ -652,7 +492,7 @@ https://github.com/Imbad0202/academic-research-skills
 - **攻擊強度保持**（academic-paper-reviewer）：DA 不因被反駁而軟化。反駁評估協議含偏移偵測。
 - **意圖偵測層**（deep-research socratic）：偵測探索型 vs. 目標型。探索模式停用自動收束，最大輪數提升至 60。每 5 輪重新評估。
 - **對話健康度指標**（deep-research socratic）：每 5 輪靜默自檢，偵測持續同意、迴避衝突、過早收束。偵測到模式時自動注入挑戰性問題。
-- **跨模型驗證協議**（shared，可選）：用 GPT-5.4 Pro 或 Gemini 3.1 Pro 作為獨立第二審查者。誠信驗證 30% 抽樣跨模型檢查。DA 獲得跨模型獨立 critique。設定 `ARS_CROSS_MODEL` 環境變數啟用——未設定時零開銷。完整設定指南見 `shared/cross_model_verification.md`。
+- **跨模型驗證協議**（shared，可選）：用 GPT-5.4 Pro 或 Gemini 3.1 Pro 做誠信驗證 30% 抽樣跨模型檢查與獨立 DA critique。同儕審查第六位 reviewer 仍在規劃中，尚未實作。設定 `ARS_CROSS_MODEL` 環境變數啟用——未設定時零開銷。完整設定指南見 `shared/cross_model_verification.md`。
 - **AI 自我反思報告**（academic-pipeline Stage 6）：Pipeline 結束後 AI 行為自評——DA 讓步率、健康警報、諂媚風險評級（LOW/MEDIUM/HIGH）、框架鎖定事件。
 - 來源：四輪辯證實驗中發現 DA 讓步太快、蘇格拉底模式過早收束、整個辯論鎖定在人類設定的框架中。
 - 版本：deep-research v2.5、academic-paper-reviewer v1.5、academic-pipeline v2.8
@@ -723,7 +563,7 @@ https://github.com/Imbad0202/academic-research-skills
 - **academic-paper-reviewer v1.1**：+魔鬼代言人審查者（第 7 agent）、+re-review 模式（驗收）、+審後蘇格拉底指導
 - 新增 agent：`integrity_verification_agent` — 100% 引用/數據驗證，含稽核軌跡
 - 新增 agent：`devils_advocate_reviewer_agent` — 8 維度論點挑戰
-- 輸出順序：MD + DOCX → 詢問 LaTeX → 確認 → PDF
+- 輸出順序：MD → Pandoc 可用時產出 DOCX（否則提供說明）→ 詢問 LaTeX → 確認 → PDF
 
 ### v1.0 (2026-02)
 - 初版發布

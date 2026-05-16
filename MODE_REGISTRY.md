@@ -1,10 +1,10 @@
 # Mode Registry
 
-Single source of truth for all modes across the ARS suite. **24 modes** across 4 skills.
+Single source of truth for all modes across the ARS suite. **25 modes** across 4 skills.
 
 When adding or modifying modes, update this file first — SKILL.md files and CLAUDE.md should reference this registry.
 
-Last updated: v3.3 (2026-04-09)
+Last updated: v3.7.0 (2026-05-05)
 
 ---
 
@@ -31,7 +31,7 @@ Last updated: v3.3 (2026-04-09)
 | `revision-coach` | Balanced | Revision Roadmap + Response Letter Skeleton | Medium | "parse reviews", "I got reviewer comments" |
 | `abstract-only` | Fidelity | Bilingual abstract (zh-TW + EN) + keywords | Medium | "write abstract" |
 | `lit-review` | Fidelity | Annotated bibliography in paper format | Medium | "literature review paper", "write a lit review" |
-| `format-convert` | Fidelity | Formatted document (LaTeX/DOCX/PDF/MD) | Low | "convert to LaTeX", "convert citations to [format]" |
+| `format-convert` | Fidelity | Formatted document (LaTeX/DOCX-via-Pandoc/PDF/MD) | Low | "convert to LaTeX", "convert citations to [format]" |
 | `citation-check` | Fidelity | Citation error report | Low | "check citations", "verify references" |
 | `disclosure` | Fidelity | Venue-specific AI-usage disclosure statement | Low | "AI disclosure for [venue]", "generate AI usage statement" |
 
@@ -46,11 +46,12 @@ Last updated: v3.3 (2026-04-09)
 | `guided` | Originality | Socratic issue-by-issue dialogue | Very High | "guide me to improve", "walk me through issues" |
 | `calibration` | Fidelity | Calibration Report (FNR/FPR/AUC) + confidence disclosure | Medium | "calibrate reviewer", "measure reviewer accuracy" |
 
-## academic-pipeline (1 orchestrator)
+## academic-pipeline (1 orchestrator + 1 resume mode)
 
 | Mode | Spectrum | Output | Oversight | Triggers |
 |------|----------|--------|-----------|----------|
 | (pipeline) | Balanced | 10-stage orchestrated workflow | Very High | "academic pipeline", "research to paper", "full paper workflow" |
+| `resume_from_passport=<hash>` | Fidelity | Resume a prior pipeline run from a Material Passport reset boundary. Opt-in (`ARS_PASSPORT_RESET=1`). See `academic-pipeline/references/passport_as_reset_boundary.md`. | High | "resume from passport", "continue pipeline from reset boundary" |
 
 ---
 
@@ -58,10 +59,10 @@ Last updated: v3.3 (2026-04-09)
 
 | Metric | Count |
 |--------|-------|
-| Total modes | 24 |
-| Fidelity | 13 (54%) |
-| Balanced | 7 (29%) |
-| Originality | 4 (17%) |
+| Total modes | 25 |
+| Fidelity | 14 (56%) |
+| Balanced | 7 (28%) |
+| Originality | 4 (16%) |
 
 ### Oversight levels
 

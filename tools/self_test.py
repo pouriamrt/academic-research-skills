@@ -228,6 +228,16 @@ def check_agent_completeness(root: Path, verbose: bool) -> CategoryResult:
     """2. Agent Completeness — referenced vs actual agent files."""
     cat = CategoryResult(name="Agent Completeness")
 
+    # Shared agents live under shared/agents/ and are referenced by multiple skills
+    # (e.g., compliance_agent, v3.4.0+). Pre-collect them so per-skill checks don't
+    # falsely flag them as missing.
+    shared_agents_dir = root / "shared" / "agents"
+    shared_agents: set[str] = set()
+    if shared_agents_dir.is_dir():
+        shared_agents = {
+            p.stem for p in shared_agents_dir.iterdir() if p.suffix == ".md" and p.is_file()
+        }
+
     for skill_name in EXPECTED_SKILLS:
         skill_dir = root / skill_name
         agents_dir = skill_dir / "agents"
@@ -243,9 +253,14 @@ def check_agent_completeness(root: Path, verbose: bool) -> CategoryResult:
 
         skill_text = _read_text(skill_md_path)
         referenced = _extract_agent_names_from_skill_md(skill_text)
-        actual_files = {
+        local_files = {
             p.stem for p in agents_dir.iterdir() if p.suffix == ".md" and p.is_file()
         }
+        # For missing-check: union with shared agents (a reference is satisfied
+        # if the agent exists either in the skill's agents/ dir or in shared/agents/).
+        # For orphan-check: only local files matter (shared agents are not
+        # expected to be referenced from every skill).
+        actual_files = local_files | shared_agents
 
         # Every referenced agent must exist as a file
         missing = referenced - actual_files
@@ -256,8 +271,10 @@ def check_agent_completeness(root: Path, verbose: bool) -> CategoryResult:
                 "Referenced in SKILL.md but no .md file in agents/",
             )
 
-        # Orphaned agent files (exist but not referenced)
-        orphaned = actual_files - referenced
+        # Orphaned agent files (exist in this skill's agents/ but not referenced).
+        # Use local_files only — shared agents may legitimately be referenced from
+        # other skills and that's not an orphan from this skill's perspective.
+        orphaned = local_files - referenced
         for agent in sorted(orphaned):
             cat.add(
                 f"{skill_name}: {agent}",

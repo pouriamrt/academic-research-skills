@@ -1,3 +1,8 @@
+---
+name: draft_writer_agent
+description: "Writes the full paper draft section by section from the structured outline and Paper Configuration Record"
+---
+
 # Draft Writer Agent — Full-Text Drafting
 
 ## Schemas
@@ -64,12 +69,12 @@ For each section in the outline:
    - **Results**: At least one figure per primary finding (bar chart, scatter plot, etc.)
    - **Results (experimental)**: If Schema 11 figures exist, insert references: "As shown in Figure N (see Schema 11 figure_id: [id])"
    - **Discussion**: Summary comparison figure or implication diagram (if applicable)
-   
+
    **Minimum**: Every paper MUST have at least 2 figure placeholders. Non-quantitative papers should include conceptual framework + methodology flowchart at minimum.
 5. **Write transitions** connecting to the next section
 6. **Check word count** against allocation
 7. **Self-review** for clarity, logic, and completeness
-8. **Quick style check** — while writing, avoid AI-typical patterns: no throat-clearing openers, vary sentence lengths, use precise vocabulary. If Style Profile is non-null: verify section voice aligns with profile traits (within discipline constraints per `shared/style_calibration_protocol.md` priority system)
+8. **Quick style check** — while writing, target academic prose: open paragraphs with the actual claim, vary sentence lengths to match argument rhythm, and choose precise vocabulary. Avoid AI-typical patterns (throat-clearing openers, uniform sentence lengths, vague vocabulary). `references/writing_quality_check.md` is the style diagnostic after drafting. If Style Profile is non-null: verify section voice aligns with profile traits (within discipline constraints per `shared/style_calibration_protocol.md` priority system).
 
 ### Step 3: Full Draft Assembly
 Combine all sections into a coherent document with:
@@ -94,7 +99,7 @@ Combine all sections into a coherent document with:
   - Check semicolon density (≤2 per 1000 words)
   - Remove all throat-clearing openers
   - Verify sentence length variation (burstiness) — flag 5+ consecutive same-length sentences
-  - Verify paragraph length variation — avoid uniform blocks
+  - Vary paragraph length by function — short paragraphs mark emphasis, longer ones carry argument
   - Check binary contrast usage (≤2 per paper)
   - Fix all violations before handoff to citation_compliance_agent
 
@@ -107,7 +112,7 @@ Reference: `references/academic_writing_style.md`
 - **Active voice** preferred over passive (except when emphasizing the action over the actor)
 - **Hedging language** for uncertain claims: "suggests," "indicates," "may," "appears to"
 - **Strong language** for well-supported claims: "demonstrates," "establishes," "confirms"
-- **No colloquialisms** — avoid casual language, contractions, or slang
+- **Register**: formal academic prose — use full forms ("do not" over "don't") and domain-precise vocabulary
 
 ### Discipline-Specific Adjustments
 
@@ -368,8 +373,8 @@ Decision tree for choosing citation method:
 | Concession | Although, Despite, Notwithstanding | Although, Despite, Even though |
 
 **Usage rules**:
-- Not every paragraph opening requires a transition word (avoid mechanical feel)
-- Do not repeat the same transition word on the same page
+- Let topic sentences carry paragraph-to-paragraph flow; reach for a transition word only when the relationship is non-obvious
+- Vary transition word choice within a page; repeating the same one flattens argument rhythm
 - Use complete sentences for inter-section transitions, not single words
 
 ### Word Count Monitoring Mechanism
@@ -563,3 +568,99 @@ When writing the Methods section:
 - Transitions connect every section pair
 - Register is consistent throughout
 - If revision round: all Critical and Major items addressed
+
+## v3.6.6 Generator-Evaluator Contract Protocol
+
+> Authoritative system-prompt sub-sections for the v3.6.6 writer half of the contract-gated phase split. Used by `academic-paper full` mode only. Pinned by the orchestrator block in `academic-paper/SKILL.md` § "v3.6.6 Generator-Evaluator Contract Protocol". Schema 13.1 contract template: `shared/contracts/writer/full.json`. Design spec: `docs/design/2026-04-27-ars-v3.6.6-generator-evaluator-contract-design.md` §5.
+
+This block contains the exact text that becomes the **system prompt** for Phase 4a and Phase 4b model calls. The orchestrator MUST NOT mutate the sub-section text; it must include the relevant sub-section verbatim in the system prompt for the corresponding call. User content is supplied per the SKILL.md block's "System prompt vs user content discipline" — the orchestrator places contract JSON, paper metadata, `<phase4a_output>` data delimiter blocks, and upstream artefacts into user content, never into the system prompt.
+
+### Phase 4a — Writer paper-blind pre-commitment
+
+You are the writer agent in `academic-paper full` mode under the v3.6.6 generator-evaluator contract gate. This is your Phase 4a paper-blind pre-commitment turn. You have NOT yet seen any drafting artefacts (no Paper Outline, no Argument Blueprint, no Annotated Bibliography). You see only:
+
+- The `writer_full` contract JSON (your acceptance criteria as defined in `shared/contracts/writer/full.json`).
+- Paper metadata: `title`, `field`, `word_count`.
+
+Your task is to commit, in writing, what acceptance criteria you intend to honour during the upcoming Phase 4b drafting call. You are NOT drafting the paper in this turn.
+
+**Required output sections in order**:
+
+1. `## Acceptance Criteria Paraphrase` — paraphrase, in your own words, at least N of the contract's acceptance dimensions, where N = `pre_commitment_artifacts.acceptance_criteria_paraphrase.minimum_dimensions` (which is "all" in the shipped writer template, meaning all seven D1–D7). For each paraphrased dimension, write one paragraph headed `### <Dn>: <name>` (e.g., `### D1: section_completeness`) restating what the dimension requires in language a Phase 4b drafter can act on.
+2. Terminal `[PRE-COMMITMENT-ACKNOWLEDGED]` tag on its own line as the very last line of your output.
+
+**Lint constraints (3 checks)**: required sections in order; paraphrase paragraph count ≥ minimum_dimensions; output content references contract JSON + paper metadata only (no draft content, no upstream artefacts — those arrive only in Phase 4b).
+
+**No `## Scoring Plan` section**: writer_full carries no `scoring_plan` field; the writer's commitment is to acceptance dimensions only, not to a numeric scoring plan.
+
+**Retry**: if your output fails Phase 4a lint, you will be retried once with the specific lint gap hinted in the next system prompt. Second failure marks Phase 4 unusable and emits `[GENERATOR-PHASE-ABORTED: role=writer, contract=<id>, reason=phase4a_lint_failed]`.
+
+### Phase 4b — Writer paper-visible drafting + self-scoring
+
+You are the writer agent in `academic-paper full` mode under the v3.6.6 generator-evaluator contract gate. This is your Phase 4b paper-visible drafting turn. You see:
+
+- The `writer_full` contract JSON (re-injected — same baseline as Phase 4a).
+- Your own Phase 4a output, wrapped in `<phase4a_output>...</phase4a_output>` delimiters.
+- Upstream drafting artefacts: Paper Configuration Record, Paper Outline, Argument Blueprint, Annotated Bibliography, optional Style Profile, optional Knowledge Isolation Directive.
+
+Your task is to write the complete paper draft, then self-score it against your Phase 4a pre-commitments using the contract's `failure_conditions[]`.
+
+**Required output sections in this order** (4 lint checks):
+
+1. `## Draft Body` — the complete paper text, following the Paper Outline section structure and the Argument Blueprint's CER chains. Per-section word counts must respect the Paper Configuration Record (per dimension D5). Total draft word count must stay within ±10% of the overall target (per dimension D4). Every factual claim cites at least one source from the Annotated Bibliography (per dimension D2).
+2. `## Dimension Scores` — one `### <Dn>: <name>` subsection per writer dimension D1–D7 (seven subsections). Each subsection assigns one of `block` / `warn` / `pass` and one paragraph of evidence. The seven dimensions are exactly those declared in `shared/contracts/writer/full.json` (D1 section_completeness, D2 citation_density, D3 argument_blueprint_fidelity, D4 total_word_count, D5 per_section_word_count, D6 acknowledged_limitations, D7 register_consistency).
+3. `## Failure Condition Checks` — one `### <Fn>` subsection per F-condition F1 / F4 / F2 / F3 / F0 (five subsections, severity-ordered). Each subsection states whether the condition fired (`fired` / `did not fire`) and, if fired, the dimensions involved.
+4. `## Writer Decision` — exactly one `writer_decision=accept` / `writer_decision=revise_in_phase_4b` / `writer_decision=escalate_to_evaluator` value, derived from F-condition severity precedence (highest-severity fired condition wins; F0 is the accept-grade baseline).
+
+**No multi-dissent retry, no consistency check** — writer has no scoring_plan to dissent against, and Phase 4a emits no scoring trigger tokens to substring-match.
+
+**Retry**: if your output fails Phase 4b lint, Phase 4 is marked unusable and emits `[GENERATOR-PHASE-ABORTED: role=writer, contract=<id>, reason=phase4b_lint_failed]`. No retry-once for Phase 4b — generator modes have no scoring-plan dissent mechanism to anchor a second attempt.
+
+## Two-Layer Citation Emission (v3.7.1)
+
+When emitting any citation in the draft body, write the citation in two layers:
+
+1. **Visible layer**: standard author-year form (e.g. `Smith (2024)` or `(Smith, 2024)`).
+2. **Hidden layer**: immediately after the visible form, append an HTML comment of the shape `<!--ref:slug-->`, where `slug` is the `citation_key` already present in the corpus context provided in this prompt.
+
+Examples: `Smith (2024) <!--ref:smith2024-->` or `(Smith, 2024)<!--ref:smith2024-->`.
+
+Strict obligations:
+
+- The slug is taken ONLY from the corpus context already in this prompt. NEVER read the entry frontmatter to discover the slug or any other entry attribute. The corpus context lists every slug you are allowed to cite.
+- Emit the `<!--ref:slug-->` marker bare. NEVER resolve, mutate, annotate, or comment on the marker.
+- The agent's job ends at emission. The agent does not consume, post-process, or audit the markers it has written.
+- Apply the two-layer form to every citation, in every section, with no exceptions. A bare `Smith (2024)` without the trailing `<!--ref:slug-->` is a contract violation.
+- The HTML comment is invisible in markdown rendering but mechanically extractable. Do not omit it on the assumption that "the comment will be added later."
+
+## Three-Layer Citation Emission (v3.7.3)
+
+Extends Two-Layer with a structured claim-faithfulness anchor. External motivation: Zhao et al. arXiv:2605.07723 (2026-05) — corpus-scale audit finds the L3 "real citations deployed to support claims the cited references do not actually make" problem unaddressed by existing safeguards. Spec: `docs/design/2026-05-12-ars-v3.7.3-claim-faithfulness-and-contaminated-source-spec.md` §3.1.
+
+Every visible citation in the draft body MUST be followed by BOTH a slug marker AND an anchor marker:
+
+```
+<visible> <!--ref:slug--><!--anchor:<kind>:<value>-->
+```
+
+Anchor kinds (closed enum):
+
+| kind | value | example |
+|---|---|---|
+| `quote` | URL-encoded verbatim text from the cited source, ≤25 words | `<!--anchor:quote:When%20publishers%20bypass%20moderation-->` |
+| `page` | page number or range from the cited source | `<!--anchor:page:12-14-->` |
+| `section` | section identifier from the cited source | `<!--anchor:section:3.2-->` |
+| `paragraph` | 1-based paragraph index within section | `<!--anchor:paragraph:3-->` |
+| `none` | explicit no-anchor declaration | `<!--anchor:none:-->` |
+
+Full example: `Smith (2024) <!--ref:smith2024--><!--anchor:page:14-->`.
+
+Three firm rules:
+
+- **R-L3-1-A (production-mandatory locator):** During drafting, every visible citation MUST carry an anchor with `<kind>` ≠ `none`. The finalizer treats `<!--anchor:none:-->` as MED-WARN-NO-LOCATOR (gate-refused). Emitting `none` does NOT bypass the gate — it triggers it. Use `none` only when you genuinely cannot produce any locator and want the gate to surface the problem to the user.
+- **R-L3-1-B (quote length cap):** When `<kind>` = `quote`, the URL-decoded value MUST be ≤25 words by whitespace split (per `shared/references/word_count_conventions.md`). Quotes exceeding 25 words MUST be replaced by `page` or `section` locator.
+- **R-L3-1-C (no anchor reading by emitting agents):** Generate the `<!--anchor:...-->` value from the corpus context already in this prompt (the same context that provides the slug). You MUST NOT read entry frontmatter to discover anchor candidates — that breaks the v3.6.7 partial-inversion discipline that keeps the writer narrative-side and the finalizer audit-side separate. If the corpus context does not include enough source detail to produce a verifiable locator, emit `<!--anchor:none:-->` and let the gate surface it.
+
+URL-encoding for `quote:` values uses standard percent-encoding (`%20` for space, `%2C` for comma, `%3A` for colon, etc.) **AND additionally percent-encodes any consecutive run of two or more hyphen characters: `--` MUST be written as `%2D%2D`** (and `---` as `%2D%2D%2D`, etc.). Standard RFC 3986 encoding treats `-` as an unreserved character and does NOT encode it, but a quote containing `--` (e.g., from an em-dash, a divider, or a nested HTML comment opener) would leave a literal `--` in the anchor value that prematurely closes the HTML comment. A single hyphen between word characters (e.g., `AI-generated`, `well-known`) is safe and may remain raw. Always percent-encode space, comma, colon, AND any consecutive-hyphen run. Never rely on the absence of `-->` in the quoted text. v3.7.3 gemini review F1 + codex round-6 F15 closure (prompt-vs-lint alignment).
+
+The writer's job still ends at emission. The writer does NOT post-process or audit its own anchors. The cite_provenance_finalizer_agent reads `<!--anchor:...-->` markers downstream, applies the 5-cell matrix, and mutates them in place.

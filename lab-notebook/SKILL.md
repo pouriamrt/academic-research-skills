@@ -458,6 +458,18 @@ When experiment skills execute within the academic-pipeline, they automatically 
 
 ---
 
+## Version Info
+
+| Item | Content |
+|------|---------|
+| Skill Version | 1.0 |
+| Last Updated | 2026-05-15 |
+| Maintainer | Pouria Mortezaagha (fork) |
+| Dependent Skills | experiment-designer + data-analyst + simulation-runner (upstream — auto-log writers), academic-paper (downstream — Schema 12 consumer for Methods section), academic-pipeline (orchestrator) |
+| Role | Experiment research record with SHA-256 provenance tracking + deviation logging + completeness audit. Produces Schema 12 (Lab Record). Never the entry point — always accompanies other experiment skills. Fork-only skill, not in upstream Imbad0202. |
+
+---
+
 ## Version History
 
 | Version | Date | Changes |

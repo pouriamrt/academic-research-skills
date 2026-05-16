@@ -451,6 +451,18 @@ Follows the user's language. Code comments and variable names always in English.
 
 ---
 
+## Version Info
+
+| Item | Content |
+|------|---------|
+| Skill Version | 1.0 |
+| Last Updated | 2026-05-15 |
+| Maintainer | Pouria Mortezaagha (fork) |
+| Dependent Skills | experiment-designer (upstream — Schema 10 + Schema 13 consumer), lab-notebook + academic-paper (downstream — Schema 11 producer), academic-pipeline (orchestrator) |
+| Role | Computational simulation execution (Monte Carlo / bootstrap / SEM / HLM / ABM / parameter sweeps); generates synthetic data with full reproducibility script. Fork-only skill, not in upstream Imbad0202. |
+
+---
+
 ## Version History
 
 | Version | Date | Changes |

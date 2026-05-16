@@ -8,7 +8,7 @@
 
 一套完整的學術研究 Claude Code 技能包，涵蓋從研究到論文出版的全流程。
 
-**30 秒安裝**（Claude Code CLI / VS Code / JetBrains，v3.7.0+）：
+**30 秒安裝**（Claude Code CLI / VS Code / JetBrains，v3.16.0+；plugin packaging 來自 upstream v3.7.0）：
 
 ```text
 /plugin marketplace add Imbad0202/academic-research-skills
@@ -47,7 +47,7 @@ v3.3 的靈感來自 [**PaperOrchestra**](https://arxiv.org/abs/2604.05018)（So
 - 已 export `ANTHROPIC_API_KEY`，或第一次跑 `claude` 時設定
 - *選用：* Pandoc 用於 DOCX 輸出，tectonic + 思源宋體 TC 用於 APA 7.0 PDF（純 Markdown 輸出兩個都不需要）
 
-**Plugin 安裝（v3.7.0+，推薦）：**
+**Plugin 安裝（v3.16.0+，推薦）：**
 
 ```text
 /plugin marketplace add Imbad0202/academic-research-skills
@@ -73,7 +73,7 @@ v3.3 的靈感來自 [**PaperOrchestra**](https://arxiv.org/abs/2604.05018)（So
 
 ## 功能特色一覽
 
-- **Deep Research** — 13 個 Agent 的研究團隊，支援蘇格拉底引導、PRISMA 系統性回顧、意圖偵測、對話健康度監控、可選跨模型 DA、Semantic Scholar API 驗證。
+- **Deep Research** — 14 個 Agent 的研究團隊（含 concept_lineage_agent），支援蘇格拉底引導、PRISMA 系統性回顧、意圖偵測、對話健康度監控、可選跨模型 DA、Semantic Scholar API 驗證、引用譜系追蹤。
 - **Academic Paper** — 12 個 Agent 的論文撰寫團隊，含風格校準、寫作品質檢查、LaTeX 輸出強化、視覺化、修訂教練、引用格式轉換、反洩漏協議、VLM 圖表驗證。
 - **Academic Paper Reviewer** — 7 個 Agent 的多視角同儕審查，0-100 品質量表（主編 + 3 位動態審查者 + 魔鬼代言人），含讓步門檻協議、攻擊強度保持、可選跨模型 DA critique / calibration、R&R 追溯矩陣、唯讀約束。
 - **Academic Pipeline** — 10 階段全流程調度器，含自適應 checkpoint、宣稱驗證、素材護照、可選 `repro_lock`、可選跨模型誠信驗證、中途強化機制、分數軌跡追蹤。
@@ -226,21 +226,25 @@ ARS Stage 2 寫作      →  用驗證過的實驗結果撰寫論文
 
 各 agent 的職責與各階段產出物現已移至 [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)。版本號保留在此以維持 release metadata 集中管理。
 
-### Deep Research (v2.8)
+### Deep Research (v2.9.3)
 
-13 個 Agent 的研究團隊。模式：full、quick、review、lit-review、fact-check、socratic、systematic-review。完整 agent 名單與產出物：見 ARCHITECTURE.md §3。
+14 個 Agent 的研究團隊（含 concept_lineage_agent 引用譜系追蹤）。模式：full、quick、review、lit-review、fact-check、socratic、systematic-review。完整 agent 名單與產出物：見 ARCHITECTURE.md §3。
 
-### Academic Paper (v3.0)
+### Experiment-Designer / Data-Analyst / Simulation-Runner / Lab-Notebook (v1.0 each, fork-only)
 
-12 個 Agent 的論文撰寫 pipeline。模式：full、plan、outline-only、revision、revision-coach、abstract-only、lit-review、format-convert、citation-check、disclosure。輸出：MD + DOCX（Pandoc 可用時）+ LaTeX（APA 7.0 `apa7` class / IEEE / Chicago）→ tectonic 編譯 PDF。完整 agent 名單與各 phase 職責：見 ARCHITECTURE.md §3。
+Fork 內建的 4 個實驗 skill（共 22 agents），由 Methodology Blueprint 的 routing flag 自動偵測啟用。涵蓋實驗設計（RCT / factorial / crossover / 準實驗）、power analysis、隨機分派、儀器開發、APA 統計分析、Monte Carlo / bootstrap / SEM / HLM 模擬、含 SHA-256 hash 的 provenance 追蹤。Schema 流：10 → 11 → 12 → academic-paper。
 
-### Academic Paper Reviewer (v1.8)
+### Academic Paper (v3.1.1)
 
-7 個 Agent 的多視角審查，搭配 **0-100 品質量表**。模式：full、re-review、quick、methodology-focus、guided、calibration。**決策對照：** ≥80 接受、65-79 小修、50-64 大修、<50 退稿。第一輪審查團隊 vs. 精簡再審團隊的分界：見 ARCHITECTURE.md §3 Stage 3 / Stage 3'。
+12 個 Agent 的論文撰寫 pipeline。模式：full、plan、outline-only、revision、revision-coach、abstract-only、lit-review、format-convert、citation-check、disclosure。輸出：MD + DOCX（Pandoc 可用時）+ LaTeX（APA 7.0 `apa7` class / IEEE / Chicago）→ tectonic 編譯 PDF。新增 v3.6.6 generator-evaluator sprint contract（Schema 20.1）+ v3.7.3 三層引用定位器。完整 agent 名單與各 phase 職責：見 ARCHITECTURE.md §3。
 
-### Academic Pipeline (v3.7)
+### Academic Paper Reviewer (v1.9.0)
 
-10 階段調度器，含誠信驗證、兩階段審查、蘇格拉底指導、協作品質評估。Pipeline 保證：每個階段都需使用者確認 checkpoint；誠信驗證（Stage 2.5 + 4.5）不可跳過；R&R 追溯矩陣（Schema 11）獨立驗證作者修訂宣稱。v3.4 新增 Compliance Agent（PRISMA-trAIce + RAISE）於 Stage 2.5 / 4.5。v3.5 新增 **協作深度觀察員**（`collaboration_depth_agent`，僅諮詢性質、永不阻擋流程）於每一次 FULL/SLIM checkpoint 與 pipeline 完成時。MANDATORY 誠信閘門（2.5 / 4.5）明確跳過觀察員，避免稀釋合規檢查。理論基礎：Wang & Zhang (2026), IJETHE 23:11。逐階段矩陣（agent、產出物、閘門）：見 ARCHITECTURE.md §3。
+7 個 Agent 的多視角審查，搭配 **0-100 品質量表 + v3.6.2 sprint contract hard gate**。模式：full、re-review、quick、methodology-focus、guided、calibration。**決策對照：** ≥80 接受、65-79 小修、50-64 大修、<50 退稿。每個審稿人 Phase 1 不見論文先承諾評分準則（Schema 20），Phase 2 看論文後評分；synthesizer 跑三步機械式協議。第一輪審查團隊 vs. 精簡再審團隊的分界：見 ARCHITECTURE.md §3 Stage 3 / Stage 3'。
+
+### Academic Pipeline (v3.16.0; suite-version-pinned)
+
+10 階段調度器（4 in-skill + 1 shared agent），含誠信驗證、合規檢查、兩階段審查、蘇格拉底指導、協作品質評估、passport reset boundary（v3.6.3+ 長 session 跨 session resume）。Pipeline 保證：每個階段都需使用者確認 checkpoint；誠信 + 合規驗證（Stage 2.5 + 4.5）不可跳過；R&R 追溯矩陣（Schema 18）獨立驗證作者修訂宣稱。v3.4 新增 `compliance_agent`（PRISMA-trAIce + RAISE，Schema 19）於 Stage 2.5 / 4.5 與 integrity_verification_agent 並行 dispatch。v3.5 新增 **協作深度觀察員**（`collaboration_depth_agent`，僅諮詢性質、永不阻擋流程）於每一次 FULL/SLIM checkpoint 與 pipeline 完成時。MANDATORY 誠信閘門（2.5 / 4.5）明確跳過觀察員，避免稀釋合規檢查。理論基礎：Wang & Zhang (2026), IJETHE 23:11。逐階段矩陣（agent、產出物、閘門）：見 ARCHITECTURE.md §3。
 
 ---
 

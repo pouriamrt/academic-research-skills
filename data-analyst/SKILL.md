@@ -373,6 +373,18 @@ Follows the user's language. Statistical notation and APA formatting remain in E
 
 ---
 
+## Version Info
+
+| Item | Content |
+|------|---------|
+| Skill Version | 1.0 |
+| Last Updated | 2026-05-15 |
+| Maintainer | Pouria Mortezaagha (fork) |
+| Dependent Skills | experiment-designer (upstream — Schema 10 consumer), lab-notebook + academic-paper (downstream — Schema 11 producer), academic-pipeline (orchestrator) |
+| Role | Statistical analysis execution on real data (RCT / observational / longitudinal); APA-formatted reporting, full Schema 11 output. Fork-only skill, not in upstream Imbad0202. |
+
+---
+
 ## Version History
 
 | Version | Date | Changes |

@@ -416,6 +416,18 @@ Follows the user's language. Statistical terminology and variable names kept in 
 
 ---
 
+## Version Info
+
+| Item | Content |
+|------|---------|
+| Skill Version | 1.0 |
+| Last Updated | 2026-05-15 |
+| Maintainer | Pouria Mortezaagha (fork) |
+| Dependent Skills | deep-research (upstream — Methodology Blueprint Schema 14), data-analyst + simulation-runner + lab-notebook (downstream — Schema 10/13 consumers), academic-pipeline (orchestrator) |
+| Role | Experiment design + power analysis + instrument builder + protocol compiler (fork-only skill, not in upstream Imbad0202) |
+
+---
+
 ## Version History
 
 | Version | Date | Changes |

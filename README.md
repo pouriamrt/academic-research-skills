@@ -3,11 +3,11 @@
 [![Version](https://img.shields.io/badge/version-v3.16.0-blue)](https://github.com/pouriamrt/academic-research-skills)
 [![License: CC BY-NC 4.0](https://img.shields.io/badge/license-CC%20BY--NC%204.0-lightgrey)](https://creativecommons.org/licenses/by-nc/4.0/)
 
-A Claude Code plugin covering the full academic research lifecycle — from literature review through experimentation, statistical analysis, paper writing, peer review, and publication. 8 skills, 58 agents, 18 handoff schemas, and full pipeline orchestration. Experiment skills integrate with the [superpowers](https://github.com/obra/superpowers) plugin for disciplined, test-driven code development.
+A Claude Code plugin covering the full academic research lifecycle — from literature review through experimentation, statistical analysis, paper writing, peer review, and publication. **8 skills, 58+ agents, 20 handoff schemas**, full pipeline orchestration with PRISMA-trAIce + RAISE compliance gates, reviewer + writer/evaluator sprint contracts, passport reset boundary for long-running sessions, three-layer citation locator, and collaboration depth observer. Experiment skills integrate with the [superpowers](https://github.com/obra/superpowers) plugin for disciplined, test-driven code development.
 
 ## Skills
 
-**Install in 30 seconds** (Claude Code CLI / VS Code / JetBrains, v3.7.0+):
+**Install in 30 seconds** (Claude Code CLI / VS Code / JetBrains, v3.16.0+; plugin packaging from upstream v3.7.0):
 
 ```text
 /plugin marketplace add Imbad0202/academic-research-skills
@@ -41,7 +41,7 @@ v3.3 was inspired by [**PaperOrchestra**](https://arxiv.org/abs/2604.05018) (Son
 | **lab-notebook** v1.0 | 4 | Experiment research record with provenance tracking | full, log-entry, deviation, snapshot, export, audit |
 | **academic-paper** v3.1.1 | 12 | Paper writing with experiment integration, LaTeX output, anti-leakage protocol, VLM figure verification, disclosure mode | full, plan, outline-only, revision, revision-coach, abstract-only, lit-review, format-convert, citation-check, disclosure |
 | **academic-paper-reviewer** v1.9.0 | 7 | Multi-perspective peer review (EIC + 3 reviewers + Devil's Advocate + optional cross-model DA critique) with calibration + sprint-contract gates | full, re-review, quick, methodology-focus, guided, calibration |
-| **academic-pipeline** v3.7.0 | 4 | Full pipeline orchestrator with AI Research Failure Mode Checklist (Lu 2026), score trajectory tracking, early-stopping, PRISMA-trAIce + RAISE compliance, sprint-contract gates, passport reset boundary | auto-detected stages |
+| **academic-pipeline** v3.16.0 | 4 in-skill + 1 shared (`compliance_agent`) | Full pipeline orchestrator with AI Research Failure Mode Checklist (Lu 2026), score trajectory tracking, early-stopping, PRISMA-trAIce + RAISE compliance (Schema 19), sprint-contract gates (Schema 20 / 20.1), passport reset boundary, collaboration depth observer | auto-detected stages |
 
 See the [Quick Reference Card](docs/QUICK_REFERENCE.md) for a full "I want to X → use skill Y in mode Z" lookup table, [MODE_REGISTRY.md](MODE_REGISTRY.md) for the single source of truth on all 24+ modes (with spectrum / output / oversight / triggers), and [POSITIONING.md](POSITIONING.md) for the design philosophy and allowed/discouraged uses.
 
@@ -57,7 +57,7 @@ See the [Quick Reference Card](docs/QUICK_REFERENCE.md) for a full "I want to X 
 - `ANTHROPIC_API_KEY` exported, or set on first `claude` run
 - *Optional:* Pandoc for DOCX (via Pandoc when available); Markdown + instructions otherwise. Tectonic + Source Han Serif TC for APA 7.0 PDF. Markdown output works without either.
 
-**Plugin install (v3.7.0+, recommended):**
+**Plugin install (v3.16.0+, recommended):**
 
 ```text
 /plugin marketplace add pouriamrt/academic-research-skills
@@ -426,7 +426,7 @@ Four experiment skills (22 agents total) auto-detected from the methodology blue
 
 **Optional cross-model verification:** set `ARS_CROSS_MODEL` to use GPT-5.4 Pro or Gemini 3.1 Pro as an independent second reviewer.
 
-### Academic Pipeline (v3.7.0)
+### Academic Pipeline (v3.16.0; suite-version-pinned)
 
 Pipeline orchestrator with integrity verification, compliance, sprint-contract gates, two-stage review, experiment re-entry, Socratic coaching, passport reset boundary, and collaboration evaluation:
 

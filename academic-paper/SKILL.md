@@ -1,8 +1,8 @@
 ---
 name: academic-paper
-description: "Academic paper writing skill with 12-agent pipeline. v3.1.1: 10 modes (full/plan/outline/revision/revision-coach/abstract/lit-review/format-convert/citation-check/disclosure). Experiment results integration (Schema 11/12) from data-analyst, simulation-runner, and lab-notebook. Style Calibration + Writing Quality Check + Anti-Leakage Protocol + VLM Figure Verification + Disclosure Mode (venue-specific AI usage statements) + v3.6.6 generator-evaluator sprint contract (Schema 20.1) + v3.7.3 three-layer citation locator. Supports IMRaD, literature review, theoretical, case study, policy brief, and conference paper structures. APA 7.0 (default), Chicago, MLA, IEEE, Vancouver citation formats. Bilingual abstracts (zh-TW + EN). Multi-format output (LaTeX, DOCX-via-Pandoc, PDF, Markdown). Triggers on: write paper, academic paper, paper outline, write abstract, revise paper, check citations, convert to LaTeX, guide my paper, parse reviews, revision roadmap, AI disclosure, 寫論文, 學術論文, 論文大綱, 寫摘要, 修改論文, 檢查引用, 引導我寫論文, 帶我規劃論文, 逐章規劃, 論文架構, 審查意見, 修訂路線圖."
+description: "Academic paper writing skill with 11-agent pipeline. v3.2.0: 10 modes (full/plan/outline/revision/revision-coach/abstract/lit-review/format-convert/citation-check/disclosure). Experiment results integration (Schema 11/12) from data-analyst, simulation-runner, and lab-notebook. Style Calibration + Writing Quality Check + Anti-Leakage Protocol + VLM Figure Verification + Disclosure Mode (venue-specific AI usage statements) + v3.6.6 generator-evaluator sprint contract (Schema 20.1) + v3.7.3 three-layer citation locator. Supports IMRaD, literature review, theoretical, case study, policy brief, and conference paper structures. APA 7.0 (default), Chicago, MLA, IEEE, Vancouver citation formats. English-only output. Multi-format output (LaTeX, DOCX-via-Pandoc, PDF, Markdown). Triggers on: write paper, academic paper, paper outline, write abstract, revise paper, check citations, convert to LaTeX, guide my paper, parse reviews, revision roadmap, AI disclosure."
 metadata:
-  version: "3.1.1"
+  version: "3.2.0"
   last_updated: "2026-05-15"
   status: active
   data_access_level: redacted
@@ -24,7 +24,7 @@ A general-purpose academic paper writing tool — 12-agent pipeline covering all
 - **Style Calibration** (intake Step 10, optional) — Provide 3+ past papers and the pipeline learns your writing voice (sentence rhythm, vocabulary preferences, citation integration style). Applied as a soft guide during drafting; discipline conventions always take priority. See `shared/style_calibration_protocol.md`.
 - **Writing Quality Check** (`references/writing_quality_check.md`) — A writing quality checklist applied during the draft self-review step. Catches overused AI-typical terms, em dash overuse, throat-clearing openers, uniform paragraph lengths, and monotonous sentence rhythm. These are good writing rules, not detection evasion.
 
-v2.4 hardened LaTeX output formatting: mandatory `apa7` document class for APA 7.0, text justification override for `man` mode, table column width formula with `\tabcolsep` deduction, bilingual abstract centering, standardized font stack (Times New Roman + Source Han Serif TC VF + Courier New), and PDF compilation via tectonic.
+v2.4 hardened LaTeX output formatting: mandatory `apa7` document class for APA 7.0, text justification override for `man` mode, table column width formula with `\tabcolsep` deduction, standardized font stack (Times New Roman + Courier New), and PDF compilation via tectonic.
 
 ## Quick Start
 
@@ -43,7 +43,7 @@ Write a paper on the impact of declining birth rates on private university manag
 3. Architecture design — paper structure, outline, word count allocation
 4. Argumentation construction — claim-evidence chains, logical flow
 5. Full-text drafting — section-by-section draft, register adjustment
-6. Citation compliance + bilingual abstract (parallel)
+6. Citation compliance audit (English abstract emitted inline by draft_writer in Phase 4)
 7. Peer review — five-dimension scoring, revision suggestions
 8. Output formatting — LaTeX/DOCX-via-Pandoc/PDF output plus Markdown. When Pandoc unavailable: Markdown + instructions.
 
@@ -53,13 +53,11 @@ Write a paper on the impact of declining birth rates on private university manag
 
 ### Trigger Keywords
 
-**English**: write paper, academic paper, paper outline, write abstract, revise paper, literature review paper, check citations, convert to LaTeX, convert format, format paper, conference paper, journal article, thesis chapter, research paper, guide my paper, help me plan my paper, step by step paper, draft manuscript, write methodology, write discussion, parse reviews, revision roadmap, help me with my revision, I got reviewer comments, convert citations
-
-**繁體中文**: 寫論文, 學術論文, 論文大綱, 寫摘要, 修改論文, 文獻回顧論文, 檢查引用, 轉 LaTeX, 轉換格式, 研討會論文, 期刊文章, 學位論文, 研究論文, 引導我寫論文, 幫我規劃論文, 逐步寫論文, 寫方法論, 寫討論, 審查意見, 修訂路線圖, 幫我修改, 我收到審查意見, 轉換引用格式
+**Triggers**: write paper, academic paper, paper outline, write abstract, revise paper, literature review paper, check citations, convert to LaTeX, convert format, format paper, conference paper, journal article, thesis chapter, research paper, guide my paper, help me plan my paper, step by step paper, draft manuscript, write methodology, write discussion, parse reviews, revision roadmap, help me with my revision, I got reviewer comments, convert citations
 
 ### Plan Mode Activation
 
-Activate `plan` mode (Socratic chapter-by-chapter guidance) when the user's **intent** matches any of the following patterns, **regardless of language**. Detect meaning, not exact keywords.
+Activate `plan` mode (Socratic chapter-by-chapter guidance) when the user's **intent** matches any of the following patterns. Detect meaning, not exact keywords. Plan mode only fires when `ARS_INTERACTIVE=1` is set; in auto mode (default) the orchestrator forces `full` regardless of intent.
 
 **Intent signals** (any one is sufficient):
 1. User wants to be guided or led through paper writing, not just given a finished paper
@@ -72,7 +70,7 @@ Activate `plan` mode (Socratic chapter-by-chapter guidance) when the user's **in
 **Default rule**: When intent is ambiguous between `plan` and `full`, **prefer `plan`** — it is safer to guide a user who needs help than to produce a paper they can't use. The user can always switch to `full` later.
 
 **Example triggers** (illustrative, not exhaustive):
-"guide my paper", "help me plan my paper", "I don't know how to start", 「引導我寫論文」「幫我規劃論文」, or equivalent in any language
+"guide my paper", "help me plan my paper", "I don't know how to start", or equivalent.
 
 ### Does NOT Trigger
 
@@ -89,29 +87,28 @@ Activate `plan` mode (Socratic chapter-by-chapter guidance) when the user's **in
 | Primary output | Publishable paper draft | Research report |
 | Structure | Journal-ready (IMRaD, etc.) | APA 7.0 report |
 | Citation | Multi-format (APA/Chicago/MLA/IEEE/Vancouver) | APA 7.0 only |
-| Abstract | Bilingual (zh-TW + EN) | Single language |
+| Abstract | English (150-300 words, structured) | English single block |
 | Peer review | Simulated 5-dimension review | Editorial review |
 | Output format | LaTeX/DOCX (via Pandoc)/PDF/Markdown | Markdown only |
 | Revision loop | Max 2 rounds with targeted feedback | Max 2 rounds |
 
 ---
 
-## Agent Team (12 Agents)
+## Agent Team (11 Agents)
 
 | # | Agent | Role | Phase |
 |---|-------|------|-------|
-| 1 | `intake_agent` | Configuration interview: paper type, discipline, journal, citation format, output format, language, word count; Handoff detection; Plan mode simplified interview | Phase 0 |
+| 1 | `intake_agent` | Configuration interview: paper type, discipline, journal, citation format, output format, word count; Handoff detection; Plan mode simplified interview | Phase 0 |
 | 2 | `literature_strategist_agent` | Search strategy design, source screening, annotated bibliography, literature matrix | Phase 1 |
 | 3 | `structure_architect_agent` | Paper structure selection, detailed outline, word count allocation, evidence mapping | Phase 2 |
 | 4 | `argument_builder_agent` | Argument construction, claim-evidence chains, logical flow, counter-argument handling; Plan mode argument stress test | Phase 3 / Plan Step 3 |
-| 5 | `draft_writer_agent` | Section-by-section full draft writing, discipline register adjustment, word count tracking | Phase 4 |
-| 6 | `citation_compliance_agent` | Citation format verification, reference list completeness, DOI checking | Phase 5a |
-| 7 | `abstract_bilingual_agent` | Bilingual abstract (zh-TW + EN), 5-7 keywords each | Phase 5b |
-| 8 | `peer_reviewer_agent` | Simulated double-blind review, five-dimension scoring, revision suggestions (max 2 rounds) | Phase 6 |
-| 9 | `formatter_agent` | Convert to LaTeX/DOCX (via Pandoc)/PDF/Markdown, journal formatting, cover letter, citation format conversion (APA 7 / Chicago / MLA / IEEE / Vancouver) | Phase 7 |
-| 10 | `socratic_mentor_agent` | Plan mode Socratic mentor: chapter-by-chapter guidance, convergence criteria (4 signals), question taxonomy (4 types), INSIGHT extraction | Plan Step 0-3 |
-| 11 | `visualization_agent` | Parse paper data and generate publication-quality figure code (Python matplotlib / R ggplot2) with APA 7.0 formatting, colorblind-safe palettes, and LaTeX integration | Phase 4 / Phase 7 |
-| 12 | `revision_coach_agent` | Parse unstructured reviewer comments into structured Revision Roadmap; classify, map, and prioritize comments; works standalone without prior pipeline execution | Revision-Coach mode |
+| 5 | `draft_writer_agent` | Section-by-section full draft writing, discipline register adjustment, word count tracking, English abstract (150-300 words, structured) + 5-7 keywords | Phase 4 |
+| 6 | `citation_compliance_agent` | Citation format verification, reference list completeness, DOI checking | Phase 5 |
+| 7 | `peer_reviewer_agent` | Simulated double-blind review, five-dimension scoring, revision suggestions (max 2 rounds) | Phase 6 |
+| 8 | `formatter_agent` | Convert to LaTeX/DOCX (via Pandoc)/PDF/Markdown, journal formatting, cover letter, citation format conversion (APA 7 / Chicago / MLA / IEEE / Vancouver) | Phase 7 |
+| 9 | `socratic_mentor_agent` | Plan mode Socratic mentor: chapter-by-chapter guidance, convergence criteria (4 signals), question taxonomy (4 types), INSIGHT extraction | Plan Step 0-3 |
+| 10 | `visualization_agent` | Parse paper data and generate publication-quality figure code (Python matplotlib / R ggplot2) with APA 7.0 formatting, colorblind-safe palettes, and LaTeX integration | Phase 4 / Phase 7 |
+| 11 | `revision_coach_agent` | Parse unstructured reviewer comments into structured Revision Roadmap; classify, map, and prioritize comments; works standalone without prior pipeline execution | Revision-Coach mode |
 
 ---
 
@@ -141,8 +138,6 @@ User: "Write a paper on [topic]"
          - Target journal (optional)
          - Citation format (APA 7 / Chicago / MLA / IEEE / Vancouver)
          - Output format (LaTeX / DOCX / PDF / Markdown / Combined)
-         - Language (EN / zh-TW / bilingual sections)
-         - Bilingual abstract (Yes / EN-only / zh-TW-only)
          - Word count target
          - Existing materials (RQ, data, drafts, lit)
      |
@@ -205,21 +200,14 @@ User: "Write a paper on [topic]"
      |
      ** User reviews figures (optional adjustments) **
      |
-=== Phase 5a & 5b: CITATIONS + ABSTRACT (Parallel) ===
+=== Phase 5: CITATIONS ===
      |
-     |-> [citation_compliance_agent] -> Citation Audit Report
-     |   - In-text <-> reference list cross-check (zero orphans)
-     |   - Format compliance (per selected style)
-     |   - DOI/URL verification
-     |   - Self-citation ratio check
-     |   - Auto-correction of detected errors
-     |
-     +-> [abstract_bilingual_agent] -> Bilingual Abstract + Keywords
-         - English abstract (150-300 words, structured)
-         - Traditional Chinese abstract (300-500 characters, structured)
-         - EN keywords (5-7)
-         - zh-TW keywords (5-7)
-         - Independent writing (not mechanical translation)
+     +-> [citation_compliance_agent] -> Citation Audit Report
+         - In-text <-> reference list cross-check (zero orphans)
+         - Format compliance (per selected style)
+         - DOI/URL verification
+         - Self-citation ratio check
+         - Auto-correction of detected errors
      |
 === Phase 6: PEER REVIEW ===
      |
@@ -361,6 +349,8 @@ The v3.6.3 `ARS_PASSPORT_RESET=1` `reset_boundary[]` mechanism (per `academic-pi
 
 ## Operational Modes (10 Modes)
 
+> **Auto-mode override (v3.17.0+):** When dispatched by `academic-pipeline` in auto mode (default, `ARS_INTERACTIVE` unset), this skill runs `mode=full` regardless of dispatch flags. The `plan` mode (chapter-by-chapter Socratic guidance) only fires when `ARS_INTERACTIVE=1` AND the orchestrator explicitly requests it. Standalone invocation outside the pipeline honors the user's requested mode as before.
+
 See `references/mode_selection_guide.md` for details.
 
 | Mode | Trigger | Agents | Output |
@@ -368,7 +358,7 @@ See `references/mode_selection_guide.md` for details.
 | `full` | "Write a paper" | All 12 (visualization_agent always included) | Complete paper draft with publication-ready figures |
 | `outline-only` | "Paper outline" | 1->2->3 | Detailed outline + evidence map |
 | `revision` | "Revise paper" | 8->5->6 | Revised draft with tracked changes (uses `templates/revision_tracking_template.md`) |
-| `abstract-only` | "Write abstract" | 1->7 | Bilingual abstract + keywords |
+| `abstract-only` | "Write abstract" | 1->5 (draft_writer abstract pass) | English abstract + 5-7 keywords |
 | `lit-review` | "Literature review" | 1->2 | Annotated bibliography + synthesis |
 | `format-convert` | "Convert to LaTeX" / "Convert citations to [format]" | 9 only | Formatted document; includes citation format conversion (APA 7 / Chicago / MLA / IEEE / Vancouver) |
 | `citation-check` | "Check citations" | 6 only | Citation error report |
@@ -555,7 +545,6 @@ See `agents/intake_agent.md` for the complete field definitions of the Phase 0 c
 | argument_builder_agent | `agents/argument_builder_agent.md` |
 | draft_writer_agent | `agents/draft_writer_agent.md` |
 | citation_compliance_agent | `agents/citation_compliance_agent.md` |
-| abstract_bilingual_agent | `agents/abstract_bilingual_agent.md` |
 | peer_reviewer_agent | `agents/peer_reviewer_agent.md` |
 | formatter_agent | `agents/formatter_agent.md` |
 | socratic_mentor_agent | `agents/socratic_mentor_agent.md` |
@@ -569,13 +558,12 @@ See `agents/intake_agent.md` for the complete field definitions of the Phase 0 c
 | Reference | Purpose | Used By |
 |-----------|---------|---------|
 | `references/apa7_extended_guide.md` | APA 7th extended guide (extends deep-research version) | citation_compliance, draft_writer, formatter |
-| `references/apa7_chinese_citation_guide.md` | APA 7.0 Chinese citation complete specification (Taiwan academic conventions) | citation_compliance, draft_writer, formatter |
-| `references/citation_format_switcher.md` | Multi-citation format switching rules (including Chinese formats) | citation_compliance, formatter |
+| `references/citation_format_switcher.md` | Multi-citation format switching rules | citation_compliance, formatter |
 | `references/paper_structure_patterns.md` | 6 paper structure patterns | structure_architect, intake |
 | `references/academic_writing_style.md` | Academic writing style guide | draft_writer, peer_reviewer |
-| `references/hei_domain_glossary.md` | Higher education terminology bilingual glossary | all agents (domain context) |
+| `references/hei_domain_glossary.md` | Higher education terminology glossary | all agents (domain context) |
 | `references/journal_submission_guide.md` | Journal submission guide | formatter, intake |
-| `references/abstract_writing_guide.md` | Abstract writing guide | abstract_bilingual |
+| `references/abstract_writing_guide.md` | Abstract writing guide | draft_writer |
 | `references/latex_template_reference.md` | LaTeX template reference | formatter |
 | `references/failure_paths.md` | Failure path map (12 scenarios + handling strategies) | all agents |
 | `references/mode_selection_guide.md` | 8 mode selection guide + transition paths | intake |
@@ -605,7 +593,6 @@ The `intake_agent` dynamically selects the appropriate template based on the pap
 | `templates/policy_brief_template.md` | Policy brief template |
 | `templates/conference_paper_template.md` | Conference paper template |
 | `templates/latex_article_template.tex` | LaTeX starter template (generic `article` class; `formatter_agent` overrides to `apa7` class with proper options during format-convert) |
-| `templates/bilingual_abstract_template.md` | Bilingual abstract template |
 | `templates/credit_statement_template.md` | Author x Role contribution matrix + CRediT statement output |
 | `templates/funding_statement_template.md` | Funding source registration + statement output |
 | `templates/revision_tracking_template.md` | Systematic tracker for reviewer comments and resolutions during revision (4 status types: RESOLVED, DELIBERATE_LIMITATION, UNRESOLVABLE, REVIEWER_DISAGREE) |
@@ -619,7 +606,6 @@ The `intake_agent` dynamically selects the appropriate template based on the pap
 | `examples/imrad_hei_example.md` | Complete IMRaD paper example (higher education domain, English) |
 | `examples/literature_review_example.md` | Literature review paper example |
 | `examples/plan_mode_guided_writing.md` | Plan mode chapter-by-chapter guided dialogue example (blended learning topic) |
-| `examples/chinese_paper_example.md` | Complete Chinese academic paper example (IMRaD, Chinese APA 7.0 citations) |
 | `examples/revision_mode_example.md` | Revision mode complete workflow: peer review response + revision comparison table |
 | `examples/revision_recovery_example.md` | Major Revision recovery: revision tracking with 4 status types through to Accept |
 
@@ -634,33 +620,31 @@ The `intake_agent` dynamically selects the appropriate template based on the pap
 4. **Logical flow** — clear transitions between paragraphs and sections
 5. **Word count compliance** — within +/-10% of target
 
-### Bilingual Abstract Quality
-6. **Independent writing** — zh-TW and EN abstracts are independently composed, NOT mechanical translations
-7. **Structural alignment** — both abstracts cover the same key points in the same order
-8. **Keywords** — 5-7 per language, reflecting the paper's core concepts
-9. **Word count** — EN: 150-300 words; zh-TW: 300-500 characters
+### Abstract Quality
+6. **Structured English abstract** — 150-300 words, follows IMRaD or applicable structure
+7. **Keywords** — 5-7 per paper, reflecting the paper's core concepts
 
 ### Citation Quality
-10. **Format compliance** — 100% adherence to selected citation style
-11. **DOI inclusion** — every source with a DOI must include it
-12. **Currency** — flag sources older than 10 years (unless seminal works)
-13. **Self-citation ratio** — flag if >15%
+8. **Format compliance** — 100% adherence to selected citation style
+9. **DOI inclusion** — every source with a DOI must include it
+10. **Currency** — flag sources older than 10 years (unless seminal works)
+11. **Self-citation ratio** — flag if >15%
 
 ### Peer Review
-14. **Five dimensions** — Originality (20%), Methodological Rigor (25%), Evidence Sufficiency (25%), Argument Coherence (15%), Writing Quality (15%)
-15. **Actionable feedback** — every criticism must include a specific suggestion
-16. **Max 2 revision rounds** — unresolved items become Acknowledged Limitations
+12. **Five dimensions** — Originality (20%), Methodological Rigor (25%), Evidence Sufficiency (25%), Argument Coherence (15%), Writing Quality (15%)
+13. **Actionable feedback** — every criticism must include a specific suggestion
+14. **Max 2 revision rounds** — unresolved items become Acknowledged Limitations
 
 ### Mandatory Inclusions
-17. **AI disclosure statement** — every paper must include a statement on AI tool usage
-18. **Limitations section** — explicitly discuss study limitations
-19. **Ethics statement** — when applicable (human subjects, sensitive data)
+15. **AI disclosure statement** — every paper must include a statement on AI tool usage
+16. **Limitations section** — explicitly discuss study limitations
+17. **Ethics statement** — when applicable (human subjects, sensitive data)
 
 ---
 
 ## Output Language
 
-Follows the user's language. Academic terminology is kept in English. Bilingual abstracts are always provided regardless of the main text language.
+English only. Single English abstract emitted inline by `draft_writer_agent` during Phase 4.
 
 ---
 
@@ -680,7 +664,7 @@ academic-paper + academic-paper-reviewer -> Peer review -> revision loop
 
 | Item | Content |
 |------|---------|
-| Skill Version | 3.1.1 |
+| Skill Version | 3.2.0 |
 | Last Updated | 2026-05-15 |
 | Maintainer | Pouria Mortezaagha (fork) / Cheng-I Wu (upstream) |
 | Dependent Skills | deep-research (upstream), academic-paper-reviewer (downstream), academic-pipeline (orchestrator), experiment-designer + data-analyst + simulation-runner + lab-notebook (upstream when methodology requires experiments) |
@@ -691,6 +675,7 @@ academic-paper + academic-paper-reviewer -> Peer review -> revision loop
 
 | Version | Date | Changes |
 |---------|------|---------|
+| 3.2.0 | 2026-05-15 | Removed the bilingual abstract agent (deleted in v3.17.0 — see CHANGELOG) and all bilingual / Traditional Chinese support. Agent count 12 → 11. English-only output. `draft_writer_agent` emits the English abstract + keywords inline during Phase 4. Phase 5a/5b parallel collapsed to a single Phase 5 (citations). Deleted Chinese citation guide + bilingual abstract template + Chinese paper example. Auto-mode override: when dispatched by `academic-pipeline` in auto mode (default), this skill runs `mode=full` regardless of orchestrator dispatch flags; plan/socratic only fire under `ARS_INTERACTIVE=1`. |
 | 2.5 | 2026-03-27 | Style Calibration (intake Step 10: learn author's writing voice from 3+ past papers, produce Style Profile with 6 dimensions, consumed by draft_writer as soft guide with discipline-convention priority). Writing Quality Check (`references/writing_quality_check.md`: 25-term AI high-frequency word warnings, em dash limits, throat-clearing detection, structural pattern warnings, burstiness checks — applied in draft_writer self-review). Style Profile carried through academic-pipeline Material Passport (Schema 17 in `shared/handoff_schemas.md`). deep-research report_compiler also consumes both features optionally |
 | 2.4 | 2026-03-08 | LaTeX output formatting hardening: mandatory `apa7` document class for APA 7.0 output; text justification fix (`ragged2e` + `etoolbox` to override apa7 man mode `\raggedright`); table column width formula (`(\linewidth - N\tabcolsep) * \real{proportion}` — prevents overflow); bilingual abstract centering (`\begin{center}\textbf{...}\end{center}`); font stack standardized (Times New Roman + Source Han Serif TC VF + Courier New); `xurl` for URL line breaking; `fancyvrb` Verbatim with `fontsize` for wide content; PDF must compile from LaTeX via tectonic (no HTML-to-PDF) |
 | 2.3 | 2026-03-08 | NEW visualization_agent (11th: publication-quality figures with matplotlib/ggplot2, APA 7.0, colorblind-safe); NEW revision_coach_agent (12th: standalone reviewer comment parser → Revision Roadmap); Socratic convergence criteria (4 signals: thesis clarity, chapter coherence, evidence mapping, limitation honesty) + question taxonomy (clarifying, probing, structuring, challenging); revision tracking template (4 status types); citation format conversion in formatter_agent (APA 7 ↔ Chicago ↔ MLA ↔ IEEE ↔ Vancouver); Quick Mode Selection Guide; 9th mode: revision-coach |

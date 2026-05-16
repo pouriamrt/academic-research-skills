@@ -1,8 +1,8 @@
 ---
 name: data-analyst
-description: "Statistical analysis execution engine. 7-agent pipeline for rigorous data analysis, assumption testing, and publication-ready results. 6 modes: full analysis, guided interactive, quick summary, assumption-check, exploratory EDA, and replication. Covers data profiling, cleaning, missing data handling, assumption testing, parametric and non-parametric tests, regression, ANOVA, SEM, HLM, mediation, survival analysis, Bayesian methods, effect size computation, publication-quality visualization, and APA 7 report compilation. Triggers on: analyze data, run statistics, statistical analysis, t-test, ANOVA, regression, correlation, chi-square, descriptive statistics, check assumptions, explore data, EDA, replicate analysis, analyze my data, run the analysis, effect size, missing data, 分析資料, 統計分析, 跑統計, 描述統計, 檢驗假設, 探索資料, 複製分析, 效果量, 缺失值處理."
+description: "Statistical analysis execution engine. 7-agent pipeline for rigorous data analysis, assumption testing, and publication-ready results. 6 modes: full analysis, guided interactive, quick summary, assumption-check, exploratory EDA, and replication. Covers data profiling, cleaning, missing data handling, assumption testing, parametric and non-parametric tests, regression, ANOVA, SEM, HLM, mediation, survival analysis, Bayesian methods, effect size computation, publication-quality visualization, and APA 7 report compilation. Triggers on: analyze data, run statistics, statistical analysis, t-test, ANOVA, regression, correlation, chi-square, descriptive statistics, check assumptions, explore data, EDA, replicate analysis, analyze my data, run the analysis, effect size, missing data."
 metadata:
-  version: "1.0"
+  version: "1.0.1"
   last_updated: "2026-05-15"
   status: active
   data_access_level: raw
@@ -47,13 +47,13 @@ Help me analyze my data — I have exam scores across three teaching methods
 
 ### Trigger Keywords
 
-**English**: analyze data, run statistics, statistical analysis, t-test, ANOVA, regression, correlation, chi-square, descriptive statistics, check assumptions, explore data, EDA, replicate analysis, analyze my data, run the analysis, effect size, missing data, run ANCOVA, factor analysis, SEM, HLM, mediation analysis, survival analysis, Bayesian analysis
-
-**Traditional Chinese**: 分析資料, 統計分析, 跑統計, 描述統計, 檢驗假設, 探索資料, 複製分析, 效果量, 缺失值處理
+**Triggers**: analyze data, run statistics, statistical analysis, t-test, ANOVA, regression, correlation, chi-square, descriptive statistics, check assumptions, explore data, EDA, replicate analysis, analyze my data, run the analysis, effect size, missing data, run ANCOVA, factor analysis, SEM, HLM, mediation analysis, survival analysis, Bayesian analysis
 
 ### Guided Mode Activation
 
-Activate `guided` mode when the user's **intent** matches any of the following patterns, **regardless of language**:
+> **Auto-mode override (v3.17.0+):** When dispatched by `academic-pipeline` in auto mode (default), this skill runs `mode=full` regardless of dispatch flags. The `guided` mode only fires when `ARS_INTERACTIVE=1` AND the orchestrator explicitly requests it. Standalone invocation outside the pipeline honors the user's requested mode as before.
+
+Activate `guided` mode when the user's **intent** matches any of the following patterns:
 
 **Intent signals** (any one is sufficient):
 1. User has data but is unsure which analysis to run
@@ -377,7 +377,7 @@ Follows the user's language. Statistical notation and APA formatting remain in E
 
 | Item | Content |
 |------|---------|
-| Skill Version | 1.0 |
+| Skill Version | 1.0.1 |
 | Last Updated | 2026-05-15 |
 | Maintainer | Pouria Mortezaagha (fork) |
 | Dependent Skills | experiment-designer (upstream — Schema 10 consumer), lab-notebook + academic-paper (downstream — Schema 11 producer), academic-pipeline (orchestrator) |

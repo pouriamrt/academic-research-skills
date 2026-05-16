@@ -1,8 +1,8 @@
 ---
 name: deep-research
-description: "Universal deep research agent team. 14-agent pipeline for rigorous academic research on any topic. 7 modes: full research, quick brief, paper review, lit-review, fact-check, Socratic guided research dialogue, and systematic review with optional meta-analysis. Covers research question formulation, Socratic mentoring, methodology design, systematic literature search (Semantic Scholar + OpenAlex + WebSearch), source verification, cross-source synthesis, concept lineage tracing, risk of bias assessment, meta-analysis, APA 7.0 report compilation, editorial review, devil's advocate challenges, ethics review, and post-research literature monitoring. Triggers on: research, deep research, literature review, systematic review, meta-analysis, PRISMA, evidence synthesis, fact-check, guide my research, help me think through, citation chain, concept lineage, 研究, 深度研究, 文獻回顧, 文獻探討, 系統性回顧, 後設分析, 事實查核, 引導我的研究, 幫我釐清, 幫我想想, 我不確定要研究什麼, 研究方向, 研究主題, 引用鏈, 概念系譜."
+description: "Universal deep research agent team. 14-agent pipeline for rigorous academic research on any topic. 7 modes: full research, quick brief, paper review, lit-review, fact-check, Socratic guided research dialogue, and systematic review with optional meta-analysis. Covers research question formulation, Socratic mentoring, methodology design, systematic literature search (Semantic Scholar + OpenAlex + WebSearch), source verification, cross-source synthesis, concept lineage tracing, risk of bias assessment, meta-analysis, APA 7.0 report compilation, editorial review, devil's advocate challenges, ethics review, and post-research literature monitoring. Triggers on: research, deep research, literature review, systematic review, meta-analysis, PRISMA, evidence synthesis, fact-check, guide my research, help me think through, citation chain, concept lineage."
 metadata:
-  version: "2.9.3"
+  version: "2.9.4"
   last_updated: "2026-05-15"
   status: active
   data_access_level: raw
@@ -49,13 +49,11 @@ Guide my research on the impact of declining birth rates on private universities
 
 ### Trigger Keywords
 
-**English**: research, deep research, literature review, systematic review, meta-analysis, PRISMA, evidence synthesis, fact-check, methodology, APA report, academic analysis, policy analysis, guide my research, help me think through, monitor this topic, set up alerts
-
-**繁體中文**: 研究, 深度研究, 文獻回顧, 文獻探討, 系統性回顧, 後設分析, 證據綜整, 事實查核, 研究方法, 學術分析, 政策分析, 引導我的研究, 幫我釐清, 監測這個主題, 設定追蹤
+**Triggers**: research, deep research, literature review, systematic review, meta-analysis, PRISMA, evidence synthesis, fact-check, methodology, APA report, academic analysis, policy analysis, guide my research, help me think through, monitor this topic, set up alerts
 
 ### Socratic Mode Activation
 
-Activate `socratic` mode when the user's **intent** matches any of the following patterns, **regardless of language**. Detect meaning, not exact keywords.
+Activate `socratic` mode when the user's **intent** matches any of the following patterns. Detect meaning, not exact keywords. Socratic mode only fires when `ARS_INTERACTIVE=1` is set; in auto mode (default) the orchestrator forces `full` regardless of intent.
 
 **Intent signals** (any one is sufficient):
 1. User has no clear research question and wants guided thinking
@@ -67,7 +65,9 @@ Activate `socratic` mode when the user's **intent** matches any of the following
 **Default rule**: When intent is ambiguous between `socratic` and `full`, **prefer `socratic`** — it is safer to guide first than to produce an unwanted report. The user can always switch to `full` later.
 
 **Example triggers** (illustrative, not exhaustive):
-"guide my research", "help me think through", 「引導我的研究」「幫我釐清」, or equivalent in any language
+"guide my research", "help me think through", or equivalent.
+
+> **Auto-mode override (v3.17.0+):** When dispatched by `academic-pipeline` in auto mode (default), this skill runs `mode=full` regardless of dispatch flags. The `socratic` mode only fires when `ARS_INTERACTIVE=1` AND the orchestrator explicitly requests it. Standalone invocation outside the pipeline honors the user's requested mode as before.
 
 ### Does NOT Trigger
 
@@ -470,7 +470,7 @@ Key failure path summary:
 | Ethics BLOCKED | Serious ethical issue | STOP, list issues and remediation path |
 | Socratic non-convergence | > 10 rounds without convergence | Suggest switching to full mode |
 | User abandons mid-process | Explicitly states they don't want to continue | Save progress, provide re-entry path |
-| Only Chinese-language literature | English search returns empty | Switch to Chinese academic databases |
+| English search returns empty for niche topic | Search returns fewer than 10 results | Broaden keywords or recommend a more specific RQ |
 
 ---
 
@@ -654,7 +654,7 @@ deep-research (systematic-review) + academic-paper -> PRISMA systematic review p
 
 | Item | Content |
 |------|---------|
-| Skill Version | 2.9.3 |
+| Skill Version | 2.9.4 |
 | Last Updated | 2026-05-15 |
 | Maintainer | Pouria Mortezaagha (fork) / Cheng-I Wu (upstream) |
 | Dependent Skills | academic-paper, academic-paper-reviewer, academic-pipeline (downstream); experiment-designer (downstream when methodology requires experiments) |

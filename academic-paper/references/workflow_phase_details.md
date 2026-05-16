@@ -14,8 +14,6 @@ Detailed per-phase agent behavior and output descriptions for the 8-phase orches
 - Target journal (optional)
 - Citation format (APA 7 / Chicago / MLA / IEEE / Vancouver)
 - Output format (LaTeX / DOCX / PDF / Markdown / Combined)
-- Language (EN / zh-TW / bilingual sections)
-- Bilingual abstract (Yes / EN-only / zh-TW-only)
 - Word count target
 - Existing materials (RQ, data, drafts, lit)
 
@@ -77,9 +75,7 @@ Detailed per-phase agent behavior and output descriptions for the 8-phase orches
 
 ---
 
-## Phase 5a & 5b: CITATIONS + ABSTRACT (Parallel)
-
-### Phase 5a: Citations
+## Phase 5: CITATIONS
 
 **Agent**: `citation_compliance_agent`
 **Output**: Citation Audit Report
@@ -90,16 +86,7 @@ Detailed per-phase agent behavior and output descriptions for the 8-phase orches
 - Self-citation ratio check
 - Auto-correction of detected errors
 
-### Phase 5b: Abstract
-
-**Agent**: `abstract_bilingual_agent`
-**Output**: Bilingual Abstract + Keywords
-
-- English abstract (150-300 words, structured)
-- Traditional Chinese abstract (300-500 characters, structured)
-- EN keywords (5-7)
-- zh-TW keywords (5-7)
-- Independent writing (not mechanical translation)
+Note: The English abstract (150-300 words, structured) and 5-7 keywords are produced by `draft_writer_agent` in Phase 4 and live as a standalone Markdown block before Phase 5 begins.
 
 ---
 

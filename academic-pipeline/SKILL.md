@@ -2,7 +2,7 @@
 name: academic-pipeline
 description: "Orchestrator for the full academic research pipeline: research -> experiment (optional) -> write -> integrity check -> review -> revise -> re-review -> re-revise -> final integrity check -> finalize -> process summary. Coordinates deep-research, experiment-designer, data-analyst, simulation-runner, lab-notebook, academic-paper, and academic-paper-reviewer into a seamless workflow with auto-detected experiment stages, mandatory integrity verification, two-stage peer review, AI Research Failure Mode Checklist (Lu 2026), Score Trajectory tracking, Early-Stopping criterion, and reproducible quality gates. Triggers on: academic pipeline, research to paper, full paper workflow, paper pipeline, end-to-end paper, research-to-publication, complete paper workflow."
 metadata:
-  version: "3.16.0"
+  version: "3.17.0"
   last_updated: "2026-05-15"
   depends_on: "deep-research, experiment-designer, data-analyst, simulation-runner, lab-notebook, academic-paper, academic-paper-reviewer"
   status: active
@@ -18,9 +18,13 @@ metadata:
     - academic-paper-reviewer
 ---
 
-# Academic Pipeline v3.16.0 — Full Academic Research Workflow Orchestrator (suite-version-pinned)
+# Academic Pipeline v3.17.0 — Full Academic Research Workflow Orchestrator (suite-version-pinned, auto-by-default)
 
 A lightweight orchestrator that manages the complete academic pipeline from research exploration to final manuscript. It does not perform substantive work — it only detects stages, recommends modes, dispatches skills, manages transitions, and tracks state.
+
+**v3.17.0 BREAKING:** The pipeline now runs unattended by default. Set `ARS_INTERACTIVE=1` to restore v3.16.0 checkpoint pauses, mode-recommendation prompts, the beep, and per-skill `socratic` / `plan` / `guided` modes. See `agents/pipeline_orchestrator_agent.md` §0 Auto vs Interactive Mode.
+
+**v3.17.0 env vars:** `ARS_AUTO_MAX_RETRIES` (default `3`, Stage 4.5 hard-pinned `1`), `ARS_AUTO_FAIL_MODE` (default `exit-nonzero`; alt `continue-with-warning`), `ARS_AUTO_NO_REENTRY=1` to skip Stage 1.5-R / 1.5-R2 experiment re-entry.
 
 **v3.6.3 (opt-in):** Set `ARS_PASSPORT_RESET=1` to promote FULL checkpoints to context-reset boundaries. Use `resume_from_passport=<hash>` in a fresh session to continue from the recorded stage. See [`references/passport_as_reset_boundary.md`](references/passport_as_reset_boundary.md).
 
@@ -113,7 +117,7 @@ resume_from_passport=<hash> [stage=<n>] [mode=<m>]
 | **4'** | **RE-REVISE** | **`academic-paper`** | **revision** | **Second revised draft (if needed)** |
 | **4.5** | **FINAL INTEGRITY** | **`integrity_verification_agent`** | **final-check** | **Final verification report (must achieve 100% pass to proceed)** |
 | 5 | FINALIZE | `academic-paper` | format-convert | Final Paper (default MD; DOCX via Pandoc when available, otherwise conversion instructions; ask about LaTeX; confirm correctness; PDF) |
-| **6** | **PROCESS SUMMARY** | **orchestrator** | **auto** | **Paper creation process record MD + LaTeX to PDF (bilingual)** |
+| **6** | **PROCESS SUMMARY** | **orchestrator** | **auto** | **Paper creation process record MD + LaTeX to PDF (English)** |
 
 **Parallelization opportunity (v3.3)**: Within Stage 2, the `academic-paper` skill's Phase 1 (`academic-paper/literature_strategist_agent`) and the `academic-paper/visualization_agent` can operate in parallel after Phase 2 (`academic-paper/structure_architect_agent`) completes the outline. Specifically:
 - Once the outline includes a visualization plan, `academic-paper/visualization_agent` can begin figure generation
@@ -143,8 +147,8 @@ This mirrors PaperOrchestra's parallel execution of Plot Generation (Step 2) and
 6. **Stage 3' RE-REVIEW** -> Accept|Minor -> Stage 4.5 / Major -> **Experiment Re-Entry Check** -> Stage 4' (last experiment opportunity)
 7. **Stage 4' RE-REVISE** -> user confirmation -> Stage 4.5 (no return to review)
 8. **Stage 4.5 FINAL INTEGRITY** -> PASS (zero issues) -> Stage 5 (FAIL -> fix and re-verify)
-9. **Stage 5 FINALIZE** -> MD -> DOCX via Pandoc when available (otherwise instructions) -> ask about LaTeX -> confirm -> PDF -> Stage 6
-10. **Stage 6 PROCESS SUMMARY** -> ask language version -> generate process record MD -> LaTeX -> PDF -> end
+9. **Stage 5 FINALIZE** -> MD -> DOCX via Pandoc when available (otherwise instructions) -> LaTeX -> PDF -> Stage 6 (auto in default `ARS_INTERACTIVE` unset; in interactive mode user is asked about LaTeX before PDF compile)
+10. **Stage 6 PROCESS SUMMARY** -> generate English process record MD -> LaTeX -> PDF -> end
 
 See `references/pipeline_state_machine.md` for complete state transition definitions.
 
@@ -645,13 +649,7 @@ Integrity Summary:
 ### Workflow
 
 ```
-1. Ask user language preference:
-   "Which language version of the process record would you like to generate first?"
-   - Chinese (Traditional Chinese)
-   - English
-   - Both (default: generate the user's primary conversation language first)
-
-2. Review session history and compile the following:
+1. Review session history and compile the following:
    - User's initial instructions (verbatim quote)
    - Key decision points and user interventions at each stage
    - Direction correction moments and reasons
@@ -660,13 +658,12 @@ Integrity Summary:
    - Quality requirement evolution (e.g., formatting, tone adjustments)
    - Pipeline statistics (stage count, review rounds, integrity verification count, etc.)
 
-3. Generate Markdown version (paper_creation_process.md / paper_creation_process_en.md)
+2. Generate English Markdown version (paper_creation_process.md)
 
-4. Convert to LaTeX and compile PDF:
+3. Convert to LaTeX and compile PDF:
    - pandoc MD -> LaTeX body
    - Package complete LaTeX document (with cover page, table of contents, headers/footers)
    - tectonic compile PDF
-   - Chinese version requires xeCJK + Source Han Serif TC VF
 ```
 
 ### Required Content in Process Record
@@ -746,9 +743,9 @@ The final chapter of the process record is a "Collaboration Quality Evaluation" 
 
 ### Output Specifications
 
-- **Filename**: `paper_creation_process.md` (Chinese) / `paper_creation_process_en.md` (English)
-- **PDF**: `paper_creation_process_zh.pdf` / `paper_creation_process_en.pdf`
-- **LaTeX template**: `article` class, 12pt, A4, Times New Roman + Source Han Serif TC VF
+- **Filename**: `paper_creation_process.md` (English)
+- **PDF**: `paper_creation_process.pdf`
+- **LaTeX template**: `article` class, 12pt, A4, Times New Roman
 - **Includes table of contents**: `\tableofcontents`
 - **Header**: left = document title (italic), right = date
 - **Compilation**: tectonic (same toolchain as Stage 5)
@@ -936,7 +933,7 @@ Stage 5: academic-paper (format-convert mode)
   - Step 2: Produce MD, then generate DOCX via Pandoc when available (otherwise provide conversion instructions)
   - Step 3: Produce LaTeX (using corresponding document class, e.g., apa7 class for APA 7.0)
   - Step 4: After user confirms content is correct, tectonic compiles PDF (final version)
-  - Fonts: Times New Roman (English) + Source Han Serif TC VF (Chinese) + Courier New (monospace)
+  - Fonts: Times New Roman + Courier New (monospace)
   - PDF must be compiled from LaTeX (HTML-to-PDF is prohibited)
 ```
 
@@ -960,7 +957,7 @@ Stage 5: academic-paper (format-convert mode)
 
 | Item | Content |
 |------|---------|
-| Skill Version | 3.16.0 |
+| Skill Version | 3.17.0 |
 | Last Updated | 2026-05-15 |
 | Maintainer | Pouria Mortezaagha (fork) / Cheng-I Wu (upstream) |
 | Dependent Skills | deep-research v2.0+, experiment-designer v1.0+, data-analyst v1.0+, simulation-runner v1.0+, lab-notebook v1.0+, academic-paper v2.0+, academic-paper-reviewer v1.1+ |

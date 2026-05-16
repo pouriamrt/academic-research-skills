@@ -3,10 +3,34 @@
 Cross-skill fixes and update history.
 
 > **Schema renumbering note (fork v3.16.0, 2026-05-15):** entries below referencing upstream **Schema 12** (compliance_report) and **Schema 13** / **Schema 13.1** (sprint_contract) are now **Schema 19** and **Schema 20** / **Schema 20.1** in fork v3.16.0+ to avoid collision with fork's Schema 12 (Lab Record) and Schema 13 (Simulation Specification). Historical text preserved for upstream traceability.
+>
+> **Bilingual / Traditional Chinese support removed in v3.17.0 (2026-05-15).** Historical entries below that describe `abstract_bilingual_agent` / Chinese citation infrastructure / `.zh-TW.md` translations describe state that no longer exists. Preserved for historical traceability.
 
 ---
 
 ## 2026-05-15
+
+### v3.17.0 — Auto-by-default pipeline + bilingual purge (BREAKING)
+
+`academic-pipeline` now runs unattended by default. Set `ARS_INTERACTIVE=1` to restore v3.16.0 prompts. Bilingual / Traditional Chinese support removed across the suite — English-only output.
+
+**New env vars:** `ARS_INTERACTIVE`, `ARS_AUTO_MAX_RETRIES` (default 3), `ARS_AUTO_FAIL_MODE` (default `exit-nonzero`), `ARS_AUTO_NO_REENTRY`.
+
+**Pipeline orchestrator §0 (new):** skip Intent Detection prompt, force `mode=full` on every dispatched skill, log checkpoints instead of prompting, no beep, no `consecutive_continue_count` tracking, auto-retry integrity FAIL up to `ARS_AUTO_MAX_RETRIES` then exit non-zero per `ARS_AUTO_FAIL_MODE`, auto-route Stage 3 / 3' from `editorial_synthesizer_agent` verdict, auto-resolve `compliance_agent` 3-round ladder with `auto_disclosure_addendum`, Lu 2026 CRITICAL → exit non-zero / HIGH+MEDIUM → advisory log + continue.
+
+**Bilingual deletions:**
+
+- `README.zh-TW.md`, `docs/SETUP.zh-TW.md`, `docs/PERFORMANCE.zh-TW.md`
+- `academic-paper/agents/abstract_bilingual_agent.md` (Phase 5b collapses into Phase 4's `draft_writer_agent`)
+- `academic-paper/references/apa7_chinese_citation_guide.md`
+- `academic-paper/templates/bilingual_abstract_template.md`
+- `academic-paper/examples/chinese_paper_example.md`
+
+`academic-paper` agent count drops 12 → 11. English abstract (150-300 words, structured) + 5-7 keywords emitted inline by `draft_writer_agent` during Phase 4.
+
+**Version bumps:** pipeline 3.16.0 → 3.17.0 (suite-pinned); academic-paper 3.1.1 → 3.2.0; deep-research 2.9.3 → 2.9.4; academic-paper-reviewer 1.9.0 → 1.9.1; experiment skills 1.0 → 1.0.1.
+
+---
 
 ### v3.16.0 — Upstream Merge: PRISMA-trAIce Compliance, Sprint Contract, Claim Faithfulness
 

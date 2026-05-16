@@ -9,7 +9,6 @@ Complete artifacts from a real 10-stage academic pipeline run, demonstrating the
 | File | Description |
 |------|-------------|
 | [full_paper_apa7.pdf](full_paper_apa7.pdf) | Final paper (English, APA 7.0 format) |
-| [full_paper_zh_apa7.pdf](full_paper_zh_apa7.pdf) | Final paper (Chinese, APA 7.0 format) |
 
 ## Integrity Verification Reports
 
@@ -34,20 +33,19 @@ Complete artifacts from a real 10-stage academic pipeline run, demonstrating the
 | File | Description |
 |------|-------------|
 | [paper_creation_process_en.pdf](paper_creation_process_en.pdf) | Pipeline process documentation (English) |
-| [paper_creation_process_zh.pdf](paper_creation_process_zh.pdf) | Pipeline process documentation (Chinese) |
 
 ## Pipeline Stages Covered
 
 ```
 Stage 1: Deep Research (14-agent research pipeline)
-Stage 2: Paper Writing (12-agent writing pipeline)
+Stage 2: Paper Writing (11-agent writing pipeline)
 Stage 2.5: Integrity Verification ← MANDATORY, caught 22 issues
 Stage 3: Peer Review Round 1 (EIC + R1/R2/R3 + Devil's Advocate)
 Stage 3': Author Revision + Re-review
 Stage 3-R2: Peer Review Round 2
 Stage 4: Final Revision
 Stage 4.5: Final Integrity Verification ← MANDATORY, confirmed 0 regressions
-Stage 5: Finalization (LaTeX → PDF, bilingual)
+Stage 5: Finalization (LaTeX → PDF, English)
 Stage 6: Process Summary
 Post-Publication: Manual WebSearch audit of all 68 refs → 21 issues found & fixed
 ```

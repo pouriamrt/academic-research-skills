@@ -20,14 +20,6 @@ Quality assurance (QA) in higher education increasingly relies on standardized e
 
 ---
 
-## Chinese Abstract
-
-Higher education quality assurance increasingly relies on standardized evaluation frameworks, yet the issue of inter-evaluator consistency has persisted. This study aims to investigate the effects of AI-assisted tools on evaluation consistency and institutional self-assessment practices in Taiwanese higher education. A quasi-experimental design was employed, comparing evaluation outcomes across 24 institutional accreditation cases during the 2024-2025 accreditation cycle — 12 using traditional methods and 12 using AI-augmented evaluation protocols. Results showed that AI-augmented evaluations reduced inter-evaluator variance by 28% (Cohen's *d* = 0.74) and improved the alignment between self-assessment reports and site visit findings (*r* = .82 vs. .63 for traditional methods). Evaluated institutions also reported that AI tools helped identify data gaps earlier during the preparation phase. However, evaluators expressed concerns about the potential homogenization of qualitative judgment. These findings suggest that AI tools can effectively improve quality assurance consistency, but integration must be balanced to preserve expert professional judgment in the accreditation process.
-
-**Keywords**: quality assurance, artificial intelligence, higher education accreditation, evaluation consistency, Taiwan
-
----
-
 ## 1. Introduction
 
 ### 1.1 Context and Background

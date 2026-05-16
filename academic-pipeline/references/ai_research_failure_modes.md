@@ -3,6 +3,8 @@
 **Status**: v3.2
 **Parent skill**: `academic-pipeline`
 **Used at**: Stage 2.5 INTEGRITY (blocking), Stage 4.5 FINAL INTEGRITY (blocking), Stage 6 PROCESS SUMMARY (reporting only)
+
+**v3.17.0 AUTO mode behavior**: CRITICAL findings (M1 / M2 / M3 implementation bug / hallucinated citation / hallucinated experimental result) cause `pipeline_orchestrator_agent` to emit `[AUTO-FAIL-EXIT: reason=critical_failure_mode]` and exit non-zero per `ARS_AUTO_FAIL_MODE` — these are not recoverable via auto-retry. HIGH / MEDIUM findings (M4 shortcut reliance / M5 bug-as-insight / M6 methodology fabrication / M7 frame-lock) are appended to passport `compliance_history[]` as advisory entries and the pipeline proceeds. Interactive mode (`ARS_INTERACTIVE=1`) restores the blocking behavior with explicit user override required for any flagged mode.
 **Source**: Lu et al. (2026). Towards end-to-end automation of AI research. *Nature* 651, 914-919. doi:10.1038/s41586-026-10265-5 — Limitations section, Figure 2 (examples of failures in The AI Scientist's own accepted paper), Supplementary Information A.2.9 (debugging traces).
 
 ---

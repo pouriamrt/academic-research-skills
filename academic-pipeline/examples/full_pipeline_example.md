@@ -5,7 +5,7 @@
 **User type**: Master's student in Education, first time writing an academic paper
 **Topic**: The impact of declining birthrate on enrollment strategies of private universities in Taiwan
 **Goal**: Complete a submission-ready IMRaD paper
-**Language**: Traditional Chinese (bilingual abstract)
+**Language**: English
 
 ---
 
@@ -126,7 +126,7 @@ Stage 1 (RESEARCH) Complete!
 Deliverables:
 - RQ Brief: Focused on three enrollment strategies' impact on enrollment rates at private universities
 - Methodology Blueprint: Mixed methods (quantitative MOE data + qualitative interviews)
-- Annotated Bibliography: 22 references (17 Chinese + 5 English)
+- Annotated Bibliography: 22 references
 - Synthesis Report: Identified 3 research gaps
 
 Next step is Stage 2 (WRITE).
@@ -168,13 +168,12 @@ What sense of urgency do you want the reader to feel? In other words, why should
 ```
 Chapter Plan complete. Switching to full mode to write the complete draft.
 
-academic-paper draft_writer_agent writing based on Chapter Plan...
+academic-paper draft_writer_agent writing based on Chapter Plan (includes English abstract + keywords)...
 citation_compliance_agent verifying citations...
-abstract_bilingual_agent writing bilingual abstract...
 ```
 
 **Stage 2 Deliverables:**
-- Paper Draft (5,200 words, IMRaD structure, with bilingual abstract)
+- Paper Draft (5,200 words, IMRaD structure, with English abstract)
 
 ---
 
@@ -185,7 +184,7 @@ Stage 2 (WRITE) Complete!
 
 Deliverables:
 - Paper Draft: 5,200-word IMRaD paper
-  - Abstract (Chinese 420 words + English 230 words)
+  - Abstract (English, 230 words, structured)
   - Introduction: Research background and problem statement
   - Literature Review: Three themes (birthrate trends, enrollment strategy classification, effectiveness evaluation)
   - Methodology: Mixed methods design
@@ -459,14 +458,8 @@ formatter_agent executing format conversion...
 
 **Orchestrator**: "Pipeline complete! Generating your paper creation process record."
 
-**Orchestrator**: "What language(s) would you like for the process summary? Options: zh (Chinese), en (English), both"
-
-**User**: "both"
-
-**Orchestrator**: Generating bilingual process summary...
-
 ```
-Stage 6 PROCESS SUMMARY — Generating bilingual paper creation record
+Stage 6 PROCESS SUMMARY — Generating English paper creation record
 
 Contents:
 1. Pipeline Timeline (stages, dates, duration)
@@ -484,8 +477,7 @@ Contents:
 6. Claude's Self-Reflection
 
 Output files:
-- paper_creation_process_zh.pdf
-- paper_creation_process_en.pdf
+- paper_creation_process.pdf
 ```
 
 ━━━ Stage 6 PROCESS SUMMARY Complete ━━━
@@ -498,8 +490,7 @@ Output files:
 | Pipeline Complete!                      |
 | Final paper: 6,800 words, IMRaD        |
 | Citations: 30 (APA 7.0)               |
-| Abstract: Chinese 420 words +          |
-|           English 230 words            |
+| Abstract: English 230 words            |
 +=========================================+
 
 Congratulations on completing your paper! It's ready for submission.

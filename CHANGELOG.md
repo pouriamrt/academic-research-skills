@@ -3,6 +3,45 @@
 All notable changes to this project will be documented in this file.
 
 > **Schema renumbering note (fork v3.16.0, 2026-05-15):** entries below referencing **Schema 12** in the context of `compliance_report` / `compliance_history[]` describe upstream's original numbering. In fork v3.16.0, that schema is **Schema 19** to avoid collision with fork's Schema 12 (Lab Record). Likewise, entries referencing **Schema 13** / **Schema 13.1** in the context of `sprint_contract` / `reviewer/full.json` / `writer/full.json` / `evaluator/full.json` are **Schema 20** / **Schema 20.1** in fork v3.16.0+ to avoid collision with fork's Schema 13 (Simulation Specification). All `shared/*.schema.json`, `shared/handoff_schemas.md`, `shared/schema_migrations.md`, and active SKILL/agent references carry the new numbers. Historical entries are preserved as-is for upstream traceability.
+>
+> **Bilingual / Traditional Chinese support removed in v3.17.0 (2026-05-15).** Historical entries below that describe `abstract_bilingual_agent`, `apa7_chinese_citation_guide.md`, `bilingual_abstract_template.md`, `chinese_paper_example.md`, `README.zh-TW.md`, `docs/SETUP.zh-TW.md`, `docs/PERFORMANCE.zh-TW.md`, or any "繁體中文" / "zh-TW" trigger keywords describe state that no longer exists in the codebase. They are preserved as-is for historical traceability.
+
+## [3.17.0] — 2026-05-15 — Auto-by-default pipeline + bilingual purge (BREAKING)
+
+**Breaking changes:**
+- `academic-pipeline` now runs unattended by default. Set `ARS_INTERACTIVE=1` to restore v3.16.0 checkpoint pauses, mode-recommendation prompts, the beep, the Stage 5 LaTeX prompt, the Stage 6 language picker, and per-skill `socratic` / `plan` / `guided` modes.
+- Bilingual / Traditional Chinese support is removed across the suite. Output language is English only.
+
+**Auto-by-default pipeline (new):**
+- `pipeline_orchestrator_agent.md` §0 (new) — Auto vs Interactive Mode dispatch. AUTO path: skip Intent Detection prompt, force `mode=full` on every dispatched skill, write checkpoint deliverables to `./passport_logs/checkpoint_<stage>.md` + stdout, NO beep, NO `continue?` prompt, NO `consecutive_continue_count` tracking, NO Stage 1.5 routing-flag confirmation, NO Stage 5 LaTeX prompt, NO Stage 6 language picker.
+- Stage 2.5 integrity FAIL: auto-retry up to `ARS_AUTO_MAX_RETRIES` (default `3`). Stage 4.5 retry cap: hard-pinned `1`. On retry exhaustion: write FAIL verdict to passport + exit per `ARS_AUTO_FAIL_MODE` (default `exit-nonzero`; alt `continue-with-warning`).
+- Stage 3 / 3' review auto-routes from `editorial_synthesizer_agent`'s machine-readable verdict (`accept` → 4.5; `minor` / `major` → 4 / 4'; `reject` → exit non-zero).
+- Experiment Re-Entry (Stage 1.5-R / 1.5-R2): auto-dispatch when Roadmap contains `requires_new_experiment=true`. Skip via `ARS_AUTO_NO_REENTRY=1`; affected items become Acknowledged Limitations.
+- Lu 2026 CRITICAL failure modes (M1 / M2 / M3 implementation bug / hallucinated citation / hallucinated result): immediate `[AUTO-FAIL-EXIT: reason=critical_failure_mode]`. HIGH / MEDIUM (M4-M7): advisory entry to `compliance_history[]`, continue.
+- `compliance_agent` 3-round override ladder auto-resolves in AUTO mode with `auto_disclosure_addendum` appended to passport + paper disclosure statement.
+- Resume mode `resume_from_passport=<hash>`: `pending_decision` boundaries require `branch=<value>` arg in AUTO mode; without it, exit non-zero.
+- GPU MCP / Colab auth pause: AUTO mode writes `[AUTO-INTERVENTION-REQUIRED: kind=colab-auth]` and exits non-zero.
+- Single-line passport audit markers: `[AUTO-CHECKPOINT]`, `[AUTO-RETRY]`, `[AUTO-FAIL-EXIT]`, `[AUTO-ROUTE]`, `[AUTO-REENTRY]`, `[AUTO-COMPLIANCE-RESOLVE]`, `[AUTO-INTERVENTION-REQUIRED]`.
+
+**Bilingual / zh-TW purge:**
+- Deleted: `README.zh-TW.md`, `docs/SETUP.zh-TW.md`, `docs/PERFORMANCE.zh-TW.md`, `academic-paper/agents/abstract_bilingual_agent.md`, `academic-paper/templates/bilingual_abstract_template.md`, `academic-paper/references/apa7_chinese_citation_guide.md`, `academic-paper/examples/chinese_paper_example.md`.
+- `academic-paper` agent count: 12 → 11. The English abstract + 5-7 keywords are now emitted inline by `draft_writer_agent` during Phase 4. Phase 5a / 5b parallel collapses to a single Phase 5 (citations).
+- Stage 6 PROCESS SUMMARY: English-only (no language picker; no `paper_creation_process_zh.pdf`).
+- All trigger keyword sections drop the `**繁體中文**:` line. CLAUDE.md "Default output language matches user input" rule → "Output language: English only".
+- Scrubbed: `hei_domain_glossary.md` (drop "Romanized Chinese" column), `journal_submission_guide.md` (drop TSSCI Chinese journals table), `funding_statement_guide.md` + `credit_authorship_guide.md` (drop Chinese statement variants), `citation_format_switcher.md` (drop Chinese format section), `failure_paths.md` (drop F6 bilingual abstract failure path; drop F8 Chinese-only-literature path), `latex_template_reference.md` + `latex_article_template.tex` (drop CJK / xeCJK blocks), example papers (drop Chinese Abstract sections).
+
+**New env vars:**
+- `ARS_INTERACTIVE=1` — restore v3.16.0 interactive UX.
+- `ARS_AUTO_MAX_RETRIES` (default `3`) — Stage 2.5 retry cap. Stage 4.5 is hard-pinned `1`.
+- `ARS_AUTO_FAIL_MODE` (default `exit-nonzero`; alt `continue-with-warning`) — behavior on retry exhaustion.
+- `ARS_AUTO_NO_REENTRY=1` — skip experiment re-entry in AUTO mode.
+
+**Version bumps:**
+- `academic-pipeline` 3.16.0 → **3.17.0** (suite-pinned).
+- `academic-paper` 3.1.1 → **3.2.0** (agent count drop, bilingual removed).
+- `deep-research` 2.9.3 → **2.9.4** (auto-mode hook in `socratic_mentor_agent`; trigger keyword scrub).
+- `academic-paper-reviewer` 1.9.0 → **1.9.1** (auto-route verdict guarantee).
+- `experiment-designer`, `data-analyst`, `simulation-runner`, `lab-notebook` 1.0 → **1.0.1** (auto-mode override blocks + trigger keyword scrub).
 
 ## [Unreleased]
 

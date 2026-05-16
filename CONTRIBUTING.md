@@ -4,7 +4,7 @@ This guide covers the conventions, structures, and processes that keep the plugi
 
 ## Project Overview
 
-Academic Research Skills is a Claude Code plugin covering the full academic research lifecycle. It comprises 8 skills, 58 agents, and 18 handoff schemas orchestrated through a multi-stage pipeline (research, experimentation, writing, review, revision, publication). Shared infrastructure in `shared/` provides cross-skill data contracts and integration specifications.
+Academic Research Skills is a Claude Code plugin covering the full academic research lifecycle. It comprises 8 skills, 57 agents, and 20 handoff schemas orchestrated through a multi-stage pipeline (research, experimentation, writing, review, revision, publication). Shared infrastructure in `shared/` provides cross-skill data contracts and integration specifications.
 
 ## Repository Structure
 
@@ -48,7 +48,7 @@ These contributions can be merged quickly with minimal review:
 
 - **Typo and formatting fixes** — spelling, broken links, markdown rendering issues
 - **New examples** — pipeline output showcases, worked examples for specific disciplines
-- **Translation improvements** — better zh-TW or EN phrasing in READMEs or agent definitions
+- **Wording improvements** — clearer phrasing in READMEs or agent definitions
 
 ### Requires maintainer review
 
@@ -110,10 +110,9 @@ After creating the file, reference the agent from the skill's `SKILL.md` in the 
 Modes are defined in each skill's `SKILL.md`. To add one:
 
 1. **Add a mode section** in `SKILL.md` with: mode name, description, agent execution sequence, and entry/exit conditions.
-2. **Define trigger keywords** in both English and Traditional Chinese under `## Trigger Conditions`:
+2. **Define trigger keywords** under `## Trigger Conditions`:
    ```
-   **English**: assumption-check, check assumptions, verify assumptions
-   **繁體中文**: 檢驗假設, 假設檢定, 驗證假設
+   **Triggers**: assumption-check, check assumptions, verify assumptions
    ```
 3. **Update routing rules** in `.claude/CLAUDE.md` if disambiguation with other modes/skills is needed.
 4. **Add an example** in the skill's `examples/` directory.
@@ -182,7 +181,7 @@ Guidelines:
 ## Code and Documentation Standards
 
 - **Markdown**: ATX-style headers, pipe tables with header rows, fenced code blocks with language identifiers, one blank line between sections, no trailing whitespace.
-- **Bilingual**: Trigger keywords must be in both English and Traditional Chinese. Output language defaults to the user's input language.
+- **Language**: All user-facing strings (trigger keywords, agent prompts, READMEs, examples) are English. v3.17.0 removed bilingual / Traditional Chinese support.
 - **Version tracking**: Each skill tracks its version in `SKILL.md` frontmatter (`metadata.version`, `metadata.last_updated`). The plugin version is in `.claude-plugin/plugin.json` and `.claude/CLAUDE.md`. Bump the version and update `last_updated` when modifying a skill.
 
 ## Testing and Validation
@@ -197,7 +196,7 @@ Run validation before submitting a PR:
 
 Manual checks:
 - YAML frontmatter in `SKILL.md` is valid.
-- Trigger keywords include both English and Traditional Chinese.
+- Trigger keywords are English.
 
 ## PR Guidelines
 
@@ -205,7 +204,7 @@ Manual checks:
 - **Describe what and why** — explain the motivation, not just the change
 - **Reference issues** — if your PR addresses an open issue, link it
 - **Test your changes** — if you're modifying agent definitions, try running the skill to confirm it works as expected
-- **Keep READMEs in sync** — if your change affects user-facing documentation, update both `README.md` and `README.zh-TW.md`
+- **Keep README in sync** — if your change affects user-facing documentation, update `README.md`
 
 ## Commit Message Format
 

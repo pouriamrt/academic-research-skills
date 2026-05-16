@@ -39,12 +39,6 @@ This work was supported by the National Science and Technology Council, Taiwan
 (Grant No. NSTC 113-2410-H-003-001).
 ```
 
-**Chinese Format Example**:
-```
-This research was supported by a research project grant from the National Science and
-Technology Council (Grant No.: NSTC 113-2410-H-003-001). We hereby express our gratitude.
-```
-
 **Notes**:
 - Grants before July 2022 use MOST numbers (e.g., MOST 110-2410-H-003-001); retain the original number when citing
 - Multi-year grants should indicate the year (e.g., MY2 for Year 2)
@@ -68,12 +62,6 @@ This work was supported by the Ministry of Education, Taiwan, through the
 Higher Education Sprout Project (Grant No. MOE-113-S-0023).
 ```
 
-**Chinese Format Example**:
-```
-This research was supported by the Ministry of Education Higher Education Sprout Project
-(Grant No.: MOE-113-S-0023). We hereby express our gratitude.
-```
-
 ### 3. Institutional Grants
 
 **Common Types**:
@@ -89,12 +77,6 @@ This research was supported by the Ministry of Education Higher Education Sprout
 ```
 This work was supported by a research grant from [University Name]
 (Grant No. [Institutional Number]).
-```
-
-**Chinese Format Example**:
-```
-This research was supported by an internal research grant from [University Name]
-(Grant No.: [Institutional Number]). We hereby express our gratitude.
 ```
 
 ---
@@ -150,27 +132,12 @@ Funding: This work was supported by the [Funder Full Name] [Grant Type]
 (Grant No. [Number]).
 ```
 
-**Chinese**:
-```
-Funding: This research was supported by the [Funder Full Name] [Grant Type]
-(Grant No.: [Number]). We hereby express our gratitude.
-```
-
 ### Funded (Multiple Sources)
 
 **English**:
 ```
 Funding: This work was supported by the [Funder 1] (Grant No. [Number 1]);
 the [Funder 2] (Grant No. [Number 2]); and the [Funder 3] (Grant No. [Number 3]).
-```
-
-**Chinese**:
-```
-Funding: This research was supported by the following grants:
-(1) [Funder 1] (Grant No.: [Number 1]);
-(2) [Funder 2] (Grant No.: [Number 2]);
-(3) [Funder 3] (Grant No.: [Number 3]).
-We hereby express our gratitude.
 ```
 
 ### No Funding
@@ -181,12 +148,6 @@ Funding: This research received no specific grant from any funding agency in
 the public, commercial, or not-for-profit sectors.
 ```
 
-**Chinese**:
-```
-Funding: This research did not receive any specific grant from public,
-commercial, or not-for-profit funding agencies.
-```
-
 ### Partial Funding
 
 **English**:
@@ -194,13 +155,6 @@ commercial, or not-for-profit funding agencies.
 Funding: This work was partially supported by the [Funder] (Grant No. [Number]).
 The funder had no role in study design, data collection and analysis, decision
 to publish, or preparation of the manuscript.
-```
-
-**Chinese**:
-```
-Funding: This research was partially supported by [Funder] (Grant No.: [Number]).
-The funder had no involvement in the design, data collection and analysis,
-publication decision, or manuscript preparation of this research.
 ```
 
 ---
@@ -224,13 +178,6 @@ Funding statement and Conflict of Interest (COI) statement are **two separate de
 Declaration of Interest: The authors declare that they have no known competing
 financial interests or personal relationships that could have appeared to
 influence the work reported in this paper.
-```
-
-**No Conflict of Interest** (Chinese):
-```
-Declaration of Interest: All authors declare that, with respect to the research
-reported in this paper, there are no known competing financial interests or
-personal relationships.
 ```
 
 **Conflict of Interest Exists** (English):
@@ -263,8 +210,6 @@ authors declare no competing interests.
 | *Studies in Higher Education* | Taylor & Francis "Disclosure statement" |
 | *Research in Higher Education* | Springer "Declarations" format |
 | *Quality in Higher Education* | Taylor & Francis "Disclosure statement" |
-| Journal of Research in Education Sciences (Jiao Yu Ke Xue Yan Jiu Qi Kan) | Chinese format, stated in the acknowledgments section |
-| Higher Education Review (Gao Deng Jiao Yu) | Chinese format, stated in the acknowledgments section |
 
 ---
 
@@ -277,8 +222,7 @@ authors declare no competing interests.
    - Before July 2022: `MOST [Year]-[Discipline]-[Category]-[Serial]`
    - After July 2022: `NSTC [Year]-[Discipline]-[Category]-[Serial]`
    - Use the agency name at the time the grant was approved when citing
-3. **Both Chinese and English declarations required**: If the paper is in English, use English for the funding statement; if in Chinese, use Chinese
-4. **Open Access fees**: If APC is paid from grant funds, some journals require additional explanation
+3. **Open Access fees**: If APC is paid from grant funds, some journals require additional explanation
 
 ### MOE Grant Requirements
 
@@ -305,7 +249,6 @@ Regulations vary by institution. Recommendations:
 - [ ] If no funding, explicitly declare "no funding"
 - [ ] If the funding agency requires a specific disclaimer, it has been quoted verbatim
 - [ ] Funding statement and COI statement are stated separately
-- [ ] English papers use English statements; Chinese papers use Chinese statements
 - [ ] Multiple funding sources have been ordered by significance or alphabetically
 - [ ] Funder names reflect the official name at the time the grant was approved
 

@@ -160,63 +160,6 @@ Smith, John A., and Betty C. Jones. "Article Title in Title Case."
 4. Abbreviate journal titles (NLM catalog)
 5. Use semicolons/colons for volume/page separators
 
-## Chinese Citation Format Switching
-
-### APA 7.0 Chinese Format
-
-For complete specifications, see `apa7_chinese_citation_guide.md`. Below is a quick reference.
-
-**Chinese journal article**:
-```
-Wang, Da-Ming, & Li, Xiao-Hua (2024). Article title. Journal Name, Volume(Issue), Pages. https://doi.org/xxxxx
-```
-
-**Chinese book**:
-```
-Zhang, San (2023). Book title. Publisher.
-```
-
-**Government publication**:
-```
-Ministry of Education (2024). Publication title. https://url
-```
-
-### Mixed Chinese-English Reference Handling
-
-**In-text citations**:
-- Chinese uses full-width parentheses: (Author, Year)
-- English uses half-width parentheses: (Author, Year)
-- Chinese multiple authors use enumeration comma; English uses &
-
-**Reference list ordering**:
-
-| Option | Description | Applicable Scenario |
-|------|------|---------|
-| **Option A (Recommended)** | Chinese first (ordered by stroke count), English after (ordered alphabetically) | Convention for most Taiwan journals |
-| **Option B** | Mixed Chinese-English ordering (unified stroke count / alphabetical) | Some international journals |
-
-**Same author with both Chinese and English works**: List separately — Chinese works go in the Chinese section, English works go in the English section.
-
-### Format Conversion Notes (Chinese Papers)
-
-**Chinese APA → Chicago**:
-1. Publication format differs (APA 7 does not require publication location, Chicago does)
-2. Change titles to "title case" format
-3. Add footnote citation system
-
-**Chinese APA → IEEE**:
-1. Add numbered labels [N]
-2. Remove year from after author position
-3. Order by citation appearance (not stroke count)
-
-**Chinese paper format conventions**:
-- Most Taiwan journals use APA
-- Humanities disciplines (history, literature) occasionally use Chicago
-- Engineering/CS fields mostly use IEEE
-- Medical fields use Vancouver
-
----
-
 ## AI-Generated Content Citation (by Format)
 
 | Format | How to Cite AI |

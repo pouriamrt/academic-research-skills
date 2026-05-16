@@ -326,7 +326,6 @@ cb_palette <- c("#0077BB", "#33BBEE", "#009988", "#EE7733",
 |----------|---------|
 | Journal requires EPS but code generates PDF | Provide both format save commands |
 | Figure too wide for single column | Default to double column width; note in caption |
-| Chinese text in labels | Use CJK-compatible fonts; test rendering before final output |
 
 ---
 

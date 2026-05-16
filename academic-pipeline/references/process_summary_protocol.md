@@ -6,13 +6,7 @@
 ## Workflow
 
 ```
-1. Ask user language preference:
-   "Which language version of the process record would you like to generate first?"
-   - Chinese (Traditional Chinese)
-   - English
-   - Both (default: generate the user's primary conversation language first)
-
-2. Review session history and compile the following:
+1. Review session history and compile the following:
    - User's initial instructions (verbatim quote)
    - Key decision points and user interventions at each stage
    - Direction correction moments and reasons
@@ -21,13 +15,12 @@
    - Quality requirement evolution (e.g., formatting, tone adjustments)
    - Pipeline statistics (stage count, review rounds, integrity verification count, etc.)
 
-3. Generate Markdown version (paper_creation_process.md / paper_creation_process_en.md)
+2. Generate English Markdown version (paper_creation_process.md)
 
-4. Convert to LaTeX and compile PDF:
+3. Convert to LaTeX and compile PDF:
    - pandoc MD -> LaTeX body
    - Package complete LaTeX document (with cover page, table of contents, headers/footers)
    - tectonic compile PDF
-   - Chinese version requires xeCJK + Source Han Serif TC VF
 ```
 
 ## Required Content in Process Record
@@ -168,7 +161,7 @@ For dimensions with no findings, state the null result in one sentence. Expand o
 
 ## Output Specifications
 
-- **Filename**: `paper_creation_process.md` (Chinese) / `paper_creation_process_en.md` (English)
+- **Filename**: `paper_creation_process.md` (English)
 - **PDF**: `paper_creation_process_zh.pdf` / `paper_creation_process_en.pdf`
 - **LaTeX template**: `article` class, 12pt, A4, Times New Roman + Source Han Serif TC VF
 - **Includes table of contents**: `\tableofcontents`

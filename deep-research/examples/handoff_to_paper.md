@@ -265,9 +265,8 @@ Step 5: SELF-REVIEW
 > Based on these materials, I've completed a preliminary plan for the paper outline. Here is the planned paper structure:
 > [Display outline]
 >
-> I have two questions that need your confirmation:
+> One question to confirm before writing:
 > 1. What is your target journal? (This affects word limits and formatting requirements)
-> 2. Should the paper language be English or bilingual?
 >
 > Once confirmed, I'll begin writing. Because the research foundation is already comprehensive, I can skip the early exploration stages and proceed directly to paper writing.
 

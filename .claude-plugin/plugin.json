@@ -1,7 +1,7 @@
 {
   "name": "academic-research-skills",
-  "version": "3.16.0",
-  "description": "Suite of Claude Code skills for rigorous academic research, experimentation, paper writing, peer review, and pipeline orchestration. 8 skills covering the full research lifecycle from literature review to publication. v3.16 merges upstream Imbad0202 v3.4.0–v3.7.3 (PRISMA-trAIce + RAISE compliance agent, sprint contract gates, generator-evaluator contract, passport reset boundary, literature corpus adapters, trust-provenance hardening, claim faithfulness locator, contaminated-source advisory) on top of fork's v3.15 (PaperOrchestra + Lu 2026 + experiment pipeline with experiment-designer / data-analyst / simulation-runner / lab-notebook). Optional integrations: Semantic Scholar + OpenAlex (citation graph APIs), PaperBanana MCP (methodology diagrams), Google Colab MCP (GPU compute).",
+  "version": "3.17.0",
+  "description": "Suite of Claude Code skills for rigorous academic research, experimentation, paper writing, peer review, and pipeline orchestration. 8 skills covering the full research lifecycle from literature review to publication. v3.17 makes the pipeline auto-by-default (unattended runs; set ARS_INTERACTIVE=1 to restore v3.16 prompts) and removes bilingual / Traditional Chinese support — English-only output. Builds on v3.16's upstream Imbad0202 v3.4.0–v3.7.3 merge (PRISMA-trAIce + RAISE compliance agent, sprint contract gates, generator-evaluator contract, passport reset boundary, literature corpus adapters, trust-provenance hardening, claim faithfulness locator, contaminated-source advisory) and the fork's v3.15 experiment pipeline (PaperOrchestra + Lu 2026 + experiment-designer / data-analyst / simulation-runner / lab-notebook). Optional integrations: Semantic Scholar + OpenAlex (citation graph APIs), PaperBanana MCP (methodology diagrams), Google Colab MCP (GPU compute).",
   "author": {
     "name": "Pouria Mortezaagha"
   },

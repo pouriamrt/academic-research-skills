@@ -68,7 +68,7 @@ Administration mode: [Paper / Online / Interview / Observation]
 Administration time: [Estimated minutes]
 Target population: [Description]
 Reading level: [Grade level]
-Language: [English / Bilingual English-Chinese / etc.]
+Language: English
 ```
 
 ---

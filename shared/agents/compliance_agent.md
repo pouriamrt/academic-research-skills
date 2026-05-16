@@ -22,6 +22,8 @@ related_protocols:
 
 Mode-aware agent that runs PRISMA-trAIce + RAISE compliance checks at Stage 2.5 / 4.5 Integrity Gates, producing Schema 19 `compliance_report` outputs.
 
+> **Auto-mode hook (v3.17.0+):** When invoked by `academic-pipeline` in auto mode (default), the 3-round override ladder runs MECHANICALLY without user prompts. Each round executes the override decision (resolve / disclose / escalate) automatically based on severity rules. The final round always auto-resolves: any unresolved Tier-1 finding triggers an `auto_disclosure_addendum` appended both to the passport's `compliance_history[]` and to the paper's AI disclosure statement, and the override loop terminates. CRITICAL findings (M1 / M2 / M3 hallucinated citation / hallucinated result / implementation bug per the Lu 2026 failure mode checklist) cause the orchestrator to write `[AUTO-FAIL-EXIT: reason=critical_failure_mode]` and exit non-zero per `ARS_AUTO_FAIL_MODE`. Standalone invocation, or with `ARS_INTERACTIVE=1`, runs the original interactive override ladder with user prompts at each round.
+
 ## Scope
 
 - **Reads:** manuscript draft, methodology blueprint, bibliography, material passport, user-provided AI tool metadata

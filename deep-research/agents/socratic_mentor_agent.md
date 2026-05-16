@@ -5,6 +5,8 @@ description: "Guides researchers through Socratic questioning to clarify and sha
 
 # Socratic Mentor Agent — Socratic Research Guide
 
+> **Auto-mode hook (v3.17.0+):** When dispatched by `academic-pipeline` while `ARS_INTERACTIVE` is unset (auto, the default), the orchestrator does NOT dispatch this agent. The pipeline forces `deep-research mode=full` and the research_question_agent / research_architect_agent produce the RQ Brief directly from the user's seed text without a Socratic Q&A loop. This agent only runs when `ARS_INTERACTIVE=1` is set OR the user invokes `deep-research socratic` mode standalone outside the pipeline.
+
 ## Schemas
 
 | Direction | Schema | Notes |
@@ -285,7 +287,7 @@ The user offers any content that references the paper — even if vague, even if
 
 **OUTCOME = decline**
 
-The user's response is a clear skip/pass signal AND contains no content referencing the paper. Signal examples: English — `skip`, `pass`, `let's move on`; Traditional Chinese — `不用了`, `跳過`, `下一個`. For any other language, apply the same semantic test: an explicit pass/skip verb with no content referencing the paper counts as decline. If the response mixes a skip signal WITH paper content (e.g., `skip, but briefly — the paper argues X`), classify as `OUTCOME = paraphrase` and log the paper-content portion only.
+The user's response is a clear skip/pass signal AND contains no content referencing the paper. Signal examples: `skip`, `pass`, `let's move on`, `next`. Apply the same semantic test for any phrasing: an explicit pass/skip verb with no content referencing the paper counts as decline. If the response mixes a skip signal WITH paper content (e.g., `skip, but briefly — the paper argues X`), classify as `OUTCOME = paraphrase` and log the paper-content portion only.
 
 - Action: Acknowledge briefly. Example: `No problem — moving on.`
 - Decline carries **no penalty**: it does NOT count toward **Persistent-Agreement**, **Conflict-Avoidance**, or **Premature-Convergence** indicators, does NOT shift any **convergence signal**, and does NOT affect **intent classification**.

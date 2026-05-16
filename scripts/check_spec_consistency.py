@@ -61,7 +61,7 @@ def check_relative_markdown_links(rel_path: str) -> None:
 def check_mode_registry() -> None:
     rel_path = "MODE_REGISTRY.md"
     text = read(rel_path)
-    expect_contains(rel_path, "Last updated: v3.16.0 (2026-05-15)")
+    expect_contains(rel_path, "Last updated: v3.17.0 (2026-05-15)")
     for heading in (
         "## deep-research (7 modes)",
         "## academic-paper (10 modes)",
@@ -75,10 +75,14 @@ def check_claude_md() -> None:
     rel_path = ".claude/CLAUDE.md"
     expect_contains(rel_path, "integrity check (Stage 2.5)")
     expect_contains(rel_path, "final integrity check (Stage 4.5)")
-    expect_contains(rel_path, "**Version**: 3.16.0")
+    expect_contains(rel_path, "**Version**: 3.17.0")
+    expect_contains(rel_path, "Output language: English only")
     for forbidden in (
         "6th independent reviewer",
         "Peer review gains 6th independent reviewer",
+        "Default output language matches user input",
+        "Traditional Chinese",
+        "abstract_bilingual_agent",
     ):
         expect_absent(rel_path, forbidden)
 
@@ -136,7 +140,8 @@ def check_readme_sections() -> None:
     rel_path = "README.md"
     text = read(rel_path)
 
-    expect_contains(rel_path, "version-v3.16.0-blue")
+    expect_contains(rel_path, "version-v3.17.0-blue")
+    expect_contains(rel_path, "### v3.17.0 (2026-05-15)")
     expect_contains(rel_path, "### v3.16.0 (2026-05-15)")
     # Upstream historical entries preserved in fork README for traceability.
     expect_contains(rel_path, "### v3.7.0 (2026-05-05)")
@@ -158,10 +163,10 @@ def check_readme_sections() -> None:
         "#### Deep Research (7 modes)",
         "#### Academic Paper (10 modes)",
         "#### Academic Paper Reviewer (6 modes)",
-        "### Deep Research (v2.9.3)",
-        "### Academic Paper (v3.1.1)",
-        "### Academic Paper Reviewer (v1.9.0)",
-        "### Academic Pipeline (v3.16.0",
+        "### Deep Research (v2.9.4)",
+        "### Academic Paper (v3.2.0)",
+        "### Academic Paper Reviewer (v1.9.1)",
+        "### Academic Pipeline (v3.17.0",
     ):
         if heading not in text:
             fail(f"{rel_path}: missing heading {heading!r}")
@@ -200,91 +205,32 @@ def check_readme_sections() -> None:
     check_relative_markdown_links(rel_path)
 
 
-def check_readme_zh_sections() -> None:
-    rel_path = "README.zh-TW.md"
-    text = read(rel_path)
-
-    expect_contains(rel_path, "version-v3.16.0-blue")
-    expect_contains(rel_path, "### v3.7.0（2026-05-05）")
-    expect_contains(rel_path, "### v3.6.8（2026-05-03）")
-    expect_contains(rel_path, "### v3.6.7（2026-04-30）")
-    expect_contains(rel_path, "### v3.6.5（2026-04-27）")
-    expect_contains(rel_path, "### v3.6.4（2026-04-25）")
-    expect_contains(rel_path, "### v3.6.3（2026-04-23）")
-    expect_contains(rel_path, "### v3.6.2（2026-04-23）")
-    expect_contains(rel_path, "### v3.5.1（2026-04-22）")
-    expect_contains(rel_path, "### v3.5.0（2026-04-21）")
-    expect_contains(rel_path, "### v3.4.0（2026-04-20）")
-    expect_contains(rel_path, "### v3.3.6 (2026-04-15)")
-    expect_contains(rel_path, "### v3.3.5 (2026-04-15)")
-    expect_contains(rel_path, "### v3.3.4 (2026-04-15)")
-    expect_contains(rel_path, "### v3.3.3 (2026-04-15)")
-    expect_contains(rel_path, "### v3.3.2 (2026-04-15)")
-    for heading in (
-        "#### Deep Research（深度研究，7 種模式）",
-        "#### Academic Paper（學術論文撰寫，10 種模式）",
-        "#### Academic Paper Reviewer（論文審查，6 種模式）",
-        "### Deep Research (v2.9.3)",
-        "### Academic Paper (v3.1.1)",
-        "### Academic Paper Reviewer (v1.9.0)",
-        "### Academic Pipeline (v3.16.0",
-    ):
-        if heading not in text:
-            fail(f"{rel_path}: missing heading {heading!r}")
-
-    paper_usage = extract_section(
-        text,
-        "#### Academic Paper（學術論文撰寫，10 種模式）",
-        "#### Academic Paper Reviewer（論文審查，6 種模式）",
-    )
-    for expected in ("outline-only mode", "abstract-only mode", "disclosure mode"):
-        if expected not in paper_usage:
-            fail(f"{rel_path}: Academic Paper usage section missing {expected!r}")
-    for forbidden in ("bilingual-abstract mode", "writing-polish mode", "full-auto mode"):
-        if forbidden in paper_usage:
-            fail(f"{rel_path}: Academic Paper usage section still contains {forbidden!r}")
-
-    deep_usage = extract_section(
-        text,
-        "#### Deep Research（深度研究，7 種模式）",
-        "#### Academic Paper（學術論文撰寫，10 種模式）",
-    )
-    if "review mode" not in deep_usage:
-        fail(f"{rel_path}: Deep Research usage section missing 'review mode'")
-    if "paper-review" in deep_usage:
-        fail(f"{rel_path}: Deep Research usage section still contains 'paper-review'")
-
-    reviewer_usage = extract_section(
-        text,
-        "#### Academic Paper Reviewer（論文審查，6 種模式）",
-        "#### Academic Pipeline（全流程調度器）",
-    )
-    if "calibration mode" not in reviewer_usage:
-        fail(f"{rel_path}: reviewer usage section missing 'calibration mode'")
-
-    for forbidden in (
-        "6th independent reviewer",
-        "Peer review gains 6th independent reviewer",
-    ):
-        expect_absent(rel_path, forbidden)
-    # DOCX contract lines moved to docs/SETUP.zh-TW.md in v3.3.6; checked there instead.
-    expect_contains(rel_path, "DOCX（Pandoc 可用時）")
-    check_relative_markdown_links(rel_path)
-
-
 def check_setup_docs() -> None:
     expect_contains("docs/SETUP.md", "Direct `.docx` generation uses [Pandoc]")
     expect_contains(
         "docs/SETUP.md",
         "Direct `.docx` generation requires Pandoc, and PDF generation requires `tectonic`",
     )
-    expect_contains("docs/SETUP.zh-TW.md", "若要直接產出 `.docx`，需要安裝 [Pandoc]")
-    expect_contains(
-        "docs/SETUP.zh-TW.md",
-        "直接產出 `.docx` 需要 Pandoc，PDF 需要 `tectonic`",
-    )
+    expect_contains("docs/SETUP.md", "ARS_INTERACTIVE=1")
+    expect_contains("docs/SETUP.md", "ARS_AUTO_MAX_RETRIES")
+    expect_contains("docs/SETUP.md", "ARS_AUTO_FAIL_MODE")
     check_relative_markdown_links("docs/SETUP.md")
-    check_relative_markdown_links("docs/SETUP.zh-TW.md")
+
+
+def check_bilingual_purge() -> None:
+    """v3.17.0: ensure bilingual / Traditional Chinese artifacts are absent."""
+    repo_files = [
+        "README.zh-TW.md",
+        "docs/SETUP.zh-TW.md",
+        "docs/PERFORMANCE.zh-TW.md",
+        "academic-paper/agents/abstract_bilingual_agent.md",
+        "academic-paper/templates/bilingual_abstract_template.md",
+        "academic-paper/references/apa7_chinese_citation_guide.md",
+        "academic-paper/examples/chinese_paper_example.md",
+    ]
+    for rel_path in repo_files:
+        if (ROOT / rel_path).exists():
+            fail(f"{rel_path}: should have been deleted in v3.17.0 bilingual purge")
 
 
 def check_docx_contract() -> None:
@@ -347,10 +293,10 @@ def main() -> int:
     check_reviewer_version_block()
     check_pipeline_docs()
     check_readme_sections()
-    check_readme_zh_sections()
     check_setup_docs()
     check_docx_contract()
     check_reference_docs()
+    check_bilingual_purge()
 
     if ERRORS:
         print("Spec consistency check failed:")

@@ -35,7 +35,7 @@ Academic Research Skills -- "I want to X, use skill Y in mode Z"
 | Plan my paper structure | `academic-paper` | `plan` | "Guide me through planning my paper chapter by chapter" |
 | Just get an outline | `academic-paper` | `outline-only` | "Outline an IMRaD paper on social media and body image" |
 | Revise with reviewer feedback | `academic-paper` | `revision` | "Revise my paper based on these reviewer comments" |
-| Generate abstract only | `academic-paper` | `abstract-only` | "Write a bilingual abstract for my completed paper" |
+| Generate abstract only | `academic-paper` | `abstract-only` | "Write an English abstract for my completed paper" |
 | Convert citation format | `academic-paper` | `format-convert` | "Convert my paper to LaTeX with IEEE citations" |
 | Check my citations | `academic-paper` | `citation-check` | "Verify all citations in my manuscript match the reference list" |
 | Get my paper reviewed | `academic-paper-reviewer` | `full` | "Review my paper -- simulate a full editorial board" |
@@ -96,4 +96,4 @@ Full pipeline (all stages automated): academic-pipeline
 - **Unclear paper structure?** Start with `academic-paper` in `plan` mode.
 - **Want to learn from the review?** Use `academic-paper-reviewer` in `guided` mode.
 - **Lab notebook** is never an entry point -- it accompanies other experiment skills.
-- **Language**: Output defaults to the language of your prompt (English or Traditional Chinese).
+- **Language**: English only (v3.17.0 removed bilingual support).

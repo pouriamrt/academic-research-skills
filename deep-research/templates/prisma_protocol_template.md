@@ -71,7 +71,7 @@ Research Question: [State the review question in a single sentence]
 |-----------|---------|---------|
 | **Study design** | [e.g., RCTs, quasi-experimental, cohort] | [e.g., case reports, editorials, commentaries] |
 | **Publication date** | [e.g., 2010-present] | [Before cutoff, with justification] |
-| **Language** | [e.g., English and Chinese] | [Other languages, with justification] |
+| **Language** | English (default) | Non-English sources, unless they are the primary record of the evidence |
 | **Publication status** | [e.g., published and preprints] | [e.g., conference abstracts only] |
 | **Setting** | [e.g., higher education institutions] | [e.g., K-12, non-formal education] |
 

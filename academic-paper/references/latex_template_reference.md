@@ -21,12 +21,6 @@ Used by `formatter_agent` for LaTeX output generation.
 \usepackage{url}                      % URL formatting
 \usepackage{float}                    % Figure placement
 
-% === CJK Support (for zh-TW content) ===
-% Uncomment for Chinese content:
-% \usepackage{xeCJK}
-% \setCJKmainfont{Noto Sans CJK TC}
-% \setCJKsansfont{Noto Sans CJK TC}
-
 % === Settings ===
 \doublespacing                        % APA requires double spacing
 \setlength{\parindent}{0.5in}         % First-line indent
@@ -306,45 +300,20 @@ Where N = `(number_of_columns - 1) × 2`
 | `\parencite{Smith2024}` | (Smith, 2024) |
 | `\autocite{Smith2024}` | (Smith, 2024) — adapts to style |
 
-## XeLaTeX for Chinese Content
-
-When the paper includes zh-TW content:
-
-```latex
-\documentclass[12pt, a4paper]{article}
-\usepackage{xeCJK}
-\setCJKmainfont{Noto Sans CJK TC}     % or 'AR PL UMing TW'
-\setCJKsansfont{Noto Sans CJK TC}
-\setCJKmonofont{Noto Sans Mono CJK TC}
-
-% Compile with: xelatex paper.tex
-```
-
-### Bilingual Abstract in LaTeX
+## English Abstract in LaTeX
 ```latex
 \begin{abstract}
 \noindent
-English abstract text here...
+English abstract text here (150-300 words, structured)...
 \\[6pt]
-\textit{Keywords}: keyword1, keyword2, keyword3
+\textit{Keywords}: keyword1, keyword2, keyword3, keyword4, keyword5
 \end{abstract}
-
-\begin{center}
-\textbf{Chinese Abstract}
-\end{center}
-
-\noindent
-Chinese abstract content...
-
-\noindent
-\textbf{Keywords}: Keyword 1, Keyword 2, Keyword 3
 ```
 
 ## Common LaTeX Compilation Issues
 
 | Issue | Solution |
 |-------|---------|
-| Chinese characters not showing | Use XeLaTeX instead of pdfLaTeX |
 | Bibliography not appearing | Run: latex → bibtex → latex → latex |
 | Citations showing [?] | Run bibtex and recompile |
 | Hyperlinks not working | Ensure `hyperref` is loaded last |
@@ -363,13 +332,6 @@ pandoc paper.md -o paper.tex --bibliography=references.bib --csl=apa.csl
 pandoc paper.md -o paper.pdf --pdf-engine=xelatex \
   --bibliography=references.bib --csl=apa.csl \
   -V geometry:margin=1in -V fontsize=12pt -V linestretch=2
-```
-
-### Markdown → PDF (with Chinese)
-```bash
-pandoc paper.md -o paper.pdf --pdf-engine=xelatex \
-  -V CJKmainfont="Noto Sans CJK TC" \
-  --bibliography=references.bib --csl=apa.csl
 ```
 
 ### Markdown → DOCX

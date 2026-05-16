@@ -162,27 +162,3 @@ although, despite, while, granted that, notwithstanding
 | Results | Past | "The analysis revealed..." |
 | Discussion (interpreting) | Present | "These findings suggest..." |
 | Conclusion (implications) | Present/Future | "This has implications for... / Future research should..." |
-
-## Chinese Academic Writing (zh-TW) Conventions
-
-### Register
-- Use written/formal language; avoid colloquial expressions
-- Prefer active voice (Chinese rarely uses passive)
-- Mainly short sentences; avoid overly long subordinate clauses
-- Use "this study" (ben yan jiu) rather than "we" (wo men)
-
-### Common Academic Expressions
-| English | Romanized Chinese |
-|------|------|
-| This study aims to | Ben Yan Jiu Zhi Zai |
-| The findings indicate | Yan Jiu Jie Guo Xian Shi |
-| It is worth noting | Zhi De Zhu Yi De Shi |
-| In conclusion | Zong Shang Suo Shu |
-| Based on the above analysis | Gen Ju Shang Shu Fen Xi |
-| Further research is needed | Wei Lai Yan Jiu Ke Jin Yi Bu Tan Tao |
-
-### Avoiding Translationese
-- Incorrect: "was found to be" (bei fa xian shi) → Correct: "Results show" (jie guo xian shi)
-- Incorrect: "This is because" (zhe shi yin wei) → Correct: "The reason lies in" (yuan yin zai yu)
-- Incorrect: "In the aspect of..." (zai...fang mian) → Correct: State directly
-- Incorrect: "It is worth being pointed out that" (zhi de bei zhi chu de shi) → Correct: "It is worth noting that" (zhi de zhu yi de shi)

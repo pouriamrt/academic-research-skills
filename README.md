@@ -1,13 +1,13 @@
 # Academic Research Skills for Claude Code
 
-[![Version](https://img.shields.io/badge/version-v3.16.0-blue)](https://github.com/pouriamrt/academic-research-skills)
+[![Version](https://img.shields.io/badge/version-v3.17.0-blue)](https://github.com/pouriamrt/academic-research-skills)
 [![License: CC BY-NC 4.0](https://img.shields.io/badge/license-CC%20BY--NC%204.0-lightgrey)](https://creativecommons.org/licenses/by-nc/4.0/)
 
-A Claude Code plugin covering the full academic research lifecycle — from literature review through experimentation, statistical analysis, paper writing, peer review, and publication. **8 skills, 58+ agents, 20 handoff schemas**, full pipeline orchestration with PRISMA-trAIce + RAISE compliance gates, reviewer + writer/evaluator sprint contracts, passport reset boundary for long-running sessions, three-layer citation locator, and collaboration depth observer. Experiment skills integrate with the [superpowers](https://github.com/obra/superpowers) plugin for disciplined, test-driven code development.
+A Claude Code plugin covering the full academic research lifecycle — from literature review through experimentation, statistical analysis, paper writing, peer review, and publication. **8 skills, 57+ agents, 20 handoff schemas**, full pipeline orchestration with PRISMA-trAIce + RAISE compliance gates, reviewer + writer/evaluator sprint contracts, passport reset boundary for long-running sessions, three-layer citation locator, and collaboration depth observer. **v3.17.0 runs the pipeline unattended by default — set `ARS_INTERACTIVE=1` to restore v3.16 prompts.** English-only output. Experiment skills integrate with the [superpowers](https://github.com/obra/superpowers) plugin for disciplined, test-driven code development.
 
 ## Skills
 
-**Install in 30 seconds** (Claude Code CLI / VS Code / JetBrains, v3.16.0+; plugin packaging from upstream v3.7.0):
+**Install in 30 seconds** (Claude Code CLI / VS Code / JetBrains, v3.17.0+; plugin packaging from upstream v3.7.0):
 
 ```text
 /plugin marketplace add Imbad0202/academic-research-skills
@@ -34,14 +34,16 @@ v3.3 was inspired by [**PaperOrchestra**](https://arxiv.org/abs/2604.05018) (Son
 
 | Skill | Agents | What it does | Key Modes |
 |-------|--------|-------------|-----------|
-| **deep-research** v2.9.3 | 14 | Research team with concept lineage, systematic review, PRISMA, meta-analysis, Semantic Scholar API verification | full, quick, socratic, review, lit-review, fact-check, systematic-review |
-| **experiment-designer** v1.0 | 6 | Experiment protocol, power analysis, instruments, randomization | full, guided, quick, power-only, instrument |
-| **data-analyst** v1.0 | 7 | Statistical analysis execution with APA-formatted results | full, guided, quick, assumption-check, exploratory, replication |
-| **simulation-runner** v1.0 | 5 | Monte Carlo, bootstrap, agent-based models, parameter sweeps | full, guided, quick, power-sim, sensitivity, bootstrap |
-| **lab-notebook** v1.0 | 4 | Experiment research record with provenance tracking | full, log-entry, deviation, snapshot, export, audit |
-| **academic-paper** v3.1.1 | 12 | Paper writing with experiment integration, LaTeX output, anti-leakage protocol, VLM figure verification, disclosure mode | full, plan, outline-only, revision, revision-coach, abstract-only, lit-review, format-convert, citation-check, disclosure |
-| **academic-paper-reviewer** v1.9.0 | 7 | Multi-perspective peer review (EIC + 3 reviewers + Devil's Advocate + optional cross-model DA critique) with calibration + sprint-contract gates | full, re-review, quick, methodology-focus, guided, calibration |
-| **academic-pipeline** v3.16.0 | 4 in-skill + 1 shared (`compliance_agent`) | Full pipeline orchestrator with AI Research Failure Mode Checklist (Lu 2026), score trajectory tracking, early-stopping, PRISMA-trAIce + RAISE compliance (Schema 19), sprint-contract gates (Schema 20 / 20.1), passport reset boundary, collaboration depth observer | auto-detected stages |
+| **deep-research** v2.9.4 | 14 | Research team with concept lineage, systematic review, PRISMA, meta-analysis, Semantic Scholar API verification | full, quick, socratic*, review, lit-review, fact-check, systematic-review |
+| **experiment-designer** v1.0.1 | 6 | Experiment protocol, power analysis, instruments, randomization | full, guided*, quick, power-only, instrument |
+| **data-analyst** v1.0.1 | 7 | Statistical analysis execution with APA-formatted results | full, guided*, quick, assumption-check, exploratory, replication |
+| **simulation-runner** v1.0.1 | 5 | Monte Carlo, bootstrap, agent-based models, parameter sweeps | full, guided*, quick, power-sim, sensitivity, bootstrap |
+| **lab-notebook** v1.0.1 | 4 | Experiment research record with provenance tracking | full, log-entry, deviation, snapshot, export, audit |
+| **academic-paper** v3.2.0 | 11 | English-only paper writing with experiment integration, LaTeX output, anti-leakage protocol, VLM figure verification, disclosure mode | full, plan*, outline-only, revision, revision-coach, abstract-only, lit-review, format-convert, citation-check, disclosure |
+| **academic-paper-reviewer** v1.9.1 | 7 | Multi-perspective peer review (EIC + 3 reviewers + Devil's Advocate + optional cross-model DA critique) with calibration + sprint-contract gates; auto-routes from machine-readable verdict | full, re-review, quick, methodology-focus, guided*, calibration |
+| **academic-pipeline** v3.17.0 | 4 in-skill + 1 shared (`compliance_agent`) | Auto-by-default pipeline orchestrator with AI Research Failure Mode Checklist (Lu 2026), score trajectory tracking, early-stopping, PRISMA-trAIce + RAISE compliance (Schema 19), sprint-contract gates (Schema 20 / 20.1), passport reset boundary, collaboration depth observer | auto-detected stages |
+
+`*` = mode only fires when `ARS_INTERACTIVE=1` is set. In auto mode (default) the orchestrator forces `mode=full` on every dispatched sub-skill.
 
 See the [Quick Reference Card](docs/QUICK_REFERENCE.md) for a full "I want to X → use skill Y in mode Z" lookup table, [MODE_REGISTRY.md](MODE_REGISTRY.md) for the single source of truth on all 24+ modes (with spectrum / output / oversight / triggers), and [POSITIONING.md](POSITIONING.md) for the design philosophy and allowed/discouraged uses.
 
@@ -57,7 +59,7 @@ See the [Quick Reference Card](docs/QUICK_REFERENCE.md) for a full "I want to X 
 - `ANTHROPIC_API_KEY` exported, or set on first `claude` run
 - *Optional:* Pandoc for DOCX (via Pandoc when available); Markdown + instructions otherwise. Tectonic + Source Han Serif TC for APA 7.0 PDF. Markdown output works without either.
 
-**Plugin install (v3.16.0+, recommended):**
+**Plugin install (v3.17.0+, recommended):**
 
 ```text
 /plugin marketplace add pouriamrt/academic-research-skills
@@ -78,8 +80,7 @@ See the [Quick Reference Card](docs/QUICK_REFERENCE.md) for a full "I want to X 
 
 ## Guides & articles
 
-- [Academic Writing Shouldn't Be a Solo Act](https://open.substack.com/pub/edwardwu223235/p/academic-writing-shouldnt-be-a-solo?r=4dczl&utm_medium=ios) — upstream's full pipeline walkthrough (English)
-- [學術寫作不該是一個人的事：一套開源 AI 協作工具如何改變研究者的工作流](https://open.substack.com/pub/edwardwu223235/p/ai?r=4dczl&utm_medium=ios) — 完整使用指南（繁體中文）
+- [Academic Writing Shouldn't Be a Solo Act](https://open.substack.com/pub/edwardwu223235/p/academic-writing-shouldnt-be-a-solo?r=4dczl&utm_medium=ios) — upstream's full pipeline walkthrough
 
 ## Pipeline
 
@@ -153,8 +154,7 @@ See the complete artifacts from a real 10-stage pipeline run — peer review rep
 
 | Artifact | Description |
 |---|---|
-| [Final Paper (EN)](examples/showcase/full_paper_apa7.pdf) | APA 7.0 formatted, LaTeX-compiled |
-| [Final Paper (ZH)](examples/showcase/full_paper_zh_apa7.pdf) | Chinese version, APA 7.0 |
+| [Final Paper](examples/showcase/full_paper_apa7.pdf) | APA 7.0 formatted, LaTeX-compiled |
 | [Integrity Report — Pre-Review](examples/showcase/integrity_report_stage2.5.pdf) | Stage 2.5: caught 15 fabricated refs + 3 statistical errors |
 | [Integrity Report — Final](examples/showcase/integrity_report_stage4.5.pdf) | Stage 4.5: zero regressions confirmed |
 | [Peer Review Round 1](examples/showcase/stage3_review_report.pdf) | EIC + 3 Reviewers + Devil's Advocate |
@@ -347,7 +347,7 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines on adding agents, modes, s
 
 > A condensed cross-skill matrix (per-agent responsibilities, per-stage artifacts) lives in [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md). The detailed agent rosters below are the fork's authoritative reference.
 
-### Deep Research (v2.9.3)
+### Deep Research (v2.9.4)
 
 14-agent pipeline for rigorous academic research:
 
@@ -385,9 +385,7 @@ Four experiment skills (22 agents total) auto-detected from the methodology blue
 
 **Superpowers integration:** complex code (custom DGPs, SEM, ABM, multi-step pipelines) auto-invokes superpowers TDD workflow with scientific test patterns (known-answer, synthetic data, reproducibility).
 
-### Academic Paper (v3.1.1)
-
-### Academic Paper Reviewer (v1.9.0)
+### Academic Paper (v3.2.0)
 
 | Agent | Role |
 |-------|------|
@@ -395,18 +393,17 @@ Four experiment skills (22 agents total) auto-detected from the methodology blue
 | Literature Strategist | Search strategy + annotated bibliography (with corpus-first integration, v3.6.5+) |
 | Structure Architect | Paper outline + word allocation |
 | Argument Builder | Thesis + claim-evidence chains |
-| Draft Writer | Section-by-section writing + Writing Quality Check sweep + Style Profile application + **Anti-Leakage Protocol** (knowledge isolation) + **v3.6.6 writer sprint contract** (Phase 4a/4b) + **v3.7.3 three-layer citation emission** |
+| Draft Writer | Section-by-section writing + English abstract + 5-7 keywords inline + Writing Quality Check sweep + Style Profile application + **Anti-Leakage Protocol** (knowledge isolation) + **v3.6.6 writer sprint contract** (Phase 4a/4b) + **v3.7.3 three-layer citation emission** |
 | Citation Compliance | Multi-format citation audit + APA↔Chicago↔MLA↔IEEE↔Vancouver conversion |
-| Abstract Bilingual | EN + Chinese abstracts |
 | Peer Reviewer | 5-dimension review (max 2 rounds) + **v3.6.6 evaluator sprint contract** (Phase 6a/6b) |
-| Formatter | LaTeX/DOCX/PDF output — mandatory `apa7` class, XeCJK bilingual, `ragged2e` justification fix, tectonic compilation + **v3.7.3 NO-LOCATOR hard-gate refusal** |
+| Formatter | LaTeX/DOCX/PDF output — mandatory `apa7` class, `ragged2e` justification fix, tectonic compilation + **v3.7.3 NO-LOCATOR hard-gate refusal** |
 | Socratic Mentor | Chapter-by-chapter guided planning with convergence criteria + SCR reflection (togglable) |
 | Visualization Agent | 9 chart types, matplotlib/ggplot2, APA 7.0 standards + **VLM Figure Verification** (optional closed-loop visual quality check) |
 | Revision Coach Agent | Parses unstructured reviewer comments → Revision Roadmap |
 
 **Modes:** full, plan, outline-only, revision, revision-coach, abstract-only, lit-review, format-convert, citation-check, **disclosure** (venue-specific AI usage statement)
 
-### Academic Paper Reviewer (v1.9.0)
+### Academic Paper Reviewer (v1.9.1)
 
 7-agent multi-perspective review with **0-100 quality rubrics** and **v3.6.2 sprint contract hard gate**:
 
@@ -426,7 +423,7 @@ Four experiment skills (22 agents total) auto-detected from the methodology blue
 
 **Optional cross-model verification:** set `ARS_CROSS_MODEL` to use GPT-5.4 Pro or Gemini 3.1 Pro as an independent second reviewer.
 
-### Academic Pipeline (v3.16.0; suite-version-pinned)
+### Academic Pipeline (v3.17.0; suite-version-pinned, auto-by-default)
 
 Pipeline orchestrator with integrity verification, compliance, sprint-contract gates, two-stage review, experiment re-entry, Socratic coaching, passport reset boundary, and collaboration evaluation:
 
@@ -553,6 +550,16 @@ https://github.com/Imbad0202/academic-research-skills
 
 ## Changelog
 
+### v3.17.0 (2026-05-15) — Auto-by-default pipeline + bilingual purge (BREAKING)
+
+**Breaking**: `academic-pipeline` now runs unattended by default. Set `ARS_INTERACTIVE=1` to restore v3.16.0 checkpoint pauses, mode-recommendation prompts, and language pickers. Bilingual / Traditional Chinese support is removed across the suite.
+
+- **Auto mode is the new default.** Orchestrator skips Intent Detection mode-recommendation prompts, forces `mode=full` on every dispatched skill, writes checkpoint deliverables to the passport ledger (and stdout) without prompting, and never plays the beep. Stage 2.5 integrity FAIL auto-retries up to `ARS_AUTO_MAX_RETRIES` (default 3); Stage 4.5 retry cap is hard-pinned 1; on retry exhaustion the pipeline exits non-zero per `ARS_AUTO_FAIL_MODE` (default `exit-nonzero`). Stage 3 / 3' auto-routes from `editorial_synthesizer_agent`'s machine-readable verdict (`accept | minor | major | reject`). Stage 5 auto-emits MD + DOCX (Pandoc if available) + LaTeX + PDF. Stage 6 PROCESS SUMMARY is English-only.
+- **Interactive opt-in.** `ARS_INTERACTIVE=1` restores v3.16.0 behavior: every checkpoint pause, the beep via `tools/beep.sh`, the mode-recommendation dialogue, the Stage 1.5 routing-flag confirmation, the Stage 5 LaTeX prompt, and per-skill `socratic` / `plan` / `guided` modes.
+- **Bilingual removed.** Deleted `academic-paper/agents/abstract_bilingual_agent.md`, `academic-paper/references/apa7_chinese_citation_guide.md`, `academic-paper/templates/bilingual_abstract_template.md`, `academic-paper/examples/chinese_paper_example.md`, `README.zh-TW.md`, `docs/SETUP.zh-TW.md`, `docs/PERFORMANCE.zh-TW.md`. `academic-paper` agent count drops 12 → 11 — the English abstract + 5-7 keywords are now emitted inline by `draft_writer_agent` during Phase 4. Phase 5a / 5b parallel collapses to a single Phase 5 (citations). Output language is English only.
+- **New env vars.** `ARS_INTERACTIVE`, `ARS_AUTO_MAX_RETRIES`, `ARS_AUTO_FAIL_MODE`, `ARS_AUTO_NO_REENTRY` (documented in `docs/SETUP.md` master table).
+- **Version bumps**: `academic-pipeline` 3.16.0 → 3.17.0 (suite-pinned), `academic-paper` 3.1.1 → 3.2.0, `deep-research` 2.9.3 → 2.9.4, `academic-paper-reviewer` 1.9.0 → 1.9.1, experiment skills 1.0 → 1.0.1.
+
 ### v3.16.0 (2026-05-15) — Upstream Merge: PRISMA-trAIce Compliance, Sprint Contract, Claim Faithfulness
 
 Merged upstream (Imbad0202) commits v3.3.2 → v3.7.3 (146 commits, 145 PRs, 519 files) into fork's v3.15.0 base. Resolved schema number collisions by renumbering upstream Schema 12 (Compliance Report) → **Schema 19** and Schema 13/13.1 (Sprint Contract) → **Schema 20/20.1** to preserve fork's experiment Schemas 10–18 (Experiment Design, Experiment Results, Lab Record, Simulation Specification, etc.).
@@ -585,13 +592,13 @@ Merged upstream (Imbad0202) commits v3.3.2 → v3.7.3 (146 commits, 145 PRs, 519
 
 > Plugin packaging upgrade: ARS now installs in one line on Claude Code CLI / VS Code / JetBrains via `/plugin marketplace add Imbad0202/academic-research-skills` + `/plugin install academic-research-skills`. The traditional `git clone + symlink to ~/.claude/skills/` flow continues to work — both tracks are first-class.
 
-- **Plugin manifest + marketplace metadata** (Phase 1, PR #68). `.claude-plugin/plugin.json` declares the suite (4 skills auto-discovered from `skills/` directory via relative symlinks). `.claude-plugin/marketplace.json` registers the plugin so a single GitHub-hosted endpoint serves both the marketplace listing and the plugin source. README + `README.zh-TW.md` + `docs/SETUP.md` carry dual-track install instructions.
+- **Plugin manifest + marketplace metadata** (Phase 1, PR #68). `.claude-plugin/plugin.json` declares the suite (4 skills auto-discovered from `skills/` directory via relative symlinks). `.claude-plugin/marketplace.json` registers the plugin so a single GitHub-hosted endpoint serves both the marketplace listing and the plugin source. README + `docs/SETUP.md` carry the install instructions.
 - **10 slash commands** at `commands/ars-*.md` (Phase 2.1, PR #69) mapping `MODE_REGISTRY.md` entries to `/ars-<mode>` triggers. Model routing is pinned in each command's frontmatter — `opus` for `full` and `revision-coach` (architectural / review-interpretation depth), `sonnet` for the other 8. No Haiku per project policy.
 - **3 plugin-shipped agents** at `agents/*_agent.md` (Phase 2.1, PR #69) as relative symlinks to the v3.6.7-hardened downstream agents in `deep-research/agents/`: `synthesis_agent`, `research_architect_agent`, `report_compiler_agent`. Underscore filenames preserved to keep `scripts/check_v3_6_7_pattern_protection.py` hard-pinned paths and INV-3 manifest-confined Clause 1 invariant intact. Symlinks (not copies) preserve a single source of truth and prevent the Pattern C3 attack surface that v3.6.7 §6 inversion sweep + INV-1/2/3 lint closes.
 - **`model: inherit`** added to those three source agent frontmatters. Inherit chosen over pinning `sonnet` so an opus session running ARS full pipeline keeps opus agents (instead of being capped). The user's `~/.claude/hooks/warn-agent-no-model.sh` PreToolUse hook gates Haiku at the dispatching boundary, so `inherit` resolves through an already-Haiku-free model.
 - **SessionStart announce hook** at `hooks/hooks.json` + `scripts/announce-ars-loaded.sh` (Phase 2.2, PR #70). When the plugin loads, the hook injects an `additionalContext` listing the 10 slash commands, the 3 plugin agents, and a token-budget pointer into the LLM's first turn. `startup` and `clear` source values get the full announce; `resume` and `compact` get a one-line ack to avoid burning context. Bash 3.2 compatible — runs on macOS stock `/bin/bash` with no `brew install bash` requirement.
 - **Phase 2.2 scope reduction**: a `SubagentStop → run_codex_audit.sh` codex audit hook was scoped out for v3.7.0 due to a contract gap (the SubagentStop payload carries no stage/deliverable info, so the wrapper would have to half-infer required arguments) and an invoker-class boundary (`run_codex_audit.sh` lines 4–7 forbid same-session in-LLM invocation; PostToolUse fires inside the producing session). Real audit-hook integration deferred to a future release when ARS gains a stage/deliverable propagation contract. See `docs/design/2026-04-30-ars-v3.7.0-plugin-packaging-roadmap.md` Update note 2026-05-05 (Phase 2.2 scope reduction).
-- **`docs/PERFORMANCE.md` + `.zh-TW.md`** gain a "v3.7.0 Plugin agents and model routing" subsection explaining the inherit semantics and current 3-agent scope boundary.
+- **`docs/PERFORMANCE.md`** gains a "v3.7.0 Plugin agents and model routing" subsection explaining the inherit semantics and current 3-agent scope boundary.
 - **Codex review chain across the three PRs**: 8 inline iterative rounds + 3 fresh PR-level rounds, all converging to 0 P0/P1/P2 findings before merge. The Phase 2.2 fresh PR review caught one P2 (unquoted `${CLAUDE_PLUGIN_ROOT}` breaking install paths with spaces) that the inline rounds missed — confirms the value of separating implementation review (inline) from contract review (fresh).
 - **What did NOT change**: the four skill directories, all 25 modes, agent prompts, schema files, and lint contracts. Plugin packaging only adds new top-level surface (`commands/`, `agents/`, `hooks/`, `.claude-plugin/`, `skills/` symlink dir, three plugin-agent `model: inherit` frontmatter additions). Existing 4.3k clone-install users see no breaking change.
 
@@ -695,7 +702,7 @@ v3.5.1 adds an opt-in honesty probe to the Socratic Mentor (`ARS_SOCRATIC_READIN
 
 ### v3.3.4 (2026-04-15) — README Changelog Sync Patch
 
-- Synced the embedded changelog sections in `README.md` and `README.zh-TW.md` so they include the missing `v3.3.3` and `v3.3.2` release summaries.
+- Synced the embedded changelog sections in `README.md` so they include the missing `v3.3.3` and `v3.3.2` release summaries.
 - Extended `scripts/check_spec_consistency.py` so future README changelog drift fails CI.
 ### v3.3.3 (2026-04-15) — Release Prep + Lint Hardening
 

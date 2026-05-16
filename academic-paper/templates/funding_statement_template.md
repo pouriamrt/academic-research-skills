@@ -48,14 +48,6 @@ Funding: This work was supported by the [Funder Full Name]
 and analysis, decision to publish, or preparation of the manuscript.
 ```
 
-**Chinese**:
-```
-Funding: This research was supported by the [Funder Full Name] [Grant Type]
-(Grant No.: [Number]). The funder had no involvement in the design, data
-collection and analysis, publication decision, or manuscript preparation
-of this research.
-```
-
 ### B. Funded (Multiple Sources)
 
 **English**:
@@ -66,28 +58,12 @@ the [Funder 2] (Grant No. [Number 2]); and the [Funder 3]
 collection and analysis, decision to publish, or preparation of the manuscript.
 ```
 
-**Chinese**:
-```
-Funding: This research was supported by the following grants:
-(1) [Funder 1] [Grant Type] (Grant No.: [Number 1]);
-(2) [Funder 2] [Grant Type] (Grant No.: [Number 2]);
-(3) [Funder 3] [Grant Type] (Grant No.: [Number 3]).
-The funders had no involvement in the design, data collection and analysis,
-publication decision, or manuscript preparation of this research.
-```
-
 ### C. No Funding
 
 **English**:
 ```
 Funding: This research received no specific grant from any funding agency in
 the public, commercial, or not-for-profit sectors.
-```
-
-**Chinese**:
-```
-Funding: This research did not receive any specific grant from public,
-commercial, or not-for-profit funding agencies.
 ```
 
 ### D. Partially Funded
@@ -97,13 +73,6 @@ commercial, or not-for-profit funding agencies.
 Funding: This work was partially supported by the [Funder]
 (Grant No. [Number]). The funder had no role in study design, data collection
 and analysis, decision to publish, or preparation of the manuscript.
-```
-
-**Chinese**:
-```
-Funding: This research was partially supported by [Funder] (Grant No.: [Number]).
-The funder had no involvement in the design, data collection and analysis,
-publication decision, or manuscript preparation of this research.
 ```
 
 ---
@@ -119,13 +88,6 @@ financial interests or personal relationships that could have appeared to
 influence the work reported in this paper.
 ```
 
-**Chinese**:
-```
-Declaration of Interest: All authors declare that, with respect to the research
-reported in this paper, there are no known competing financial interests or
-personal relationships.
-```
-
 ### B. Conflict Exists
 
 **English**:
@@ -134,14 +96,6 @@ Declaration of Interest: [Author Name] has received [type of support:
 research grants / consulting fees / speaker honoraria] from [Organization].
 [Author Name] serves on the [advisory board / editorial board] of
 [Organization/Journal]. The remaining authors declare no competing interests.
-```
-
-**Chinese**:
-```
-Declaration of Interest: [Author Name] has received [research grants / consulting
-fees / speaker honoraria] from [Organization Name]. [Author Name] serves on the
-[advisory board / editorial board] of [Organization/Journal Name]. The remaining
-authors declare no competing interests.
 ```
 
 ---

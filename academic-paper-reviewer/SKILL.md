@@ -2,7 +2,7 @@
 name: academic-paper-reviewer
 description: "Multi-perspective academic paper review with dynamic reviewer personas. Simulates 5 independent reviewers (EIC + 3 peer reviewers + Devil's Advocate) with field-specific expertise. Supports full review, re-review (verification), quick assessment, methodology focus, Socratic guided, and calibration modes. Triggers on: review paper, peer review, manuscript review, referee report, review my paper, critique paper, simulate review, editorial review, calibrate reviewer, reviewer calibration, measure reviewer accuracy."
 metadata:
-  version: "1.9.0"
+  version: "1.9.1"
   last_updated: "2026-05-15"
   status: active
   data_access_level: verified_only
@@ -13,7 +13,7 @@ metadata:
     - deep-research
 ---
 
-# Academic Paper Reviewer v1.9.0 — Multi-Perspective Academic Paper Review Agent Team
+# Academic Paper Reviewer v1.9.1 — Multi-Perspective Academic Paper Review Agent Team
 
 Simulates a complete international journal peer review process: automatically identifies the paper's field, dynamically configures 5 reviewers (Editor-in-Chief + 3 peer reviewers + Devil's Advocate) who review from four non-overlapping perspectives — methodology, domain expertise, cross-disciplinary viewpoints, and core argument challenges — ultimately producing a structured Editorial Decision and Revision Roadmap.
 
@@ -48,6 +48,8 @@ Review this paper: [paste paper or provide file]
 ### Trigger Keywords
 
 **English**: review paper, peer review, manuscript review, referee report, review my paper, critique paper, simulate review, editorial review, calibrate reviewer, reviewer calibration, measure reviewer accuracy
+
+> **Auto-mode override (v3.17.0+):** When dispatched by `academic-pipeline` in auto mode (default), this skill runs `mode=full` regardless of dispatch flags. The `guided` mode only fires when `ARS_INTERACTIVE=1` AND the orchestrator explicitly requests it. The `editorial_synthesizer_agent` always emits a machine-readable verdict (`accept | minor | major | reject`) so the orchestrator can auto-route Stage 3 / 3' without user input. Standalone invocation outside the pipeline honors the user's requested mode as before.
 
 ### Non-Trigger Scenarios
 
@@ -514,7 +516,7 @@ Follows the paper's language. Academic terms remain in English. User can overrid
 
 | Item | Content |
 |------|---------|
-| Skill Version | 1.9.0 |
+| Skill Version | 1.9.1 |
 | Last Updated | 2026-05-15 |
 | Maintainer | Cheng-I Wu |
 | Dependent Skills | academic-paper v1.0+ (upstream/downstream integration) |

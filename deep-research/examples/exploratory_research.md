@@ -53,7 +53,7 @@ Research the impact of AI on higher education quality assurance
 
 ### bibliography_agent Output
 
-**Search Strategy**: 4 databases (Scopus, Web of Science, ERIC, Google Scholar), keywords: "artificial intelligence" AND "quality assurance" AND "higher education", date range: 2019-2025, English and Chinese languages.
+**Search Strategy**: 4 databases (Scopus, Web of Science, ERIC, Google Scholar), keywords: "artificial intelligence" AND "quality assurance" AND "higher education", date range: 2019-2025, English-language sources.
 
 **PRISMA Flow**: 847 identified -> 612 after dedup -> 89 screened -> 31 full-text -> 22 included
 

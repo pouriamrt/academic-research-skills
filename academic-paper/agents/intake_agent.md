@@ -5,6 +5,8 @@ description: "Conducts the paper configuration interview and produces the Paper 
 
 # Intake Agent — Paper Configuration Interview
 
+> **Auto-mode hook (v3.17.0+):** When dispatched by `academic-pipeline` while `ARS_INTERACTIVE` is unset (auto, the default), this agent SKIPS the user-facing questionnaire. Configuration fields are populated directly from upstream materials: paper type and discipline from the RQ Brief (Schema 1), methodology from the Methodology Blueprint (Schema 14), citation format = `APA 7`, output format = `Combined`, word count = paper-type default, existing materials = inferred from passport. Style Calibration (Step 9) is skipped unless past papers are explicitly pre-loaded in the passport. Funding source (Step 10) defaults to "no funding declared". The Paper Configuration Record is still produced and presented as a log entry, but no confirmation prompt is issued. Standalone invocation outside the pipeline, or with `ARS_INTERACTIVE=1`, runs the full interview.
+
 ## Schemas
 
 | Direction | Schema | Notes |
@@ -164,17 +166,12 @@ Auto-suggest based on discipline; user can override.
 - **PDF** — final distribution format
 - **Combined** — all of the above
 
-### Step 6: Language & Abstract
-- Detect user's language from input
-- Ask about paper body language: EN / zh-TW / bilingual
-- Ask about abstract: Bilingual (default) / EN only / zh-TW only
-
-### Step 7: Word Count
+### Step 6: Word Count
 - Auto-suggest based on paper type (see table above)
 - User can override
 - Validate: flag if too short for paper type
 
-### Step 8: Existing Materials
+### Step 7: Existing Materials
 Ask what the user already has:
 - [ ] Research question / thesis statement
 - [ ] Literature / bibliography
@@ -183,7 +180,7 @@ Ask what the user already has:
 - [ ] Reviewer feedback (for revision mode)
 - [ ] Style guide or template from target journal
 
-### Step 9: Co-Authors & Contributions
+### Step 8: Co-Authors & Contributions
 Reference: `references/credit_authorship_guide.md`
 
 - Ask if this is a single-author or multi-author paper
@@ -194,7 +191,7 @@ Reference: `references/credit_authorship_guide.md`
   - Any equal contribution declarations?
 - If single-author: skip, note in configuration
 
-### Step 10: Style Calibration (Optional)
+### Step 9: Style Calibration (Optional)
 
 Ask the user:
 > "Do you have past papers or writing samples you'd like me to learn your style from? Providing 3+ samples helps me match your natural voice. This is optional."
@@ -214,7 +211,7 @@ Ask the user:
 - Co-authored samples: ask which sections the user wrote; analyze only those
 - Different language from target paper: extract transferable dimensions only (paragraph structure, citation style, modifier density)
 
-### Step 11: Funding Sources
+### Step 10: Funding Sources
 Reference: `references/funding_statement_guide.md`
 
 - Ask if the research received any funding
@@ -242,8 +239,6 @@ Reference: `references/funding_statement_guide.md`
 | **Target Journal** | [journal name or "General"] |
 | **Citation Format** | [APA 7th / Chicago 17th / MLA 9th / IEEE / Vancouver] |
 | **Output Format** | [Markdown / LaTeX / DOCX / PDF / Combined] |
-| **Body Language** | [EN / zh-TW / Bilingual] |
-| **Abstract** | [Bilingual / EN-only / zh-TW-only] |
 | **Word Count Target** | [number] words |
 | **Existing Materials** | [list of provided materials] |
 | **Co-Authors** | [single-author / number of co-authors + corresponding author + brief contribution notes] |

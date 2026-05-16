@@ -31,9 +31,9 @@ The user has a completed paper titled "The Impact of Micro-Credential Certificat
 
 **Minor Comments:**
 
-**m1.** The third sentence of the Chinese abstract — "This study found that micro-credential certification has a significant positive impact on student employability" — is too vague and does not mention the magnitude of the effect size.
+**m1.** The third sentence of the abstract — "This study found that micro-credential certification has a significant positive impact on student employability" — is too vague and does not mention the magnitude of the effect size.
 
-**m2.** Reference formatting is inconsistent: some Chinese references use full-width parentheses while others use half-width parentheses. Citation #15 is missing its DOI.
+**m2.** Reference formatting is inconsistent: parenthesis style varies across entries. Citation #15 is missing its DOI.
 
 **m3.** The axis labels in Figure 2 have font sizes that are too small; it is recommended to enlarge them to 10pt or above. Figure 3 is missing a caption.
 
@@ -93,17 +93,16 @@ The formatter_agent recommends the following revision order:
 
 ### Citation Audit Report
 
-**Audit Scope:** Full-text citation formatting (APA 7.0 Chinese citation standards)
+**Audit Scope:** Full-text citation formatting (APA 7.0)
 
 **Issues Found:**
 
 | Issue | Count | Severity |
 |-------|-------|----------|
-| Inconsistent parenthesis format (full-width/half-width) | 7 instances | Medium |
+| Inconsistent parenthesis format | 7 instances | Medium |
 | Missing DOI | 3 instances | High |
 | Inconsistent year format | 2 instances | Low |
 | In-text citation / reference list mismatch | 1 instance | High |
-| Missing English translated titles for Chinese references | 4 instances | Medium |
 
 ### Specific Corrections
 
@@ -123,7 +122,7 @@ Lin (2022)'s survey showed...
 According to the UNESCO (2024) report...
 ```
 
-Rule: Chinese papers uniformly use full-width parentheses; when the author is in the sentence, use "Author (Year)" format.
+Rule: APA 7.0 narrative citation uses "Author (Year)" when the author is in the sentence; parenthetical otherwise.
 
 **Correction 2: Add missing DOIs (addressing m2)**
 
@@ -154,9 +153,7 @@ After correction:
 Chen and Wang（2023）found that micro-credential certification helps...
 ```
 
-**Correction 4: Add English translated titles for Chinese references**
-
-Per APA 7.0 standards, non-English references should include an English translated title in the reference list.
+**Correction 4: Add publisher detail to government-issued reference**
 
 Before correction:
 ```

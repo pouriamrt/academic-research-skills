@@ -124,7 +124,6 @@ CRediT (Contributor Roles Taxonomy) is a standardized taxonomy of author contrib
 
 **Higher Education Research Context Examples**:
 - Writing the complete initial draft of the paper (including all chapters)
-- Translating the Chinese initial draft into an English submission version
 - Writing specific chapters (e.g., literature review or methodology)
 
 ### 14. Writing -- Review & Editing
@@ -253,9 +252,7 @@ Higher Education Evaluation and Accreditation Council of Taiwan (HEEACT).
 
 ---
 
-## CRediT Statement Templates
-
-### English Version
+## CRediT Statement Template
 
 **Author Contributions Statement**:
 
@@ -266,37 +263,6 @@ Writing – original draft, Supervision, Project administration.
 Writing – original draft, Writing – review & editing.
 [Author C]: Investigation, Validation, Writing – review & editing.
 ```
-
-### Chinese Version
-
-**Author Contributions Statement**:
-
-```
-[Author A]: Conceptualization, Methodology, Funding acquisition,
-Writing – original draft, Supervision, Project administration.
-[Author B]: Data curation, Formal analysis, Software, Visualization,
-Writing – original draft, Writing – review & editing.
-[Author C]: Investigation, Validation, Writing – review & editing.
-```
-
-### Chinese-English Role Mapping
-
-| English | Romanized Chinese |
-|------|------|
-| Conceptualization | Gai Nian Hua |
-| Data curation | Zi Liao Guan Li |
-| Formal analysis | Zheng Shi Fen Xi |
-| Funding acquisition | Jing Fei Qu De |
-| Investigation | Diao Cha Yan Jiu |
-| Methodology | Yan Jiu Fang Fa |
-| Project administration | Ji Hua Guan Li |
-| Resources | Zi Yuan Ti Gong |
-| Software | Ruan Ti Kai Fa |
-| Supervision | Zhi Dao Jian Du |
-| Validation | Yan Zheng |
-| Visualization | Shi Jue Hua |
-| Writing -- original draft | Zhuan Xie Chu Gao |
-| Writing -- review & editing | Shen Yue Xiu Ding |
 
 ---
 

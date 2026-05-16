@@ -1,6 +1,6 @@
 # Abstract Writing Guide
 
-Used by `abstract_bilingual_agent`.
+Used by `draft_writer_agent`.
 
 ## Abstract Types
 
@@ -79,57 +79,14 @@ State the significance, practical implications, or recommendations.
 - "The results suggest that [stakeholders] should [action]."
 - "This research contributes to [field] by [contribution]."
 
-### Example (English, Education)
+### Example (Education)
 
 > Declining enrollment poses existential challenges for private higher education institutions in Taiwan, yet institutional responses remain poorly understood. This study examines the strategic adaptation patterns of 12 private universities experiencing enrollment declines exceeding 20% between 2018 and 2023. Using a multiple case study design, we analyzed institutional documents, enrollment data, and 36 semi-structured interviews with administrators. Three distinct adaptation strategies emerged: program consolidation (n = 5), niche specialization (n = 4), and merger pursuit (n = 3). Institutions adopting niche specialization demonstrated the highest enrollment recovery rates (mean = 12.3%). However, successful adaptation was contingent upon early action — institutions that initiated strategic changes within two years of enrollment decline showed significantly better outcomes than late movers (p < .01). These findings suggest that private institutions should adopt proactive monitoring systems and consider niche specialization as a primary survival strategy.
 >
 > **Keywords**: higher education, enrollment decline, private universities, institutional strategy, Taiwan
 
-## Traditional Chinese Abstract Guidelines
-
-### Word Count
-- Standard: 300-500 characters
-- Conference: 300-800 characters
-- Dissertation: 500-1,000 characters
-
-### Structure (5-Component Model)
-
-#### Component 1: Research Background (1-2 sentences)
-**Patterns**:
-- "As... has become an important issue for..."
-- "In the context of..., ... faces the challenge of..."
-- "Although... has received widespread attention, ... still lacks systematic research."
-
-#### Component 2: Research Purpose (1 sentence)
-**Patterns**:
-- "This study aims to explore..."
-- "This paper takes... as subjects and analyzes the impact of..."
-- "The purpose of this study is to construct a framework for..."
-
-#### Component 3: Research Method (1-2 sentences)
-**Patterns**:
-- "This study employs... research method, with... as subjects, collecting data through..."
-- "Using... to analyze... data."
-
-#### Component 4: Research Findings (2-3 sentences)
-**Patterns**:
-- "The results found: (1)...; (2)...; (3)..."
-- "The analysis results show that... Furthermore,..."
-
-#### Component 5: Research Significance (1-2 sentences)
-**Patterns**:
-- "This study has both theoretical and practical contributions to..."
-- "The results can serve as a reference for... and provide specific recommendations for..."
-
-### Example (Chinese, Higher Education Field)
-
-> Amid the trend of declining birth rates, Taiwan's private universities face enrollment difficulties, yet existing research on institutional response strategies remains limited. This study aims to explore the strategic adaptation patterns of 12 private universities that experienced enrollment declines exceeding 20% between 2018 and 2023. The study employs a multiple case study design, analyzing institutional development plans, enrollment data, and conducting 36 semi-structured interviews with administrators. Three primary adaptation strategies were identified: program consolidation (5 institutions), niche specialization (4 institutions), and merger pursuit (3 institutions). Among these, institutions adopting niche specialization demonstrated the highest enrollment recovery rates (mean = 12.3%). The study also found that timing of adaptation is critical to success -- institutions that initiated strategic adjustments within two years of enrollment decline showed significantly better outcomes than late movers. The results suggest that private universities should establish proactive monitoring mechanisms and adopt niche specialization as a primary sustainability strategy.
->
-> **Keywords**: higher education, enrollment decline, private university, institutional strategy, Taiwan
-
 ## Keywords Selection
 
-### English Keywords
 1. **Core concepts** — main variables or constructs (2-3)
 2. **Context** — geographical, institutional, or temporal (1-2)
 3. **Method** — if distinctive (0-1)
@@ -141,29 +98,14 @@ State the significance, practical implications, or recommendations.
 - Use established terms (check journal's keyword list if available)
 - 5-7 keywords total
 
-### Chinese Keywords
-1. **Core concepts** — main variables or constructs (2-3)
-2. **Research context** — geographical, institutional, or temporal (1-2)
-3. **Research method** — if distinctive (0-1)
-4. **Academic field** — discipline or sub-field (1)
-
-**Rules**:
-- Use formal academic terminology
-- Avoid completely duplicating the title
-- May reference the National Central Library Chinese Subject Headings
-- 5-7 keywords
-
-## Bilingual Abstract Quality Checklist
+## Abstract Quality Checklist
 
 | Check | ✓ |
 |-------|---|
-| Both abstracts cover all 5 components | |
-| English: 150-300 words | |
-| Chinese: 300-500 characters | |
-| Abstracts are independently written (not translated) | |
-| Key findings match between languages | |
-| Quantitative data consistent between versions | |
-| Keywords: 5-7 per language | |
+| Abstract covers all 5 components | |
+| 150-300 words | |
+| Quantitative data accurate and consistent with body | |
+| 5-7 keywords | |
 | Keywords complement (not duplicate) the title | |
 | No citations in the abstract | |
 | No abbreviations undefined in the abstract | |

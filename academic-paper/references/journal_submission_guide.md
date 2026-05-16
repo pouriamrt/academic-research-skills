@@ -78,16 +78,6 @@ Used by `formatter_agent` and `intake_agent`.
 | Teaching and Teacher Education | High | APA | 6,000-8,000 |
 | Computers & Education | High | APA | 6,000-10,000 |
 
-### Taiwan HEI Journals (TSSCI)
-
-| Journal | Romanized Chinese Name | Citation Style |
-|---------|---------|---------------|
-| Journal of Research in Education Sciences | Jiao Yu Ke Xue Yan Jiu Qi Kan | APA |
-| Bulletin of Educational Research | Jiao Yu Yan Jiu Ji Kan | APA |
-| Journal of Taiwan Normal University: Education | Shi Da Xue Bao: Jiao Yu Lei | APA |
-| Journal of Educational Practice and Research | Jiao Yu Shi Jian Yu Yan Jiu | APA |
-| Higher Education Review | Gao Deng Jiao Yu | APA |
-
 ## Cover Letter Template
 
 ```markdown

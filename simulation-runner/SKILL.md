@@ -1,8 +1,8 @@
 ---
 name: simulation-runner
-description: "Computational simulation agent team. 5-agent pipeline for designing and executing Monte Carlo simulations, bootstrap resampling, power simulations, parameter sweeps, agent-based models, and stochastic process simulations. 6 modes: full simulation pipeline, guided simulation design, quick single-run, power simulation, sensitivity analysis, and bootstrap resampling. Covers simulation design (ADEMP framework), model building, parallel execution with convergence monitoring, diagnostic assessment, and APA-formatted reporting with Schema 11 output. Triggers on: Monte Carlo, simulation, bootstrap, parameter sweep, sensitivity analysis, agent-based model, power simulation, simulate, computational experiment, stochastic, resampling, permutation test, 蒙地卡羅, 模擬, 拔靴法, 參數掃描, 敏感度分析, 代理人模型, 檢定力模擬, 計算實驗, 隨機過程, 重抽樣."
+description: "Computational simulation agent team. 5-agent pipeline for designing and executing Monte Carlo simulations, bootstrap resampling, power simulations, parameter sweeps, agent-based models, and stochastic process simulations. 6 modes: full simulation pipeline, guided simulation design, quick single-run, power simulation, sensitivity analysis, and bootstrap resampling. Covers simulation design (ADEMP framework), model building, parallel execution with convergence monitoring, diagnostic assessment, and APA-formatted reporting with Schema 11 output. Triggers on: Monte Carlo, simulation, bootstrap, parameter sweep, sensitivity analysis, agent-based model, power simulation, simulate, computational experiment, stochastic, resampling, permutation test."
 metadata:
-  version: "1.0"
+  version: "1.0.1"
   last_updated: "2026-05-15"
   status: active
   data_access_level: redacted
@@ -50,13 +50,13 @@ Guide my simulation design for testing robustness of my estimator
 
 ### Trigger Keywords
 
-**English**: Monte Carlo, simulation, bootstrap, parameter sweep, sensitivity analysis, agent-based model, power simulation, simulate, computational experiment, stochastic, resampling, permutation test
-
-**繁體中文**: 蒙地卡羅, 模擬, 拔靴法, 參數掃描, 敏感度分析, 代理人模型, 檢定力模擬, 計算實驗, 隨機過程, 重抽樣
+**Triggers**: Monte Carlo, simulation, bootstrap, parameter sweep, sensitivity analysis, agent-based model, power simulation, simulate, computational experiment, stochastic, resampling, permutation test
 
 ### Guided Mode Activation
 
-Activate `guided` mode when the user's **intent** matches any of the following patterns, **regardless of language**. Detect meaning, not exact keywords.
+> **Auto-mode override (v3.17.0+):** When dispatched by `academic-pipeline` in auto mode (default), this skill runs `mode=full` regardless of dispatch flags. The `guided` mode only fires when `ARS_INTERACTIVE=1` AND the orchestrator explicitly requests it. Standalone invocation outside the pipeline honors the user's requested mode as before.
+
+Activate `guided` mode when the user's **intent** matches any of the following patterns. Detect meaning, not exact keywords.
 
 **Intent signals** (any one is sufficient):
 1. User wants help designing a simulation but does not have a concrete model yet
@@ -455,7 +455,7 @@ Follows the user's language. Code comments and variable names always in English.
 
 | Item | Content |
 |------|---------|
-| Skill Version | 1.0 |
+| Skill Version | 1.0.1 |
 | Last Updated | 2026-05-15 |
 | Maintainer | Pouria Mortezaagha (fork) |
 | Dependent Skills | experiment-designer (upstream — Schema 10 + Schema 13 consumer), lab-notebook + academic-paper (downstream — Schema 11 producer), academic-pipeline (orchestrator) |

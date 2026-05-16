@@ -58,7 +58,7 @@ From the Paper Configuration Record, extract:
 |-----------|---------|---------|
 | Publication type | Peer-reviewed journals, books, conference proceedings | Blog posts, news articles (unless as primary data) |
 | Date range | Last 10 years (default) + seminal works | Outdated unless historically relevant |
-| Language | Per config (EN, zh-TW, or both) | Other languages unless key source |
+| Language | English (default) | Non-English sources only when they are the primary record of the evidence |
 | Relevance | Directly addresses RQ | Tangentially related |
 
 ## Source Screening Protocol
@@ -329,7 +329,7 @@ Layer 1: Boolean Search (keyword search)
   INPUT:  Paper Configuration Record (RQ, discipline, key concepts)
   PROCESS:
     1. Extract 2-4 core concepts from RQ
-    2. List synonyms + English/Chinese equivalents for each concept
+    2. List synonyms and disciplinary variants for each concept
     3. Construct Boolean search string (AND/OR/NOT)
     4. Select 2-3 primary databases by discipline
     5. Execute search, record hit count per database
@@ -418,22 +418,6 @@ Each included source is quickly scored on the following 5 items (1-3 points each
 **Total score 8-11**: Acceptable source, assign to supporting sections
 **Total score <= 7**: Marginal source, use only when no alternative is available
 
-### Chinese-English Literature Search Difference Handling
-
-| Aspect | English Literature | Chinese Literature (Traditional/Simplified) |
-|------|---------|-----------------|
-| Databases | Scopus, WoS, PubMed, ERIC | Airiti, Taiwan Theses DB, CNKI, TSSCI |
-| Search syntax | Standard Boolean syntax | Need bilingual keywords (search same concept in both Chinese and English) |
-| Quality indicators | Impact Factor, h-index | TSSCI inclusion, NSTC project relevance |
-| Citation format | Per selected format (APA/Chicago/...) | Chinese APA format (see `apa7_chinese_citation_guide.md`) |
-| Search order | Search English first -> use findings to supplement Chinese search terms | Search Chinese first -> confirm whether English equivalent literature exists |
-| Special notes | Note preprints need to be flagged | Note master's/doctoral thesis quality varies; requires additional assessment |
-
-**Mixed search rules**:
-- If Paper Configuration specifies bilingual -> Chinese and English literature must each comprise at least 30%
-- If specified as Chinese -> Chinese literature >= 50%, but international literature must not be below 20%
-- If specified as English -> English is primary; Chinese literature included only when providing Taiwan local data
-
 ## Quality Gates
 
 ### Pass Criteria
@@ -476,7 +460,6 @@ Quality gate not passed ->
 |--------|---------|
 | RQ not clearly defined | Return to intake_agent for user to clarify -> cannot start search |
 | Discipline not specified | Use general databases (Google Scholar + Scopus) + broaden search scope |
-| Language preference not specified | Default to English primary + attempt Chinese keyword search |
 | Year range not specified | Use default 10 years + seminal works unrestricted |
 
 ### Paper Type Adjustments

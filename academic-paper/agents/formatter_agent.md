@@ -66,7 +66,6 @@ Preferred behavior:
 - Provide LaTeX source that compiles to PDF (preferred — best figure quality)
 - **Figures MUST be embedded** — the PDF is not publication-ready without figures
 - Or provide Pandoc command: `pandoc input.md -o output.pdf --pdf-engine=xelatex --resource-path=figures/`
-- For zh-TW content: use XeLaTeX with CJK font support
 
 ### 5. Combined (All formats)
 - Generate Markdown + LaTeX + conversion instructions for DOCX and PDF
@@ -352,14 +351,14 @@ When refusing, surface the unresolved markers to the user with their per-section
 | Citation Style | [APA 7th / Chicago / MLA / IEEE / Vancouver] |
 | Target Journal | [name or "General"] |
 | Word Count | [N] words |
-| Language | [EN / zh-TW / Bilingual] |
+| Language | English |
 
 ### Final Quality Checklist
 [Completed checklist with all items checked]
 
 ### Conversion Commands (if applicable)
 - DOCX: `pandoc paper.md -o paper.docx --reference-doc=template.docx`
-- PDF: `pandoc paper.md -o paper.pdf --pdf-engine=xelatex -V CJKmainfont="Noto Sans CJK TC"`
+- PDF: `pandoc paper.md -o paper.pdf --pdf-engine=xelatex`
 ```
 
 ## Detailed Execution Algorithm
@@ -428,7 +427,6 @@ Step 6: Package Output
 \usepackage[utf8]{inputenc}
 \usepackage{amsmath,graphicx,hyperref,booktabs}
 \usepackage[style=apa,backend=biber]{biblatex}
-% IF zh-TW content -> add xeCJK (see Chinese settings below)
 \addbibresource{references.bib}
 
 \title{Paper Title}
@@ -457,22 +455,16 @@ pandoc paper.md -o paper.docx \
   --citeproc \
   --bibliography=references.bib \
   --csl=apa-7th.csl
-
-# Chinese content
-pandoc paper.md -o paper.docx \
-  --reference-doc=template_zh.docx \
-  --pdf-engine=xelatex \
-  -V CJKmainfont="Noto Sans CJK TC"
 ```
 
 **Style Mapping (Markdown -> Word Styles)**:
 
 | Markdown | Word Style | Font/Size Recommendation |
 |----------|-----------|-------------|
-| `# H1` | Heading 1 | Times New Roman 16pt Bold / DFKai-SB 16pt Bold |
-| `## H2` | Heading 2 | Times New Roman 14pt Bold / DFKai-SB 14pt Bold |
-| `### H3` | Heading 3 | Times New Roman 12pt Bold / DFKai-SB 12pt Bold |
-| Body text | Normal | Times New Roman 12pt / DFKai-SB 12pt |
+| `# H1` | Heading 1 | Times New Roman 16pt Bold |
+| `## H2` | Heading 2 | Times New Roman 14pt Bold |
+| `### H3` | Heading 3 | Times New Roman 12pt Bold |
+| Body text | Normal | Times New Roman 12pt |
 | `> quote` | Block Quote | Indented 0.5", italic |
 | Table | Table Grid | |
 | Reference | Bibliography | Hanging indent 0.5" |
@@ -481,7 +473,7 @@ pandoc paper.md -o paper.docx \
 - Margins: 1 inch (2.54 cm) on all sides
 - Line spacing: Double-spaced (APA) or 1.5 spacing (per journal)
 - Page numbers: Top right
-- Font: English Times New Roman 12pt / Chinese DFKai-SB 12pt
+- Font: Times New Roman 12pt
 
 ### APA 7.0 LaTeX (`apa7` Class) — Mandatory Rules
 
@@ -572,38 +564,6 @@ tectonic paper.tex
 \end{Verbatim}
 ```
 - If verbatim content exceeds page width, use `fontsize=\small` or `\footnotesize`
-
-### Chinese LaTeX Compilation Settings
-
-```latex
-% === Required Chinese LaTeX Settings ===
-\usepackage{xeCJK}
-
-% Font selection (depends on system-available fonts):
-% macOS:
-\setCJKmainfont{Songti TC}           % Body text: Song typeface
-\setCJKsansfont{PingFang TC}         % Sans-serif: PingFang
-\setCJKmonofont{STFangsong}          % Monospace: Fangsong
-
-% Windows:
-% \setCJKmainfont{DFKai-SB}          % DFKai-SB
-% \setCJKsansfont{Microsoft JhengHei} % Microsoft JhengHei
-
-% Linux:
-% \setCJKmainfont{Noto Serif CJK TC}
-% \setCJKsansfont{Noto Sans CJK TC}
-
-% Compilation commands (must use xelatex or lualatex):
-% xelatex paper.tex
-% biber paper
-% xelatex paper.tex
-% xelatex paper.tex (3 times total, to ensure citations and TOC are correct)
-```
-
-**Common Chinese LaTeX issues**:
-- Chinese-English mixed text: English font auto-fallback -> need to set `\setmainfont{Times New Roman}`
-- Chinese punctuation at line start/end -> `xeCJK` handles this by default
-- Section numbering in Chinese -> `\renewcommand{\thesection}{Chapter \chinese{section}}` (optional)
 
 ### Journal Submission Format Adjustment Checklist
 
@@ -716,8 +676,7 @@ Known journal -> use pre-stored template
 ├── Springer journals -> svjour3.cls
 ├── IEEE journals -> IEEEtran.cls
 ├── ACM journals -> acmart.cls
-├── MDPI journals -> mdpi.cls
-└── Chinese journals (TSSCI, etc.) -> generic article.cls + xeCJK
+└── MDPI journals -> mdpi.cls
 
 Unknown journal ->
   Step 1: Use generic article.cls
@@ -728,9 +687,6 @@ Template conflict handling:
   - IF journal template's citation format != paper's selected format
     -> Prioritize journal template (journal requirement > user preference)
     -> Explain format change in Output Package
-  - IF journal template does not support Chinese
-    -> Provide alternative (e.g., DOCX format)
-    -> Or manually add xeCJK settings
 ```
 
 ## Quality Gates
@@ -759,14 +715,10 @@ Quality gate not passed ->
 │   1. Compare Draft and Formatted output section by section
 │   2. Find missing paragraphs, re-insert
 │   3. Re-run final checklist
-├── Journal format non-compliance ->
-│   1. List specific non-compliant items
-│   2. IF auto-fixable -> fix
-│   3. IF requires user judgment (e.g., word limit exceeded) -> flag as reminder
-└── Chinese compilation issues ->
-    1. Verify xeCJK package is loaded
-    2. Verify font paths are correct
-    3. Verify using xelatex (not pdflatex)
+└── Journal format non-compliance ->
+    1. List specific non-compliant items
+    2. IF auto-fixable -> fix
+    3. IF requires user judgment (e.g., word limit exceeded) -> flag as reminder
 ```
 
 ## Edge Case Handling
@@ -794,7 +746,6 @@ Quality gate not passed ->
 | Conference paper | Typically requires 2-column layout (LaTeX: `\documentclass[twocolumn]`); font may be smaller (10pt) |
 | Policy brief | Does not use standard academic format; may add sidebars, callout boxes; more flexible page layout |
 | Thesis chapter | Must comply with university format guidelines; typically has cover page, table of contents, acknowledgments, and other additional elements |
-| Chinese paper for international journal | Main text uses English LaTeX; attach Chinese abstract as Supplementary Material |
 
 ## Collaboration Rules with Other Agents
 
@@ -802,10 +753,9 @@ Quality gate not passed ->
 
 | Source Agent | Received Content | Data Format |
 |-----------|---------|---------|
-| `draft_writer_agent` | Final Reviewed Draft | Markdown full text (passed peer review) |
+| `draft_writer_agent` | Final Reviewed Draft + English Abstract + Keywords | Markdown full text (passed peer review) |
 | `citation_compliance_agent` | Corrected Reference List + Citation Audit Report | Markdown Reference List + Audit table |
-| `abstract_bilingual_agent` | Bilingual Abstracts + Keywords | Markdown (EN + zh-TW) |
-| `intake_agent` | Paper Configuration Record | Markdown table (output_format, target_journal, language) |
+| `intake_agent` | Paper Configuration Record | Markdown table (output_format, target_journal) |
 | `peer_reviewer_agent` | Final Verdict (Accept) | Verdict confirmation |
 
 ### Output Destinations
@@ -819,7 +769,7 @@ Quality gate not passed ->
 ### Handoff Format Requirements
 
 - **Receiving citation_compliance_agent's Corrected Reference List**: Must be the final version; formatter does not modify citation content, only performs format conversion
-- **Receiving abstract_bilingual_agent's Abstracts**: EN and zh-TW abstracts are inserted as independent blocks; content is not modified
+- **Receiving draft_writer_agent's English Abstract**: Abstract is inserted as a standalone block; content is not modified
 - **Final Reviewed Draft status confirmation**: Phase 7 must start only after peer_reviewer_agent gives an Accept verdict (unless user explicitly requests early formatting)
 
 ## Quality Criteria

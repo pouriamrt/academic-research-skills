@@ -7,7 +7,7 @@ description: "Verifies citations against the target journals format requirements
 
 ## Role Definition
 
-You are the Citation Compliance Agent. You verify all citations in the paper draft for format correctness, cross-reference in-text citations against the reference list, check DOIs/URLs, and auto-correct detected errors. You are activated in Phase 5a (parallel with abstract_bilingual_agent).
+You are the Citation Compliance Agent. You verify all citations in the paper draft for format correctness, cross-reference in-text citations against the reference list, check DOIs/URLs, and auto-correct detected errors. You are activated in Phase 5.
 
 ## Core Principles
 
@@ -261,30 +261,14 @@ Step 3: If unable to determine -> ask user; if user does not respond -> default 
 | # | Error Pattern | Detection Rule | Auto-correctable? |
 |---|---------|---------|----------|
 | 1 | Missing year | In-text has author but no year | Look up from RefList -> Yes |
-| 2 | Wrong author format | Chinese author uses Last, First format | Yes (Chinese authors use full name) |
-| 3 | Wrong DOI format | dx.doi.org or DOI: prefix | Yes -> https://doi.org/ |
-| 4 | Secondary citation unmarked | Cited in text but not in RefList | Flag -> ask if secondary citation |
-| 5 | et al. on first citation | APA 7th uses et al. from first citation (correct) | Old APA 6th requires full list on first use -> remind |
-| 6 | & vs and mixed use | Parenthetical uses "and", Narrative uses "&" | Yes -> swap |
-| 7 | Wrong multi-source ordering | (B, 2024; A, 2023) | Yes -> reorder alphabetically |
-| 8 | Direct quote missing page number | Quoted text but no p./pp. | Flag -> user to provide |
-| 9 | Title Case error | Article title uses Title Case (APA requires sentence case) | Yes (auto-convert) |
-| 10 | Period after DOI | https://doi.org/xxxxx. | Yes -> remove period |
-
-### Chinese Citation Special Checks
-
-Reference: `references/apa7_chinese_citation_guide.md`:
-
-| # | Check Item | Rule |
-|---|--------|------|
-| 1 | Author name | Chinese authors use full name (no first/last split): Wang Daming (2024) |
-| 2 | Book title format | Chinese book titles use angle brackets or italics (per journal requirements) |
-| 3 | Journal name format | Chinese journal names use full names (no abbreviations) |
-| 4 | Translated works | Format: Original Author (Trans. Translator, Publication Year). *Book Title*. Publisher. (Original work published YYYY) |
-| 5 | Chinese-English mixed | Chinese references first, English references second (per Taiwan academic convention) |
-| 6 | Page number notation | Chinese uses "page" instead of "p.": (Wang Daming, 2024, page 45) |
-| 7 | Multiple author connector | Chinese uses enumeration comma instead of regular comma: (Wang Daming, Li Xiaohua, 2024) |
-| 8 | et al. equivalent | Chinese uses "deng" (meaning "et al."): (Wang Daming et al., 2024) |
+| 2 | Wrong DOI format | dx.doi.org or DOI: prefix | Yes -> https://doi.org/ |
+| 3 | Secondary citation unmarked | Cited in text but not in RefList | Flag -> ask if secondary citation |
+| 4 | et al. on first citation | APA 7th uses et al. from first citation (correct) | Old APA 6th requires full list on first use -> remind |
+| 5 | & vs and mixed use | Parenthetical uses "and", Narrative uses "&" | Yes -> swap |
+| 6 | Wrong multi-source ordering | (B, 2024; A, 2023) | Yes -> reorder alphabetically |
+| 7 | Direct quote missing page number | Quoted text but no p./pp. | Flag -> user to provide |
+| 8 | Title Case error | Article title uses Title Case (APA requires sentence case) | Yes (auto-convert) |
+| 9 | Period after DOI | https://doi.org/xxxxx. | Yes -> remove period |
 
 ### Citation Consistency Check (Cross-Reference)
 
@@ -320,7 +304,7 @@ Each correction uses a three-column structure:
 |------|------|--------|---------|
 | S2, P3 | (Smith and Jones, 2024) | (Smith & Jones, 2024) | APA 7th: parenthetical uses "&" |
 | Ref #7 | doi: 10.1234/abc | https://doi.org/10.1234/abc | APA 7th: DOI as hyperlink format |
-| S4, P1 | According to Wang Daming, 2024's study | According to Wang Daming (2024)'s study | Chinese APA: narrative uses full-width parentheses |
+| S3, P5 | (smith 2024) | (Smith, 2024) | APA 7th: capitalize surname, separate with comma |
 ```
 
 ## Quality Gates
@@ -347,10 +331,8 @@ Quality gate not passed ->
 ├── Format error rate > 20% ->
 │   Likely cause: draft_writer mixed formats or used outdated rules
 │   Handling: Re-run full format conversion (rather than correcting one by one)
-├── Many missing DOIs ->
-│   Handling: Flag only, do not block workflow (some older literature genuinely has no DOI)
-└── Chinese-English mixed format conflict ->
-    Handling: Unify per apa7_chinese_citation_guide.md
+└── Many missing DOIs ->
+    Handling: Flag only, do not block workflow (some older literature genuinely has no DOI)
 ```
 
 ## Edge Case Handling
@@ -378,7 +360,6 @@ Quality gate not passed ->
 | Theoretical | Tolerate higher proportion of classic literature (>10 year old sources can reach 40%) |
 | Case study | Tolerate gray literature (policy documents, institutional reports) with non-standard citation formats |
 | Policy brief | Tolerate government reports without DOI; checking URL validity is more important |
-| Chinese paper | Enable Chinese citation special checks; check Chinese and English references separately for ordering |
 
 ## Collaboration Rules with Other Agents
 

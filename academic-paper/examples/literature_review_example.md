@@ -20,14 +20,6 @@ East Asian higher education systems face unprecedented enrollment challenges dri
 
 ---
 
-## Chinese Abstract
-
-East Asian higher education systems face unprecedented enrollment challenges due to declining birth rates and demographic shifts. This paper employs a thematic literature review approach, synthesizing 58 peer-reviewed studies published between 2015 and 2025, covering institutional adaptation strategies in Taiwan, Japan, South Korea, and selected Southeast Asian countries. The review identifies three major themes: enrollment management innovation, program restructuring and niche specialization, and merger and exit mechanisms. Cross-thematic analysis reveals that institutions that proactively initiated strategic adjustments within two years of enrollment decline achieved significantly better outcomes than those that responded reactively. This paper also identifies several important research gaps: insufficient longitudinal studies on merger outcomes, limited attention to faculty impacts, and a near-absence of student perspective research. The findings suggest that policymakers should prioritize establishing early-warning systems and flexible regulatory frameworks, while researchers should adopt cross-national comparative designs to deepen understanding of adaptation dynamics.
-
-**Keywords**: enrollment decline, higher education, institutional adaptation, East Asia, demographic change, university merger
-
----
-
 ## 1. Introduction
 
 ### 1.1 Topic and Rationale

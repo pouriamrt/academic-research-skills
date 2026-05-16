@@ -1,8 +1,8 @@
 ---
 name: experiment-designer
-description: "Experimental design agent team. 6-agent pipeline for rigorous experiment planning, power analysis, instrument development, randomization, and protocol compilation. 5 modes: full design, guided Socratic planning, quick design brief, power-only analysis, and instrument building. Covers experimental design selection (RCT, factorial, crossover, quasi-experimental, single-subject, correlational), power analysis with sample size calculation, survey and instrument construction, randomization scheme generation, threats to validity assessment, and SPIRIT/CONSORT-compliant protocol production. Triggers on: design experiment, experimental design, power analysis, sample size calculation, randomization, create survey, build instrument, write protocol, plan experiment, RCT design, factorial design, quasi-experimental design, crossover design, 實驗設計, 樣本數計算, 檢定力分析, 隨機分派, 設計問卷, 建立量表, 撰寫計畫書, 規劃實驗."
+description: "Experimental design agent team. 6-agent pipeline for rigorous experiment planning, power analysis, instrument development, randomization, and protocol compilation. 5 modes: full design, guided Socratic planning, quick design brief, power-only analysis, and instrument building. Covers experimental design selection (RCT, factorial, crossover, quasi-experimental, single-subject, correlational), power analysis with sample size calculation, survey and instrument construction, randomization scheme generation, threats to validity assessment, and SPIRIT/CONSORT-compliant protocol production. Triggers on: design experiment, experimental design, power analysis, sample size calculation, randomization, create survey, build instrument, write protocol, plan experiment, RCT design, factorial design, quasi-experimental design, crossover design."
 metadata:
-  version: "1.0"
+  version: "1.0.1"
   last_updated: "2026-05-15"
   status: active
   data_access_level: redacted
@@ -57,13 +57,13 @@ Build a survey instrument to measure academic self-efficacy
 
 ### Trigger Keywords
 
-**English**: design experiment, experimental design, power analysis, sample size calculation, randomization, create survey, build instrument, write protocol, plan experiment, RCT design, factorial design, quasi-experimental design, crossover design, single-subject design, correlational design, threats to validity, SPIRIT protocol, CONSORT checklist
-
-**繁體中文**: 實驗設計, 樣本數計算, 檢定力分析, 隨機分派, 設計問卷, 建立量表, 撰寫計畫書, 規劃實驗, 隨機對照試驗, 因子設計, 準實驗設計, 交叉設計, 效度威脅
+**Triggers**: design experiment, experimental design, power analysis, sample size calculation, randomization, create survey, build instrument, write protocol, plan experiment, RCT design, factorial design, quasi-experimental design, crossover design, single-subject design, correlational design, threats to validity, SPIRIT protocol, CONSORT checklist
 
 ### Guided Mode Activation
 
-Activate `guided` mode when the user's **intent** matches any of the following patterns, **regardless of language**. Detect meaning, not exact keywords.
+> **Auto-mode override (v3.17.0+):** When dispatched by `academic-pipeline` in auto mode (default), this skill runs `mode=full` regardless of dispatch flags. The `guided` mode only fires when `ARS_INTERACTIVE=1` AND the orchestrator explicitly requests it. Standalone invocation outside the pipeline honors the user's requested mode as before.
+
+Activate `guided` mode when the user's **intent** matches any of the following patterns. Detect meaning, not exact keywords.
 
 **Intent signals** (any one is sufficient):
 1. User wants to design an experiment but is uncertain about which design to use
@@ -420,7 +420,7 @@ Follows the user's language. Statistical terminology and variable names kept in 
 
 | Item | Content |
 |------|---------|
-| Skill Version | 1.0 |
+| Skill Version | 1.0.1 |
 | Last Updated | 2026-05-15 |
 | Maintainer | Pouria Mortezaagha (fork) |
 | Dependent Skills | deep-research (upstream — Methodology Blueprint Schema 14), data-analyst + simulation-runner + lab-notebook (downstream — Schema 10/13 consumers), academic-pipeline (orchestrator) |

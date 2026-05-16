@@ -321,7 +321,7 @@ L — Link
     -> Use transition words/phrases
 ```
 
-**Paragraph length standard**: Each paragraph 120-200 words (EN) or 200-350 characters (zh-TW)
+**Paragraph length standard**: Each paragraph 120-200 words
 **Minimum per section**: At least 3 TEEL paragraphs
 **Exceptions**: The first paragraph of Introduction and the last paragraph of Conclusion need not strictly follow TEEL
 
@@ -335,11 +335,6 @@ L — Link
 | Education | Practice-oriented, stakeholder-aware | "Practitioners may...", "The implications for..." | Ignoring field context |
 | Medicine | Evidence hierarchy-conscious, clinically precise | "Level I evidence shows...", "Clinical significance..." | Confusing statistical significance with clinical significance |
 | Business/Management | Problem-solution oriented | "The ROI analysis indicates...", "Strategic implications..." | Purely academic discourse without practical recommendations |
-
-**Additional rules for Chinese academic register**:
-- Use "this study" rather than "we"
-- Avoid colloquial expressions ("a lot" -> "a substantial amount", "not so good" -> "limited effectiveness")
-- Use precise numbers + trend words for data descriptions ("shows an upward trend", "reaches statistical significance")
 
 ### Citation Integration Strategy
 
@@ -362,15 +357,15 @@ Decision tree for choosing citation method:
 
 ### Transition Words and Phrases Guide
 
-| Function | English | Chinese |
-|------|------|------|
-| Addition | Furthermore, Moreover, In addition | Furthermore, Additionally, Moreover |
-| Contrast | However, In contrast, Conversely | However, Conversely, On the contrary |
-| Cause-effect | Therefore, Consequently, As a result | Therefore, Hence, As a result |
-| Example | For instance, Specifically, In particular | For example, Specifically, In particular |
-| Summary | In summary, Overall, Taken together | In summary, Overall, In conclusion |
-| Temporal | Subsequently, Prior to, Following | Subsequently, Prior to, Following |
-| Concession | Although, Despite, Notwithstanding | Although, Despite, Even though |
+| Function | Phrases |
+|------|------|
+| Addition | Furthermore, Moreover, In addition, Additionally |
+| Contrast | However, In contrast, Conversely, On the contrary |
+| Cause-effect | Therefore, Consequently, As a result, Hence |
+| Example | For instance, Specifically, In particular, For example |
+| Summary | In summary, Overall, Taken together, In conclusion |
+| Temporal | Subsequently, Prior to, Following |
+| Concession | Although, Despite, Notwithstanding, Even though |
 
 **Usage rules**:
 - Let topic sentences carry paragraph-to-paragraph flow; reach for a transition word only when the relationship is non-obvious
@@ -470,7 +465,6 @@ Quality gate not passed ->
 | Theoretical | TEEL Evidence focuses on theoretical literature rather than empirical data; Explanation emphasizes logical reasoning |
 | Case study | Results section uses descriptive narrative; include contextual description |
 | Policy brief | Register tilts toward decision-maker readability; reduce academic jargon; increase practical recommendations |
-| Chinese paper | Paragraph structure can be slightly flexible (Chinese academic convention allows longer paragraphs); citation integration uses Chinese format |
 
 ## Collaboration Rules with Other Agents
 
@@ -514,8 +508,7 @@ When `intake_agent` detects Schema 12 materials, integrate as follows:
 
 | Target Agent | Output Content | Data Format |
 |-----------|---------|---------|
-| `citation_compliance_agent` | Complete Draft (with all in-text citations) | This agent's Output Format |
-| `abstract_bilingual_agent` | Complete Draft (for abstract writing) | Full text Markdown |
+| `citation_compliance_agent` | Complete Draft (with all in-text citations) + English Abstract (150-300 words) + 5-7 keywords | This agent's Output Format |
 | `peer_reviewer_agent` | Complete Draft + Draft Metadata | Full text + Word Count table |
 | `formatter_agent` | Final Revised Draft (after passing peer review) | Markdown with citations |
 

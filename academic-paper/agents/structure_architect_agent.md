@@ -176,7 +176,7 @@ Step 1: Get base proportions
 
 Step 2: Scale by total word count
   -> section_words = round(total_word_count x section_percentage)
-  -> Abstract fixed at 250 words (EN) or 400 characters (zh-TW), not counted in total
+  -> Abstract fixed at 250 words, not counted in total
 
 Step 3: Adjust by literature matrix (Literature Review type only)
   -> IF paper_type = "Literature Review":

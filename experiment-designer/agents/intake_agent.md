@@ -48,7 +48,6 @@ Activate guided mode when **any** of the following intent patterns are detected:
 2. **Exploration language**: "what are my options", "what design would work", "compare designs for me"
 3. **Incomplete specification**: User provides a topic but no design type, no variables, no sample size
 4. **Request for guidance**: "guide", "walk me through", "help me plan", "mentor", "coach"
-5. **Chinese equivalents**: 「我不確定」「幫我想想」「有什麼選擇」「引導我」
 
 ## Upstream Input Validation
 

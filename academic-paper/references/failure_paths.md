@@ -13,7 +13,6 @@ This document records the failure scenarios that the academic-paper skill may en
 | F3 | Severely over word count | Draft exceeds target word count by 30% or more | Medium | Identify sections to cut, suggest condensing |
 | F4 | Severely under word count | Draft is 30% or more below target word count | Medium | Identify sections to expand, suggest additions |
 | F5 | Citation format entirely wrong | citation_compliance finds > 50% format errors | High | Completely re-run citation phase |
-| F6 | Poor bilingual abstract quality | Chinese and English abstracts have inconsistent logic | Medium | Re-run abstract_bilingual |
 | F7 | Peer review rejection | peer_reviewer issues a Reject verdict | High | Analyze rejection reasons, recommend major revision or restructuring |
 | F8 | Plan mode does not converge | > 15 rounds of dialogue without completing all chapters | Medium | Suggest switching to outline-only mode |
 | F9 | Incomplete handoff materials | From deep-research but missing key materials | Low | List missing items, suggest supplementing or re-running |
@@ -141,26 +140,6 @@ more efficiently.
 3. If scattered errors:
    a. Fix one by one
    b. Produce a correction report
-```
-
----
-
-### F6: Poor Bilingual Abstract Quality
-
-**Trigger Timing**: Phase 5b (abstract_bilingual_agent)
-
-**Detection Indicators**:
-- Chinese and English abstracts cover different key points
-- One language version omits important findings
-- Keywords do not correspond between Chinese and English
-- Word count seriously deviates from standards
-
-**Handling Process**:
-```
-1. Compare the structure and coverage of Chinese and English abstracts
-2. List inconsistencies
-3. Rewrite based on the actual paper content as the standard
-4. Ensure both versions are independently written but cover the same key points
 ```
 
 ---
@@ -337,7 +316,6 @@ F8 (Non-convergence) → May evolve into F10 (abandonment)
 | F2 | structure_architect cross-validates the match between RQ and structure |
 | F3/F4 | draft_writer checks word count progress after completing each section |
 | F5 | draft_writer uses the correct format during writing |
-| F6 | abstract_bilingual writes independently based on the paper content as the standard |
 | F7 | argument_builder stress-tests arguments in Phase 3 |
 | F8 | socratic_mentor sets a dialogue cap per chapter |
 | F9 | intake_agent performs a complete materials check when detecting a handoff |

@@ -68,39 +68,10 @@ Wei-Ting Lin: Investigation, Validation, Writing – review & editing.
 
 ---
 
-## Step 4: Output — Chinese CRediT Statement
+## Step 4: Equal Contribution Statement (Optional)
 
-```
-Author Contribution Statement:
-[Author 1 Name]: [Role 1], [Role 2], [Role 3].
-[Author 2 Name]: [Role 1], [Role 2].
-[Author 3 Name]: [Role 1], [Role 2], [Role 3].
-```
+If applicable, add the following:
 
-### Example (Chinese)
-
-```
-Author Contribution Statement:
-Yu-Chen Wang: Conceptualization, Methodology, Funding acquisition,
-Writing -- original draft, Supervision, Project administration.
-Mei-Ling Chen: Data curation, Formal analysis, Software, Visualization,
-Writing -- original draft, Writing -- review & editing.
-Wei-Ting Lin: Investigation, Validation, Writing -- review & editing.
-```
-
----
-
-## Step 5: Equal Contribution Statement (Optional)
-
-If applicable, add one of the following:
-
-**English**:
-```
-[Author 1 Name] and [Author 2 Name] contributed equally to this work and
-share first authorship.
-```
-
-**Chinese**:
 ```
 [Author 1 Name] and [Author 2 Name] contributed equally to this work and
 share first authorship.

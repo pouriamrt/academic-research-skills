@@ -156,7 +156,7 @@ Guidelines:
    ```yaml
    ---
    name: new-skill
-   description: "Include mode list, agent count, and trigger keywords (English + Traditional Chinese)."
+   description: "Include mode list, agent count, and English trigger keywords."
    metadata:
      version: "1.0"
      last_updated: "YYYY-MM-DD"
@@ -165,7 +165,7 @@ Guidelines:
        - <related-skill>
    ---
    ```
-   The body should include: Quick Start, Trigger Conditions (bilingual), Mode Definitions, Agent Pipeline, and Output Schemas.
+   The body should include: Quick Start, Trigger Conditions (English), Mode Definitions, Agent Pipeline, and Output Schemas.
 
 3. **Register in plugin.json** -- add the skill path to the `skills` array in `.claude-plugin/plugin.json`.
 

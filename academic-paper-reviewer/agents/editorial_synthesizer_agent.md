@@ -169,6 +169,36 @@ Based on the decision matrix in `references/editorial_decision_standards.md`:
 - Even when Rejecting, provide constructive improvement directions
 - Suggest more suitable journals or research directions
 
+#### Machine-Readable Verdict Block (MANDATORY, v3.17.0+)
+
+After the prose decision above, emit a single-line machine-readable verdict tag for the `academic-pipeline` AUTO-mode orchestrator to parse. This tag is REQUIRED in every editorial decision output regardless of whether AUTO or INTERACTIVE mode is in effect.
+
+**Grammar:**
+
+```
+[EDITORIAL-VERDICT: decision=<accept|minor|major|reject>, round=<1|2>, consensus=<unanimous|majority|split|da_critical>, blocking_items=<N>, generated_at=<ISO8601-UTC>]
+```
+
+- `decision`: lowercase token, exactly one of `accept` / `minor` / `major` / `reject`. Maps 1:1 to the prose decision above (Accept → `accept`, Minor Revision → `minor`, Major Revision → `major`, Reject → `reject`).
+- `round`: `1` for first-round Stage 3 review, `2` for re-review at Stage 3'.
+- `consensus`: one of `unanimous` (all reviewers agree), `majority` (3+/5 agree), `split` (panel divided), `da_critical` (Devil's Advocate flagged unresolved critical issue).
+- `blocking_items`: integer count of Priority 1 items in the Revision Roadmap (0 for `accept`).
+- `generated_at`: ISO 8601 UTC timestamp of synthesis completion.
+
+**Example (first-round Major Revision):**
+
+```
+[EDITORIAL-VERDICT: decision=major, round=1, consensus=majority, blocking_items=4, generated_at=2026-05-15T14:23:01Z]
+```
+
+**Example (re-review Accept):**
+
+```
+[EDITORIAL-VERDICT: decision=accept, round=2, consensus=unanimous, blocking_items=0, generated_at=2026-05-22T09:11:45Z]
+```
+
+The orchestrator (`pipeline_orchestrator_agent.md` §0 Path A) auto-routes Stage 3 / 3' transitions from this tag's `decision` token. The prose decision above is for the human reader; the `[EDITORIAL-VERDICT: ...]` tag is the load-bearing contract for unattended pipeline runs. **Both MUST agree** — if the prose says "Minor Revision" but the tag says `decision=major`, the lint at `tools/validate_auto_markers.py` (planned v3.17.x) flags the inconsistency.
+
 ### Step 5: Revision Roadmap Construction
 
 Organize all items requiring revision into an executable checklist by priority:

@@ -3,6 +3,8 @@
 **Trigger**: After Stage 5 (FINALIZE) completion
 **Purpose**: Document the complete human-AI collaboration history for the paper creation process, for user sharing, reporting, or reflection
 
+> **v3.17.0 AUTO-mode contract:** When `ARS_INTERACTIVE` is unset (AUTO, the default), Stage 6 generates `paper_creation_process.md` + `paper_creation_process.pdf` in English unconditionally — NO language picker. When `ARS_INTERACTIVE=1`, the original interactive prompt fires (English only since v3.17.0; the prompt is retained for symmetry with v3.16 muscle memory but the only valid response is English). The "Failure Mode Audit Log" section MUST include every FAIL marker from `compliance_history[]`, every `auto_retry_history[]` entry (v3.17.0 schema), and every `auto_disclosure_addendum`. When `ARS_AUTO_FAIL_MODE=continue-with-warning` shipped a paper with integrity FAIL on record, this Stage 6 section is the user-readable surface that exposes it.
+
 ## Workflow
 
 ```

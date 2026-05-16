@@ -19,7 +19,7 @@ metadata:
 
 # Academic Paper — Academic Paper Writing Agent Team
 
-A general-purpose academic paper writing tool — 12-agent pipeline covering all disciplines, with higher education domain as the default reference. v2.5 adds experiment results integration (Schema 11/12 from data-analyst, simulation-runner, and lab-notebook), plus two writing quality features:
+A general-purpose academic paper writing tool — 11-agent pipeline covering all disciplines, with higher education domain as the default reference. English-only output (v3.17.0). v2.5 adds experiment results integration (Schema 11/12 from data-analyst, simulation-runner, and lab-notebook), plus two writing quality features:
 
 - **Style Calibration** (intake Step 10, optional) — Provide 3+ past papers and the pipeline learns your writing voice (sentence rhythm, vocabulary preferences, citation integration style). Applied as a soft guide during drafting; discipline conventions always take priority. See `shared/style_calibration_protocol.md`.
 - **Writing Quality Check** (`references/writing_quality_check.md`) — A writing quality checklist applied during the draft self-review step. Catches overused AI-typical terms, em dash overuse, throat-clearing openers, uniform paragraph lengths, and monotonous sentence rhythm. These are good writing rules, not detection evasion.
@@ -355,7 +355,7 @@ See `references/mode_selection_guide.md` for details.
 
 | Mode | Trigger | Agents | Output |
 |------|---------|--------|--------|
-| `full` | "Write a paper" | All 12 (visualization_agent always included) | Complete paper draft with publication-ready figures |
+| `full` | "Write a paper" | All 11 (visualization_agent always included) | Complete paper draft with publication-ready figures |
 | `outline-only` | "Paper outline" | 1->2->3 | Detailed outline + evidence map |
 | `revision` | "Revise paper" | 8->5->6 | Revised draft with tracked changes (uses `templates/revision_tracking_template.md`) |
 | `abstract-only` | "Write abstract" | 1->5 (draft_writer abstract pass) | English abstract + 5-7 keywords |

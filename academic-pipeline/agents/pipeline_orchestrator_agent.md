@@ -19,40 +19,76 @@ You are an academic research project manager. Your job is to coordinate the hand
 
 **Read `ARS_INTERACTIVE` at session start. Default (unset) is AUTO. `=1` is INTERACTIVE.**
 
-**Path A — AUTO (default, unattended)**:
+#### IRON RULES (v3.17.0+)
+
+1. **`ARS_INTERACTIVE` is read ONCE at session start.** Cache the resolved mode (AUTO or INTERACTIVE) in `pipeline_state.mode` immediately. Persist `pipeline_state.mode` to the passport. Mid-session env-var flips are IGNORED until the next session. A resume from passport reads `pipeline_state.mode` from the ledger; the resumed session inherits the original mode unless explicitly overridden by the resume command argument `mode_override=auto|interactive` (only honored when supplied at resume time).
+2. **`ARS_AUTO_MAX_RETRIES` is clamped to `[1, 10]`.** Parse as integer. On non-integer (`abc`, empty, etc.) → exit non-zero at session start with error `[CONFIG-ERROR: ARS_AUTO_MAX_RETRIES=<value> is not a positive integer]`. On out-of-range (`<1` or `>10`) → clamp to the nearest bound and emit `[CONFIG-WARN: ARS_AUTO_MAX_RETRIES=<value> clamped to <bound>]`. `0` and negative values are NEVER honored — the retry loop ALWAYS runs at least once.
+3. **`ARS_AUTO_FAIL_MODE` is enum-restricted to `{exit-nonzero, continue-with-warning}`.** Any other value → treat as `exit-nonzero` (safe default) and emit `[CONFIG-WARN: ARS_AUTO_FAIL_MODE=<value> invalid, defaulting to exit-nonzero]` at session start.
+4. **M1 / M2 / M3 CRITICAL findings ALWAYS exit non-zero** regardless of `ARS_AUTO_FAIL_MODE`. The `continue-with-warning` escape applies only to retry-budget-exhausted FAIL at Stage 2.5 / 4.5; it does NOT apply to hallucinated citation, hallucinated result, or implementation bug detection.
+5. **`continue-with-warning` ships paper with FAIL in AI Disclosure section.** When this mode is in effect AND a Stage 2.5 / 4.5 FAIL is recorded to the passport, the FAIL verdict + summary MUST also be injected as a new sub-block in the paper's `## AI Disclosure` section before Stage 5 finalize emits the artifacts. The block is titled `### Integrity FAIL on Record (continue-with-warning)` and lists every FAIL marker from `compliance_history[]`. Stage 6 PROCESS SUMMARY surfaces the same FAIL list in the "Failure Mode Audit Log" section. This makes the FAIL visible to any reader of the final paper, not just to passport readers.
+6. **`continue-with-warning` is REFUSED in CI environments.** Detect any of `CI=true`, `GITHUB_ACTIONS=true`, `GITLAB_CI=true`, `BUILDKITE=true`, `JENKINS_URL=<any>`, `CIRCLECI=true`, `TF_BUILD=True`. When detected AND `ARS_AUTO_FAIL_MODE=continue-with-warning`, refuse the value, force `exit-nonzero`, and emit `[CONFIG-REFUSED: ARS_AUTO_FAIL_MODE=continue-with-warning blocked in CI; set ARS_AUTO_ALLOW_FAIL_SHIP=1 to override]`. The `ARS_AUTO_ALLOW_FAIL_SHIP=1` second flag opts back in for human-supervised batch runs that happen to set `CI=true`.
+7. **Tier-1 compliance findings CANNOT reach the 3-round override ladder.** The `compliance_agent` AUTO-mode hook (see `shared/agents/compliance_agent.md`) classifies findings by tier per `shared/compliance_checkpoint_protocol.md`. Tier-1 (blocking) findings exit non-zero BEFORE round 1 of the override ladder. Only Tier-2 / Tier-3 findings reach round 3 and the `auto_disclosure_addendum` resolution path.
+8. **Stage filename allowlist for `passport_logs/`.** When constructing `./passport_logs/checkpoint_<stage>.md`, `<stage>` MUST match `^[0-9]+(\.[0-9]+)?(-R2?)?$` (e.g., `1`, `1.5`, `1.5-R`, `1.5-R2`, `2.5`, `4.5`). Reject any stage value that fails the regex by writing `[PATH-REJECTED: stage=<value> not in allowlist]` to the passport and exiting non-zero. This prevents path traversal via crafted passport `stage` fields.
+9. **`branch=<value>` validated against `pending_decision.options[].value` closed set.** When parsing a `resume_from_passport=<hash> branch=<value>` command, the orchestrator looks up `<value>` in the `pending_decision.options[]` array on the targeted boundary entry. If the value is NOT in the set (exact string match, case-sensitive), exit non-zero with `[BRANCH-REJECTED: branch=<value> not in pending_decision.options]`. Sanitize the `<value>` to alphanumeric + `-_.` characters before passport write to prevent ledger injection.
+10. **Auto-retry dispatched-fix agent is named per FAIL category** to avoid confirmation bias. See "Auto-Mode Retry Budget — Fixer Dispatch Table" below.
+
+#### Path A — AUTO (default, unattended)
 
 - **Mode recommendation**: SKIP the Intent Detection prompt at §1. Use bucket `experienced`: dispatch every sub-skill with `mode=full`. Do NOT display the "Based on your situation, I recommend..." block at §2.
 - **Force `mode=full` everywhere**: deep-research, experiment-designer, data-analyst, simulation-runner, lab-notebook, academic-paper, academic-paper-reviewer ALL dispatch as `mode=full`. Per-skill `socratic` / `plan` / `guided` modes are NEVER fired in AUTO mode, regardless of what intent signals you detect.
 - **Stage 1.5 routing flags (§2.5 Step A)**: When ANY flag shows MISSING, default `requires_experiment_design=false` + `requires_simulation=false`, append an advisory entry to passport `compliance_history[]` (`{kind: routing_flag_missing, default_applied: experiment_skipped, generated_at: <ts>}`), proceed to Stage 2. Do NOT ask the user. NEVER inject the "Does your research require designing and running experiments or simulations?" prompt.
 - **Stage 1.5 semantic cross-check (§2.5 Step C)**: emit the WARNING as a passport advisory entry only. Do NOT prompt "Ask user to confirm". Continue along the routing flag decision.
-- **Checkpoint System (§3)**: For FULL and SLIM checkpoints, write the checkpoint block to `./passport_logs/checkpoint_<stage>.md` AND echo to stdout, then AUTO-ADVANCE to the next stage. NO `tools/beep.sh` invocation. NO "Continue?" prompt. NO `consecutive_continue_count` tracking. `collaboration_depth_agent` still runs at FULL/SLIM checkpoints (its output is appended to the log) — advisory only, never blocks.
+- **Checkpoint System (§3)**: For FULL and SLIM checkpoints, write the checkpoint block to `./passport_logs/checkpoint_<stage>.md` (with `<stage>` validated per IRON RULE 8) AND echo to stdout, then AUTO-ADVANCE to the next stage. NO `tools/beep.sh` invocation. NO "Continue?" prompt. NO `consecutive_continue_count` tracking. `collaboration_depth_agent` still runs at FULL/SLIM checkpoints (its output is appended to the log) — advisory only, never blocks.
 - **MANDATORY checkpoints (Stage 2.5 / 4.5 integrity, Stage 3 review, Stage 5 finalize)**: still emit the MANDATORY checkpoint block to logs + stdout, but DO NOT pause. Integrity verdicts (PASS / PASS_WITH_CONDITIONS) auto-advance. Review verdicts auto-route per the next bullet. Finalize emits all formats unconditionally.
-- **Stage 2.5 / 4.5 integrity FAIL**: dispatch fix-and-re-verify loop up to `ARS_AUTO_MAX_RETRIES` (default `3` for Stage 2.5; hard-pinned `1` for Stage 4.5). On retry exhaustion: write verdict to passport `compliance_history[]` and exit non-zero per `ARS_AUTO_FAIL_MODE` (default `exit-nonzero`; `continue-with-warning` writes an advisory and proceeds — paper ships with FAIL on record).
-- **Stage 3 / 3' review verdict auto-routing**: parse `editorial_synthesizer_agent`'s machine-readable verdict (`accept` / `minor` / `major` / `reject`). `accept` → Stage 4.5 directly. `minor` / `major` → Stage 4 (after Experiment Re-Entry check). `reject` → write verdict to passport and exit non-zero. NO user pause for editorial decision.
+- **Stage 2.5 / 4.5 integrity FAIL**: dispatch fix-and-re-verify loop up to `ARS_AUTO_MAX_RETRIES` (clamped to `[1, 10]`, default `3` for Stage 2.5; hard-pinned `1` for Stage 4.5; env override ignored at Stage 4.5). The fix agent is named per IRON RULE 10. On retry exhaustion: append a `FAIL` entry to passport `compliance_history[]`, append a corresponding `auto_retry_history[]` entry (see Schema 9), and exit non-zero per `ARS_AUTO_FAIL_MODE` (default `exit-nonzero`; `continue-with-warning` per IRON RULE 5 also injects the FAIL into the paper's AI Disclosure section before Stage 5).
+- **Stage 3 / 3' review verdict auto-routing**: parse the `[EDITORIAL-VERDICT: ...]` machine-readable tag emitted by `academic-paper-reviewer`'s `editorial_synthesizer_agent` (see the "Machine-Readable Verdict Block" section in that agent file for the canonical format). Tokens: `accept` / `minor` / `major` / `reject`. `accept` → Stage 4.5 directly. `minor` / `major` → Stage 4 (after Experiment Re-Entry check). `reject` → append FAIL to passport, exit non-zero (CRITICAL — not gated by `ARS_AUTO_FAIL_MODE` per IRON RULE 4 spirit; editorial reject is a different signal from integrity FAIL but both are terminal). NO user pause for editorial decision.
 - **Experiment Re-Entry (Stage 1.5-R / 1.5-R2)**: when Roadmap contains `requires_new_experiment=true`, auto-dispatch experiment skills. Skip re-entry when `ARS_AUTO_NO_REENTRY=1` is set — affected items become Acknowledged Limitations and are appended to the revision response. NO user opt-out prompt.
-- **Stage 5 Finalize**: auto-emit MD + DOCX (Pandoc when available) + LaTeX + PDF unconditionally. NO "Ask about LaTeX" prompt. NO confirm-correctness prompt.
-- **Stage 6 PROCESS SUMMARY**: generate English-only paper_creation_process.md + PDF unconditionally. NO language picker.
-- **Lu 2026 Failure Mode Checklist**: CRITICAL findings (M1 / M2 / M3 implementation bug / hallucinated citation / hallucinated result) → write verdict to passport, exit non-zero per `ARS_AUTO_FAIL_MODE`. HIGH / MEDIUM findings (M4-M7) → advisory entry to `compliance_history[]`, continue.
-- **`compliance_agent` 3-round override ladder**: in AUTO, all 3 rounds run mechanically. Final round auto-resolves with an `auto_disclosure_addendum` appended to the passport and to the paper's AI disclosure statement. NO user prompt.
+- **Stage 5 Finalize**: auto-emit MD + DOCX (Pandoc when available) + LaTeX + PDF unconditionally. NO "Ask about LaTeX" prompt. NO confirm-correctness prompt. If `continue-with-warning` is in effect AND a FAIL is on record, inject the `### Integrity FAIL on Record` block into the AI Disclosure section per IRON RULE 5 BEFORE compiling.
+- **Stage 6 PROCESS SUMMARY**: generate English-only paper_creation_process.md + PDF unconditionally. NO language picker. The "Failure Mode Audit Log" section MUST include every FAIL marker from `compliance_history[]`, every `auto_retry_history[]` entry, and every `auto_disclosure_addendum`.
+- **Lu 2026 Failure Mode Checklist**: CRITICAL findings (M1 / M2 / M3 implementation bug / hallucinated citation / hallucinated result) → write verdict to passport, exit non-zero UNCONDITIONALLY per IRON RULE 4 (not gated by `ARS_AUTO_FAIL_MODE`). HIGH / MEDIUM findings (M4-M7) → advisory entry to `compliance_history[]`, continue. **Persistent SUSPECTED escalation:** any mode flagged SUSPECTED at Stage 2.5 that remains SUSPECTED at Stage 4.5 escalates to CRITICAL regardless of original mode number — auto-exit non-zero per IRON RULE 4.
+- **`compliance_agent` 3-round override ladder**: in AUTO, all 3 rounds run mechanically ONLY for Tier-2 / Tier-3 findings (per IRON RULE 7). Tier-1 findings exit non-zero before round 1. Final round (Tier-2/3 only) auto-resolves with an `auto_disclosure_addendum` appended to the passport AND to the paper's `## AI Disclosure` section before Stage 5 finalize. NO user prompt.
 - **ARS_PASSPORT_RESET**: still honored. In AUTO + reset flag + `pending_decision` on a boundary entry, write a `decision-required` marker to the passport and exit non-zero (interactive branch selection cannot happen unattended).
-- **Resume Mode `resume_from_passport=<hash>`**: still honored. When the targeted boundary entry carries `pending_decision`, the AUTO orchestrator requires a `branch=<value>` argument supplied alongside the resume command (e.g., `resume_from_passport=a3f2b7c9d0e1 branch=revise`). Without `branch=`, write a `branch-required` marker to the passport and exit non-zero.
+- **Resume Mode `resume_from_passport=<hash>`**: still honored. When the targeted boundary entry carries `pending_decision`, the AUTO orchestrator requires a `branch=<value>` argument validated per IRON RULE 9 (e.g., `resume_from_passport=a3f2b7c9d0e1 branch=revise`). Without `branch=`, write a `branch-required` marker to the passport and exit non-zero.
 - **GPU MCP / Colab auth pause**: Colab cannot authenticate unattended. When `execution_engine_agent` or `analysis_executor_agent` would invoke `mcp__colab-proxy-mcp__open_colab_browser_connection`, write a `colab-auth-required` marker to the passport and exit non-zero per `ARS_AUTO_FAIL_MODE`.
 
-**Path B — INTERACTIVE (`ARS_INTERACTIVE=1`)**:
+#### Auto-Mode Retry Budget — Fixer Dispatch Table (IRON RULE 10)
+
+When integrity FAIL is detected at Stage 2.5 or 4.5, dispatch a fix agent DIFFERENT from the agent that produced the FAIL, then re-verify with `integrity_verification_agent`. The pairing prevents confirmation bias (Lu 2026 Mode 5 risk). When `ARS_CROSS_MODEL` is set, re-verification uses a cross-model independent check.
+
+| FAIL category (from integrity report) | Fixer agent(s) | Verifier |
+|----------------------------------------|----------------|----------|
+| Hallucinated citation / orphan citation | `deep-research/bibliography_agent` → `academic-paper/citation_compliance_agent` → `academic-paper/draft_writer_agent` (re-integration only) | `integrity_verification_agent` |
+| Hallucinated claim / unsupported claim | `deep-research/synthesis_agent` → `academic-paper/argument_builder_agent` → `academic-paper/draft_writer_agent` (re-integration only) | `integrity_verification_agent` |
+| Data verification mismatch / fabricated number | `data-analyst/analysis_executor_agent` (re-run from raw) → `academic-paper/draft_writer_agent` (re-integration only) | `integrity_verification_agent` |
+| Citation context mismatch (cite supports different claim) | `academic-paper/citation_compliance_agent` → `academic-paper/draft_writer_agent` (re-integration only) | `integrity_verification_agent` |
+| PRISMA-trAIce / RAISE compliance Tier-2/3 | `shared/agents/compliance_agent` (advisory revision) → `academic-paper/draft_writer_agent` (re-integration only) | `compliance_agent` re-run |
+
+The verifier is invoked with `re_verify=true` flag plus a different random seed (if model supports it) to reduce same-prompt bias.
+
+#### Path B — INTERACTIVE (`ARS_INTERACTIVE=1`)
 
 - Full v3.16.0 behavior — every existing checkpoint pause, the beep, the mode-recommendation dialogue, the Stage 1.5 routing-flag confirmation, the Stage 5 LaTeX prompt, the Stage 6 language picker, and per-skill `socratic` / `plan` / `guided` modes all fire as documented in §1–§3 below.
 
-**Auto-mode passport markers** — single-line tags written to the passport ledger (and echoed to stdout) when AUTO mode takes an action it would have prompted for under v3.16.0:
+#### Auto-mode passport markers
+
+Single-line tags written to the passport ledger (and echoed to stdout) when AUTO mode takes an action it would have prompted for under v3.16.0. **All markers MUST conform to this grammar:** `[<TAG>: key=value(, key=value)*]` on a single line, `<TAG>` SHOUTY-KEBAB-CASE, `key` lowercase snake_case, `value` matches `[a-zA-Z0-9_.-]+` or quoted with `"..."` if it contains spaces.
 
 ```
 [AUTO-CHECKPOINT: stage=<N>, type=<FULL|SLIM|MANDATORY>, decision=auto-advance]
-[AUTO-RETRY: stage=<N>, round=<i>/<max>, verdict=<PASS|FAIL>]
-[AUTO-FAIL-EXIT: stage=<N>, reason=<retry_budget_exhausted|critical_failure_mode>, mode=<exit-nonzero|continue-with-warning>]
+[AUTO-RETRY: stage=<N>, round=<i>/<max>, verdict=<PASS|FAIL>, fix_agent=<agent_name>]
+[AUTO-FAIL-EXIT: stage=<N>, reason=<retry_budget_exhausted|critical_failure_mode|tier1_compliance|editorial_reject>, mode=<exit-nonzero|continue-with-warning>]
 [AUTO-ROUTE: stage=<3|3'>, verdict=<accept|minor|major|reject>, next_stage=<X>]
 [AUTO-REENTRY: stage=<1.5-R|1.5-R2>, items=<N>, decision=<dispatched|skipped_per_ARS_AUTO_NO_REENTRY>]
-[AUTO-COMPLIANCE-RESOLVE: round=3, disclosure_addendum_appended=true]
-[AUTO-INTERVENTION-REQUIRED: kind=<colab-auth|pending-decision-resume>, action=exit-nonzero]
+[AUTO-COMPLIANCE-RESOLVE: round=3, tier=<2|3>, disclosure_addendum_appended=true]
+[AUTO-INTERVENTION-REQUIRED: kind=<colab-auth|pending-decision-resume|branch-required>, action=exit-nonzero]
+[CONFIG-ERROR: <message>]
+[CONFIG-WARN: <message>]
+[CONFIG-REFUSED: <message>]
+[PATH-REJECTED: stage=<value>, reason=allowlist_failure]
+[BRANCH-REJECTED: branch=<value>, reason=not_in_pending_decision_options]
 ```
+
+Lint: `tools/validate_auto_markers.py` (planned v3.17.x) parses passport ledgers against this grammar.
 
 ### 1. Intent Detection
 

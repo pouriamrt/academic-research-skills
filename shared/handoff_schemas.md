@@ -203,9 +203,9 @@ AI-assisted assessment's primary advantage lies in the immediacy of feedback, re
 | Field | Type | Description |
 |-------|------|-------------|
 | `title` | string | Paper title |
-| `abstract` | object | `{english: string, chinese: string}` (chinese is required only if bilingual) |
+| `abstract` | string | English abstract (150-300 words, structured). Emitted inline by `draft_writer_agent` during Phase 4 (v3.17.0+). |
 | `authors` | list[Author] | Author information with CRediT roles |
-| `keywords` | object | `{en: list[string], zh_tw: list[string]}` bilingual keywords (3-6 each) |
+| `keywords` | list[string] | 5-7 English keywords. Emitted inline by `draft_writer_agent` during Phase 4 (v3.17.0+). |
 | `sections` | list[Section] | Ordered paper sections |
 | `references` | list[Reference] | Full reference list with cross-referencing |
 | `total_word_count` | integer | Total word count (excluding references) |
@@ -531,6 +531,8 @@ score_trajectory: {
 | `literature_corpus` | list[object] | Optional append-friendly literature corpus. Each entry conforms to [`shared/contracts/passport/literature_corpus_entry.schema.json`](contracts/passport/literature_corpus_entry.schema.json). Produced by user-written adapters (see [`academic-pipeline/references/adapters/overview.md`](../academic-pipeline/references/adapters/overview.md)); ARS does not produce these entries itself. Added v3.6.4+. |
 | `audit_artifact` | list[object] | Optional append-only ledger of cross-model audit runs for v3.6.7 downstream-agent deliverables. Each entry conforms to [`shared/contracts/passport/audit_artifact_entry.schema.json`](contracts/passport/audit_artifact_entry.schema.json). Produced by the pipeline orchestrator after Layer 2 + Layer 3 verification of wrapper-emitted proposal entries; only `persisted` entries are stored here. Added v3.6.7+. |
 | `slr_lineage` | boolean | Run-level provenance flag set by `pipeline_orchestrator_agent` at the Stage 1 → Stage 2 handoff. `true` iff any stage in this run history was produced by `deep-research` in systematic-review mode. Consumed by `disclosure` mode renderer (`--policy-anchor=prisma-trAIce` track gate per `policy_anchor_disclosure_protocol.md` §3.1). Absence = `false` = cold-start path (renderer requires explicit `mode=` per §4.3 G2 invariant fallback rule). Added v3.7.4+. See [Run-level lineage signal (v3.7.4)](#run-level-lineage-signal-v374) below. |
+| `pipeline_state.mode` | enum | Resolved AUTO/INTERACTIVE mode cached at session start from `ARS_INTERACTIVE`. Values: `auto` (env unset or `!=1`) \| `interactive` (env `=1`). Persisted so resume sessions inherit the original mode unless explicitly overridden via `mode_override=` at resume time. Added v3.17.0+. See [`academic-pipeline/agents/pipeline_orchestrator_agent.md`](../academic-pipeline/agents/pipeline_orchestrator_agent.md) §0 IRON RULE 1. |
+| `auto_retry_history` | list[object] | Append-only ledger of AUTO-mode retry rounds at Stage 2.5 / 4.5 integrity FAIL. Each entry records `{stage: <2.5\|4.5>, round: <i>, max_rounds: <N>, fail_category: <hallucinated_citation\|hallucinated_claim\|data_mismatch\|citation_context\|compliance_tier2_or_3>, fix_agent: <agent_name>, verifier: <agent_name>, verdict: <PASS\|FAIL>, started_at: <ISO8601-UTC>, completed_at: <ISO8601-UTC>, fail_reason: <string-or-null>}`. Used by Stage 6 PROCESS SUMMARY's "Failure Mode Audit Log" section. Added v3.17.0+. |
 
 ### Example
 

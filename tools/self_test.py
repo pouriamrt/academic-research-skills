@@ -102,6 +102,18 @@ def _read_text(path: Path) -> str:
         return ""
 
 
+def _strip_version_history(text: str) -> str:
+    """Remove the Version History / Changelog section so historical agent
+    mentions (e.g., notes about removed agents) do not produce false-positive
+    'missing agent' failures.
+    """
+    for marker in ("## Version History", "## Changelog", "## Change Log"):
+        idx = text.find(marker)
+        if idx != -1:
+            return text[:idx]
+    return text
+
+
 def _extract_agent_names_from_skill_md(text: str) -> set[str]:
     """Extract agent names referenced in a SKILL.md file.
 
@@ -112,14 +124,19 @@ def _extract_agent_names_from_skill_md(text: str) -> set[str]:
 
     Excludes agents attributed to other skills, e.g.
     ``academic-paper``'s ``intake_agent`` is NOT counted as a local agent.
+    Excludes anything mentioned in the Version History section.
     """
+    text = _strip_version_history(text)
     names: set[str] = set()
 
     # Collect cross-skill agent names so we can exclude them.
-    # Pattern: `other-skill`'s `agent_name` or other-skill/agent_name
+    # Pattern: `other-skill`'s `agent_name` or other-skill/agent_name.
+    # The apostrophe character class accepts both ASCII ' (U+0027) and
+    # smart-quote ’ (U+2019), so SKILL.md files saved with either render
+    # the cross-skill exclusion correctly.
     cross_skill_agents: set[str] = set()
     for m in re.finditer(
-        r"`[a-z][a-z0-9-]+`(?:'s|'s)\s+`([a-z][a-z0-9_]*_agent)`", text
+        r"`[a-z][a-z0-9-]+`(?:['’]s)\s+`([a-z][a-z0-9_]*_agent)`", text
     ):
         cross_skill_agents.add(m.group(1))
     for m in re.finditer(r"[a-z][a-z0-9-]+/([a-z][a-z0-9_]*_agent)", text):

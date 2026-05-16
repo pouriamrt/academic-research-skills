@@ -124,7 +124,7 @@ more efficiently.
 
 ### F5: Citation Format Entirely Wrong
 
-**Trigger Timing**: Phase 5a (citation_compliance_agent)
+**Trigger Timing**: Phase 5 (citation_compliance_agent)
 
 **Detection Indicators**:
 - Citation format error rate > 50%

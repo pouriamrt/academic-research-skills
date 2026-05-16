@@ -13,7 +13,11 @@ MARKDOWN_LINK_RE = re.compile(r"\[[^\]]+\]\(([^)]+)\)")
 
 
 def read(rel_path: str) -> str:
-    return (ROOT / rel_path).read_text(encoding="utf-8")
+    p = ROOT / rel_path
+    if not p.is_file():
+        fail(f"{rel_path}: file not found")
+        return ""
+    return p.read_text(encoding="utf-8")
 
 
 def fail(message: str) -> None:
@@ -218,7 +222,13 @@ def check_setup_docs() -> None:
 
 
 def check_bilingual_purge() -> None:
-    """v3.17.0: ensure bilingual / Traditional Chinese artifacts are absent."""
+    """v3.17.0: ensure bilingual / Traditional Chinese artifacts are absent.
+
+    Uses both exists() AND is_symlink() to catch dangling symlinks. A
+    `git rm`-ed file returns False for exists() — but if a half-deleted
+    symlink remains with a missing target, only is_symlink() flags it.
+    The purge constraint requires the path to be absent in ANY form.
+    """
     repo_files = [
         "README.zh-TW.md",
         "docs/SETUP.zh-TW.md",
@@ -229,7 +239,8 @@ def check_bilingual_purge() -> None:
         "academic-paper/examples/chinese_paper_example.md",
     ]
     for rel_path in repo_files:
-        if (ROOT / rel_path).exists():
+        p = ROOT / rel_path
+        if p.exists() or p.is_symlink():
             fail(f"{rel_path}: should have been deleted in v3.17.0 bilingual purge")
 
 

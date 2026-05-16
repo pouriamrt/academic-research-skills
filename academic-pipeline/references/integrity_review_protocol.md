@@ -1,4 +1,6 @@
-# Integrity Review Protocol (Added in v2.0)
+# Integrity Review Protocol (Added in v2.0; v3.4.0+ adds parallel compliance gate)
+
+> **v3.4.0+ companion gate.** At Stage 2.5 and Stage 4.5, the orchestrator dispatches BOTH `integrity_verification_agent` (this protocol, emits Schema 5 Integrity Report) AND [`shared/agents/compliance_agent`](../../shared/agents/compliance_agent.md) (PRISMA-trAIce + RAISE compliance, emits Schema 19 Compliance Report appended to passport `compliance_history[]`) in parallel. Both must pass at Mandatory tier for the orchestrator to proceed. See [`shared/compliance_checkpoint_protocol.md`](../../shared/compliance_checkpoint_protocol.md) for the compliance side of the gate.
 
 ## Stage 2.5: First Integrity Check (Pre-Review Integrity)
 

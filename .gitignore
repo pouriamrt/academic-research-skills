@@ -13,3 +13,24 @@ __pycache__/
 
 # Private ROADMAP lives in claude-memory-sync (花花/roadmaps/), not this public repo
 ROADMAP.md
+
+# Secrets and credentials — defensive: no .env file is currently used by the
+# repo (S2_API_KEY is read from os.environ), but block accidental check-ins.
+.env
+.env.*
+*.pem
+*.key
+*.p12
+*.pfx
+credentials.json
+credentials*.json
+service_account*.json
+
+# Audit artifacts (run_codex_audit.sh output; may contain LLM responses that
+# quote source files — keep out of git).
+audit_artifacts/
+
+# Local test fixtures with potentially sensitive content.
+*.local.json
+*.local.yaml
+*.local.yml

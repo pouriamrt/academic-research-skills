@@ -382,7 +382,6 @@ def test_med_warn_row_wildcard_human_read_caught() -> None:
     # `UNVERIFIED CITATION — AI HAS NOT CROSS-CHECKED`. Locate that
     # phrase, walk back to the start of its table row, and assert the
     # third column is `—` (em-dash) and not any other token.
-    import re as _re
     # Find the MED-WARN row by anchor on its unique phrase.
     pos = text.find("UNVERIFIED CITATION — AI HAS NOT CROSS-CHECKED")
     assert pos != -1, "fixture missing MED WARN phrase"

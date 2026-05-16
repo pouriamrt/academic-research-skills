@@ -138,7 +138,6 @@ def main() -> int:
     rejected: list[dict] = []
     existing_keys: set[str] = set()
 
-    input_root = args.input.resolve()
     files = sorted(
         p for p in args.input.rglob("*") if p.is_file() and p.name != ".gitkeep"
     )

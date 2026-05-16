@@ -1,4 +1,4 @@
-# ARS Pipeline Architecture (v3.7.0)
+# ARS Pipeline Architecture (fork v3.16.0; upstream merge through v3.7.3)
 
 Full pipeline view across stages × skills × artifacts × gates. Every completed stage requires a user-confirmation checkpoint (per `academic-pipeline/SKILL.md` and `pipeline_state_machine.md`); the diagrams below surface the **decision-heavy** checkpoints visually so they are easy to locate. The post-stage confirmation checkpoints at 2.5 and 4.5 are machine-verified first, then confirmed by the user — they are not skipped.
 
@@ -310,7 +310,10 @@ timeline
            : Schema 20.1 + writer_full / evaluator_full templates (renumbered from upstream Schema 13.1)
            : two-phase orchestration in academic-paper full mode (Phase 4a/4b + 6a/6b)
            : SC-* mode-gating in check_sprint_contract.py
-    v3.7.0 : Claude Code plugin packaging
+    v3.7.0 : Claude Code plugin packaging (upstream)
+    v3.7.3 : three-layer citation locator + contaminated-source advisory (upstream)
+    v3.15.0: fork — PaperOrchestra + Lu 2026 + experiment pipeline
+    v3.16.0: fork — upstream v3.3.2 → v3.7.3 merge; Schema 12 → 19, Schema 13/13.1 → 20/20.1
            : .claude-plugin/{plugin,marketplace}.json + skills/ symlinks
            : 10 slash commands (commands/ars-*.md, model pinned opus/sonnet, no haiku)
            : 3 plugin agents (agents/, symlink to v3.6.7-hardened source, model: inherit)
@@ -324,4 +327,4 @@ timeline
 | `deep-research` v2.9.2 | full, quick, socratic, review, lit-review, fact-check, systematic-review (7) |
 | `academic-paper` v3.1.1 | full, plan, outline-only, revision, revision-coach, abstract-only, lit-review, format-convert, citation-check, disclosure (10) |
 | `academic-paper-reviewer` v1.9.0 | full, re-review, quick, methodology-focus, guided, calibration (6) |
-| `academic-pipeline` v3.7.0 | orchestrator (delegates to sub-skill modes) + `resume_from_passport=<hash>` (v3.6.3 — resume a prior pipeline run from a Material Passport reset boundary; no flag required to invoke. The producing session must have set `ARS_PASSPORT_RESET=1` to emit boundary entries.) |
+| `academic-pipeline` v3.16.0 | orchestrator (delegates to sub-skill modes) + `resume_from_passport=<hash>` (v3.6.3 — resume a prior pipeline run from a Material Passport reset boundary; no flag required to invoke. The producing session must have set `ARS_PASSPORT_RESET=1` to emit boundary entries.) |

@@ -358,11 +358,11 @@ def check_l9() -> list[str]:
     failures: list[str] = []
     if "<!-- BAD -->" not in text:
         failures.append(
-            f"L9: reference doc missing '<!-- BAD -->' marker (Iron Rule 2 example pair)"
+            "L9: reference doc missing '<!-- BAD -->' marker (Iron Rule 2 example pair)"
         )
     if "<!-- GOOD -->" not in text:
         failures.append(
-            f"L9: reference doc missing '<!-- GOOD -->' marker (Iron Rule 2 example pair)"
+            "L9: reference doc missing '<!-- GOOD -->' marker (Iron Rule 2 example pair)"
         )
     return failures
 

@@ -218,7 +218,7 @@ If ANY answer raises concern, include it in the checkpoint presentation to the u
 
 ---
 
-## Agent Team (4 Agents)
+## Agent Team (4 in-skill + 1 shared)
 
 | # | Agent | Role | File |
 |---|-------|------|------|
@@ -226,6 +226,7 @@ If ANY answer raises concern, include it in the checkpoint presentation to the u
 | 2 | `state_tracker_agent` | State tracker: records completed stages, produced materials, revision loop count | `agents/state_tracker_agent.md` |
 | 3 | `integrity_verification_agent` | Integrity verifier: 100% reference/citation/data verification (blocking) | `agents/integrity_verification_agent.md` |
 | 4 | `collaboration_depth_agent` | **Observer (advisory only — never blocks).** Reads dialogue log and scores user-AI collaboration pattern against `shared/collaboration_depth_rubric.md`. Invoked at FULL/SLIM checkpoints and at pipeline completion. Based on Wang & Zhang (2026). | `agents/collaboration_depth_agent.md` |
+| 5 | `compliance_agent` (shared, v3.4.0+) | **PRISMA-trAIce + RAISE compliance gate (blocking on Mandatory tier).** Dispatched in parallel with `integrity_verification_agent` at Stage 2.5 / 4.5. Emits Schema 19 `compliance_report` appended to passport `compliance_history[]`. Lives in `shared/agents/` because it is invoked by `deep-research`, `academic-paper`, and `academic-pipeline`. | `../shared/agents/compliance_agent.md` |
 
 ---
 

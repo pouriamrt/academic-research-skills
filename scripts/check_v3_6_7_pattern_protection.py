@@ -871,7 +871,7 @@ def _load_inversion_manifest() -> tuple[list[str], str | None]:
     1807).
     """
     if not INVERSION_MANIFEST.exists():
-        return [], f"manifest missing: scripts/v3_6_7_inversion_manifest.json"
+        return [], "manifest missing: scripts/v3_6_7_inversion_manifest.json"
     try:
         import json
         data = json.loads(INVERSION_MANIFEST.read_text(encoding="utf-8"))

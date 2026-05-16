@@ -20,13 +20,10 @@ and restores the file in `finally` to keep the working tree clean.
 from __future__ import annotations
 
 import json
-import os
-import shutil
 import subprocess
 import sys
 from pathlib import Path
 
-import pytest
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 LINT = REPO_ROOT / "scripts" / "check_v3_6_8_pattern_protection.py"

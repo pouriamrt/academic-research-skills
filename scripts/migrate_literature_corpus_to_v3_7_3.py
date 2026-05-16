@@ -28,8 +28,12 @@ from adapters._common import now_iso
 
 
 # Single shared YAML round-tripper. ruamel.yaml preserves comments,
-# key order, and quoting style across read → mutate → write.
-_yaml = YAML()
+# key order, and quoting style across read → mutate → write. typ="rt"
+# (round-trip) is the default but stated explicitly here so a future
+# refactor cannot silently downgrade to an unsafe loader. ruamel's rt
+# loader does not execute arbitrary Python constructors (unlike PyYAML's
+# default Loader), so this is safe for untrusted YAML input.
+_yaml = YAML(typ="rt")
 _yaml.preserve_quotes = True
 _yaml.indent(mapping=2, sequence=4, offset=2)
 

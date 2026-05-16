@@ -4,7 +4,6 @@ from pathlib import Path
 import subprocess
 import sys
 import yaml
-import pytest
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
 SCRIPT = REPO_ROOT / "scripts/check_literature_corpus_schema.py"

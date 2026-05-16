@@ -44,13 +44,12 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
-import os
 import re
 import subprocess
 import sys
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Iterable
+from typing import Any
 
 try:
     import yaml
@@ -1821,7 +1820,7 @@ def _classify_and_validate_block(
                 if "..." in line:
                     # Mark as "schematic, not validated" if it contains literal '...'
                     out.append(LintError("F4",
-                        f"schematic JSONL line contains '...' placeholder (skipped from validation)",
+                        "schematic JSONL line contains '...' placeholder (skipped from validation)",
                         f"{md_path}:{ln_idx}",
                         severity="info"))
                     continue

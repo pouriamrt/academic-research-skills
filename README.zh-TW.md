@@ -318,7 +318,7 @@ https://github.com/Imbad0202/academic-research-skills
 > v3.6.6 因專案排序晚於 v3.6.7 才落地；design doc 內仍保留 v3.6.6 內部命名作為
 > contract gate 版本，suite release 標 v3.6.8 維持 CHANGELOG 單調遞增。
 
-- **Schema 13.1**（`shared/sprint_contract.schema.json`）在 Schema 13 之上加兩個 `mode` enum 值（`writer_full` + `evaluator_full`）、兩個新 optional top-level 欄位（`pre_commitment_artifacts` writer-only、`disagreement_handling` evaluator-only）、12 條 `allOf` branch 強制 reviewer- / writer- / evaluator-conditional gate。既有 reviewer contract 在 Schema 13.1 下 byte-equivalent validate（§3.6 zero-touch promise）。
+- **Schema 20.1**（`shared/sprint_contract.schema.json`；fork v3.16.0 由上游 Schema 13.1 重新編號）在 Schema 20 之上加兩個 `mode` enum 值（`writer_full` + `evaluator_full`）、兩個新 optional top-level 欄位（`pre_commitment_artifacts` writer-only、`disagreement_handling` evaluator-only）、12 條 `allOf` branch 強制 reviewer- / writer- / evaluator-conditional gate。既有 reviewer contract 在 Schema 20.1 下 byte-equivalent validate（§3.6 zero-touch promise）。
 - **兩個新 shipped contract template**：`shared/contracts/writer/full.json`（D1–D7、F1/F4/F2/F3/F0）+ `shared/contracts/evaluator/full.json`（D1–D5、F1/F2/F3/F6/F4/F5/F0）。Spec branch 上原是 design-time artefact，本次發行 atomically promote 為 live shipped。
 - **`academic-paper full` 模式內加入 two-phase orchestration**：Phase 4 拆成 Phase 4a（writer paper-blind 預先承諾）+ Phase 4b（writer paper-visible 撰稿 + 自評）；Phase 6 拆成 Phase 6a（evaluator paper-blind 預先承諾）+ Phase 6b（evaluator paper-visible 評分 + 決策）。phase-numbered `<phase4a_output>` / `<phase6a_output>` data delimiter 沿用 v3.6.2 reviewer pattern。Lint count summary：writer 3+4 / evaluator 5+5 / reviewer 5+6（reviewer 維持 zero-touch）。
 - **`academic-paper` SKILL + agent file 新增 `## v3.6.6 Generator-Evaluator Contract Protocol` 區塊**（SKILL.md 101 行 + `draft_writer_agent.md` 47 行 + `peer_reviewer_agent.md` 57 行）。SKILL.md 另加 `## Known limitations` 區塊承載 graceful-degradation + cross-session resume v3.6.7+ forward note。
@@ -365,9 +365,9 @@ https://github.com/Imbad0202/academic-research-skills
 
 ### v3.6.2（2026-04-23）— 審稿 Sprint Contract Hard Gate
 
-v3.6.2 引入 Schema 13 sprint contract 與 hard-gate 編排，強制審稿人在閱讀論文前先承諾評分準則。本次只動審稿端（reviewer-only first test case）；writer/evaluator 留到 v3.6.4。詳見 CHANGELOG。
+v3.6.2 引入上游 Schema 13 sprint contract（fork v3.16.0 重新編號為 **Schema 20**）與 hard-gate 編排，強制審稿人在閱讀論文前先承諾評分準則。本次只動審稿端（reviewer-only first test case）；writer/evaluator 留到 v3.6.4。詳見 CHANGELOG。
 
-- **Schema 13 sprint contract**：`panel_size`、`acceptance_dimensions`、`failure_conditions`（含 `severity` 優先序 + 隨 panel 變動的 `cross_reviewer_quantifier`）、`measurement_procedure`、選用 `override_ladder`、限定 `agent_amendments`。驗證器：`scripts/check_sprint_contract.py`。
+- **Schema 20 sprint contract**（fork v3.16.0 由上游 Schema 13 重新編號）：`panel_size`、`acceptance_dimensions`、`failure_conditions`（含 `severity` 優先序 + 隨 panel 變動的 `cross_reviewer_quantifier`）、`measurement_procedure`、選用 `override_ladder`、限定 `agent_amendments`。驗證器：`scripts/check_sprint_contract.py`。
 - **兩段 hard gate**：審稿人先在「論文內容盲」Phase 1 預先承諾評分計畫，Phase 2 才看到論文；Phase 1 輸出包在 `<phase1_output>...</phase1_output>` 資料分隔符內，縮窄 self-injection 面。
 - **合成者三步機械協議**：建構跨審稿矩陣 → 依 panel-relative quantifier + 認可表達式詞彙評估每條 `failure_condition` → 用 `severity` 決優先。禁止操作清單寫在 `editorial_synthesizer_agent`。
 - **出貨兩份審稿模板**：`shared/contracts/reviewer/full.json`（panel 5）與 `shared/contracts/reviewer/methodology_focus.json`（panel 2）。`reviewer_re_review`、`reviewer_calibration`、`reviewer_guided` 三個 mode 在 schema enum 中保留，但 v3.6.2 不出 template，繼續沿用 pre-v3.6.2 行為；`reviewer_quick` 完全排除於 enum 外。
@@ -390,10 +390,10 @@ v3.5.1 新增 Socratic Mentor 的選用式誠實探測（設定 `ARS_SOCRATIC_RE
 - **反諂媚規範**：分數 ≥ 7 必須附具體對話 turn 引用；Zone 3 觸發 re-audit；禁止鼓勵性語言。
 - `academic-pipeline` SKILL 版本：`3.3.0 → 3.4.0`。Suite 版本升至 `3.5.0`。新增 lint `scripts/check_collaboration_depth_rubric.py` 加 10 個測試。
 
-### v3.4.0（2026-04-20）— Compliance Agent + Schema 12
+### v3.4.0（2026-04-20）— Compliance Agent + Schema 12（fork v3.16.0 重新編號為 Schema 19）
 
 - **Compliance Agent（shared）**：單一 mode-aware agent，同時跑 PRISMA-trAIce 17 項（限 SR mode）+ RAISE 四原則 + 8-role matrix。掛載既有 Stage 2.5 / 4.5 Integrity Gate；tier-based block（Mandatory → block、HR → warn、R/O → info）。非 SR 入口只跑原則、warn-only。
-- **Schema 12 compliance_report** 附加到 Material Passport 的 `compliance_history[]`（append-only）。
+- **Schema 19 compliance_report**（fork v3.16.0 由上游 Schema 12 重新編號以避免與 fork 的 Schema 12 Lab Record 衝突）附加到 Material Passport 的 `compliance_history[]`（append-only）。
 - **三回合 user-override 階梯**，自動注入 `disclosure_addendum` 到 manuscript。無法規避揭露。
 - **Calibration 以透明公布取代硬門檻**，與 `task_type: open-ended` 自洽。
 - **Upstream freshness CI** 偵測 PRISMA-trAIce 上游漂移（non-blocking）。

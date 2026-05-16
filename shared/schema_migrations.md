@@ -6,7 +6,7 @@
 
 ## 1. Schema Versioning Protocol
 
-Every schema artifact (Schemas 1-17 as defined in `shared/handoff_schemas.md`) **MUST** include a `schema_version` field at the top level of the artifact.
+Every schema artifact (Schemas 1-20 as defined in `shared/handoff_schemas.md`) **MUST** include a `schema_version` field at the top level of the artifact.
 
 ### Version Format
 

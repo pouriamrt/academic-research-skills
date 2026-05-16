@@ -14,6 +14,7 @@ tool can switch over without code changes.
 """
 from __future__ import annotations
 
+import json
 import os
 import string
 import time
@@ -184,7 +185,6 @@ class SemanticScholarClient:
         for attempt in range(_MAX_RETRIES + 1):
             try:
                 with urllib.request.urlopen(req, timeout=30) as resp:
-                    import json
                     return json.loads(resp.read().decode("utf-8"))
             except urllib.error.HTTPError as e:
                 if e.code == 404:

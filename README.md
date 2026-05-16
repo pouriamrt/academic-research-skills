@@ -649,12 +649,12 @@ Merged upstream (Imbad0202) commits v3.3.2 → v3.7.3 (146 commits, 145 PRs, 519
 
 ### v3.6.2 (2026-04-23) — Reviewer Sprint Contract Hard Gate
 
-v3.6.2 introduces Schema 13 sprint contracts and a hard-gate orchestration that forces reviewers to pre-commit their scoring plan before reading the paper. Reviewer-only first test case; writer/evaluator deferred to v3.6.4. See CHANGELOG.
+v3.6.2 introduces upstream Schema 13 sprint contracts (renumbered to **Schema 20** in fork v3.16.0) and a hard-gate orchestration that forces reviewers to pre-commit their scoring plan before reading the paper. Reviewer-only first test case; writer/evaluator deferred to v3.6.4. See CHANGELOG.
 
-- **Schema 13 sprint contract** with `panel_size`, `acceptance_dimensions`, `failure_conditions` (with `severity` precedence + panel-relative `cross_reviewer_quantifier`), `measurement_procedure`, optional `override_ladder`, bounded `agent_amendments`. Validator: `scripts/check_sprint_contract.py`.
+- **Schema 20 sprint contract** (renumbered from upstream Schema 13 in fork v3.16.0) with `panel_size`, `acceptance_dimensions`, `failure_conditions` (with `severity` precedence + panel-relative `cross_reviewer_quantifier`), `measurement_procedure`, optional `override_ladder`, bounded `agent_amendments`. Validator: `scripts/check_sprint_contract.py`.
 - **Two-call hard gate.** Reviewers run paper-content-blind Phase 1 + paper-visible Phase 2; Phase 1 output is wrapped in `<phase1_output>...</phase1_output>` data delimiter to narrow the self-injection surface.
 - **Synthesizer three-step mechanical protocol.** Build cross-reviewer matrix → evaluate each `failure_condition` with panel-relative quantifier + recognised expression vocabulary → resolve precedence by `severity`. Forbidden-ops list explicit in `editorial_synthesizer_agent`.
-- **Two reviewer templates ship** (`shared/contracts/reviewer/full.json` panel 5; `shared/contracts/reviewer/methodology_focus.json` panel 2). `reviewer_re_review`, `reviewer_calibration`, `reviewer_guided` are reserved in the schema enum but ship without contract templates in v3.6.2; they retain pre-v3.6.2 behaviour. `reviewer_quick` is excluded from the enum entirely.
+- **Two reviewer templates ship** (`shared/contracts/reviewer/full.json` panel 5; `shared/contracts/reviewer/methodology_focus.json` panel 2). `reviewer_re_review`, `reviewer_calibration`, `reviewer_guided` are reserved in the schema enum but ship without contract templates in v3.6.2; they retain pre-v3.6.2 behaviour. `reviewer_quick` is excluded from the enum entirely. (Fork v3.16.0 renumbered the schema to **Schema 20** to preserve fork's Schema 13 Simulation Specification.)
 - `academic-paper-reviewer` SKILL version: `1.8.1 → 1.9.0`. `academic-pipeline` SKILL version: `3.5.1 → 3.6.2` (suite-version invariant). Suite version bumped to `3.6.2`.
 - See spec [`docs/design/2026-04-23-ars-v3.6.2-sprint-contract-design.md`](docs/design/2026-04-23-ars-v3.6.2-sprint-contract-design.md) and protocol [`academic-paper-reviewer/references/sprint_contract_protocol.md`](academic-paper-reviewer/references/sprint_contract_protocol.md).
 
@@ -674,10 +674,10 @@ v3.5.1 adds an opt-in honesty probe to the Socratic Mentor (`ARS_SOCRATIC_READIN
 - **Anti-sycophancy discipline**: scores ≥ 7 require specific dialogue-turn citations; Zone 3 triggers re-audit; no motivational framing.
 - `academic-pipeline` SKILL version: `3.3.0 → 3.4.0`. Suite version bumped to `3.5.0`. New lint `scripts/check_collaboration_depth_rubric.py` + 10 tests.
 
-### v3.4.0 (2026-04-20) — Compliance Agent + Schema 12
+### v3.4.0 (2026-04-20) — Compliance Agent + Schema 12 (renumbered to Schema 19 in fork v3.16.0)
 
 - **Compliance Agent** (shared): single mode-aware agent running PRISMA-trAIce 17 items (SR mode only) + RAISE 4 principles + 8-role matrix. Hooks existing Stage 2.5 / 4.5 Integrity Gates; tier-based block (Mandatory → block, HR → warn, R/O → info). Non-SR entries run principles-only, warn-only.
-- **Schema 12 compliance_report** appended to Material Passport via `compliance_history[]` (append-only).
+- **Schema 19 compliance_report** (renumbered from upstream Schema 12 in fork v3.16.0 to avoid collision with fork's Schema 12 Lab Record) appended to Material Passport via `compliance_history[]` (append-only).
 - **3-round user-override ladder** auto-injects `disclosure_addendum` into manuscript. No detection evasion possible.
 - **Calibration with transparent reporting**, no hard FNR/FPR gate — self-consistent with `task_type: open-ended`.
 - **Upstream freshness CI** warns on PRISMA-trAIce drift (non-blocking).

@@ -45,7 +45,7 @@ Write a paper on the impact of declining birth rates on private university manag
 5. Full-text drafting — section-by-section draft, register adjustment
 6. Citation compliance + bilingual abstract (parallel)
 7. Peer review — five-dimension scoring, revision suggestions
-8. Output formatting — LaTeX/DOCX (via Pandoc)/PDF/Markdown
+8. Output formatting — LaTeX/DOCX-via-Pandoc/PDF output plus Markdown. When Pandoc unavailable: Markdown + instructions.
 
 ---
 
@@ -260,7 +260,7 @@ User: "Write a paper on [topic]"
 
 ## v3.6.6 Generator-Evaluator Contract Protocol
 
-> Authoritative orchestration block for the v3.6.6 contract-gated phase splits inside `academic-paper full` mode. Schema 13.1 since v3.6.6 (`shared/sprint_contract.schema.json`). Templates: `shared/contracts/writer/full.json` + `shared/contracts/evaluator/full.json`. Design spec: `docs/design/2026-04-27-ars-v3.6.6-generator-evaluator-contract-design.md` §5.
+> Authoritative orchestration block for the v3.6.6 contract-gated phase splits inside `academic-paper full` mode. Schema 20.1 since fork v3.16.0 (renumbered from upstream Schema 13.1 introduced in upstream v3.6.6; `shared/sprint_contract.schema.json`). Templates: `shared/contracts/writer/full.json` + `shared/contracts/evaluator/full.json`. Design spec: `docs/design/2026-04-27-ars-v3.6.6-generator-evaluator-contract-design.md` §5.
 >
 > **Applies to `academic-paper full` mode only.** Nine non-full modes (`plan`, `outline-only`, `revision`, `revision-coach`, `abstract-only`, `lit-review`, `format-convert`, `citation-check`, `disclosure`) are byte-equivalent across v3.6.5 → v3.6.6 and do not invoke this protocol. Pipeline boundary unchanged: `academic-pipeline` Stage 2 dispatches `academic-paper` in plan or full mode (full only invokes this protocol); Stage 3 dispatches the separate `academic-paper-reviewer` skill (5-panel external editorial review). The in-pair Phase 6 evaluator under this protocol and the Stage 3 reviewer are different review layers — see design doc §5.1 audit conclusion 2.
 
@@ -343,7 +343,7 @@ When a writer or evaluator phase becomes unusable (Phase Na lint twice fail OR P
 - **Standard path**: evaluator Phase 6b emits F0 `evaluator_decision=accept` or F4 `evaluator_decision=accept_with_dissent_note`.
 - **Exceptional path**: evaluator Phase 6b emits F5 `evaluator_decision=flag_for_reviewer_stage` after the in-pair revision loop exhausts at round 2 with mandatory-dimension block recurring.
 
-`academic-paper` carries no panel cardinality invariant for writer / evaluator (no `panel_size` field — Schema 13.1 §3.3.5 reviewer-conditional). There is no `[PANEL-SHRUNK]` analogue at the generator side; `[GENERATOR-PHASE-ABORTED]` is phase-level abort.
+`academic-paper` carries no panel cardinality invariant for writer / evaluator (no `panel_size` field — Schema 20.1 §3.3.5 reviewer-conditional, renumbered from upstream Schema 13.1 in fork v3.16.0). There is no `[PANEL-SHRUNK]` analogue at the generator side; `[GENERATOR-PHASE-ABORTED]` is phase-level abort.
 
 **Operational monitor**: track `[GENERATOR-PHASE-ABORTED]` rate over the first three months of v3.6.6 deployment. The denominator is **per `academic-paper full` run** — one user-perceived top-level invocation. The 5% threshold is `(runs_with_any_abort) / (total_runs)`. If the rate exceeds 5%, v3.6.7 introduces graceful-degradation fallback (see § "Known limitations" below).
 

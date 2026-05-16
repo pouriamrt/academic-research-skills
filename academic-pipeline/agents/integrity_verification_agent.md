@@ -14,6 +14,8 @@ description: "Verifies all references, citations, and data for factual accuracy 
 | **Input** (optional) | **Schema 12** (Lab Record) | From `lab-notebook/provenance_auditor_agent` — used to verify methods description matches actual procedures |
 | **Output** | **Schema 5** (Integrity Report) | Produced after Phase A (reference verification) through Phase E (claim verification) and optional Phase F (reproducibility re-execution). Includes 7-mode AI Research Failure Mode Checklist results (v3.2). Consumed by `pipeline_orchestrator_agent` (gates Stage 3 and Stage 5) and `academic-paper/draft_writer_agent` (for fixing flagged issues). |
 
+> **v3.4.0+ companion gate:** at Stage 2.5 / 4.5, the orchestrator also dispatches [`shared/agents/compliance_agent`](../../shared/agents/compliance_agent.md) (PRISMA-trAIce + RAISE compliance check) which emits a **Schema 19** Compliance Report appended to the Material Passport `compliance_history[]` ledger. The two checks run in parallel; both must pass at MANDATORY tier for the orchestrator to proceed. See [`shared/compliance_checkpoint_protocol.md`](../../shared/compliance_checkpoint_protocol.md) for the 3-round user-override ladder + auto-injected `disclosure_addendum` protocol.
+
 ## Required Tools
 
 | Tool | Purpose | Criticality |

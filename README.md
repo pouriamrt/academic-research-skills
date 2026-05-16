@@ -55,7 +55,7 @@ See the [Quick Reference Card](docs/QUICK_REFERENCE.md) for a full "I want to X 
 
 - [Claude Code](https://claude.ai/install.sh) (latest; plugin packaging requires recent versions)
 - `ANTHROPIC_API_KEY` exported, or set on first `claude` run
-- *Optional:* Pandoc for DOCX, tectonic + Source Han Serif TC for APA 7.0 PDF (Markdown output works without either)
+- *Optional:* Pandoc for DOCX (via Pandoc when available); Markdown + instructions otherwise. Tectonic + Source Han Serif TC for APA 7.0 PDF. Markdown output works without either.
 
 **Plugin install (v3.7.0+, recommended):**
 
@@ -581,7 +581,7 @@ Merged upstream (Imbad0202) commits v3.3.2 → v3.7.3 (146 commits, 145 PRs, 519
 
 **Renumbering migration**: upstream's Schema 12 (Compliance Report) → Schema 19; upstream's Schema 13/13.1 (Sprint Contract) → Schema 20/20.1. All references updated in `shared/compliance_report.schema.json`, `shared/sprint_contract.schema.json`, `shared/compliance_checkpoint_protocol.md`, `shared/agents/compliance_agent.md`, `shared/schema_migrations.md`, `shared/handoff_schemas.md`, `academic-paper-reviewer/references/sprint_contract_protocol.md`, `academic-pipeline/references/passport_as_reset_boundary.md`.
 
-### v3.15.0 (2026-04-11) — Upstream Merge: PaperOrchestra + Lu 2026 Integration
+### v3.7.0 (2026-05-05) — Claude Code Plugin Packaging (upstream)
 
 > Plugin packaging upgrade: ARS now installs in one line on Claude Code CLI / VS Code / JetBrains via `/plugin marketplace add Imbad0202/academic-research-skills` + `/plugin install academic-research-skills`. The traditional `git clone + symlink to ~/.claude/skills/` flow continues to work — both tracks are first-class.
 
@@ -602,7 +602,7 @@ Merged upstream (Imbad0202) commits v3.3.2 → v3.7.3 (146 commits, 145 PRs, 519
 > the design doc retains the v3.6.6 internal naming for the contract gate version,
 > while the suite release is tagged v3.6.8 to keep the CHANGELOG monotonic.
 
-- **Schema 13.1** (`shared/sprint_contract.schema.json`) extends Schema 13 with two new `mode` enum values (`writer_full` + `evaluator_full`), two new optional top-level fields (`pre_commitment_artifacts` writer-only, `disagreement_handling` evaluator-only), and 12 `allOf` branches enforcing reviewer- / writer- / evaluator-conditional gates. Existing reviewer contracts validate byte-equivalent under Schema 13.1 (§3.6 zero-touch promise).
+- **Schema 20.1** (`shared/sprint_contract.schema.json`; renumbered from upstream Schema 13.1 in fork v3.16.0) extends Schema 20 with two new `mode` enum values (`writer_full` + `evaluator_full`), two new optional top-level fields (`pre_commitment_artifacts` writer-only, `disagreement_handling` evaluator-only), and 12 `allOf` branches enforcing reviewer- / writer- / evaluator-conditional gates. Existing reviewer contracts validate byte-equivalent under Schema 20.1 (§3.6 zero-touch promise).
 - **Two new shipped contract templates** under `shared/contracts/writer/full.json` (D1–D7, F1/F4/F2/F3/F0) and `shared/contracts/evaluator/full.json` (D1–D5, F1/F2/F3/F6/F4/F5/F0). Promoted from design-time artefacts on the spec branch to live shipped status atomically with the Schema 13.1 upgrade.
 - **Two-phase orchestration** inside `academic-paper full`: Phase 4 splits into Phase 4a (writer paper-blind pre-commitment) + Phase 4b (writer paper-visible drafting + self-scoring); Phase 6 splits into Phase 6a (evaluator paper-blind pre-commitment) + Phase 6b (evaluator paper-visible scoring + decision). Phase-numbered `<phase4a_output>` / `<phase6a_output>` data delimiters mirror the v3.6.2 reviewer pattern. Lint count summary: writer 3+4 / evaluator 5+5 / reviewer 5+6 (reviewer remains zero-touch).
 - **`academic-paper` SKILL + agent files** gain a verbatim `## v3.6.6 Generator-Evaluator Contract Protocol` block (101 lines in SKILL.md plus 47 lines in `draft_writer_agent.md` + 57 lines in `peer_reviewer_agent.md`). SKILL.md also adds a new `## Known limitations` section carrying graceful-degradation + cross-session resume forward notes for v3.6.7+.
@@ -729,9 +729,13 @@ The entries above (v3.7.0 through v3.3.1) are upstream releases now merged into 
 
 ---
 
-### v3.3 (2026-04-09) — PaperOrchestra-Inspired Enhancements (fork's interpretation; superseded by v3.16.0 upstream merge)
+### v3.15.0 (2026-04-11) — Fork: PaperOrchestra + Lu 2026 Integration
 
 Merged upstream (Imbad0202) commits through v3.3 while preserving the fork's full experiment pipeline.
+
+### v3.3 (2026-04-09) — PaperOrchestra-Inspired Enhancements (fork's interpretation; superseded by v3.16.0 upstream merge)
+
+The bullets below describe the upstream v3.3 content that fork v3.15.0 absorbed.
 
 **v3.3 — PaperOrchestra-inspired enhancements** (Song, Song, Pfister & Yoon, 2026, [arXiv:2604.05018](https://arxiv.org/abs/2604.05018)):
 - **Semantic Scholar API Verification** — Tier 0 programmatic reference existence check via S2 API. Levenshtein >= 0.70 title matching, DOI mismatch detection, bibliography deduplication via S2 IDs. Graceful degradation if API unavailable.

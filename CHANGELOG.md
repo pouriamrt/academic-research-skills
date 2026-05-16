@@ -2,6 +2,8 @@
 
 All notable changes to this project will be documented in this file.
 
+> **Schema renumbering note (fork v3.16.0, 2026-05-15):** entries below referencing **Schema 12** in the context of `compliance_report` / `compliance_history[]` describe upstream's original numbering. In fork v3.16.0, that schema is **Schema 19** to avoid collision with fork's Schema 12 (Lab Record). Likewise, entries referencing **Schema 13** / **Schema 13.1** in the context of `sprint_contract` / `reviewer/full.json` / `writer/full.json` / `evaluator/full.json` are **Schema 20** / **Schema 20.1** in fork v3.16.0+ to avoid collision with fork's Schema 13 (Simulation Specification). All `shared/*.schema.json`, `shared/handoff_schemas.md`, `shared/schema_migrations.md`, and active SKILL/agent references carry the new numbers. Historical entries are preserved as-is for upstream traceability.
+
 ## [Unreleased]
 
 ### #115 — Semantic Scholar client maturity: throttle + outage latch (2026-05-15)
@@ -303,6 +305,78 @@ Meta-lesson from this analysis: "we already do something adjacent" is weaker tha
   protection (Step 1+2) + version sweep (Step 7) + runtime audit-artifact
   gate (Step 6 §1-§11 + Phases 6.1-6.7) + synthetic evaluation case
   (Phase 6.8) deliver the §10 ship-quality target.
+
+## [3.16.0] - 2026-05-15
+
+> **Fork v3.16.0 — Upstream sync (Imbad0202 v3.3.2 → v3.7.3).** Merged 145
+> upstream commits across 519 files on top of fork v3.15.0 base. Adopted
+> compliance, sprint contract, generator-evaluator, passport reset, literature
+> corpus adapters, plugin packaging, trust-provenance, and claim faithfulness
+> work while preserving fork's full experiment pipeline (experiment-designer /
+> data-analyst / simulation-runner / lab-notebook) and PaperOrchestra + Lu 2026
+> integration.
+
+**Schema renumbering** to avoid collision with fork's experiment Schemas 10–18:
+
+- Upstream Schema 12 (Compliance Report) → **Schema 19** in fork v3.16.0+.
+- Upstream Schema 13 / Schema 13.1 (Sprint Contract / Generator-Evaluator
+  Contract) → **Schema 20** / **Schema 20.1** in fork v3.16.0+.
+- All active `*.schema.json`, `shared/handoff_schemas.md`, `shared/schema_migrations.md`,
+  SKILL.md, agent .md, validation tooling, architecture docs, and performance
+  docs updated to new numbers. Historical CHANGELOG entries preserved with
+  header note.
+
+**Adopted upstream features:**
+
+- v3.3.2 `data_access_level` + `task_type` SKILL.md metadata.
+- v3.3.5 `benchmark_report.schema.json` + optional `repro_lock` on Material
+  Passport.
+- v3.4.0 `compliance_agent` (PRISMA-trAIce 17 items + RAISE 4 principles +
+  8-role matrix) at Stage 2.5 / 4.5; Schema 19 `compliance_report` appended to
+  `compliance_history[]`.
+- v3.5.0 Collaboration Depth Observer (`collaboration_depth_agent`), advisory
+  only, never blocks.
+- v3.5.1 Opt-in Socratic reading-check probe (`ARS_SOCRATIC_READING_PROBE=1`).
+- v3.6.2 Reviewer sprint contract hard gate (Schema 20).
+- v3.6.3 Opt-in passport reset boundary (`ARS_PASSPORT_RESET=1`) +
+  `resume_from_passport=<hash>` mode.
+- v3.6.4 Material Passport `literature_corpus[]` input port + three reference
+  adapters (`folder_scan` / `zotero` / `obsidian`).
+- v3.6.5 Corpus-first consumer integration in `bibliography_agent` +
+  `literature_strategist_agent`.
+- v3.6.7 Downstream-agent pattern protection layer (synthesis_agent /
+  research_architect_agent / report_compiler_agent hardened against 13/18
+  documented hallucination/drift patterns).
+- v3.6.8 Generator-evaluator contract gate (Schema 20.1) inside
+  `academic-paper full` mode.
+- v3.7.0 Claude Code plugin packaging (`.claude-plugin/`, `commands/`,
+  `agents/`, `hooks/`, 10 `ars-*` slash commands, SessionStart announce hook).
+- v3.7.1–v3.7.2 Trust-chain frontmatter + trust-provenance hardening.
+- v3.7.3 Three-layer citation locator + contaminated-source advisory signals.
+
+**Preserved from fork:**
+
+- All 8 skills (experiment-designer / data-analyst / simulation-runner /
+  lab-notebook stay built in; upstream split these into a separate companion
+  repo).
+- All 18 fork-native handoff schemas (10–18 for experiment pipeline).
+- v3.15 PaperOrchestra + Lu 2026 work (Semantic Scholar verification,
+  Anti-Leakage Protocol, VLM Figure Verification, Score Trajectory, 7-mode
+  failure checklist, Calibration mode, Disclosure mode).
+- `tools/self_test.py` validation suite (now 203 checks; 200 pass / 3
+  pre-existing path warnings / 0 fail). `tools/self_test.py` extended to
+  recognize shared agents (fixes 3 FAILs introduced by upstream's new shared
+  `compliance_agent.md`).
+- Concept lineage agent + citation graph APIs reference.
+
+Plugin manifest bumped to **3.16.0** in `.claude-plugin/plugin.json` and
+`.claude-plugin/marketplace.json`. Author + repo URLs point to fork
+(`github.com/pouriamrt/academic-research-skills`). Upstream marketplace channel
+preserved as alternative in README. `academic-pipeline` SKILL.md bumped to
+**3.16.0** to maintain suite-version invariant (pipeline tracks the suite
+release per `scripts/check_version_consistency.py`).
+
+Safety backup branch: `backup/pre-upstream-sync-2026-05-15`.
 
 ## [3.7.0] - 2026-05-05
 

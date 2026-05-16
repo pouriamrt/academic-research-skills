@@ -78,7 +78,9 @@ def _check_agent_files(root: Path) -> list[str]:
     if not agents_dir.is_dir():
         return [f"{AGENTS_DIR} does not exist"]
     errs: list[str] = []
-    rubric_path_str = str(RUBRIC_PATH)
+    # Use posix-style forward slashes so the check is cross-platform
+    # (Windows would otherwise stringify to backslashes and reject Unix paths).
+    rubric_path_str = RUBRIC_PATH.as_posix()
     for path in sorted(agents_dir.glob("*.md")):
         text = path.read_text(encoding="utf-8")
         fm, _ = split_frontmatter(text)

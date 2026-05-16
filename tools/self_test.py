@@ -388,6 +388,13 @@ def check_cross_reference_integrity(root: Path, verbose: bool) -> CategoryResult
                 # Skip self-references
                 if target_skill == skill_name:
                     target_path = agents_dir / f"{target_agent}.md"
+                elif target_skill == "agents":
+                    # Path was `shared/agents/<name>_agent` or `agents/<name>_agent`
+                    # (plugin-shipped symlink dir). Try shared/agents/ first, then
+                    # top-level agents/.
+                    target_path = root / "shared" / "agents" / f"{target_agent}.md"
+                    if not target_path.is_file():
+                        target_path = root / "agents" / f"{target_agent}.md"
                 else:
                     target_path = root / target_skill / "agents" / f"{target_agent}.md"
                 if not target_path.is_file():

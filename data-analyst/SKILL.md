@@ -3,7 +3,16 @@ name: data-analyst
 description: "Statistical analysis execution engine. 7-agent pipeline for rigorous data analysis, assumption testing, and publication-ready results. 6 modes: full analysis, guided interactive, quick summary, assumption-check, exploratory EDA, and replication. Covers data profiling, cleaning, missing data handling, assumption testing, parametric and non-parametric tests, regression, ANOVA, SEM, HLM, mediation, survival analysis, Bayesian methods, effect size computation, publication-quality visualization, and APA 7 report compilation. Triggers on: analyze data, run statistics, statistical analysis, t-test, ANOVA, regression, correlation, chi-square, descriptive statistics, check assumptions, explore data, EDA, replicate analysis, analyze my data, run the analysis, effect size, missing data, 分析資料, 統計分析, 跑統計, 描述統計, 檢驗假設, 探索資料, 複製分析, 效果量, 缺失值處理."
 metadata:
   version: "1.0"
-  last_updated: "2026-03-16"
+  last_updated: "2026-05-15"
+  status: active
+  data_access_level: raw
+  task_type: open-ended
+  related_skills:
+    - experiment-designer
+    - simulation-runner
+    - lab-notebook
+    - academic-paper
+    - academic-pipeline
 ---
 
 # Data Analyst — Statistical Analysis Execution Engine

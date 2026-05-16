@@ -13,7 +13,7 @@ A suite of Claude Code skills for rigorous academic research, experimentation, s
 | `lab-notebook` v1.0 | Experiment research record | full, log-entry, deviation, snapshot, export, audit |
 | `academic-paper` v3.1.1 | 12-agent academic paper writing | full, plan, outline-only, revision, revision-coach, abstract-only, lit-review, format-convert, citation-check, disclosure |
 | `academic-paper-reviewer` v1.9.0 | Multi-perspective paper review (5 reviewers + optional cross-model DA critique) | full, re-review, quick, methodology-focus, guided, calibration |
-| `academic-pipeline` v3.7.0 | Full pipeline orchestrator | (coordinates all above) |
+| `academic-pipeline` v3.16.0 | Full pipeline orchestrator (suite-version-pinned) | (coordinates all above) |
 
 ## v3.16 Upstream Sync (Imbad0202 v3.3.2 → v3.7.3)
 
@@ -175,8 +175,7 @@ Stage 1.5: [EXPERIMENT — optional, auto-detected from Methodology Blueprint]
                → data-analyst / simulation-runner (Schema 11)
                  → lab-notebook (Schema 12, continuous)
 Stage 2:   academic-paper (plan/full) ← integrates Schema 11/12 into Results & Methods
-Stage 2.5: integrity verification (mandatory gate — references, claims, originality)
-           + compliance check (Schema 19, PRISMA-trAIce + RAISE, v3.4.0+)
+Stage 2.5: integrity check (mandatory gate — references, claims, originality; integrity verification + PRISMA-trAIce + RAISE compliance check Schema 19, v3.4.0+)
 Stage 3:   academic-paper-reviewer (full/guided)
            ← sprint contract gate (Schema 20, v3.6.2+) for each reviewer call
   → Experiment Re-Entry Check: scan Revision Roadmap for requires_new_experiment items
@@ -188,7 +187,7 @@ Stage 3':  academic-paper-reviewer (re-review)
   → Experiment Re-Entry Check (last opportunity for experiments)
 Stage 1.5-R2: [EXPERIMENT RE-ENTRY 2 — conditional, final experiment opportunity]
 Stage 4':  academic-paper (re-revision, max 1 round)
-Stage 4.5: final integrity verification (mandatory, zero-tolerance) + final compliance check
+Stage 4.5: final integrity check (mandatory, zero-tolerance integrity verification + final compliance check)
 Stage 5:   academic-paper (format-convert → LaTeX/DOCX/PDF)
 Stage 6:   PROCESS SUMMARY (auto — bilingual paper creation record → PDF)
            + AI Self-Reflection Report (concession rate, health alerts, sycophancy risk)
@@ -221,7 +220,7 @@ Materials: Experiment Results (Schema 11) — APA-formatted statistics, tables, 
 ### lab-notebook → academic-paper
 Materials: Lab Record (Schema 12) — methods summary, file manifest, deviation log, completeness score
 
-### academic-paper → integrity verification (Stage 2.5 & 4.5)
+### academic-paper → integrity check (Stage 2.5) and final integrity check (Stage 4.5)
 Materials: Complete paper draft (Schema 4). Integrity agent checks references, citation context, data, originality, claims. Produces Integrity Report (Schema 5) with PASS/PASS_WITH_CONDITIONS/FAIL verdict. compliance_agent (v3.4.0+) emits Schema 19 compliance_report appended to passport's `compliance_history[]`.
 
 ### orchestrator → reviewer / writer / evaluator
@@ -233,6 +232,7 @@ Run `python tools/self_test.py` to validate plugin structural integrity (196+ ch
 
 ## Version Info
 - **Version**: 3.16.0
+- **Suite version**: 3.16.0
 - **Last Updated**: 2026-05-15
 - **Author**: Pouria Mortezaagha
 - **Upstream**: Imbad0202 (merged through v3.7.3)

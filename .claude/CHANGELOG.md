@@ -2,6 +2,34 @@
 
 Cross-skill fixes and update history.
 
+> **Schema renumbering note (fork v3.16.0, 2026-05-15):** entries below referencing upstream **Schema 12** (compliance_report) and **Schema 13** / **Schema 13.1** (sprint_contract) are now **Schema 19** and **Schema 20** / **Schema 20.1** in fork v3.16.0+ to avoid collision with fork's Schema 12 (Lab Record) and Schema 13 (Simulation Specification). Historical text preserved for upstream traceability.
+
+---
+
+## 2026-05-15
+
+### v3.16.0 — Upstream Merge: PRISMA-trAIce Compliance, Sprint Contract, Claim Faithfulness
+
+Merged upstream Imbad0202 commits v3.3.2 → v3.7.3 (145 commits, 519 files) into fork's v3.15.0 base. Resolved schema collisions by renumbering upstream Schema 12 (Compliance Report) → Schema 19 and Schema 13/13.1 (Sprint Contract) → Schema 20/20.1. Preserved fork's experiment Schemas 10–18 (Experiment Design / Experiment Results / Lab Record / Simulation Specification / Methodology Blueprint / INSIGHT / Concept Lineage / Style Profile / R&R Traceability Matrix). All active references (schema JSONs, SKILL.md, agent .md, validation tooling, architecture docs, performance docs) updated to new numbers. CHANGELOG historical entries preserved with header note.
+
+Adopted upstream features:
+- v3.3.2 data_access_level + task_type SKILL metadata
+- v3.3.5 benchmark_report schema + repro_lock passport block
+- v3.4.0 PRISMA-trAIce + RAISE compliance_agent (Schema 19) at Stage 2.5/4.5
+- v3.5.0 Collaboration Depth Observer (advisory)
+- v3.5.1 opt-in Socratic reading-check probe
+- v3.6.2 reviewer sprint contract hard gate (Schema 20)
+- v3.6.3 opt-in passport reset boundary + resume_from_passport mode
+- v3.6.4 literature_corpus[] passport input port + 3 reference adapters
+- v3.6.5 corpus-first consumer integration in bibliography + literature_strategist agents
+- v3.6.7 downstream-agent pattern protection (13/18 patterns hardened)
+- v3.6.8 generator-evaluator contract gate (Schema 20.1) inside academic-paper
+- v3.7.0 Claude Code plugin packaging (.claude-plugin/, commands/, agents/, hooks/, 10 ars-* slash commands, SessionStart announce hook)
+- v3.7.1–v3.7.2 trust-chain frontmatter + trust-provenance hardening
+- v3.7.3 three-layer citation locator + contaminated-source advisory signals
+
+Plugin manifest bumped to 3.16.0. self_test.py extended to recognize shared/agents/ files. 200/203 checks pass with 0 failures.
+
 ---
 
 ## 2026-04-11

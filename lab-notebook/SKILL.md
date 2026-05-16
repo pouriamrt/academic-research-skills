@@ -3,7 +3,16 @@ name: lab-notebook
 description: "Research record keeper — 4-agent team for rigorous experiment lifecycle documentation. 6 modes: full notebook creation, log entry, deviation recording, experiment snapshot, notebook export, and audit. Tracks experiment design, data collection, analysis, deviations, decisions, and file provenance with SHA-256 hashing. Produces Schema 12 (Lab Record) for downstream handoff to academic-paper. Triggers on: lab notebook, log experiment, record deviation, experiment log, track experiment, research record, audit notebook, export notebook, experiment snapshot, 實驗紀錄, 記錄偏差, 實驗日誌, 追蹤實驗, 研究紀錄, 審計紀錄, 匯出紀錄."
 metadata:
   version: "1.0"
-  last_updated: "2026-03-16"
+  last_updated: "2026-05-15"
+  status: active
+  data_access_level: verified_only
+  task_type: open-ended
+  related_skills:
+    - experiment-designer
+    - data-analyst
+    - simulation-runner
+    - academic-paper
+    - academic-pipeline
 ---
 
 # Lab Notebook — Research Record Keeper

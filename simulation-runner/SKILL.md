@@ -3,7 +3,16 @@ name: simulation-runner
 description: "Computational simulation agent team. 5-agent pipeline for designing and executing Monte Carlo simulations, bootstrap resampling, power simulations, parameter sweeps, agent-based models, and stochastic process simulations. 6 modes: full simulation pipeline, guided simulation design, quick single-run, power simulation, sensitivity analysis, and bootstrap resampling. Covers simulation design (ADEMP framework), model building, parallel execution with convergence monitoring, diagnostic assessment, and APA-formatted reporting with Schema 11 output. Triggers on: Monte Carlo, simulation, bootstrap, parameter sweep, sensitivity analysis, agent-based model, power simulation, simulate, computational experiment, stochastic, resampling, permutation test, 蒙地卡羅, 模擬, 拔靴法, 參數掃描, 敏感度分析, 代理人模型, 檢定力模擬, 計算實驗, 隨機過程, 重抽樣."
 metadata:
   version: "1.0"
-  last_updated: "2026-03-16"
+  last_updated: "2026-05-15"
+  status: active
+  data_access_level: redacted
+  task_type: open-ended
+  related_skills:
+    - experiment-designer
+    - data-analyst
+    - lab-notebook
+    - academic-paper
+    - academic-pipeline
 ---
 
 # Simulation Runner — Computational Experiment Agent Team

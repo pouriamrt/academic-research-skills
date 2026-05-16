@@ -3,7 +3,17 @@ name: experiment-designer
 description: "Experimental design agent team. 6-agent pipeline for rigorous experiment planning, power analysis, instrument development, randomization, and protocol compilation. 5 modes: full design, guided Socratic planning, quick design brief, power-only analysis, and instrument building. Covers experimental design selection (RCT, factorial, crossover, quasi-experimental, single-subject, correlational), power analysis with sample size calculation, survey and instrument construction, randomization scheme generation, threats to validity assessment, and SPIRIT/CONSORT-compliant protocol production. Triggers on: design experiment, experimental design, power analysis, sample size calculation, randomization, create survey, build instrument, write protocol, plan experiment, RCT design, factorial design, quasi-experimental design, crossover design, 實驗設計, 樣本數計算, 檢定力分析, 隨機分派, 設計問卷, 建立量表, 撰寫計畫書, 規劃實驗."
 metadata:
   version: "1.0"
-  last_updated: "2026-03-16"
+  last_updated: "2026-05-15"
+  status: active
+  data_access_level: redacted
+  task_type: open-ended
+  related_skills:
+    - deep-research
+    - data-analyst
+    - simulation-runner
+    - lab-notebook
+    - academic-paper
+    - academic-pipeline
 ---
 
 # Experiment Designer — Experimental Design Agent Team

@@ -61,7 +61,7 @@ def check_relative_markdown_links(rel_path: str) -> None:
 def check_mode_registry() -> None:
     rel_path = "MODE_REGISTRY.md"
     text = read(rel_path)
-    expect_contains(rel_path, "Last updated: v3.7.0 (2026-05-05)")
+    expect_contains(rel_path, "Last updated: v3.16.0 (2026-05-15)")
     for heading in (
         "## deep-research (7 modes)",
         "## academic-paper (10 modes)",
@@ -75,7 +75,7 @@ def check_claude_md() -> None:
     rel_path = ".claude/CLAUDE.md"
     expect_contains(rel_path, "integrity check (Stage 2.5)")
     expect_contains(rel_path, "final integrity check (Stage 4.5)")
-    expect_contains(rel_path, "**Suite version**: 3.7.0")
+    expect_contains(rel_path, "**Version**: 3.16.0")
     for forbidden in (
         "6th independent reviewer",
         "Peer review gains 6th independent reviewer",
@@ -136,8 +136,9 @@ def check_readme_sections() -> None:
     rel_path = "README.md"
     text = read(rel_path)
 
-    expect_contains(rel_path, "version-v3.7.0-blue")
-    expect_contains(rel_path, "releases/tag/v3.7.0")
+    expect_contains(rel_path, "version-v3.16.0-blue")
+    expect_contains(rel_path, "### v3.16.0 (2026-05-15)")
+    # Upstream historical entries preserved in fork README for traceability.
     expect_contains(rel_path, "### v3.7.0 (2026-05-05)")
     expect_contains(rel_path, "### v3.6.8 (2026-05-03)")
     expect_contains(rel_path, "### v3.6.7 (2026-04-30)")
@@ -157,10 +158,10 @@ def check_readme_sections() -> None:
         "#### Deep Research (7 modes)",
         "#### Academic Paper (10 modes)",
         "#### Academic Paper Reviewer (6 modes)",
-        "### Deep Research (v2.8)",
-        "### Academic Paper (v3.0)",
-        "### Academic Paper Reviewer (v1.8)",
-        "### Academic Pipeline (v3.7)",
+        "### Deep Research (v2.9.3)",
+        "### Academic Paper (v3.1.1)",
+        "### Academic Paper Reviewer (v1.9.0)",
+        "### Academic Pipeline (v3.7.0)",
     ):
         if heading not in text:
             fail(f"{rel_path}: missing heading {heading!r}")
@@ -203,8 +204,7 @@ def check_readme_zh_sections() -> None:
     rel_path = "README.zh-TW.md"
     text = read(rel_path)
 
-    expect_contains(rel_path, "version-v3.7.0-blue")
-    expect_contains(rel_path, "releases/tag/v3.7.0")
+    expect_contains(rel_path, "version-v3.16.0-blue")
     expect_contains(rel_path, "### v3.7.0（2026-05-05）")
     expect_contains(rel_path, "### v3.6.8（2026-05-03）")
     expect_contains(rel_path, "### v3.6.7（2026-04-30）")

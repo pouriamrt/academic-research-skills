@@ -2,7 +2,7 @@
 name: academic-pipeline
 description: "Orchestrator for the full academic research pipeline: research -> experiment (optional) -> write -> integrity check -> review -> revise -> re-review -> re-revise -> final integrity check -> finalize -> process summary. Coordinates deep-research, experiment-designer, data-analyst, simulation-runner, lab-notebook, academic-paper, and academic-paper-reviewer into a seamless workflow with auto-detected experiment stages, mandatory integrity verification, two-stage peer review, AI Research Failure Mode Checklist (Lu 2026), Score Trajectory tracking, Early-Stopping criterion, and reproducible quality gates. Triggers on: academic pipeline, research to paper, full paper workflow, paper pipeline, end-to-end paper, research-to-publication, complete paper workflow."
 metadata:
-  version: "3.7.0"
+  version: "3.16.0"
   last_updated: "2026-05-15"
   depends_on: "deep-research, experiment-designer, data-analyst, simulation-runner, lab-notebook, academic-paper, academic-paper-reviewer"
   status: active
@@ -18,7 +18,7 @@ metadata:
     - academic-paper-reviewer
 ---
 
-# Academic Pipeline v3.7.0 — Full Academic Research Workflow Orchestrator
+# Academic Pipeline v3.16.0 — Full Academic Research Workflow Orchestrator (suite-version-pinned)
 
 A lightweight orchestrator that manages the complete academic pipeline from research exploration to final manuscript. It does not perform substantive work — it only detects stages, recommends modes, dispatches skills, manages transitions, and tracks state.
 
@@ -959,7 +959,7 @@ Stage 5: academic-paper (format-convert mode)
 
 | Item | Content |
 |------|---------|
-| Skill Version | 3.7.0 |
+| Skill Version | 3.16.0 |
 | Last Updated | 2026-05-15 |
 | Maintainer | Pouria Mortezaagha (fork) / Cheng-I Wu (upstream) |
 | Dependent Skills | deep-research v2.0+, experiment-designer v1.0+, data-analyst v1.0+, simulation-runner v1.0+, lab-notebook v1.0+, academic-paper v2.0+, academic-paper-reviewer v1.1+ |

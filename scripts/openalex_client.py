@@ -9,6 +9,7 @@ title cross-check (DOI_MISMATCH pattern), title-similarity fallback,
 """
 from __future__ import annotations
 
+import http.client
 import json
 import os
 import string
@@ -82,7 +83,29 @@ class OpenAlexClient:
         for attempt in range(_MAX_RETRIES + 1):
             try:
                 with urllib.request.urlopen(req, timeout=30) as resp:
-                    return json.loads(resp.read().decode("utf-8"))
+                    # Wrap response body read + decode + parse in a narrow
+                    # except so transient socket drops mid-stream, garbled
+                    # bodies, or HTML error pages slipped through with 200
+                    # status surface as OpenAlexUnavailable — honoring the
+                    # v3.9.0 spec §3.7 per-API degradation contract (one
+                    # transient failure must drop only openalex_unmatched,
+                    # not abort the whole backfill).
+                    try:
+                        body = resp.read()
+                        return json.loads(body.decode("utf-8"))
+                    except (
+                        OSError,
+                        http.client.HTTPException,
+                        UnicodeDecodeError,
+                        json.JSONDecodeError,
+                    ) as e:
+                        # http.client.HTTPException covers IncompleteRead
+                        # (truncated body — canonical mid-stream socket drop)
+                        # which inherits HTTPException, not OSError. Codex
+                        # review v3.9.1 R1 P2.
+                        raise OpenAlexUnavailable(
+                            f"OpenAlex response read/parse failed: {e}"
+                        ) from e
             except urllib.error.HTTPError as e:
                 if e.code == 404:
                     return {}

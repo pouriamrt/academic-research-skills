@@ -63,6 +63,10 @@ ANNOTATION_LOW_WARN_UNVERIFIED = (
     "[CLAIM-AUDIT-UNVERIFIED — REFERENCE FULL-TEXT NOT RETRIEVABLE]"
 )
 ANNOTATION_MED_WARN_TOOL_FAILURE = "[CLAIM-AUDIT-TOOL-FAILURE — {fault_class}]"
+# v3.8.2 / #118 — UAF aggregate annotation. Same fault-class enum as the
+# cited-path INV-14 row but routed through `uncited_audit_failures[]`
+# because claim_audit_result.ref_slug is required.
+ANNOTATION_MED_WARN_TOOL_FAILURE_UNCITED = "[CLAIM-AUDIT-TOOL-FAILURE-UNCITED — {fault_class}]"
 
 ANNOTATION_UNCITED_ASSERTION = "[UNCITED-ASSERTION]"
 ANNOTATION_HIGH_WARN_CONSTRAINT_VIOLATION_UNCITED = (
@@ -243,6 +247,30 @@ def classify_claim_drift(entry: dict[str, Any]) -> dict[str, Any]:
     }
 
 
+def classify_uncited_audit_failure(entry: dict[str, Any]) -> dict[str, Any]:
+    """MED-WARN advisory for uncited-path judge outage (v3.8.2 / #118).
+
+    Mirrors INV-14 semantics on the uncited path: emits
+    `[CLAIM-AUDIT-TOOL-FAILURE-UNCITED — <fault-class>]` next to the
+    offending sentence. Gate passes — retry-next-pass remediation.
+    UAF-INV-5 (lint) guarantees `fault_class` is one of the seven
+    INV14_FAULT_CLASS_TAGS values; we surface the row's literal here.
+
+    The `or "?"` fallback covers both missing-key (KeyError equivalent)
+    and explicit-null (`"fault_class": null`) cases — without it a
+    malformed row with explicit null would render as `[...— None]`
+    (Gemini R2 P3, 2026-05-17). Schema validation rejects either form,
+    but a defensive renderer is one less thing to think about.
+    """
+    return {
+        "annotation": ANNOTATION_MED_WARN_TOOL_FAILURE_UNCITED.format(
+            fault_class=entry.get("fault_class") or "?",
+        ),
+        "tier": TIER_MED_WARN,
+        "gate_refuse": False,
+    }
+
+
 def classify_audit_sampling_summary(entry: dict[str, Any]) -> dict[str, Any]:
     """Paper-level LOW-WARN annotation when audited_count < total_citation_count (S-INV-3)."""
     if entry["audited_count"] >= entry["total_citation_count"]:
@@ -275,6 +303,15 @@ def apply_finalizer(passport: dict[str, list[dict[str, Any]]]) -> dict[str, Any]
         ("uncited_assertions", classify_uncited_assertion),
         ("constraint_violations", classify_constraint_violation),
         ("claim_drifts", classify_claim_drift),
+        # v3.8.2 / #118 — UAF aggregate routes to MED-WARN advisory.
+        # Placed BEFORE audit_sampling_summaries so sentence-level
+        # annotations group with the other line-item checks; the
+        # paper-level sampling summary belongs at the tail (Gemini R2
+        # P3, 2026-05-17). Without this entry, the schema/lint accept
+        # UAF rows but the finalizer never surfaces them and the
+        # formatter never sees the [CLAIM-AUDIT-TOOL-FAILURE-UNCITED — ...]
+        # annotation (Codex R1 P2-1, 2026-05-17).
+        ("uncited_audit_failures", classify_uncited_audit_failure),
         ("audit_sampling_summaries", classify_audit_sampling_summary),
     )
 

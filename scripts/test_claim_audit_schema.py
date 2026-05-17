@@ -1011,6 +1011,65 @@ class TSCVConstraintViolationInvariants(_LintTestBase):
 
 
 # ---------------------------------------------------------------------------
+# Step 13 R8 codex P2-1 — CV-INV-4 dedupe key extension. Two manifests in
+# the same passport can carry colliding MNC-* / NC-* ids; the same sentence
+# text may legitimately violate both. The pre-fix dedupe key
+# (section_path, claim_text_hash, violated_constraint_id) false-positives
+# these as duplicates. Extend the key to scope by manifest_id as well.
+# ---------------------------------------------------------------------------
+
+
+class TSCVDedupeManifestScope(_LintTestBase):
+    """T-SCV-DEDUPE: CV-INV-4 dedupe must scope by scoped_manifest_id."""
+
+    def _two_manifests_with_colliding_mnc(self) -> list[dict[str, Any]]:
+        # Two manifests each carrying the SAME constraint_id "MNC-1" but
+        # bound to different manifests (M-INV-4 permits — manifest_id is
+        # the joinable scope). Schema requires claims[] non-empty so we
+        # add a minimal claim to each manifest; the claim itself is not
+        # under test.
+        return [
+            manifest_entry(
+                manifest_id=MANIFEST_ID,
+                mncs=[{"constraint_id": "MNC-1", "rule": "No comparative claim."}],
+            ),
+            manifest_entry(
+                manifest_id=MANIFEST_ID_OTHER,
+                mncs=[{"constraint_id": "MNC-1", "rule": "No temporal claim."}],
+            ),
+        ]
+
+    def test_same_constraint_id_across_manifests_not_deduped(self) -> None:
+        # Two CV rows on the same sentence text + same constraint_id (MNC-1)
+        # but DIFFERENT scoped_manifest_id. Legitimate per M-INV-4 +
+        # manifest_negative_constraints scoping — dedupe must keep both.
+        a = constraint_violation_entry(constraint_id="MNC-1")
+        a["scoped_manifest_id"] = MANIFEST_ID
+        b = constraint_violation_entry(constraint_id="MNC-1")
+        b["finding_id"] = "CV-002"
+        b["scoped_manifest_id"] = MANIFEST_ID_OTHER
+        passport = build_passport(
+            manifests=self._two_manifests_with_colliding_mnc(),
+            violations=[a, b],
+        )
+        # Pre-fix: CV-INV-4 false-positives → lint reports CV-INV-4 line.
+        # Post-fix: lint MUST NOT fire CV-INV-4 on cross-manifest collision.
+        self.assertLintClean(passport)
+
+    def test_same_constraint_id_same_manifest_still_deduped(self) -> None:
+        # Negative test: dedupe still catches true within-manifest duplicates.
+        a = constraint_violation_entry(constraint_id="MNC-1")
+        b = constraint_violation_entry(constraint_id="MNC-1")
+        b["finding_id"] = "CV-002"
+        # Both rows reference the same manifest_id (default MANIFEST_ID).
+        passport = build_passport(
+            manifests=[self._two_manifests_with_colliding_mnc()[0]],  # single manifest
+            violations=[a, b],
+        )
+        self.assertLintFinds(passport, invariant="CV-INV-4")
+
+
+# ---------------------------------------------------------------------------
 # Spec §6.4c — S-INV-1..S-INV-4 audit_sampling_summary invariants.
 # ---------------------------------------------------------------------------
 
@@ -1128,6 +1187,143 @@ class TS9MalformedPassportGuard(_LintTestBase):
                 )
                 self.assertIn("schema", out, msg=f"expected schema finding for malformed={malformed!r}:\n{out}")
                 self.assertNotIn("Traceback", err, msg=f"lint must not raise for malformed={malformed!r}:\n{err}")
+
+    # Step 13 R6 codex P2 + R8 P2-2 — nested schema-invalid shapes must not
+    # crash the cross-field invariant walkers. Schema validator records the
+    # finding; the invariant helpers then iterate the malformed nested shape
+    # and previously hit TypeError/AttributeError. Issue #119 + #120 P2-2.
+
+    def test_manifest_claims_as_string_does_not_crash_invariant_walker(self) -> None:
+        # #119 + #120 P2-2: claim_intent_manifests[0].claims is a string,
+        # not a list. Schema validator records the finding; the cross-field
+        # invariant walker (M-INV-1..M-INV-4) must NOT iterate the string
+        # and crash. Expect clean exit=1 with schema finding, no traceback.
+        body = build_passport()
+        body["claim_intent_manifests"][0]["claims"] = "should be a list"
+        path = write_passport(self.tmp, body)
+        code, out, err = run_lint(path)
+        self.assertEqual(code, 1, msg=f"expected exit=1; got {code}\nstderr:\n{err}")
+        self.assertNotIn("Traceback", err, msg=f"lint must not crash on nested string:\n{err}")
+        self.assertIn("schema", out, msg=f"expected schema finding:\n{out}")
+
+    def test_manifest_claim_with_non_string_claim_id_does_not_crash(self) -> None:
+        # #119: manifest.claims[].claim_id is a non-string. Schema records
+        # the type mismatch; invariant walker must skip this manifest's
+        # cross-field checks instead of crashing on .get() / regex match.
+        body = build_passport()
+        body["claim_intent_manifests"][0]["claims"][0]["claim_id"] = 42
+        path = write_passport(self.tmp, body)
+        code, out, err = run_lint(path)
+        self.assertEqual(code, 1, msg=f"expected exit=1; got {code}\nstderr:\n{err}")
+        self.assertNotIn("Traceback", err, msg=f"lint must not crash on non-string claim_id:\n{err}")
+        self.assertIn("schema", out, msg=f"expected schema finding:\n{out}")
+
+    def test_audited_indices_mixed_types_does_not_crash_sampling_walker(self) -> None:
+        # #119: audit_sampling_summaries[].audited_indices contains mixed
+        # str/int types. Schema records the type mismatch; S-INV-4 walker
+        # (indices[i] <= indices[i-1]) must skip instead of raising
+        # TypeError on '<=' between str and int.
+        body = build_passport()
+        body["audit_sampling_summaries"] = [{
+            "audit_run_id": AUDIT_RUN_ID,
+            "max_claims_per_paper": 10,
+            "total_citation_count": 5,
+            "audited_count": 2,
+            "audited_indices": ["a", 1],
+            "sampling_strategy": "stratified_buckets_v1",
+            "emitted_at": "2026-05-15T10:15:00Z",
+        }]
+        path = write_passport(self.tmp, body)
+        code, out, err = run_lint(path)
+        self.assertEqual(code, 1, msg=f"expected exit=1; got {code}\nstderr:\n{err}")
+        self.assertNotIn("Traceback", err, msg=f"lint must not crash on mixed-type indices:\n{err}")
+        self.assertIn("schema", out, msg=f"expected schema finding:\n{out}")
+
+    # v3.8.1 Round 2 codex review P2 + adjacent unhashable-id surfaces.
+    # Schema validator records the type mismatch separately; uniqueness loops
+    # and dedupe key construction must not crash on unhashable nested ids.
+
+    def test_unhashable_claim_id_does_not_crash_m_inv_1(self) -> None:
+        # codex round 2 P2: claim.get("claim_id") returns a list/dict
+        # (unhashable). M-INV-1 uniqueness `cid in claim_ids` crashes with
+        # TypeError. Schema records the type mismatch but the invariant walker
+        # still raises, masking the schema findings.
+        body = build_passport()
+        body["claim_intent_manifests"][0]["claims"][0]["claim_id"] = ["bad", "type"]
+        path = write_passport(self.tmp, body)
+        code, out, err = run_lint(path)
+        self.assertEqual(code, 1, msg=f"expected exit=1; got {code}\nstderr:\n{err}")
+        self.assertNotIn("Traceback", err, msg=f"lint must not crash on unhashable claim_id:\n{err}")
+        self.assertIn("schema", out, msg=f"expected schema finding:\n{out}")
+
+    def test_unhashable_finding_id_does_not_crash_cv_inv_1(self) -> None:
+        # CV-INV-1 finding_id uniqueness `fid in seen` crashes when finding_id
+        # is a list / dict (schema-invalid). Same surface class as the M-INV-1
+        # case codex flagged; included for parity coverage across all four
+        # finding_id uniqueness sites (M-INV-4 / U-INV-1 / D-INV-1 / CV-INV-1).
+        body = build_passport()
+        body["constraint_violations"] = [
+            {
+                "finding_id": ["unhashable"],
+                "claim_text": "x",
+                "section_path": "Results > Findings",
+                "violated_constraint_id": "MNC-1",
+                "scoped_manifest_id": MANIFEST_ID,
+                "manifest_claim_id": None,
+                "judge_verdict": "VIOLATED",
+                "rationale": "rationale",
+                "judge_model": "gpt-5.5-xhigh",
+                "judge_run_at": "2026-05-15T10:14:00Z",
+                "rule_version": "D4-a-v1",
+            }
+        ]
+        path = write_passport(self.tmp, body)
+        code, out, err = run_lint(path)
+        self.assertEqual(code, 1, msg=f"expected exit=1; got {code}\nstderr:\n{err}")
+        self.assertNotIn("Traceback", err, msg=f"lint must not crash on unhashable finding_id:\n{err}")
+        self.assertIn("schema", out, msg=f"expected schema finding:\n{out}")
+
+    def test_unhashable_mnc_constraint_id_does_not_crash_m_inv_3(self) -> None:
+        # codex round 3 P2: manifest_negative_constraints[].constraint_id as
+        # list/dict crashes the `mnc_ids = {nc.get("constraint_id") for ...}`
+        # set comprehension when the implementation builds an (unused) set.
+        # Schema records the type mismatch but the lint still raises.
+        body = build_passport()
+        body["claim_intent_manifests"][0]["manifest_negative_constraints"] = [
+            {"constraint_id": ["unhashable"], "rule": "bad"}
+        ]
+        path = write_passport(self.tmp, body)
+        code, out, err = run_lint(path)
+        self.assertEqual(code, 1, msg=f"expected exit=1; got {code}\nstderr:\n{err}")
+        self.assertNotIn("Traceback", err, msg=f"lint must not crash on unhashable MNC constraint_id:\n{err}")
+        self.assertIn("schema", out, msg=f"expected schema finding:\n{out}")
+
+    def test_non_string_claim_text_does_not_crash_cv_inv_4_dedupe(self) -> None:
+        # CV-INV-4 dedupe key constructs hashlib.sha256((claim_text or "").encode())
+        # — if claim_text is a list / dict / int (schema-invalid), the `or ""`
+        # idiom passes the non-string through and .encode() raises AttributeError.
+        # Codex round 2 adversarial probing surfaced this same class.
+        body = build_passport()
+        body["constraint_violations"] = [
+            {
+                "finding_id": "CV-001",
+                "claim_text": ["not", "a", "string"],
+                "section_path": "Results > Findings",
+                "violated_constraint_id": "MNC-1",
+                "scoped_manifest_id": MANIFEST_ID,
+                "manifest_claim_id": None,
+                "judge_verdict": "VIOLATED",
+                "rationale": "rationale",
+                "judge_model": "gpt-5.5-xhigh",
+                "judge_run_at": "2026-05-15T10:14:00Z",
+                "rule_version": "D4-a-v1",
+            }
+        ]
+        path = write_passport(self.tmp, body)
+        code, out, err = run_lint(path)
+        self.assertEqual(code, 1, msg=f"expected exit=1; got {code}\nstderr:\n{err}")
+        self.assertNotIn("Traceback", err, msg=f"lint must not crash on non-string claim_text:\n{err}")
+        self.assertIn("schema", out, msg=f"expected schema finding:\n{out}")
 
 
 if __name__ == "__main__":

@@ -209,6 +209,9 @@ def check_readme_sections() -> None:
     check_relative_markdown_links(rel_path)
 
 
+# v3.17.0: check_readme_zh_sections removed — README.zh-TW.md deleted in fork.
+
+
 def check_setup_docs() -> None:
     expect_contains("docs/SETUP.md", "Direct `.docx` generation uses [Pandoc]")
     expect_contains(

@@ -195,6 +195,15 @@ def _validate_judge_dict(
             f"{source} returned dict missing required key(s); got keys={sorted(result)}",
         )
     judgment = result.get("judgment")
+    # Step 13 R8 codex P2-3: guard isinstance(str) before set membership so a
+    # malformed return like {"judgment": [1, 2], ...} surfaces as a clean
+    # judge_parse_error instead of bubbling TypeError("unhashable type") out
+    # past the translation boundary and aborting the audit.
+    if not isinstance(judgment, str):
+        raise JudgeInvocationError(
+            "judge_parse_error",
+            f"{source} returned non-string judgment={judgment!r} (type={type(judgment).__name__}); expected one of {sorted(allowed_judgments)}",
+        )
     if judgment not in allowed_judgments:
         raise JudgeInvocationError(
             "judge_parse_error",
@@ -308,6 +317,16 @@ def _invoke_retrieve(
         raise RetrievalInvocationError(
             "retrieval_api_error",
             f"retrieve_fn return missing ref_retrieval_method; got keys={sorted(result)}",
+        )
+    # Step 13 R8 codex P2-4: guard isinstance(str) before set membership so a
+    # malformed return like {"ref_retrieval_method": [...], ...} surfaces as a
+    # clean retrieval_api_error instead of bubbling TypeError("unhashable type")
+    # out past the translation boundary and aborting the audit (symmetric to
+    # P2-3 on the judge side).
+    if not isinstance(method, str):
+        raise RetrievalInvocationError(
+            "retrieval_api_error",
+            f"retrieve_fn returned non-string ref_retrieval_method={method!r} (type={type(method).__name__})",
         )
     if method not in {"api", "manual_pdf", "failed", "not_found", "audit_tool_failure"}:
         raise RetrievalInvocationError(

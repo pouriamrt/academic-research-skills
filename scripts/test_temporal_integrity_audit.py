@@ -328,3 +328,111 @@ def test_freeze_regression_byte_identical_across_dates(tmp_path):
         )
         assert result.returncode == 0, f"stderr={result.stderr}"
     assert out1.read_bytes() == out2.read_bytes(), "byte-identical regression failed"
+
+
+# v3.9.4.1 hotfix: _date_to_interval coverage for all schema-valid shapes
+import importlib.util
+
+_AUDIT_SPEC = importlib.util.spec_from_file_location(
+    "temporal_integrity_audit", REPO_ROOT / "scripts/temporal_integrity_audit.py"
+)
+_audit_mod = importlib.util.module_from_spec(_AUDIT_SPEC)
+_AUDIT_SPEC.loader.exec_module(_audit_mod)
+
+
+@pytest.mark.parametrize("raw,expected", [
+    # Day precision (already worked in v3.9.4)
+    ("2024-09-15", ("2024-09-15", "2024-09-15")),
+    # Year precision (already worked in v3.9.4)
+    ("2024", ("2024-01-01", "2024-12-31")),
+    # Prose month (already worked in v3.9.4)
+    ("March 2025", ("2025-03-01", "2025-03-31")),
+    # v3.9.4.1 hotfix: month precision YYYY-MM
+    ("2024-09", ("2024-09-01", "2024-09-30")),
+    ("2024-02", ("2024-02-01", "2024-02-28")),
+    ("2024-12", ("2024-12-01", "2024-12-31")),
+    # v3.9.4.1 hotfix: interval precision YYYY-MM-DD..YYYY-MM-DD
+    ("2022-04-01..2022-12-31", ("2022-04-01", "2022-12-31")),
+    ("2020-10-01..2024-09-30", ("2020-10-01", "2024-09-30")),
+])
+def test_date_to_interval_parses_all_schema_valid_shapes(raw, expected):
+    """v3.9.4.1 hotfix: verifier handles all 5 v3.9.4 schema date shapes.
+
+    v3.9.4 only parsed day/year/prose-month — schema-valid month (YYYY-MM)
+    and interval (YYYY-MM-DD..YYYY-MM-DD) shapes raised ValueError, causing
+    P2/P4 to silently skip checks. Real-world Crossref returns month precision;
+    real-world effective_date_range uses interval. This test locks the fix."""
+    assert _audit_mod._date_to_interval(raw) == expected
+
+
+def test_date_to_interval_rejects_invalid_month():
+    """Defensive: YYYY-13 (month > 12) should raise, not produce garbage."""
+    with pytest.raises(ValueError):
+        _audit_mod._date_to_interval("2024-13")
+
+
+def test_p2_provenance_low_emits_metadata_missing_skips_anachronism(tmp_path):
+    """v3.9.4.1 fix #1: P2 must consult citation_provenance and emit METADATA-MISSING
+    (not ANACHRONISTIC-CITATION) when confidence is low — spec §3.4 first-party safety check."""
+    # Even though timeline says handbook-2026ed is way in the future, citation_provenance
+    # confidence:low must downgrade to METADATA-MISSING instead of anachronism finding.
+    timeline = {
+        "schema_version": "1.0",
+        "sources": [{
+            "citation_key": "handbook-2026ed",
+            "type": "institutional-document",
+            "effective_date_range": {
+                "start": {"value": "2026-09-15", "precision": "day", "open_ended": False,
+                          "provenance": {"method": "crossref_lookup", "confidence": "high"}},
+                "end": {"value": None, "precision": "unknown", "open_ended": True,
+                        "provenance": {"method": "user_override", "confidence": "high"}},
+            },
+        }],
+        "events": [],
+    }
+    citation_provenance = {
+        "schema_version": "1.0",
+        "audit_run_id": "2026-05-19T00:00:00Z-test",
+        "entries": [{
+            "citation_key": "handbook-2026ed",
+            "crossref_issued": None,
+            "pdftotext_cover_first_line": None,
+            "verification_method": "none",
+            "confidence": "low",
+            "notes": None,
+        }],
+    }
+    result = _run_audit(
+        tmp_path,
+        draft="The 2026 Handbook governed the 2022 review cycle.<!--ref:handbook-2026ed-->\n",
+        timeline=timeline,
+        citation_provenance=citation_provenance,
+    )
+    # No anachronism findings (the v3.9.4 silent-bypass bug would have emitted one).
+    anachronism = [f for f in result["findings"] if f["finding_kind"] == "TEMPORAL-ANACHRONISTIC-CITATION"]
+    assert anachronism == [], f"v3.9.4.1 fix #1 broken — anachronism emitted despite confidence:low: {anachronism}"
+    # Exactly one METADATA-MISSING citing the provenance reason.
+    metadata_missing = [f for f in result["findings"]
+                        if f["finding_kind"] == "TEMPORAL-METADATA-MISSING"
+                        and "confidence=low" in f.get("rationale", "")]
+    assert len(metadata_missing) == 1, f"expected 1 METADATA-MISSING with provenance reason; got {result['findings']}"
+
+
+def test_p4_direct_date_causal_inversion_no_refs(tmp_path):
+    """v3.9.4.1 fix #3: P4 must bind to direct date captures when ref markers absent
+    (spec §3.2 P4: each side may bind to ref marker OR direct date capture)."""
+    # No ref markers; both sides are bare dates. "enabled" requires left.date < right.date.
+    # Here left=2026 right=2020 → violation.
+    result = _run_audit(
+        tmp_path,
+        draft="The 2026 policy enabled the 2020 rollout.\n",
+        timeline={"schema_version": "1.0", "sources": [], "events": []},
+    )
+    causal = [f for f in result["findings"] if f["finding_kind"] == "TEMPORAL-CAUSAL-INVERSION"]
+    assert len(causal) == 1, f"expected 1 causal inversion via direct date binding; got {result['findings']}"
+    f0 = causal[0]
+    assert f0["bound_dates"] is not None
+    assert f0["bound_dates"]["left"]["source"] == "draft_capture"
+    assert f0["bound_dates"]["right"]["source"] == "draft_capture"
+    # bound_refs should be empty (no slugs bound).
+    assert f0["bound_refs"] == []

@@ -569,6 +569,8 @@ See `agents/intake_agent.md` for the complete field definitions of the Phase 0 c
 | visualization_agent | `agents/visualization_agent.md` |
 | revision_coach_agent | `agents/revision_coach_agent.md` |
 
+**Examples** (in `examples/`): includes `clinical_citation_verification_checklist` (added v3.10 upstream — domain-aware citation verification for clinical/medical references).
+
 ---
 
 ## Reference Files

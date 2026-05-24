@@ -423,7 +423,7 @@ Four experiment skills (22 agents total) auto-detected from the methodology blue
 
 **Optional cross-model verification:** set `ARS_CROSS_MODEL` to use GPT-5.4 Pro or Gemini 3.1 Pro as an independent second reviewer.
 
-### Academic Pipeline (v3.17.0; suite-version-pinned, auto-by-default)
+### Academic Pipeline (v3.18.0; suite-version-pinned, auto-by-default)
 
 Pipeline orchestrator with integrity verification, compliance, sprint-contract gates, two-stage review, experiment re-entry, Socratic coaching, passport reset boundary, and collaboration evaluation:
 

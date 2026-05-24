@@ -6,6 +6,49 @@ All notable changes to this project will be documented in this file.
 >
 > **Bilingual / Traditional Chinese support removed in v3.17.0 (2026-05-15).** Historical entries below that describe `abstract_bilingual_agent`, `apa7_chinese_citation_guide.md`, `bilingual_abstract_template.md`, `chinese_paper_example.md`, `README.zh-TW.md`, `docs/SETUP.zh-TW.md`, `docs/PERFORMANCE.zh-TW.md`, or any "繁體中文" / "zh-TW" trigger keywords describe state that no longer exists in the codebase. They are preserved as-is for historical traceability.
 
+## [3.18.0] — 2026-05-23 — Upstream sync: v3.8.0 → v3.10 (claim faithfulness audit + temporal verification + deterministic dispatch)
+
+Merges 34 upstream commits from Imbad0202 v3.7.3 → v3.10 (PRs #103/#118/#119/#120/#126/#129/#130/#133/#135/#139/#141/#145/#149/#153/#155-#158/#167-#177/#180/#190-#196/#225/#226/#228/#232/#233/#235/#236/#238) onto the fork's v3.17.0 auto-by-default + English-only baseline. Bilingual additions from upstream (README.zh-CN.md #181, README.ja-JP.md #161/#162) are NOT merged — fork remains English-only. v3.10 spec text is integrated; v3.10 active-conductor implementation (#198) remains design-only per upstream status.
+
+**New agent + opt-in faithfulness gate (#103, v3.8):**
+- New `claim_ref_alignment_audit_agent` in `academic-pipeline/agents/` — opt-in (`ARS_CLAIM_AUDIT=1`, default OFF) L3 claim ↔ reference faithfulness auditor dispatched between v3.7.1 cite-time finalizer and `formatter_agent` terminal gate. Emits 5 new passport aggregates: `claim_audit_results[]`, `claim_intent_manifests[]`, `claim_drift[]`, `uncited_assertions[]`, `constraint_violations[]`. 5 new HIGH-WARN annotation classes plumbed through `formatter_agent` REFUSE list.
+- 5 new schemas under `shared/contracts/passport/`: `claim_audit_result`, `claim_intent_manifest`, `claim_drift`, `uncited_assertion`, `constraint_violation`. Cross-field invariants INV-1..INV-18 / M-INV-1..M-INV-4 / U-INV-1..U-INV-4 / D-INV-1..D-INV-4 / CV-INV-1..CV-INV-4 lint-enforced by `scripts/check_claim_audit_consistency.py`.
+- New scripts: `claim_audit_pipeline.py`, `claim_audit_finalizer.py`, `claim_audit_calibration.py`, `uncited_assertion_detector.py`, `_claim_audit_constants.py`.
+- **Pipeline agent count grows 4 → 5 in-skill + 1 shared.** Updated `academic-pipeline/SKILL.md` Agent Team table.
+
+**v3.8.1 / v3.8.2 hardening:** defense-in-depth guards on schema-invalid nested shapes (#119/#120), CV-INV-4 dedupe scoped by `scoped_manifest_id`, judge/retrieve `isinstance(str)` guards before set-membership, uncited path NOT_VIOLATED swallow surfacing (#118 — new `uncited_audit_failure` schema).
+
+**v3.9.0 cross-index triangulation (#102):** measurement infrastructure for citation-graph cross-index consensus. New scripts: `crossref_client.py`, `openalex_client.py`, `_passport_yaml.py` (extracted), `_text_similarity.py` (extracted shared helpers from semantic_scholar/openalex/crossref clients), `migrate_literature_corpus_to_v3_9_0.py`.
+
+**v3.9.1-v3.9.3 client hardening (#129/#130/#133/#139):** wrap response-read failures with manifest_id guard; v3.9.2 Phase scope inflation hot-fix (Bucket A single-phase agents now carry `Phase Boundary` blocks restricting writes outside assigned phase — new `scripts/check_pipeline_integrity.py` advisory verifier; `scripts/check_v3_9_2_phase_boundary.py` enforcement); v3.9.3 housekeeping refactor extracting shared client utilities.
+
+**v3.9.4 temporal verification (#135):** end-of-pipeline temporal verification of date-bearing claims against a frozen reference date. Design spec at `docs/design/2026-05-18-ars-v3.9.4-temporal-verification-spec.md`; implementation under `tests/fixtures/v3.9.4-temporal/`. v3.9.4.1 hotfix (#145) + v3.9.4.2 hardening (#153/#155-#158) absorbed.
+
+**v3.10 spec amendments (#198, #233, #226, #232):** deterministic verification layer specs (`docs/design/2026-05-21-v3.10-182-promote-citation-gate-spec.md`, `2026-05-21-v3.10-183-epistemic-status-spec.md`, `2026-05-21-v3.10-184-extend-eval-harness-spec.md`) plus v3.10 amendment closing the fabrication bypass + 5 internal/cross-spec drift fixes. Active-conductor implementation deferred upstream.
+
+**New plugin commands (#190, #191, #193, #195, #196, #225):**
+- `/ars-mark-read` + `/ars-unmark-read` — user-facing affordance for the v3.6.8 human-read signal. `scripts/ars_mark_read.py` deterministic CLI; appends to `<passport-stem>_human_read_log.yaml`. `model: sonnet` routing. 14 unit tests + 6 lint tests. YAML loader fix (#196) replaces broken `json.load`.
+- `/ars-reviewer` — direct reviewer-mode trigger; sync to `hooks/announce-ars-loaded.sh`.
+- **Deterministic bash command dispatch (#225)** — replaces prose-based command dispatch with deterministic bash execution at `tests/test_mark_read_args.py`.
+
+**CI hardening (#149/#153/#156/#155/#158/#167/#168/#173/#175/#176/#177/#180):**
+- 7 release-cycle discipline gates added under `.github/workflows/` (`harness-retirement-monthly.yml`, `post-squash-review.yml`, `pr-closes-issue.yml`, `release-cooldown.yml`, `test-count-monotonic.yml`).
+- Unified pytest invocation manifest (`scripts/_ci_pytest_manifest.toml`, `scripts/run_ci_pytest_manifest.py`, `scripts/check_ci_pytest_manifest.py`).
+- root `conftest.py` to make `scripts/` collection import correctly.
+- 4-segment semver regex hardening on `scripts/check_version_consistency.py` (broad-capture-then-validate pattern).
+
+**Docs (#144/#235/#236/#238):** README v2.9.1 backfill, EMNLP disclosure URL fix, new `academic-paper/examples/clinical_citation_verification_checklist.md`, academic-paper examples inventory sync.
+
+**Conflict resolution notes:**
+- All bilingual upstream additions (`README.zh-CN.md` #181, `README.ja-JP.md` #161/#162, ja-JP needle coverage extensions in `scripts/check_spec_consistency.py` #170) were **dropped** to preserve the v3.17.0 English-only constraint.
+- Fork-priority docs (`.claude-plugin/plugin.json`, `.claude/CLAUDE.md`, `README.md`, `MODE_REGISTRY.md`, `academic-pipeline/SKILL.md`, `docs/ARCHITECTURE.md`, `scripts/check_spec_consistency.py`) kept fork v3.17.0 version strings during cherry-pick; lint string pins bumped to v3.18.0 in the version-sweep commit.
+- `academic-paper/SKILL.md` Agent Team table preserved at 11 agents (fork count); upstream's 12-agent inventory text dropped. Phase Boundary v3.9.2 blocks added alongside fork's existing protocols (not replacing).
+- d564d26 (upstream v3.8.0 release sweep) was **not** cherry-picked — pure docs/version sweep already superseded by fork v3.17.0 sweep.
+
+**Version bumps:**
+- `academic-pipeline` 3.17.0 → **3.18.0** (suite-pinned).
+- Other skill versions unchanged this cycle — substantive new content is plumbed through new files + opt-in flags, leaving public API stable.
+
 ## [3.17.0] — 2026-05-15 — Auto-by-default pipeline + bilingual purge (BREAKING)
 
 **Breaking changes:**
@@ -42,49 +85,6 @@ All notable changes to this project will be documented in this file.
 - `deep-research` 2.9.3 → **2.9.4** (auto-mode hook in `socratic_mentor_agent`; trigger keyword scrub).
 - `academic-paper-reviewer` 1.9.0 → **1.9.1** (auto-route verdict guarantee).
 - `experiment-designer`, `data-analyst`, `simulation-runner`, `lab-notebook` 1.0 → **1.0.1** (auto-mode override blocks + trigger keyword scrub).
-
-## [3.18.0] — 2026-05-23 — Upstream sync: v3.8.0 → v3.10 (claim faithfulness audit + temporal verification + deterministic dispatch)
-
-Merges 34 upstream commits from Imbad0202 v3.7.3 → v3.10 (PRs #103/#118/#119/#120/#126/#129/#130/#133/#135/#139/#141/#145/#149/#153/#155-#158/#167-#177/#180/#190-#196/#225/#226/#228/#232/#233/#235/#236/#238) onto the fork's v3.17.0 auto-by-default + English-only baseline. Bilingual additions from upstream (README.zh-CN.md #181, README.ja-JP.md #161/#162) are NOT merged — fork remains English-only. v3.10 spec text is integrated; v3.10 active-conductor implementation (#198) remains design-only per upstream status.
-
-**New agent + opt-in faithfulness gate (#103, v3.8):**
-- New `claim_ref_alignment_audit_agent` in `academic-pipeline/agents/` — opt-in (`ARS_CLAIM_AUDIT=1`, default OFF) L3 claim ↔ reference faithfulness auditor dispatched between v3.7.1 cite-time finalizer and `formatter_agent` terminal gate. Emits 5 new passport aggregates: `claim_audit_results[]`, `claim_intent_manifests[]`, `claim_drift[]`, `uncited_assertions[]`, `constraint_violations[]`. 5 new HIGH-WARN annotation classes plumbed through `formatter_agent` REFUSE list.
-- 5 new schemas under `shared/contracts/passport/`: `claim_audit_result`, `claim_intent_manifest`, `claim_drift`, `uncited_assertion`, `constraint_violation`. Cross-field invariants INV-1..INV-18 / M-INV-1..M-INV-4 / U-INV-1..U-INV-4 / D-INV-1..D-INV-4 / CV-INV-1..CV-INV-4 lint-enforced by `scripts/check_claim_audit_consistency.py`.
-- New scripts: `claim_audit_pipeline.py`, `claim_audit_finalizer.py`, `claim_audit_calibration.py`, `uncited_assertion_detector.py`, `_claim_audit_constants.py`.
-- **Pipeline agent count grows 4 → 5 in-skill + 1 shared.** Updated `academic-pipeline/SKILL.md` Agent Team table.
-
-**v3.8.1 / v3.8.2 hardening:** defense-in-depth guards on schema-invalid nested shapes (#119/#120), CV-INV-4 dedupe scoped by `scoped_manifest_id`, judge/retrieve `isinstance(str)` guards before set-membership, uncited path NOT_VIOLATED swallow surfacing (#118 — new `uncited_audit_failure` schema).
-
-**v3.9.0 cross-index triangulation (#102):** measurement infrastructure for citation-graph cross-index consensus. New scripts: `crossref_client.py`, `openalex_client.py`, `_passport_yaml.py` (extracted), `_text_similarity.py` (extracted shared helpers from semantic_scholar/openalex/crossref clients), `migrate_literature_corpus_to_v3_9_0.py`.
-
-**v3.9.1-v3.9.3 client hardening (#129/#130/#133/#139):** wrap response-read failures with manifest_id guard; v3.9.2 Phase scope inflation hot-fix (Bucket A single-phase agents now carry `Phase Boundary` blocks restricting writes outside assigned phase — new `scripts/check_pipeline_integrity.py` advisory verifier; `scripts/check_v3_9_2_phase_boundary.py` enforcement); v3.9.3 housekeeping refactor extracting shared client utilities.
-
-**v3.9.4 temporal verification (#135):** end-of-pipeline temporal verification of date-bearing claims against a frozen reference date. Design spec at `docs/design/2026-05-18-ars-v3.9.4-temporal-verification-spec.md`; implementation under `tests/fixtures/v3.9.4-temporal/`. v3.9.4.1 hotfix (#145) + v3.9.4.2 hardening (#153/#155-#158) absorbed.
-
-**v3.10 spec amendments (#198, #233, #226, #232):** deterministic verification layer specs (`docs/design/2026-05-21-v3.10-182-promote-citation-gate-spec.md`, `2026-05-21-v3.10-183-epistemic-status-spec.md`, `2026-05-21-v3.10-184-extend-eval-harness-spec.md`) plus v3.10 amendment closing the fabrication bypass + 5 internal/cross-spec drift fixes. Active-conductor implementation deferred upstream.
-
-**New plugin commands (#190, #191, #193, #195, #196, #225):**
-- `/ars-mark-read` + `/ars-unmark-read` — user-facing affordance for the v3.6.8 human-read signal. `scripts/ars_mark_read.py` deterministic CLI; appends to `<passport-stem>_human_read_log.yaml`. `model: sonnet` routing. 14 unit tests + 6 lint tests. YAML loader fix (#196) replaces broken `json.load`.
-- `/ars-reviewer` — direct reviewer-mode trigger; sync to `hooks/announce-ars-loaded.sh`.
-- **Deterministic bash command dispatch (#225)** — replaces prose-based command dispatch with deterministic bash execution at `tests/test_mark_read_args.py`.
-
-**CI hardening (#149/#153/#156/#155/#158/#167/#168/#173/#175/#176/#177/#180):**
-- 7 release-cycle discipline gates added under `.github/workflows/` (`harness-retirement-monthly.yml`, `post-squash-review.yml`, `pr-closes-issue.yml`, `release-cooldown.yml`, `test-count-monotonic.yml`).
-- Unified pytest invocation manifest (`scripts/_ci_pytest_manifest.toml`, `scripts/run_ci_pytest_manifest.py`, `scripts/check_ci_pytest_manifest.py`).
-- root `conftest.py` to make `scripts/` collection import correctly.
-- 4-segment semver regex hardening on `scripts/check_version_consistency.py` (broad-capture-then-validate pattern).
-
-**Docs (#144/#235/#236/#238):** README v2.9.1 backfill, EMNLP disclosure URL fix, new `academic-paper/examples/clinical_citation_verification_checklist.md`, academic-paper examples inventory sync.
-
-**Conflict resolution notes:**
-- All bilingual upstream additions (`README.zh-CN.md` #181, `README.ja-JP.md` #161/#162, ja-JP needle coverage extensions in `scripts/check_spec_consistency.py` #170) were **dropped** to preserve the v3.17.0 English-only constraint.
-- Fork-priority docs (`.claude-plugin/plugin.json`, `.claude/CLAUDE.md`, `README.md`, `MODE_REGISTRY.md`, `academic-pipeline/SKILL.md`, `docs/ARCHITECTURE.md`, `scripts/check_spec_consistency.py`) kept fork v3.17.0 version strings; upstream version bumps not propagated to these files.
-- `academic-paper/SKILL.md` Agent Team table preserved at 11 agents (fork count); upstream's 12-agent inventory text dropped. Phase Boundary v3.9.2 blocks added alongside fork's existing protocols (not replacing).
-- d564d26 (upstream v3.8.0 release sweep) was **not** cherry-picked — pure docs/version sweep already superseded by fork v3.17.0 sweep.
-
-**Version bumps:**
-- `academic-pipeline` 3.17.0 → **3.18.0** (suite-pinned).
-- Other skill versions unchanged this cycle — substantive new content is plumbed through new files + opt-in flags, leaving public API stable.
 
 ## [Unreleased]
 

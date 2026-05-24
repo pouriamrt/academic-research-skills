@@ -6,7 +6,7 @@ Classification: docs/design/2026-05-18-ars-v3.9.2-agent-phase-classification.md
 
 Enforces three invariants:
 
-1. **Bucket A coverage** — all 23 single-phase agents MUST carry a
+1. **Bucket A coverage** — all 22 single-phase agents MUST carry a
    `## Phase Boundary (v3.9.2)` or `## Phase Boundary (v3.9.4)` H2 block.
 
 2. **Bucket B/C/D exclusion** — all 16 multi-phase / phase-orthogonal /
@@ -41,7 +41,8 @@ from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 
-# Bucket A — 23 single-phase agents that MUST have Phase Boundary block.
+# Bucket A — 22 single-phase agents that MUST have Phase Boundary block.
+# (Fork v3.17.0: dropped abstract_bilingual_agent in English-only purge.)
 # Source: docs/design/2026-05-18-ars-v3.9.2-agent-phase-classification.md
 BUCKET_A_AGENTS = [
     # deep-research/agents/ (10)
@@ -60,7 +61,7 @@ BUCKET_A_AGENTS = [
     "academic-paper/agents/structure_architect_agent.md",
     "academic-paper/agents/draft_writer_agent.md",
     "academic-paper/agents/citation_compliance_agent.md",
-    "academic-paper/agents/abstract_bilingual_agent.md",
+    # v3.17.0 (fork): abstract_bilingual_agent.md deleted in English-only purge.
     "academic-paper/agents/peer_reviewer_agent.md",
     "academic-paper/agents/formatter_agent.md",
     # academic-paper-reviewer/agents/ (6)
@@ -193,10 +194,10 @@ def main() -> int:
         errors.extend(check_bucket_bcd(REPO_ROOT / rel_path))
 
     # Coverage sanity
-    if len(BUCKET_A_AGENTS) != 23:
+    if len(BUCKET_A_AGENTS) != 22:
         errors.append(
             f"BUCKET_A_AGENTS has {len(BUCKET_A_AGENTS)} entries but "
-            f"classification doc requires 23 (v3.9.4 added timeline_extraction_agent)"
+            f"classification doc requires 22 (fork v3.17.0 dropped abstract_bilingual_agent)"
         )
     if len(BUCKET_BCD_AGENTS) != 16:
         errors.append(

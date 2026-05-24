@@ -148,18 +148,27 @@ def _v3_6_7_base_commit() -> tuple[str | None, str | None]:
 def _detect_pr_base_ref() -> str | None:
     """Return a ref that names the PR's base for anti-self-baseline guard.
 
-    Order: $GITHUB_BASE_REF (CI fast path) → origin/<default-branch> (resolved
-    via the same ladder as the shallow-clone safety check). Returns None when
-    no remote / default branch is reachable (e.g. detached local check on a
-    fork without origin); callers treat that as "skip the guard, fall back to
-    derivation alone" — local-only attacks are out of scope (the user can see
-    their own diff).
+    Order: $GITHUB_BASE_REF (CI fast path) → fork/<default-branch> (fork-aware
+    local resolution; pouriamrt/academic-research-skills uses `fork` remote
+    pointing at the fork, `origin` pointing at upstream Imbad0202) →
+    origin/<default-branch> (canonical upstream-as-origin layout). Returns
+    None when no remote / default branch is reachable (e.g. detached local
+    check on a fork without origin); callers treat that as "skip the guard,
+    fall back to derivation alone" — local-only attacks are out of scope
+    (the user can see their own diff).
     """
     env_base = os.environ.get("GITHUB_BASE_REF")
     if env_base:
         return f"origin/{env_base}"
     default_branch, _ = _resolve_default_branch()
     if default_branch:
+        # Fork-aware: prefer fork remote when present. Fork layouts where
+        # origin = upstream and fork = self-fork would otherwise compare
+        # bytes against a much older upstream baseline and trip the
+        # history-shape anomaly path.
+        rc_fork, _, _ = _run_git(["rev-parse", "--verify", f"fork/{default_branch}"])
+        if rc_fork == 0:
+            return f"fork/{default_branch}"
         return f"origin/{default_branch}"
     return None
 
@@ -236,8 +245,12 @@ def _v3_6_7_manifest_unchanged_in_pr() -> tuple[bool, str | None]:
     # If `git log` somehow under-reports touches (e.g. a corrupted history
     # or a bug in the path filter), the byte comparison still catches the
     # final-state mismatch. This is the round-2 guard, kept as backstop.
+    #
+    # Read from disk to preserve PR-mutation detection, then normalize
+    # CRLF→LF so Windows core.autocrlf=true checkouts don't false-positive
+    # against the LF-normalized git blob from _read_blob_at_commit.
     head_path = REPO_ROOT / rel
-    head_bytes = head_path.read_bytes() if head_path.exists() else None
+    head_bytes = head_path.read_bytes().replace(b"\r\n", b"\n") if head_path.exists() else None
     base_bytes, err = _read_blob_at_commit(mb, rel)
     if err is not None:
         return False, (
@@ -885,7 +898,11 @@ def check_byte_equivalence(verbose: bool = True) -> int:
                 "file would re-open v3.6.7 convergence; restore the file)"
             )
             continue
-        head_bytes_full = head_path.read_bytes()
+        # Read from disk to preserve working-tree mutation detection
+        # (which the lint's test suite depends on), then normalize CRLF→LF
+        # so Windows core.autocrlf=true checkouts don't false-positive
+        # against the LF-normalized git blob at the v3.6.7 base commit.
+        head_bytes_full = head_path.read_bytes().replace(b"\r\n", b"\n")
         head_block = _extract_block_bytes(head_bytes_full)
         if head_block is None:
             failures.append(

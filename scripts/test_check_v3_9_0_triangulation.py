@@ -27,13 +27,13 @@ def test_lint_passes_on_clean_repo():
 def test_lint_detects_missing_allowlist_entry(tmp_path):
     """Remove CONTAMINATED-TRIANGULATION-UNMATCHED from formatter — lint fails."""
     formatter = REPO_ROOT / "academic-paper/agents/formatter_agent.md"
-    content = formatter.read_text()
+    content = formatter.read_text(encoding="utf-8")
     broken_content = content.replace(
         "`CONTAMINATED-TRIANGULATION-UNMATCHED`, ",
         "",
     )
     broken = tmp_path / "formatter_agent.md"
-    broken.write_text(broken_content)
+    broken.write_text(broken_content, encoding="utf-8")
     result = run_lint(["--formatter-path", str(broken)])
     assert result.returncode == 1
     assert "CONTAMINATED-TRIANGULATION-UNMATCHED" in result.stderr
@@ -42,13 +42,13 @@ def test_lint_detects_missing_allowlist_entry(tmp_path):
 def test_lint_detects_extra_allowlist_entry(tmp_path):
     """Add a non-spec CONTAMINATED-* token to formatter — lint fails."""
     formatter = REPO_ROOT / "academic-paper/agents/formatter_agent.md"
-    content = formatter.read_text()
+    content = formatter.read_text(encoding="utf-8")
     broken_content = content.replace(
         "`CONTAMINATED-PREPRINT`,",
         "`CONTAMINATED-PREPRINT`, `CONTAMINATED-FABRICATED`,",
     )
     broken = tmp_path / "formatter_agent.md"
-    broken.write_text(broken_content)
+    broken.write_text(broken_content, encoding="utf-8")
     result = run_lint(["--formatter-path", str(broken)])
     assert result.returncode == 1
     assert "CONTAMINATED-FABRICATED" in result.stderr
@@ -57,7 +57,7 @@ def test_lint_detects_extra_allowlist_entry(tmp_path):
 def test_lint_detects_refusal_list_contamination(tmp_path):
     """If CONTAMINATED-* appears in refusal rules, lint fails (R-L3-2-E guard)."""
     formatter = REPO_ROOT / "academic-paper/agents/formatter_agent.md"
-    content = formatter.read_text()
+    content = formatter.read_text(encoding="utf-8")
     # Inject a fake refusal rule containing CONTAMINATED-TRIANGULATION-UNMATCHED.
     # Use the unique first-refusal-rule text as anchor so we land inside
     # the refusal rules list, not in Core Principles (which also has "1. ").
@@ -67,7 +67,7 @@ def test_lint_detects_refusal_list_contamination(tmp_path):
         1,
     )
     broken = tmp_path / "formatter_agent.md"
-    broken.write_text(broken_content)
+    broken.write_text(broken_content, encoding="utf-8")
     result = run_lint(["--formatter-path", str(broken)])
     assert result.returncode == 1
     assert "refusal" in result.stderr.lower()
@@ -95,10 +95,10 @@ def test_rule1_all_markers_present_in_real_repo():
 def test_rule1_missing_marker_fails(tmp_path):
     """Rule 1: remove CONTAMINATED-PARTIAL-UNMATCH from orchestrator subsection — lint fails."""
     orch = REPO_ROOT / "academic-pipeline/agents/pipeline_orchestrator_agent.md"
-    content = orch.read_text()
+    content = orch.read_text(encoding="utf-8")
     broken = content.replace("`CONTAMINATED-PARTIAL-UNMATCH`", "`CONTAMINATED-XXX-PARTIAL`")
     p = tmp_path / "orch.md"
-    p.write_text(broken)
+    p.write_text(broken, encoding="utf-8")
     result = run_lint(["--orchestrator-path", str(p)])
     assert result.returncode == 1
     assert "rule 1" in result.stderr.lower() or "marker" in result.stderr.lower()
@@ -117,14 +117,14 @@ def test_rule2_preprint_order_correct_in_real_repo():
 def test_rule2_preprint_order_violated_fails(tmp_path):
     """Rule 2: inject CONTAMINATED-COVERAGE-NOISE+PREPRINT into orchestrator — lint fails."""
     orch = REPO_ROOT / "academic-pipeline/agents/pipeline_orchestrator_agent.md"
-    content = orch.read_text()
+    content = orch.read_text(encoding="utf-8")
     broken = content.replace(
         "## Cite-Time Provenance Finalizer — v3.9.0 extension",
         "## Cite-Time Provenance Finalizer — v3.9.0 extension\n\nFAKE: `CONTAMINATED-COVERAGE-NOISE+PREPRINT` violates order.\n",
         1,
     )
     p = tmp_path / "orch.md"
-    p.write_text(broken)
+    p.write_text(broken, encoding="utf-8")
     result = run_lint(["--orchestrator-path", str(p)])
     assert result.returncode == 1
     assert "rule 2" in result.stderr.lower() or "preprint" in result.stderr.lower()
@@ -143,14 +143,14 @@ def test_rule3_legacy_compat_preserved_in_real_repo():
 def test_rule3_legacy_compat_violated_fails(tmp_path):
     """Rule 3: change the legacy row's suffix to COVERAGE-NOISE — lint fails."""
     orch = REPO_ROOT / "academic-pipeline/agents/pipeline_orchestrator_agent.md"
-    content = orch.read_text()
+    content = orch.read_text(encoding="utf-8")
     broken = content.replace(
         "| `semantic_scholar_unmatched` | `CONTAMINATED-UNMATCHED` (v3.7.3 legacy)",
         "| `semantic_scholar_unmatched` | `CONTAMINATED-COVERAGE-NOISE` (BROKEN)",
         1,
     )
     p = tmp_path / "orch.md"
-    p.write_text(broken)
+    p.write_text(broken, encoding="utf-8")
     result = run_lint(["--orchestrator-path", str(p)])
     assert result.returncode == 1
     assert "rule 3" in result.stderr.lower() or "legacy" in result.stderr.lower()
@@ -159,14 +159,14 @@ def test_rule3_legacy_compat_violated_fails(tmp_path):
 def test_rule3_preprint_legacy_drift_fails(tmp_path):
     """Rule 3: drift preprint legacy row's suffix to CONTAMINATED-PREPRINT+COVERAGE-NOISE — lint fails."""
     orch = REPO_ROOT / "academic-pipeline/agents/pipeline_orchestrator_agent.md"
-    content = orch.read_text()
+    content = orch.read_text(encoding="utf-8")
     broken = content.replace(
         "`CONTAMINATED-PREPRINT+UNMATCHED` (v3.7.3 legacy)",
         "`CONTAMINATED-PREPRINT+COVERAGE-NOISE` (BROKEN)",
         1,
     )
     p = tmp_path / "orch.md"
-    p.write_text(broken)
+    p.write_text(broken, encoding="utf-8")
     result = run_lint(["--orchestrator-path", str(p)])
     assert result.returncode == 1
     assert "rule 3" in result.stderr.lower() or "preprint" in result.stderr.lower()
@@ -175,7 +175,7 @@ def test_rule3_preprint_legacy_drift_fails(tmp_path):
 def test_rule3_missing_legacy_rows_fails(tmp_path):
     """Rule 3: delete BOTH legacy S2 rows from the table — lint must fail."""
     orch = REPO_ROOT / "academic-pipeline/agents/pipeline_orchestrator_agent.md"
-    content = orch.read_text()
+    content = orch.read_text(encoding="utf-8")
     # Delete the bare legacy row.
     broken = content.replace(
         "| `ok` / `LOW-WARN` | false / absent | 1 | 1 | `semantic_scholar_unmatched` | `CONTAMINATED-UNMATCHED` (v3.7.3 legacy) |\n",
@@ -189,7 +189,7 @@ def test_rule3_missing_legacy_rows_fails(tmp_path):
         1,
     )
     p = tmp_path / "orch.md"
-    p.write_text(broken)
+    p.write_text(broken, encoding="utf-8")
     result = run_lint(["--orchestrator-path", str(p)])
     assert result.returncode == 1
     # Both row-missing messages should fire.
@@ -211,14 +211,14 @@ def test_rule4_no_block_tokens_in_real_repo():
 def test_rule4_high_block_injection_fails(tmp_path):
     """Rule 4: inject `CONTAMINATED-HIGH-BLOCK` into v3.9.0 subsection — lint fails."""
     orch = REPO_ROOT / "academic-pipeline/agents/pipeline_orchestrator_agent.md"
-    content = orch.read_text()
+    content = orch.read_text(encoding="utf-8")
     broken = content.replace(
         "## Cite-Time Provenance Finalizer — v3.9.0 extension",
         "## Cite-Time Provenance Finalizer — v3.9.0 extension\n\nFAKE: `CONTAMINATED-HIGH-BLOCK` policy-layer marker.\n",
         1,
     )
     p = tmp_path / "orch.md"
-    p.write_text(broken)
+    p.write_text(broken, encoding="utf-8")
     result = run_lint(["--orchestrator-path", str(p)])
     assert result.returncode == 1
     assert "rule 4" in result.stderr.lower() or "block" in result.stderr.lower()

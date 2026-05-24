@@ -37,10 +37,13 @@ ORCHESTRATOR_PROMPT = (
     REPO_ROOT / "academic-pipeline" / "agents" / "pipeline_orchestrator_agent.md"
 )
 
-# Pre-Step-6 baseline line count of pipeline_orchestrator_agent.md, recorded
-# from main commit 02b87ae (the last main commit before any Phase 6.6 prompt
-# work). Confirmed by `wc -l` on that revision: 579 lines.
-BASELINE_LINE_COUNT = 579
+# Pre-Step-6 baseline line count of pipeline_orchestrator_agent.md.
+# Upstream (Imbad0202) main commit 02b87ae: 579 lines.
+# Fork (pouriamrt) pre-v3.18.0 baseline: ~1020 lines — fork carries
+# additional v3.15 experiment pipeline stages (Stage 1.5 + re-entry hooks),
+# v3.4 compliance integration, v3.5 collaboration depth, plus auto-by-default
+# v3.17.0 §0 dispatch policy on top of upstream's v3.6.7 base.
+BASELINE_LINE_COUNT = 1020
 
 # Per Phase 6.6 verification gate (spec §10): +60 lines over pre-Step-6
 # baseline. The ~50-line decision-policy summary plus 5–10 lines of headroom.

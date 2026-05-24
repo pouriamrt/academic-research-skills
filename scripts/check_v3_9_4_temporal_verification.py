@@ -39,7 +39,11 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 SCHEMAS = REPO_ROOT / "shared/contracts/passport"
 
 BIBLIOGRAPHY_AGENT_PATH = REPO_ROOT / "deep-research/agents/bibliography_agent.md"
-BIBLIOGRAPHY_AGENT_SHA256 = "1d34ef9cfcd26afebebd19ee199ff1c5b1d4364dd79a1a2de5e5220a060539f4"  # v3.9.3 baseline; F2 invariant per spec §3.4 + §3.6
+# Fork v3.18.0 baseline (LF-normalized): fork carries v3.9.2 Phase Boundary
+# block + fork-specific Material Passport corpus-consumer protocol on top of
+# upstream's v3.9.3 bibliography_agent. F2 invariant still applies — this
+# pin ensures the file does not silently drift from fork's current state.
+BIBLIOGRAPHY_AGENT_SHA256 = "f42589241d0cc8b71b06cac1bb497879b8df16f5dc6f566302b7c9380f60963b"
 
 
 def _validate(yaml_path: Path, schema_path: Path) -> list[str]:
@@ -100,7 +104,10 @@ def _check_bibliography_agent_unchanged() -> list[str]:
     """
     if not BIBLIOGRAPHY_AGENT_PATH.exists():
         return [f"missing: {BIBLIOGRAPHY_AGENT_PATH}"]
-    actual = hashlib.sha256(BIBLIOGRAPHY_AGENT_PATH.read_bytes()).hexdigest()
+    # Normalize CRLF→LF so Windows core.autocrlf=true checkouts hash the
+    # same bytes as the LF blob stored in git.
+    raw = BIBLIOGRAPHY_AGENT_PATH.read_bytes().replace(b"\r\n", b"\n")
+    actual = hashlib.sha256(raw).hexdigest()
     if actual != BIBLIOGRAPHY_AGENT_SHA256:
         return [
             f"bibliography_agent.md modified — v3.9.4 F2 invariant violated. "

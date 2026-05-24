@@ -633,8 +633,8 @@ Stage 4 REVISE: [items addressed / total]
 Stage 3' RE-REVIEW: [decision]
 Stage 4' RE-REVISE: [executed / skipped]
 Stage 4.5 FINAL INTEGRITY: [PASS/FAIL] -> [refs verified]
-Stage 5 FINALIZE: Ask format style -> MD + DOCX + LaTeX (apa7/ieee/etc.) -> tectonic -> PDF
-Stage 6 PROCESS SUMMARY: Ask language -> MD -> LaTeX -> PDF (zh/en)
+Stage 5 FINALIZE: Auto-emit (MD + DOCX via Pandoc + LaTeX apa7/ieee/etc. via tectonic) -> PDF; interactive mode (ARS_INTERACTIVE=1) asks format style
+Stage 6 PROCESS SUMMARY: MD -> LaTeX -> PDF (English-only as of v3.17.0)
 
 Integrity Summary:
   Pre-review: [X] refs checked, [Y] issues found, [Y] fixed

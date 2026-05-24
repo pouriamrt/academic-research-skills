@@ -26,6 +26,8 @@ A general-purpose academic paper writing tool — 11-agent pipeline covering all
 
 v2.4 hardened LaTeX output formatting: mandatory `apa7` document class for APA 7.0, text justification override for `man` mode, table column width formula with `\tabcolsep` deduction, standardized font stack (Times New Roman + Courier New), and PDF compilation via tectonic.
 
+> **Routing discipline (v3.9.2):** see `.claude/CLAUDE.md` "Routing Discipline (v3.9.2)" + `shared/references/intent_clarification_protocol.md` for cross-skill routing rules. This skill assumes routing has already settled — ambiguous cross-phase materials should have been clarified upstream.
+
 ## Quick Start
 
 **Minimal command:**
@@ -245,6 +247,22 @@ User: "Write a paper on [topic]"
 ---
 
 > **v3.4.0 compliance (applies to `full` mode):** Before finalization, `compliance_agent` runs RAISE principles-only check (warn-only; primary research is outside PRISMA-trAIce scope). Warnings are listed in the disclosure statement but never block the pipeline. See `shared/raise_framework.md §Scope disclaimer`.
+
+## Phase-by-phase Invocation Contract (v3.9.2)
+
+academic-paper pipeline runs in 8 phases (Phase 0 intake → 7 formatting). Two invocation modes:
+
+**Mode A — orchestrator-driven (default):** `pipeline_orchestrator_agent` (in `academic-pipeline` skill) runs all phases end-to-end with state tracking via Material Passport.
+
+**Mode B — phase-by-phase (cross-session resume):** User invokes one agent per phase across sessions for long-running projects. Common pattern: write the draft in one session, return next week to citation-check / abstract / peer-review independently.
+
+In Mode B, **single-phase agents (Bucket A per `docs/design/2026-05-18-ars-v3.9.2-agent-phase-classification.md`) stay strictly within their assigned phase for writes**. The 6 Bucket A agents in academic-paper (fork v3.17.0: dropped `abstract_bilingual` in English-only purge) are: `literature_strategist` (P1), `structure_architect` (P2), `draft_writer` (P4/P6 per invocation; emits English abstract inline), `citation_compliance` (P5), `peer_reviewer` (P6), `formatter` (P7). Reads from upstream phases are allowed.
+
+Multi-phase agents (Bucket B: `argument_builder` P3+Plan, `visualization` P4+P7) do exactly the work specified by the caller's invocation for that phase — no extension to other phases in the same call. The v3.6.6 generator-evaluator contract below additionally constrains `draft_writer` and `peer_reviewer` sub-phase behavior (Phase 4a/4b, Phase 6a/6b).
+
+Routing into Mode B requires explicit user signal — `/ars-<mode>` slash command or `[direct-mode]` prefix. Ambiguous cross-phase input defaults to clarification per `.claude/CLAUDE.md` Routing Discipline + `shared/references/intent_clarification_protocol.md`.
+
+**Enforcement (v3.9.2):** prompt-level via Phase Boundary blocks on Bucket A agents + advisory verifier (`scripts/check_pipeline_integrity.py`). Deterministic PreToolUse hook + multi-phase envelope deferred to v3.10 active conductor (#134).
 
 ## v3.6.6 Generator-Evaluator Contract Protocol
 
@@ -550,6 +568,8 @@ See `agents/intake_agent.md` for the complete field definitions of the Phase 0 c
 | socratic_mentor_agent | `agents/socratic_mentor_agent.md` |
 | visualization_agent | `agents/visualization_agent.md` |
 | revision_coach_agent | `agents/revision_coach_agent.md` |
+
+**Examples** (7 files in `examples/`): `imrad_hei_example`, `literature_review_example`, `plan_mode_guided_writing`, `chinese_paper_example`, `revision_mode_example`, `revision_recovery_example`, `clinical_citation_verification_checklist`.
 
 ---
 

@@ -255,6 +255,21 @@ def check_agent_completeness(root: Path, verbose: bool) -> CategoryResult:
             p.stem for p in shared_agents_dir.iterdir() if p.suffix == ".md" and p.is_file()
         }
 
+    # Cross-skill agents — pre-collect every agent file across all skills so a
+    # SKILL.md that legitimately mentions an agent owned by another skill (e.g.,
+    # `pipeline_orchestrator_agent` in deep-research's Mode A description, or
+    # `formatter_agent` in academic-pipeline's Stage 5 description) does not
+    # trigger a false "Referenced but no .md file" failure. v3.18.0 upstream
+    # sync (v3.9.2 Phase Boundary blocks) introduced more of these legitimate
+    # cross-skill mentions.
+    cross_skill_agents: set[str] = set()
+    for sk in EXPECTED_SKILLS:
+        sk_agents = root / sk / "agents"
+        if sk_agents.is_dir():
+            cross_skill_agents.update(
+                p.stem for p in sk_agents.iterdir() if p.suffix == ".md" and p.is_file()
+            )
+
     for skill_name in EXPECTED_SKILLS:
         skill_dir = root / skill_name
         agents_dir = skill_dir / "agents"
@@ -273,11 +288,12 @@ def check_agent_completeness(root: Path, verbose: bool) -> CategoryResult:
         local_files = {
             p.stem for p in agents_dir.iterdir() if p.suffix == ".md" and p.is_file()
         }
-        # For missing-check: union with shared agents (a reference is satisfied
-        # if the agent exists either in the skill's agents/ dir or in shared/agents/).
-        # For orphan-check: only local files matter (shared agents are not
-        # expected to be referenced from every skill).
-        actual_files = local_files | shared_agents
+        # For missing-check: union with shared agents AND cross-skill agents.
+        # A reference is satisfied if the agent exists anywhere in the suite
+        # (own skill's agents/, shared/agents/, or another skill's agents/).
+        # For orphan-check: only local files matter (shared / cross-skill agents
+        # are not expected to be referenced from every skill).
+        actual_files = local_files | shared_agents | cross_skill_agents
 
         # Every referenced agent must exist as a file
         missing = referenced - actual_files
@@ -408,10 +424,19 @@ def check_cross_reference_integrity(root: Path, verbose: bool) -> CategoryResult
                 elif target_skill == "agents":
                     # Path was `shared/agents/<name>_agent` or `agents/<name>_agent`
                     # (plugin-shipped symlink dir). Try shared/agents/ first, then
-                    # top-level agents/.
+                    # top-level agents/, then any skill's agents/ dir (relative
+                    # `agents/<name>` from inside another skill's agent often
+                    # means "agent in this suite", not strictly own skill).
                     target_path = root / "shared" / "agents" / f"{target_agent}.md"
                     if not target_path.is_file():
                         target_path = root / "agents" / f"{target_agent}.md"
+                    if not target_path.is_file():
+                        # Fall back to any-skill lookup.
+                        for sk in EXPECTED_SKILLS:
+                            cand = root / sk / "agents" / f"{target_agent}.md"
+                            if cand.is_file():
+                                target_path = cand
+                                break
                 else:
                     target_path = root / target_skill / "agents" / f"{target_agent}.md"
                 if not target_path.is_file():

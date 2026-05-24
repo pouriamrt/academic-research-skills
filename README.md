@@ -1,9 +1,9 @@
 # Academic Research Skills for Claude Code
 
-[![Version](https://img.shields.io/badge/version-v3.17.0-blue)](https://github.com/pouriamrt/academic-research-skills)
+[![Version](https://img.shields.io/badge/version-v3.18.0-blue)](https://github.com/pouriamrt/academic-research-skills)
 [![License: CC BY-NC 4.0](https://img.shields.io/badge/license-CC%20BY--NC%204.0-lightgrey)](https://creativecommons.org/licenses/by-nc/4.0/)
 
-A Claude Code plugin covering the full academic research lifecycle — from literature review through experimentation, statistical analysis, paper writing, peer review, and publication. **8 skills, 57+ agents, 20 handoff schemas**, full pipeline orchestration with PRISMA-trAIce + RAISE compliance gates, reviewer + writer/evaluator sprint contracts, passport reset boundary for long-running sessions, three-layer citation locator, and collaboration depth observer. **v3.17.0 runs the pipeline unattended by default — set `ARS_INTERACTIVE=1` to restore v3.16 prompts.** English-only output. Experiment skills integrate with the [superpowers](https://github.com/obra/superpowers) plugin for disciplined, test-driven code development.
+A Claude Code plugin covering the full academic research lifecycle — from literature review through experimentation, statistical analysis, paper writing, peer review, and publication. **8 skills, 58+ agents, 20 handoff schemas + 6 claim-audit schemas**, full pipeline orchestration with PRISMA-trAIce + RAISE compliance gates, reviewer + writer/evaluator sprint contracts, opt-in L3 claim ↔ reference faithfulness audit gate (v3.18.0 #103), passport reset boundary for long-running sessions, three-layer citation locator, temporal verification (v3.18.0 #135), Phase Boundary protocol (v3.18.0 #133), cross-index triangulation (v3.18.0 #102), and collaboration depth observer. **v3.17.0 runs the pipeline unattended by default — set `ARS_INTERACTIVE=1` to restore prompts.** English-only output. New `/ars-mark-read`, `/ars-unmark-read`, `/ars-reviewer` plugin commands. Experiment skills integrate with the [superpowers](https://github.com/obra/superpowers) plugin for disciplined, test-driven code development.
 
 ## Skills
 
@@ -423,7 +423,7 @@ Four experiment skills (22 agents total) auto-detected from the methodology blue
 
 **Optional cross-model verification:** set `ARS_CROSS_MODEL` to use GPT-5.4 Pro or Gemini 3.1 Pro as an independent second reviewer.
 
-### Academic Pipeline (v3.17.0; suite-version-pinned, auto-by-default)
+### Academic Pipeline (v3.18.0; suite-version-pinned, auto-by-default)
 
 Pipeline orchestrator with integrity verification, compliance, sprint-contract gates, two-stage review, experiment re-entry, Socratic coaching, passport reset boundary, and collaboration evaluation:
 
@@ -549,6 +549,22 @@ https://github.com/Imbad0202/academic-research-skills
 ---
 
 ## Changelog
+
+### v3.18.0 (2026-05-23) — Upstream sync: v3.8.0 → v3.10 (claim faithfulness audit + temporal verification + deterministic dispatch)
+
+Merges 34 upstream commits from Imbad0202 v3.7.3 → v3.10 onto fork's v3.17.0 baseline. Bilingual upstream additions (zh-CN, ja-JP READMEs) NOT merged — fork remains English-only. v3.10 active-conductor implementation (#198) remains design-only per upstream.
+
+- **#103 — New opt-in `claim_ref_alignment_audit_agent`.** L3 claim ↔ reference faithfulness gate dispatched between Stage 4 and Stage 5 when `ARS_CLAIM_AUDIT=1`. Audits sampled citations for alignment + negative-constraint compliance. Emits 5 passport aggregates (`claim_audit_results[]`, `claim_intent_manifests[]`, `claim_drift[]`, `uncited_assertions[]`, `constraint_violations[]`). 5 new HIGH-WARN annotation classes drive formatter terminal-gate refusal. Pipeline agent count: 4 → 5 in-skill + 1 shared. Motivation: Zhao et al. arXiv:2605.07723 (146,932 hallucinated citations across arXiv/bioRxiv/SSRN/PMC in 2025).
+- **#102 — v3.9.0 cross-index triangulation.** New CrossRef + OpenAlex clients; extracted `_passport_yaml` and `_text_similarity` shared utilities; corpus migration `migrate_literature_corpus_to_v3_9_0.py`.
+- **#133 — v3.9.2 Phase Boundary protocol.** Bucket A single-phase agents now carry `Phase Boundary` blocks restricting writes outside their assigned phase. New `scripts/check_pipeline_integrity.py` advisory verifier.
+- **#135 — v3.9.4 temporal verification.** End-of-pipeline temporal verification of date-bearing claims against a frozen reference date. Implementation under `tests/fixtures/v3.9.4-temporal/`.
+- **#198/#233 — v3.10 spec amendments.** Deterministic verification layer design specs (promote citation gate, epistemic status, extend eval harness); fabrication bypass closure. Active conductor deferred.
+- **New plugin commands.** `/ars-mark-read` + `/ars-unmark-read` (human-read signal CLI, appends to `<passport-stem>_human_read_log.yaml`); `/ars-reviewer` (direct reviewer trigger); deterministic bash command dispatch replaces prose dispatch.
+- **CI hardening.** 7 release-cycle discipline gates; unified pytest manifest; root `conftest.py`; 4-segment semver regex hardening on lint scripts.
+- **Docs.** New `academic-paper/examples/clinical_citation_verification_checklist.md`; EMNLP disclosure URL fix; academic-paper examples inventory sync.
+- **New env var**: `ARS_CLAIM_AUDIT=1` (opt-in L3 claim faithfulness gate, default OFF).
+- **Conflict-resolution.** Fork-priority docs kept fork v3.17.0 strings; `academic-paper` agent table preserved at 11 (fork count); bilingual upstream additions dropped; d564d26 v3.8.0 release-sweep skipped (already superseded by fork v3.17.0 sweep).
+- **Version bumps**: `academic-pipeline` 3.17.0 → 3.18.0 (suite-pinned). Other skill versions unchanged — new content is plumbed via opt-in flags + new files.
 
 ### v3.17.0 (2026-05-15) — Auto-by-default pipeline + bilingual purge (BREAKING)
 
@@ -800,6 +816,10 @@ The bullets below describe the upstream v3.3 content that fork v3.15.0 absorbed.
 - **AI Self-Reflection Report** (academic-pipeline Stage 6): Post-pipeline self-assessment of AI behavioral patterns — DA concession rate, checkpoint skip rate, health alerts, sycophancy risk rating (LOW/MEDIUM/HIGH), frame-lock incidents, convergence pattern analysis. Includes irony caveat: "this self-reflection is itself produced by the same AI that may have been sycophantic."
 - Origin: Discovered through a 4-round dialectic experiment where the DA conceded too quickly, the Socratic Mentor tried to converge prematurely, and the entire debate stayed locked in a frame the human set.
 - Versions: deep-research v2.5, academic-paper-reviewer v1.5, academic-pipeline v2.8
+
+### v2.9.1 (2026-04-03) — Skill Metadata
+- Added `status: active` and `related_skills` cross-references to all 4 SKILL.md frontmatters.
+- Enables skill discovery tools and cross-skill navigation across `deep-research` ↔ `academic-paper` ↔ `academic-paper-reviewer` ↔ `academic-pipeline`.
 
 ### v2.9 (2026-03-27) — Style Calibration + Writing Quality Check
 - **Style Calibration** (academic-paper intake Step 10, optional): Provide 3+ past papers and the pipeline learns your writing voice — sentence rhythm, vocabulary preferences, citation integration style. Applied as a soft guide during drafting; discipline conventions always take priority. Priority system: discipline norms (hard) > journal conventions (strong) > personal style (soft). See `shared/style_calibration_protocol.md`

@@ -65,7 +65,7 @@ def check_relative_markdown_links(rel_path: str) -> None:
 def check_mode_registry() -> None:
     rel_path = "MODE_REGISTRY.md"
     text = read(rel_path)
-    expect_contains(rel_path, "Last updated: v3.17.0 (2026-05-15)")
+    expect_contains(rel_path, "Last updated: v3.18.0 (2026-05-23)")
     for heading in (
         "## deep-research (7 modes)",
         "## academic-paper (10 modes)",
@@ -79,7 +79,7 @@ def check_claude_md() -> None:
     rel_path = ".claude/CLAUDE.md"
     expect_contains(rel_path, "integrity check (Stage 2.5)")
     expect_contains(rel_path, "final integrity check (Stage 4.5)")
-    expect_contains(rel_path, "**Version**: 3.17.0")
+    expect_contains(rel_path, "**Version**: 3.18.0")
     expect_contains(rel_path, "Output language: English only")
     for forbidden in (
         "6th independent reviewer",
@@ -144,7 +144,8 @@ def check_readme_sections() -> None:
     rel_path = "README.md"
     text = read(rel_path)
 
-    expect_contains(rel_path, "version-v3.17.0-blue")
+    expect_contains(rel_path, "version-v3.18.0-blue")
+    expect_contains(rel_path, "### v3.18.0 (2026-05-23)")
     expect_contains(rel_path, "### v3.17.0 (2026-05-15)")
     expect_contains(rel_path, "### v3.16.0 (2026-05-15)")
     # Upstream historical entries preserved in fork README for traceability.
@@ -170,7 +171,7 @@ def check_readme_sections() -> None:
         "### Deep Research (v2.9.4)",
         "### Academic Paper (v3.2.0)",
         "### Academic Paper Reviewer (v1.9.1)",
-        "### Academic Pipeline (v3.17.0",
+        "### Academic Pipeline (v3.18.0",
     ):
         if heading not in text:
             fail(f"{rel_path}: missing heading {heading!r}")
@@ -207,6 +208,9 @@ def check_readme_sections() -> None:
     # DOCX contract lines moved to docs/SETUP.md in v3.3.6; checked there instead.
     expect_contains(rel_path, "DOCX (via Pandoc when available)")
     check_relative_markdown_links(rel_path)
+
+
+# v3.17.0: check_readme_zh_sections removed — README.zh-TW.md deleted in fork.
 
 
 def check_setup_docs() -> None:

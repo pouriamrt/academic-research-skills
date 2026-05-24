@@ -50,7 +50,7 @@ def fixture_repo(tmp_path: Path) -> Path:
     }
     (tmp_path / "scripts" / "corpus_consumer_manifest.json").write_text(
         json.dumps(manifest, indent=2)
-    )
+    , encoding="utf-8")
 
     # --- reference doc with full bibliography block + stub strategist block
     ref_dir = tmp_path / "academic-pipeline" / "references"
@@ -86,7 +86,7 @@ def fixture_repo(tmp_path: Path) -> Path:
             (full content shipped in PR-B)
             """
         )
-    )
+    , encoding="utf-8")
 
     # --- bibliography_agent.md with all required prose markers
     agent_dir = tmp_path / "deep-research" / "agents"
@@ -141,14 +141,14 @@ def fixture_repo(tmp_path: Path) -> Path:
             Truncation rule: lists exceeding 50 entries truncate to first 20 + last 5 alphabetically with appendix file.
             """
         )
-    )
+    , encoding="utf-8")
 
     # --- handoff_schemas.md keeps the deferred caveat (PR-A state)
     shared_dir = tmp_path / "shared"
     shared_dir.mkdir()
     (shared_dir / "handoff_schemas.md").write_text(
         "Schema 9 ... Consumer-side integration deferred to v3.6.5+ ...\n"
-    )
+    , encoding="utf-8")
 
     return tmp_path
 
@@ -182,8 +182,8 @@ def test_l2_fails_when_stub_marker_missing(fixture_repo: Path) -> None:
         / "references"
         / "literature_corpus_consumers.md"
     )
-    text = ref.read_text().replace("<!-- LINT_STUB: skip_cross_check -->", "")
-    ref.write_text(text)
+    text = ref.read_text(encoding="utf-8").replace("<!-- LINT_STUB: skip_cross_check -->", "")
+    ref.write_text(text, encoding="utf-8")
     result = run_lint(fixture_repo)
     assert result.returncode != 0
     assert "L2" in result.stdout or "L2" in result.stderr
@@ -199,10 +199,10 @@ def test_l3_passes_when_backpointer_present(fixture_repo: Path) -> None:
 
 def test_l3_fails_when_backpointer_missing(fixture_repo: Path) -> None:
     agent = fixture_repo / "deep-research" / "agents" / "bibliography_agent.md"
-    text = agent.read_text().replace(
+    text = agent.read_text(encoding="utf-8").replace(
         "academic-pipeline/references/literature_corpus_consumers.md", ""
     )
-    agent.write_text(text)
+    agent.write_text(text, encoding="utf-8")
     result = run_lint(fixture_repo)
     assert result.returncode != 0
     assert "L3" in result.stdout or "L3" in result.stderr
@@ -218,8 +218,8 @@ def test_l4_passes_when_pre_screened_template_present(fixture_repo: Path) -> Non
 
 def test_l4_fails_when_pre_screened_template_missing(fixture_repo: Path) -> None:
     agent = fixture_repo / "deep-research" / "agents" / "bibliography_agent.md"
-    text = agent.read_text().replace("PRE-SCREENED FROM USER CORPUS:", "")
-    agent.write_text(text)
+    text = agent.read_text(encoding="utf-8").replace("PRE-SCREENED FROM USER CORPUS:", "")
+    agent.write_text(text, encoding="utf-8")
     result = run_lint(fixture_repo)
     assert result.returncode != 0
     assert "L4" in result.stdout or "L4" in result.stderr
@@ -235,10 +235,10 @@ def test_l5_passes_with_all_four_iron_rule_titles(fixture_repo: Path) -> None:
 
 def test_l5_fails_when_iron_rule_title_missing(fixture_repo: Path) -> None:
     agent = fixture_repo / "deep-research" / "agents" / "bibliography_agent.md"
-    text = agent.read_text().replace(
+    text = agent.read_text(encoding="utf-8").replace(
         "Iron Rule 4 — Graceful fallback on parse failure", "Iron Rule 4 — TBD"
     )
-    agent.write_text(text)
+    agent.write_text(text, encoding="utf-8")
     result = run_lint(fixture_repo)
     assert result.returncode != 0
     assert "L5" in result.stdout or "L5" in result.stderr
@@ -254,8 +254,8 @@ def test_l6_passes_with_all_steps_and_cases(fixture_repo: Path) -> None:
 
 def test_l6_fails_when_case_marker_missing(fixture_repo: Path) -> None:
     agent = fixture_repo / "deep-research" / "agents" / "bibliography_agent.md"
-    text = agent.read_text().replace("case B': ...", "")
-    agent.write_text(text)
+    text = agent.read_text(encoding="utf-8").replace("case B': ...", "")
+    agent.write_text(text, encoding="utf-8")
     result = run_lint(fixture_repo)
     assert result.returncode != 0
     assert "L6" in result.stdout or "L6" in result.stderr
@@ -268,8 +268,8 @@ def test_l6_distinguishes_case_b_from_case_b_prime(fixture_repo: Path) -> None:
     `case B`, falsely passing L6. The boundary regex must catch this.
     """
     agent = fixture_repo / "deep-research" / "agents" / "bibliography_agent.md"
-    text = agent.read_text().replace("case B: ...\n", "")
-    agent.write_text(text)
+    text = agent.read_text(encoding="utf-8").replace("case B: ...\n", "")
+    agent.write_text(text, encoding="utf-8")
     result = run_lint(fixture_repo)
     assert result.returncode != 0
     combined = result.stdout + result.stderr
@@ -289,10 +289,10 @@ def test_l7_passes_with_all_nine_line_markers(fixture_repo: Path) -> None:
 
 def test_l7_fails_when_skipped_marker_missing(fixture_repo: Path) -> None:
     agent = fixture_repo / "deep-research" / "agents" / "bibliography_agent.md"
-    text = agent.read_text().replace(
+    text = agent.read_text(encoding="utf-8").replace(
         "Skipped (criteria cannot be applied):", "Removed:"
     )
-    agent.write_text(text)
+    agent.write_text(text, encoding="utf-8")
     result = run_lint(fixture_repo)
     assert result.returncode != 0
     assert "L7" in result.stdout or "L7" in result.stderr
@@ -306,7 +306,7 @@ def test_l7_fails_when_citation_keys_marker_missing(fixture_repo: Path) -> None:
     were screened. L7 catches this.
     """
     agent = fixture_repo / "deep-research" / "agents" / "bibliography_agent.md"
-    text = agent.read_text()
+    text = agent.read_text(encoding="utf-8")
     # Drop both citation_keys variants from inside the fenced template.
     # Keep the trailing truncation-rule prose mention.
     new_text = text.replace(
@@ -321,7 +321,7 @@ def test_l7_fails_when_citation_keys_marker_missing(fixture_repo: Path) -> None:
         1,
     )
     assert new_text != text
-    agent.write_text(new_text)
+    agent.write_text(new_text, encoding="utf-8")
     result = run_lint(fixture_repo)
     assert result.returncode != 0
     combined = result.stdout + result.stderr
@@ -339,11 +339,11 @@ def test_l7_fails_when_f4_inline_anchors_missing(fixture_repo: Path) -> None:
     assert L7 fails.
     """
     agent = fixture_repo / "deep-research" / "agents" / "bibliography_agent.md"
-    text = agent.read_text()
+    text = agent.read_text(encoding="utf-8")
     new_text = text.replace("# per F4a, per F4b, per F4c documented inline\n", "", 1)
     new_text = new_text.replace("# per F4d, per F4e, per F4f documented inline\n", "", 1)
     assert new_text != text
-    agent.write_text(new_text)
+    agent.write_text(new_text, encoding="utf-8")
     result = run_lint(fixture_repo)
     assert result.returncode != 0
     combined = result.stdout + result.stderr
@@ -357,12 +357,12 @@ def test_l7_fails_when_zero_hit_anchor_missing(fixture_repo: Path) -> None:
     surface from the template and CI would still pass.
     """
     agent = fixture_repo / "deep-research" / "agents" / "bibliography_agent.md"
-    text = agent.read_text()
+    text = agent.read_text(encoding="utf-8")
     new_text = text.replace(
         "- Zero-hit note (emit per F3 only when Included: 0):", "- Removed:"
     )
     assert new_text != text
-    agent.write_text(new_text)
+    agent.write_text(new_text, encoding="utf-8")
     result = run_lint(fixture_repo)
     assert result.returncode != 0
     combined = result.stdout + result.stderr
@@ -383,7 +383,7 @@ def test_l7_marker_check_is_scoped_to_fenced_template(fixture_repo: Path) -> Non
     fail L7.
     """
     agent = fixture_repo / "deep-research" / "agents" / "bibliography_agent.md"
-    text = agent.read_text()
+    text = agent.read_text(encoding="utf-8")
     # Drop citation_keys lines from inside the fenced template.
     new_text = text.replace(
         "    citation_keys:\n      - chen2024ai\n", "", 1
@@ -399,7 +399,7 @@ def test_l7_marker_check_is_scoped_to_fenced_template(fixture_repo: Path) -> Non
     # Append a sentence outside the fenced block that mentions the marker —
     # this is what would have falsely satisfied a full-file substring check.
     new_text = new_text + "\nNote: each citation_keys list participates in the truncation rule.\n"
-    agent.write_text(new_text)
+    agent.write_text(new_text, encoding="utf-8")
     result = run_lint(fixture_repo)
     assert result.returncode != 0
     combined = result.stdout + result.stderr
@@ -410,11 +410,11 @@ def test_l7_marker_check_is_scoped_to_fenced_template(fixture_repo: Path) -> Non
 def test_l7_fails_when_truncation_prose_missing(fixture_repo: Path) -> None:
     """Spec §5.2 L7: PRE-SCREENED template must include 'truncation rule' prose."""
     agent = fixture_repo / "deep-research" / "agents" / "bibliography_agent.md"
-    text = agent.read_text()
+    text = agent.read_text(encoding="utf-8")
     # Remove the truncation prose. Use a lowercase replace to catch both casings.
     new_text = text.replace("Truncation rule:", "Removed:")
     assert new_text != text, "fixture must contain 'Truncation rule:' line for this test"
-    agent.write_text(new_text)
+    agent.write_text(new_text, encoding="utf-8")
     result = run_lint(fixture_repo)
     assert result.returncode != 0
     assert "L7" in result.stdout or "L7" in result.stderr
@@ -432,8 +432,8 @@ def test_l8_passes_pr_a_with_caveat_remaining(fixture_repo: Path) -> None:
 def test_l8_fails_pr_a_when_caveat_retired_prematurely(fixture_repo: Path) -> None:
     """PR-A must NOT retire the deferred caveat."""
     schemas = fixture_repo / "shared" / "handoff_schemas.md"
-    text = schemas.read_text().replace("Consumer-side integration deferred to v3.6.5+", "")
-    schemas.write_text(text)
+    text = schemas.read_text(encoding="utf-8").replace("Consumer-side integration deferred to v3.6.5+", "")
+    schemas.write_text(text, encoding="utf-8")
     result = run_lint(fixture_repo)
     assert result.returncode != 0
     assert "L8" in result.stdout or "L8" in result.stderr
@@ -443,7 +443,7 @@ def test_l8_passes_pr_b_with_caveat_retired_and_backpointer(fixture_repo: Path) 
     """PR-B state: manifest = both consumers, caveat retired, backpointer present."""
     # Promote manifest to PR-B
     manifest = json.loads(
-        (fixture_repo / "scripts" / "corpus_consumer_manifest.json").read_text()
+        (fixture_repo / "scripts" / "corpus_consumer_manifest.json").read_text(encoding="utf-8")
     )
     manifest["supported_consumers"].append(
         {
@@ -456,38 +456,38 @@ def test_l8_passes_pr_b_with_caveat_retired_and_backpointer(fixture_repo: Path) 
     )
     (fixture_repo / "scripts" / "corpus_consumer_manifest.json").write_text(
         json.dumps(manifest, indent=2)
-    )
+    , encoding="utf-8")
 
     # Promote stub block to full content (remove LINT_STUB marker + Status line)
     ref = fixture_repo / "academic-pipeline" / "references" / "literature_corpus_consumers.md"
-    text = ref.read_text()
+    text = ref.read_text(encoding="utf-8")
     text = text.replace("<!-- LINT_STUB: skip_cross_check -->", "")
     text = text.replace(
         "**Status:** Stub — implementation in PR-B (v3.6.5)",
         "**Status:** Shipped (v3.6.5)",
     )
-    ref.write_text(text)
+    ref.write_text(text, encoding="utf-8")
 
     # Create the second consumer agent file by cloning bibliography_agent.md content
     strat_dir = fixture_repo / "academic-paper" / "agents"
     strat_dir.mkdir(parents=True)
     biblio_text = (
         fixture_repo / "deep-research" / "agents" / "bibliography_agent.md"
-    ).read_text()
+    ).read_text(encoding="utf-8")
     (strat_dir / "literature_strategist_agent.md").write_text(
         biblio_text.replace(
             "name: bibliography_agent", "name: literature_strategist_agent"
         )
-    )
+    , encoding="utf-8")
 
     # Retire the caveat in handoff_schemas + add backpointer
     schemas = fixture_repo / "shared" / "handoff_schemas.md"
-    text2 = schemas.read_text()
+    text2 = schemas.read_text(encoding="utf-8")
     text2 = text2.replace(
         "Consumer-side integration deferred to v3.6.5+",
         "See `academic-pipeline/references/literature_corpus_consumers.md`",
     )
-    schemas.write_text(text2)
+    schemas.write_text(text2, encoding="utf-8")
 
     result = run_lint(fixture_repo)
     assert result.returncode == 0, result.stdout + result.stderr
@@ -508,7 +508,7 @@ def test_l8_fails_invalid_third_state_strategist_only(fixture_repo: Path) -> Non
     }
     (fixture_repo / "scripts" / "corpus_consumer_manifest.json").write_text(
         json.dumps(manifest, indent=2)
-    )
+    , encoding="utf-8")
     result = run_lint(fixture_repo)
     assert result.returncode != 0
     assert "L8" in result.stdout or "L8" in result.stderr
@@ -524,7 +524,7 @@ def test_l8_fails_duplicate_basename_with_different_path(fixture_repo: Path) -> 
     L8 fails with a duplicate-basename message.
     """
     manifest = json.loads(
-        (fixture_repo / "scripts" / "corpus_consumer_manifest.json").read_text()
+        (fixture_repo / "scripts" / "corpus_consumer_manifest.json").read_text(encoding="utf-8")
     )
     manifest["supported_consumers"].append(
         {
@@ -537,7 +537,7 @@ def test_l8_fails_duplicate_basename_with_different_path(fixture_repo: Path) -> 
     )
     (fixture_repo / "scripts" / "corpus_consumer_manifest.json").write_text(
         json.dumps(manifest, indent=2)
-    )
+    , encoding="utf-8")
     result = run_lint(fixture_repo)
     assert result.returncode != 0
     combined = result.stdout + result.stderr
@@ -565,7 +565,7 @@ def test_l8_fails_when_path_diverges_from_canonical(fixture_repo: Path) -> None:
     }
     (fixture_repo / "scripts" / "corpus_consumer_manifest.json").write_text(
         json.dumps(manifest, indent=2)
-    )
+    , encoding="utf-8")
     result = run_lint(fixture_repo)
     assert result.returncode != 0
     combined = result.stdout + result.stderr
@@ -578,7 +578,7 @@ def test_l8_fails_when_path_diverges_from_canonical(fixture_repo: Path) -> None:
 def test_l8_fails_invalid_third_state_extra_unknown(fixture_repo: Path) -> None:
     """Manifest with an unknown extra consumer must fail L8."""
     manifest = json.loads(
-        (fixture_repo / "scripts" / "corpus_consumer_manifest.json").read_text()
+        (fixture_repo / "scripts" / "corpus_consumer_manifest.json").read_text(encoding="utf-8")
     )
     manifest["supported_consumers"].append(
         {
@@ -591,7 +591,7 @@ def test_l8_fails_invalid_third_state_extra_unknown(fixture_repo: Path) -> None:
     )
     (fixture_repo / "scripts" / "corpus_consumer_manifest.json").write_text(
         json.dumps(manifest, indent=2)
-    )
+    , encoding="utf-8")
     result = run_lint(fixture_repo)
     assert result.returncode != 0
     assert "L8" in result.stdout or "L8" in result.stderr
@@ -607,8 +607,8 @@ def test_l9_passes_when_bad_good_pair_present(fixture_repo: Path) -> None:
 
 def test_l9_fails_when_good_marker_missing(fixture_repo: Path) -> None:
     ref = fixture_repo / "academic-pipeline" / "references" / "literature_corpus_consumers.md"
-    text = ref.read_text().replace("<!-- GOOD -->", "")
-    ref.write_text(text)
+    text = ref.read_text(encoding="utf-8").replace("<!-- GOOD -->", "")
+    ref.write_text(text, encoding="utf-8")
     result = run_lint(fixture_repo)
     assert result.returncode != 0
     assert "L9" in result.stdout or "L9" in result.stderr

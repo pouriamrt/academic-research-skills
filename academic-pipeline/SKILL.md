@@ -2,8 +2,8 @@
 name: academic-pipeline
 description: "Orchestrator for the full academic research pipeline: research -> experiment (optional) -> write -> integrity check -> review -> revise -> re-review -> re-revise -> final integrity check -> finalize -> process summary. Coordinates deep-research, experiment-designer, data-analyst, simulation-runner, lab-notebook, academic-paper, and academic-paper-reviewer into a seamless workflow with auto-detected experiment stages, mandatory integrity verification, two-stage peer review, AI Research Failure Mode Checklist (Lu 2026), Score Trajectory tracking, Early-Stopping criterion, and reproducible quality gates. Triggers on: academic pipeline, research to paper, full paper workflow, paper pipeline, end-to-end paper, research-to-publication, complete paper workflow."
 metadata:
-  version: "3.17.0"
-  last_updated: "2026-05-15"
+  version: "3.18.0"
+  last_updated: "2026-05-23"
   depends_on: "deep-research, experiment-designer, data-analyst, simulation-runner, lab-notebook, academic-paper, academic-paper-reviewer"
   status: active
   data_access_level: verified_only
@@ -18,7 +18,7 @@ metadata:
     - academic-paper-reviewer
 ---
 
-# Academic Pipeline v3.17.0 — Full Academic Research Workflow Orchestrator (suite-version-pinned, auto-by-default)
+# Academic Pipeline v3.18.0 — Full Academic Research Workflow Orchestrator (suite-version-pinned, auto-by-default)
 
 A lightweight orchestrator that manages the complete academic pipeline from research exploration to final manuscript. It does not perform substantive work — it only detects stages, recommends modes, dispatches skills, manages transitions, and tracks state.
 
@@ -27,6 +27,8 @@ A lightweight orchestrator that manages the complete academic pipeline from rese
 **v3.17.0 env vars:** `ARS_AUTO_MAX_RETRIES` (default `3`, Stage 4.5 hard-pinned `1`), `ARS_AUTO_FAIL_MODE` (default `exit-nonzero`; alt `continue-with-warning`), `ARS_AUTO_NO_REENTRY=1` to skip Stage 1.5-R / 1.5-R2 experiment re-entry.
 
 **v3.6.3 (opt-in):** Set `ARS_PASSPORT_RESET=1` to promote FULL checkpoints to context-reset boundaries. Use `resume_from_passport=<hash>` in a fresh session to continue from the recorded stage. See [`references/passport_as_reset_boundary.md`](references/passport_as_reset_boundary.md).
+
+**v3.8 (opt-in):** Set `ARS_CLAIM_AUDIT=1` to enable the L3 claim-faithfulness audit gate at the Stage 4 → Stage 5 transition. When the flag is set, the orchestrator dispatches `claim_ref_alignment_audit_agent` after the v3.7.1 Cite-Time Provenance Finalizer and before `formatter_agent`'s hard gate. The audit emits `claim_audit_results[]` + `uncited_assertions[]` + `claim_drifts[]` + `constraint_violations[]` + `audit_sampling_summaries[]` aggregates per the 8-row matrix; HIGH-WARN classes gate-refuse output via the formatter REFUSE rules 6-10. Default OFF for v3.8.0 — ramp-on plan deferred to post-calibration evidence (spec §5 mode flag rationale). See `agents/claim_ref_alignment_audit_agent.md` and the orchestrator §3.6 prose.
 
 **v2.0 Core Improvements**:
 1. **Mandatory user confirmation checkpoints** — Each stage completion requires user confirmation before proceeding to the next step
@@ -222,7 +224,7 @@ If ANY answer raises concern, include it in the checkpoint presentation to the u
 
 ---
 
-## Agent Team (4 in-skill + 1 shared)
+## Agent Team (5 in-skill + 1 shared)
 
 | # | Agent | Role | File |
 |---|-------|------|------|
@@ -230,7 +232,8 @@ If ANY answer raises concern, include it in the checkpoint presentation to the u
 | 2 | `state_tracker_agent` | State tracker: records completed stages, produced materials, revision loop count | `agents/state_tracker_agent.md` |
 | 3 | `integrity_verification_agent` | Integrity verifier: 100% reference/citation/data verification (blocking) | `agents/integrity_verification_agent.md` |
 | 4 | `collaboration_depth_agent` | **Observer (advisory only — never blocks).** Reads dialogue log and scores user-AI collaboration pattern against `shared/collaboration_depth_rubric.md`. Invoked at FULL/SLIM checkpoints and at pipeline completion. Based on Wang & Zhang (2026). | `agents/collaboration_depth_agent.md` |
-| 5 | `compliance_agent` (shared, v3.4.0+) | **PRISMA-trAIce + RAISE compliance gate (blocking on Mandatory tier).** Dispatched in parallel with `integrity_verification_agent` at Stage 2.5 / 4.5. Emits Schema 19 `compliance_report` appended to passport `compliance_history[]`. Lives in `shared/agents/` because it is invoked by `deep-research`, `academic-paper`, and `academic-pipeline`. | `../shared/agents/compliance_agent.md` |
+| 5 | `claim_ref_alignment_audit_agent` | **Opt-in claim faithfulness auditor (v3.8 #103).** Audits sampled citations for claim ↔ reference alignment + negative-constraint compliance; emits per-claim `claim_audit_results[]`, `claim_drift[]`, `uncited_assertions[]`, `constraint_violations[]`. Dispatched via orchestrator §3.6 when claim_audit mode is requested. | `agents/claim_ref_alignment_audit_agent.md` |
+| 6 | `compliance_agent` (shared, v3.4.0+) | **PRISMA-trAIce + RAISE compliance gate (blocking on Mandatory tier).** Dispatched in parallel with `integrity_verification_agent` at Stage 2.5 / 4.5. Emits Schema 19 `compliance_report` appended to passport `compliance_history[]`. Lives in `shared/agents/` because it is invoked by `deep-research`, `academic-paper`, and `academic-pipeline`. | `../shared/agents/compliance_agent.md` |
 
 ---
 
@@ -630,8 +633,8 @@ Stage 4 REVISE: [items addressed / total]
 Stage 3' RE-REVIEW: [decision]
 Stage 4' RE-REVISE: [executed / skipped]
 Stage 4.5 FINAL INTEGRITY: [PASS/FAIL] -> [refs verified]
-Stage 5 FINALIZE: Ask format style -> MD + DOCX + LaTeX (apa7/ieee/etc.) -> tectonic -> PDF
-Stage 6 PROCESS SUMMARY: Ask language -> MD -> LaTeX -> PDF (zh/en)
+Stage 5 FINALIZE: Auto-emit (MD + DOCX via Pandoc + LaTeX apa7/ieee/etc. via tectonic) -> PDF; interactive mode (ARS_INTERACTIVE=1) asks format style
+Stage 6 PROCESS SUMMARY: MD -> LaTeX -> PDF (English-only as of v3.17.0)
 
 Integrity Summary:
   Pre-review: [X] refs checked, [Y] issues found, [Y] fixed
@@ -842,6 +845,7 @@ The `collaboration_depth_agent` observes the user's collaboration pattern with t
 | state_tracker_agent | `agents/state_tracker_agent.md` |
 | integrity_verification_agent | `agents/integrity_verification_agent.md` |
 | collaboration_depth_agent | `agents/collaboration_depth_agent.md` |
+| claim_ref_alignment_audit_agent | `agents/claim_ref_alignment_audit_agent.md` |
 
 ---
 
@@ -853,6 +857,7 @@ The `collaboration_depth_agent` observes the user's collaboration pattern with t
 | `references/plagiarism_detection_protocol.md` | Phase D originality verification protocol + self-plagiarism + AI text characteristics |
 | `references/mode_advisor.md` | Unified cross-skill decision tree: maps user intent to optimal skill + mode |
 | `references/claim_verification_protocol.md` | Phase E claim verification protocol: claim extraction, source tracing, cross-referencing, verdict taxonomy |
+| `references/claim_audit_calibration_protocol.md` | v3.8 #103 claim_ref_alignment audit calibration: gold-set shape (T-C3), threshold gates FNR<0.15 / FPR<0.10 (T-C1), per-class FNR/FPR reporting (T-C2). Re-run via `PYTHONPATH=. python3 -m unittest scripts.test_claim_audit_calibration -v`. |
 | `references/ai_research_failure_modes.md` | 7-mode AI research failure checklist (Lu 2026), run at Stage 2.5 + 4.5 with blocking behaviour, reported at Stage 6 |
 | `references/team_collaboration_protocol.md` | Multi-person team coordination: role definitions, handoff protocol, version control, conflict resolution |
 | `shared/handoff_schemas.md` | Cross-skill data contracts: 20 schemas for all inter-stage handoff artifacts (fork's 1–18 + upstream's 19 Compliance Report + 20 Sprint Contract) |

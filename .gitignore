@@ -2,6 +2,10 @@
 __pycache__/
 docs/superpowers/
 
+# Sentrux MCP architecture sensor baseline + per-session state.
+# Local-only; baseline is regenerated on session-start hook.
+.sentrux/
+
 # Local working context (codex review logs, hand-off prompts, brief drafts).
 # Anything under .context/ or .codex-rounds/ is per-session scratch and must
 # not be committed.

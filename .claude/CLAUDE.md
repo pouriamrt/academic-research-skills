@@ -1,6 +1,6 @@
 # Academic Research Skills
 
-A suite of Claude Code skills for rigorous academic research, experimentation, statistical analysis, paper writing, peer review, and pipeline orchestration. 8 skills, 57+ agents, 20 handoff schemas.
+A suite of Claude Code skills for rigorous academic research, experimentation, statistical analysis, paper writing, peer review, and pipeline orchestration. 8 skills, 58+ agents (v3.18.0: +1 `claim_ref_alignment_audit_agent`), 20 handoff schemas + 6 new claim-audit schemas.
 
 ## Skills Overview
 
@@ -13,7 +13,41 @@ A suite of Claude Code skills for rigorous academic research, experimentation, s
 | `lab-notebook` v1.0.1 | Experiment research record | full, log-entry, deviation, snapshot, export, audit |
 | `academic-paper` v3.2.0 | 11-agent academic paper writing (English-only) | full, plan, outline-only, revision, revision-coach, abstract-only, lit-review, format-convert, citation-check, disclosure |
 | `academic-paper-reviewer` v1.9.1 | Multi-perspective paper review (5 reviewers + optional cross-model DA critique) | full, re-review, quick, methodology-focus, guided, calibration |
-| `academic-pipeline` v3.17.0 | Full pipeline orchestrator (suite-version-pinned, auto-by-default) | (coordinates all above) |
+| `academic-pipeline` v3.18.0 | Full pipeline orchestrator (suite-version-pinned, auto-by-default) | (coordinates all above) |
+
+## v3.18.0 Upstream Sync (Imbad0202 v3.7.3 → v3.10, 2026-05-23)
+
+Merges 34 upstream commits onto the fork's v3.17.0 baseline. Bilingual READMEs (zh-CN, ja-JP) are NOT merged — fork remains English-only.
+
+**New opt-in faithfulness gate (#103, v3.8):**
+- `claim_ref_alignment_audit_agent` — opt-in via `ARS_CLAIM_AUDIT=1` (default OFF). Audits sampled citations for claim ↔ reference alignment + negative-constraint compliance between Stage 4 and Stage 5. Emits 5 new passport aggregates: `claim_audit_results[]`, `claim_intent_manifests[]`, `claim_drift[]`, `uncited_assertions[]`, `constraint_violations[]`. 5 new HIGH-WARN annotation classes drive `formatter_agent` terminal gate refusals. **Pipeline agent count: 4 in-skill + 1 shared → 5 in-skill + 1 shared.**
+- 5 new schemas under `shared/contracts/passport/`. Cross-field invariants lint-enforced by `scripts/check_claim_audit_consistency.py`.
+
+**v3.8.1 / v3.8.2 hardening (#118-#120):** defense-in-depth guards on schema-invalid nested shapes; CV-INV-4 dedupe scoped by `scoped_manifest_id`; judge/retrieve `isinstance(str)` guards; uncited path NOT_VIOLATED swallow surfacing (new `uncited_audit_failure` schema).
+
+**v3.9.0 cross-index triangulation (#102):** new `crossref_client.py`, `openalex_client.py`, `_passport_yaml.py`, `_text_similarity.py` (extracted shared helpers).
+
+**v3.9.2 Phase Boundary protocol (#133):** Bucket A single-phase agents (Phase 1 / Phase 2 / Phase 6 / Phase 7) now carry `Phase Boundary` blocks restricting writes outside assigned phase. Advisory verifier `scripts/check_pipeline_integrity.py`. Affected agents: `research_question_agent`, `editorial_synthesizer_agent`, others under deep-research / academic-paper / academic-paper-reviewer.
+
+**v3.9.4 temporal verification (#135):** end-of-pipeline temporal verification of date-bearing claims against a frozen reference date. Design at `docs/design/2026-05-18-ars-v3.9.4-temporal-verification-spec.md`.
+
+**v3.10 spec amendments (#198, #233):** deterministic verification layer design specs (`docs/design/2026-05-21-v3.10-*-spec.md` — promote citation gate, epistemic status, extend eval harness) + fabrication bypass closure. Active-conductor implementation deferred upstream.
+
+**New plugin commands (#190, #191, #193, #195, #196, #225):**
+- `/ars-mark-read` + `/ars-unmark-read` — user-facing affordance for the v3.6.8 human-read signal. Appends to `<passport-stem>_human_read_log.yaml`. `model: sonnet` routing.
+- `/ars-reviewer` — direct reviewer-mode trigger.
+- Deterministic bash command dispatch — replaces prose-based dispatch.
+
+**CI hardening (#149-#177, #180):** 7 release-cycle discipline gates under `.github/workflows/`; unified pytest invocation manifest; root `conftest.py`; 4-segment semver regex hardening.
+
+**Docs (#235, #236, #238):** EMNLP disclosure URL fix, new `academic-paper/examples/clinical_citation_verification_checklist.md`, academic-paper examples inventory sync.
+
+**Conflict-resolution notes:**
+- All bilingual upstream additions dropped (zh-CN README, ja-JP README, ja-JP needle coverage).
+- Fork-priority docs kept fork v3.17.0 version strings.
+- `academic-paper/SKILL.md` Agent Team table preserved at 11 agents (fork count); upstream's 12-agent inventory dropped.
+- Phase Boundary v3.9.2 blocks added alongside fork's existing protocols.
+- d564d26 (upstream v3.8.0 release sweep) skipped — pure docs sweep already superseded by fork v3.17.0.
 
 ## v3.17.0 Breaking changes (2026-05-15)
 
@@ -247,9 +281,9 @@ Materials: Sprint Contract (Schema 20, v3.6.2+ for reviewers; Schema 20.1, v3.6.
 Run `python tools/self_test.py` to validate plugin structural integrity (200+ checks). See `tools/` for schema validation, dependency graph generation, pipeline dashboard, and reproducibility replay. CI workflows under `.github/workflows/`: `pytest.yml`, `spec-consistency.yml`, `freshness-check.yml`.
 
 ## Version Info
-- **Version**: 3.17.0
-- **Suite version**: 3.17.0
-- **Last Updated**: 2026-05-15
+- **Version**: 3.18.0
+- **Suite version**: 3.18.0
+- **Last Updated**: 2026-05-23
 - **Author**: Pouria Mortezaagha
-- **Upstream**: Imbad0202 (merged through v3.7.3)
+- **Upstream**: Imbad0202 (merged through v3.10 spec amendment / commit 8ca9d25)
 - **License**: CC-BY-NC 4.0

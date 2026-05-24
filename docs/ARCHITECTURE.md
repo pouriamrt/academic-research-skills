@@ -199,7 +199,7 @@ Authoritative references: [`academic-pipeline/references/literature_corpus_consu
 
 ```mermaid
 graph TD
-    Pipeline[academic-pipeline<br/>orchestrator<br/>v3.17.0<br/>Agent Team: 4 in-skill + 1 shared]
+    Pipeline[academic-pipeline<br/>orchestrator<br/>v3.18.0<br/>Agent Team: 5 in-skill + 1 shared]
     Observer[collaboration_depth_agent<br/>observer · advisory only<br/>blocking: false]
     DR[deep-research<br/>14 agents<br/>v2.9.4<br/>+ corpus reader]
     AP[academic-paper<br/>11 agents<br/>v3.2.0<br/>+ corpus reader]

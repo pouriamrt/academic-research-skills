@@ -2,8 +2,8 @@
 name: academic-pipeline
 description: "Orchestrator for the full academic research pipeline: research -> experiment (optional) -> write -> integrity check -> review -> revise -> re-review -> re-revise -> final integrity check -> finalize -> process summary. Coordinates deep-research, experiment-designer, data-analyst, simulation-runner, lab-notebook, academic-paper, and academic-paper-reviewer into a seamless workflow with auto-detected experiment stages, mandatory integrity verification, two-stage peer review, AI Research Failure Mode Checklist (Lu 2026), Score Trajectory tracking, Early-Stopping criterion, and reproducible quality gates. Triggers on: academic pipeline, research to paper, full paper workflow, paper pipeline, end-to-end paper, research-to-publication, complete paper workflow."
 metadata:
-  version: "3.17.0"
-  last_updated: "2026-05-15"
+  version: "3.18.0"
+  last_updated: "2026-05-23"
   depends_on: "deep-research, experiment-designer, data-analyst, simulation-runner, lab-notebook, academic-paper, academic-paper-reviewer"
   status: active
   data_access_level: verified_only
@@ -18,7 +18,7 @@ metadata:
     - academic-paper-reviewer
 ---
 
-# Academic Pipeline v3.17.0 — Full Academic Research Workflow Orchestrator (suite-version-pinned, auto-by-default)
+# Academic Pipeline v3.18.0 — Full Academic Research Workflow Orchestrator (suite-version-pinned, auto-by-default)
 
 A lightweight orchestrator that manages the complete academic pipeline from research exploration to final manuscript. It does not perform substantive work — it only detects stages, recommends modes, dispatches skills, manages transitions, and tracks state.
 

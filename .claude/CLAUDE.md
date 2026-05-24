@@ -1,6 +1,6 @@
 # Academic Research Skills
 
-A suite of Claude Code skills for rigorous academic research, experimentation, statistical analysis, paper writing, peer review, and pipeline orchestration. 8 skills, 58+ agents (v3.18.0: +1 `claim_ref_alignment_audit_agent`), 20 handoff schemas + 6 new claim-audit schemas.
+A suite of Claude Code skills for rigorous academic research, experimentation, statistical analysis, paper writing, peer review, and pipeline orchestration. 8 skills, 61 agents (v3.18.0: +1 `claim_ref_alignment_audit_agent`), 21 handoff schemas + 13 passport schemas (v3.18.0 added: `claim_audit_result`, `claim_intent_manifest`, `claim_drift`, `uncited_assertion`, `constraint_violation`, `uncited_audit_failure`).
 
 ## Skills Overview
 

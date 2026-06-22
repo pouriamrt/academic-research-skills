@@ -9,13 +9,18 @@ equals the agent's frontmatter `name`. If the manifest key, the classification-t
 Bucket A roster, and the on-disk frontmatter `name` ever drift apart (a rename, a
 manifest typo, a table edit), the hook silently FAILS OPEN for that agent — it would
 treat the agent as "not in the manifest" and allow every write. This lint catches that
-drift before it can happen, mirroring check_v3_9_2_phase_boundary.py's 23/16 split.
+drift before it can happen. Bucket A (22) mirrors check_v3_9_2_phase_boundary.py
+(fork v3.17.0 dropped abstract_bilingual_agent in the English-only purge); the B/C/D
+roster carries one extra entry (concept_lineage_agent, a fork deep-research agent that
+phase_boundary does not enumerate). The fork's experiment-skill subsystem (data-analyst /
+experiment-designer / lab-notebook / simulation-runner) is outside this guard's domain
+and is scoped out of the I5 filesystem sweep.
 
 Three invariants:
 
-  I1 — Roster size. The Bucket A roster is exactly 23 agents (16 B/C/D exempt = 39
-       records / 38 unique names per the classification table; the manifest covers the
-       23 Bucket A names only).
+  I1 — Roster size. The Bucket A roster is exactly 22 agents (fork v3.17.0 dropped
+       abstract_bilingual_agent); 17 B/C/D exempt (fork v3.19.0 added concept_lineage_agent);
+       the manifest covers the 22 Bucket A names only.
 
   I2 — Three-way name set equality. The set of:
          (a) Bucket A agent file paths (the classification-table roster, single-sourced

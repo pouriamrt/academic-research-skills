@@ -1,6 +1,6 @@
 # ARS Setup
 
-Prerequisites and optional setup for Academic Research Skills. If you only need Markdown output and the default Claude Opus 4.7 pipeline, you can skip most of this — see "Minimum viable setup" below.
+Prerequisites and optional setup for Academic Research Skills. If you only need Markdown output and the default Claude Opus 4.8 pipeline, you can skip most of this — see "Minimum viable setup" below.
 
 ---
 
@@ -128,12 +128,25 @@ ARS exposes a few opt-in flags. All default to OFF; setting them changes behavio
 | `ARS_SOCRATIC_READING_PROBE=1` | v3.5.1 | Activate the Socratic reading-check probe layer in `socratic_mentor_agent`. Goal-oriented intent only; fires at most once per session when user has cited a specific paper; decline logged without penalty. Requires `ARS_INTERACTIVE=1`. | `deep-research/agents/socratic_mentor_agent.md` |
 | `ARS_PASSPORT_RESET=1` | v3.6.3 | Promote every FULL checkpoint to a context-reset boundary. Required to *emit* boundary entries; **not** required to invoke `resume_from_passport=<hash>` in a fresh session. With the flag ON in `systematic-review` mode, reset is mandatory at every FULL checkpoint. In auto mode (default), `pending_decision` boundaries cannot resume unattended — supply `branch=<value>` when invoking `resume_from_passport`, or set `ARS_INTERACTIVE=1`. | `academic-pipeline/references/passport_as_reset_boundary.md` |
 | `ARS_CROSS_MODEL_SAMPLE_INTERVAL` | v3.5.0 | Sampling interval for cross-model integrity checks (advisory) | `shared/cross_model_verification.md` |
+| `ARS_VERIFICATION_CACHE_PATH` | v3.11 | Override the citation-verification cache location (see below). Not an on/off flag — the cache is on by default; this only relocates it. | `scripts/verification_cache.py` |
+
+---
+
+## Citation verification cache (v3.11, #182)
+
+The deterministic citation-existence gate (#182) cross-checks each reference against Semantic Scholar, OpenAlex, Crossref, and arXiv. To avoid re-querying the same paper across drafts, results are cached in a local SQLite store.
+
+- **No setup required.** The cache is created automatically at `~/.cache/ars/verification.db` on first use; entries expire after 90 days. The arXiv resolver needs no API key.
+- **Relocate it** by exporting `ARS_VERIFICATION_CACHE_PATH=/your/path.db` (e.g. to share one cache across projects, or to keep it on a faster disk).
+- **Invalidate one citation** with `/ars-cache-invalidate <citation_key>` — removes every cached row for that key (all four resolvers, all query forms); idempotent no-op if nothing is cached.
+
+The cache is single-process (SQLite WAL); concurrent multi-user access to one cache file is out of scope.
 
 ---
 
 ## Cross-model verification (optional)
 
-ARS works with Claude Opus 4.7 alone. For higher confidence, you can optionally enable a second AI model to independently verify integrity checks and challenge the devil's advocate.
+ARS works with Claude Opus 4.8 alone. For higher confidence, you can optionally enable a second AI model to independently verify integrity checks and challenge the devil's advocate.
 
 ### Quick setup
 
@@ -262,84 +275,55 @@ claude
 
 Use this when you want the four ARS skills available in [Claude Cowork](https://support.claude.com/en/articles/13345190-get-started-with-claude-cowork), Claude Desktop's agentic workspace.
 
-Cowork uses the same skill folder shape: `~/.claude/skills/<skill-name>/SKILL.md`.
+> **Cowork does not read `~/.claude/skills/`.** That directory belongs to Claude Code (the CLI / IDE), and Cowork does not scan it. Cowork loads skills you upload through **Settings → Capabilities → Skills**, each as its own zip. Symlinking or copying the skill folders into `~/.claude/skills/` will not make them appear in Cowork, no matter how many times you restart.
 
 #### Prerequisites
 
 - Claude Desktop latest version on macOS or Windows. Download from Anthropic's [Claude Desktop page](https://claude.ai/download).
 - Active internet connection; Cowork tasks call the Anthropic API.
 - Keep Claude Desktop open while Cowork tasks run. Cowork runs inside the Desktop process.
-- Folder/file permissions that allow Cowork to read and write in the project folder.
 - A paid plan with Cowork access. See Anthropic's [Cowork requirements](https://support.claude.com/en/articles/13345190-get-started-with-claude-cowork) for current plan availability.
-- On Team or Enterprise plans, your organization admin may have disabled Skills, plugins, connectors, or egress. If installed skills do not register after restart, ask your admin to check org-level controls.
+- **Code execution / file creation must be enabled** in **Settings → Capabilities**, or the Skills section will not appear. See Anthropic's [Use Skills in Claude](https://support.claude.com/en/articles/12512180-use-skills-in-claude).
+- On Team or Enterprise plans, your organization admin may have disabled Skills. If the Skills section is missing after enabling code execution, ask your admin to check org-level controls.
 
-#### Option A: symlink install (fastest, single-machine)
+#### Step 1: Build one zip per skill
 
-Use symlinks if you work on one machine and want updates by pulling the repo.
-
-```bash
-git clone https://github.com/Imbad0202/academic-research-skills.git ~/academic-research-skills
-
-mkdir -p ~/.claude/skills
-cd ~/.claude/skills
-ln -s ~/academic-research-skills/deep-research deep-research
-ln -s ~/academic-research-skills/academic-paper academic-paper
-ln -s ~/academic-research-skills/academic-paper-reviewer academic-paper-reviewer
-ln -s ~/academic-research-skills/academic-pipeline academic-pipeline
-```
-
-Expected path shape:
-
-```text
-~/.claude/skills/deep-research/SKILL.md
-~/.claude/skills/academic-paper/SKILL.md
-~/.claude/skills/academic-paper-reviewer/SKILL.md
-~/.claude/skills/academic-pipeline/SKILL.md
-```
-
-If you sync `~/.claude/skills` across machines via a cloud folder, use Option B instead. Absolute-path symlinks can break on a fresh checkout or another machine.
-
-#### Option B: copy install (cross-machine safe, no auto-update)
-
-Use copies if you sync `~/.claude/skills` across machines or do not want symlinks. Updates require re-running the four `cp -R` commands.
+Clone the repo, then zip each of the four skill folders individually so that each zip has its own `SKILL.md` at the top level (not nested under an extra folder). The `-x "*.DS_Store"` flag keeps macOS metadata out of the archive.
 
 ```bash
-git clone https://github.com/Imbad0202/academic-research-skills.git ~/academic-research-skills
+git clone https://github.com/Imbad0202/academic-research-skills.git
+cd academic-research-skills
 
-mkdir -p ~/.claude/skills
-cp -R ~/academic-research-skills/deep-research ~/.claude/skills/deep-research
-cp -R ~/academic-research-skills/academic-paper ~/.claude/skills/academic-paper
-cp -R ~/academic-research-skills/academic-paper-reviewer ~/.claude/skills/academic-paper-reviewer
-cp -R ~/academic-research-skills/academic-pipeline ~/.claude/skills/academic-pipeline
+for s in deep-research academic-paper academic-paper-reviewer academic-pipeline; do
+  (cd "$s" && zip -r "../$s.zip" . -x "*.DS_Store")
+done
 ```
 
-Expected path shape:
+This produces four zips in the repo root: `deep-research.zip`, `academic-paper.zip`, `academic-paper-reviewer.zip`, `academic-pipeline.zip`. Each zip's top level looks like:
 
 ```text
-~/.claude/skills/deep-research/SKILL.md
-~/.claude/skills/academic-paper/SKILL.md
-~/.claude/skills/academic-paper-reviewer/SKILL.md
-~/.claude/skills/academic-pipeline/SKILL.md
+SKILL.md
+agents/
+examples/
+references/
+templates/
 ```
 
-#### Create or open a Cowork Project
+#### Step 2: Upload each zip
 
-See Anthropic's [Organize your tasks with Projects in Claude Cowork](https://support.claude.com/en/articles/14116274-organize-your-tasks-with-projects-in-claude-cowork) for the canonical UI walk-through.
+1. In Claude Desktop (or claude.ai — uploaded skills sync to the same account), go to **Settings → Capabilities → Skills**.
+2. Use the **+** in the Skills panel to upload a skill, and select one of the four zips. Repeat for all four, one at a time.
+3. Each skill then appears under **Personal skills**, already enabled, with **Trigger: Slash command + auto**. Re-uploading a skill with the same name replaces the existing one (useful when updating to a new ARS release).
 
-1. Open Claude Desktop.
-2. Use the mode selector (**Chat / Cowork**) and switch to **Cowork**.
-3. In **Tasks**, use the left navigation panel and choose **Use an existing folder**.
-4. Select the local folder you want Cowork to work in. This creates a Cowork Project pointing at that folder.
-5. Restart Cowork after installing or updating the skill folders so the four skills register.
+Verified on Claude Desktop (June 2026): `deep-research.zip` built this way installs cleanly, the full skill description is preserved (no 200-character truncation), and `/deep-research` appears in the Cowork command palette.
 
-#### How Cowork invokes the skills
+#### Step 3: Use the skills in a Cowork Task
 
-Claude uses each skill's `description` to judge relevance, as described in Anthropic's [Skills documentation](https://code.claude.com/docs/en/skills). Example phrases such as "help me write a paper" are illustrative, not literal trigger phrases; paraphrased intent works too.
+Type `/` in a Cowork Task to open the command palette and select a skill, or describe your intent in plain language (e.g. "do a deep literature review on X") and Cowork routes by the skill's `description`.
 
-If description-based routing does not select the skill you want, Cowork also provides explicit UI surfaces described in Anthropic's [Cowork plugins documentation](https://support.claude.com/en/articles/13837440-use-plugins-in-claude-cowork):
+#### One trade-off versus Claude Code
 
-- Type `/` in a Cowork Task to use the command palette and select an available skill.
-- Use the `+` capability picker to add a skill to the current Task.
+Uploaded this way, each skill runs on its own as a standalone instruction set. This is a different experience from Claude Code. In Claude Code the four skills work as a coordinated team: `academic-pipeline` chains them (research → write → review → revise) and each skill drives its own group of sub-agents. Cowork's uploaded-skill runtime does not provide that sub-agent orchestration, so the individual skills respond, but the full end-to-end pipeline does not run the way it does in Claude Code. For the full orchestrated experience, install ARS in Claude Code via Method 0 (plugin) or Method 1 (project skills) above.
 
 ### Method 4: Use with claude.ai (web)
 
@@ -392,7 +376,7 @@ Method 4a is claude.ai's standard Custom Skill install path: zip each skill fold
 
 **Recommended paths instead:**
 
-- For agentic skill execution on the desktop, use [Method 3 (Cowork)](#method-3-claude-cowork-desktop). All four skills register as Cowork capabilities, with multi-agent orchestration intact.
+- For skill execution on the desktop, use [Method 3 (Cowork)](#method-3-claude-cowork-desktop). The four skills upload as standalone Cowork skills; the multi-agent pipeline orchestration is only available in Claude Code (Methods 0–2).
 - For claude.ai web access to the repo content, use [Method 4b (Project + GitHub integration)](#method-4b-project--github-integration-recommended-for-claudeai). Claude reads the skill bodies, references, and examples, and you can ask questions or draft against them in a normal claude.ai chat.
 - For Claude Code projects, use [Method 1 (project skills)](#method-1-as-project-skills-recommended) or [Method 2 (standalone)](#method-2-as-a-standalone-project).
 

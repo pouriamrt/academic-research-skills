@@ -1,6 +1,6 @@
 # Academic Research Skills
 
-A suite of Claude Code skills for rigorous academic research, experimentation, statistical analysis, paper writing, peer review, and pipeline orchestration. 8 skills, 61 agents (v3.18.0: +1 `claim_ref_alignment_audit_agent`), 21 handoff schemas + 13 passport schemas (v3.18.0 added: `claim_audit_result`, `claim_intent_manifest`, `claim_drift`, `uncited_assertion`, `constraint_violation`, `uncited_audit_failure`).
+A suite of Claude Code skills for rigorous academic research, experimentation, statistical analysis, paper writing, peer review, and pipeline orchestration. 8 skills, 61 agents (v3.18.0: +1 `claim_ref_alignment_audit_agent`), 21 handoff schemas + passport schemas (v3.18.0 added: `claim_audit_result`, `claim_intent_manifest`, `claim_drift`, `uncited_assertion`, `constraint_violation`, `uncited_audit_failure`; v3.19.0 added: `citation_verification_summary`, `experiment_provenance_entry`, `experiment_alignment_result`, `terminal_policies`, `version_records` + submission/patch contracts). v3.19.0 synced upstream v3.10 → v3.13.0 — Windows hook portability, `agents/` real-copy mirror, provider-agnostic cross-model verification, citation-existence gate, three-way-scan + rebuttal-audit modes, format-profile, diff/patch revision, submission-package verifier.
 
 ## Skills Overview
 
@@ -13,7 +13,20 @@ A suite of Claude Code skills for rigorous academic research, experimentation, s
 | `lab-notebook` v1.0.1 | Experiment research record | full, log-entry, deviation, snapshot, export, audit |
 | `academic-paper` v3.2.0 | 11-agent academic paper writing (English-only) | full, plan, outline-only, revision, revision-coach, abstract-only, lit-review, format-convert, citation-check, disclosure |
 | `academic-paper-reviewer` v1.9.1 | Multi-perspective paper review (5 reviewers + optional cross-model DA critique) | full, re-review, quick, methodology-focus, guided, calibration |
-| `academic-pipeline` v3.18.0 | Full pipeline orchestrator (suite-version-pinned, auto-by-default) | (coordinates all above) |
+| `academic-pipeline` v3.19.0 | Full pipeline orchestrator (suite-version-pinned, auto-by-default) | (coordinates all above) |
+
+## v3.19.0 Upstream Sync (Imbad0202 v3.10 → v3.13.0, 2026-06-21)
+
+Curated content sync of `8ca9d25` → `c22c17e` onto the fork's v3.18.0 baseline. Bilingual additions (zh-CN/ja-JP READMEs, zh-TW docs) NOT merged — fork stays English-only. Fork priorities preserved: English-only output, experiment pipeline (Schemas 10–18), Windows guards. Full detail in `CHANGELOG.md` [3.19.0].
+
+**Highlights:**
+- **Windows portability (#454/#451/#413):** Python-hook portability + graceful no-Python degradation; `.gitattributes` pins `*.sh` to LF; `agents/` plugin agents materialized as real byte-copies of `deep-research/agents/` sources (symlinks broke on Windows), pinned by new `scripts/check_agents_mirror_sync.py`.
+- **Verification (#455/#182/#127/#310):** provider-agnostic cross-model verify (OpenAI-compatible: DeepSeek/MiMo/self-hosted); `citation_existence` terminal gate + arXiv resolver + verification cache; cross-index triangulation policy; trust-boundary hardening.
+- **New modes/commands (#433/#439/#89/#394):** three-way-scan + rebuttal-audit (`/ars-3w`, `/ars-rebuttal-audit`, `/ars-cache-invalidate`); `format_profile` schema + intake; diff/patch revision mode; submission-package verifier CLI.
+- **Auto-research + evals (#376/#263/#260/#261/#262):** Kong auto-research track; Phase-1 eval harness + gold sets; experiment-provenance intake; figure/table fidelity gate; cross-paper contradiction inventory.
+- **Infra:** root `pyproject.toml` (`pythonpath="."`) replaces root `conftest.py`; shared test helpers moved to `tests/` package (#311); `CITATION.cff`, Zenodo DOI, Copilot instructions, gitleaks repository-hygiene workflow.
+
+**Conflict-resolution notes:** bilingual dropped; 45 fork-diverged files 3-way-merged against the `8ca9d25` base; doc/agent conflicts resolved fork-wins on version/English-only/structure + union for additive feature blocks; `check_spec_consistency.py` kept English-only (`check_bilingual_purge`) + `check_rebuttal_audit_guard` grafted; `bibliography_agent.md` F2 SHA pin recomputed; `academic-paper` Agent Team held at 11; `examples/` inventory corrected to 9. Version: `academic-pipeline` 3.18.0 → 3.19.0 (suite-pinned); `marketplace.json` 3.17.0 → 3.19.0 (pre-existing drift fixed).
 
 ## v3.18.0 Upstream Sync (Imbad0202 v3.7.3 → v3.10, 2026-05-23)
 
@@ -281,9 +294,9 @@ Materials: Sprint Contract (Schema 20, v3.6.2+ for reviewers; Schema 20.1, v3.6.
 Run `python tools/self_test.py` to validate plugin structural integrity (200+ checks). See `tools/` for schema validation, dependency graph generation, pipeline dashboard, and reproducibility replay. CI workflows under `.github/workflows/`: `pytest.yml`, `spec-consistency.yml`, `freshness-check.yml`.
 
 ## Version Info
-- **Version**: 3.18.0
-- **Suite version**: 3.18.0
-- **Last Updated**: 2026-05-23
+- **Version**: 3.19.0
+- **Suite version**: 3.19.0
+- **Last Updated**: 2026-06-21
 - **Author**: Pouria Mortezaagha
-- **Upstream**: Imbad0202 (merged through v3.10 spec amendment / commit 8ca9d25)
+- **Upstream**: Imbad0202 (merged through v3.13.0 / commit c22c17e)
 - **License**: CC-BY-NC 4.0

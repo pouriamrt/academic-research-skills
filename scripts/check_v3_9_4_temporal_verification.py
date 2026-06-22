@@ -9,7 +9,7 @@ Enforces 8 invariants from spec §7:
   5. temporal_audit_results.yaml schema conformance + finding_kind closed list + per-kind required-field map (via oneOf)
   6. M3 IRON RULE block present in report_compiler_agent.md and draft_writer_agent.md (Task 22 implements lint of this)
   7. M6 Citation Provenance Protocol section present in timeline_extraction_agent.md (Task 21+22 implements)
-  8. bibliography_agent.md UNMODIFIED relative to v3.9.3 baseline (Task 8 implements sha256 guard)
+  8. bibliography_agent.md matches the accepted post-#257 baseline for this temporal lint's ownership guard
 
 This Task 6 scaffold implements invariants 1, 4, 5 (schema conformance). Invariants 2, 6-8 are added in later tasks.
 
@@ -43,7 +43,7 @@ BIBLIOGRAPHY_AGENT_PATH = REPO_ROOT / "deep-research/agents/bibliography_agent.m
 # block + fork-specific Material Passport corpus-consumer protocol on top of
 # upstream's v3.9.3 bibliography_agent. F2 invariant still applies — this
 # pin ensures the file does not silently drift from fork's current state.
-BIBLIOGRAPHY_AGENT_SHA256 = "f42589241d0cc8b71b06cac1bb497879b8df16f5dc6f566302b7c9380f60963b"
+BIBLIOGRAPHY_AGENT_SHA256 = "b28cb8a17c1a7a8f8c7e1efc888982645b5ddb15f7eddac8f18361d081d943b6"
 
 
 def _validate(yaml_path: Path, schema_path: Path) -> list[str]:
@@ -95,12 +95,14 @@ def _check_supersession_cycles(timeline_path: Path) -> list[str]:
 
 
 def _check_bibliography_agent_unchanged() -> list[str]:
-    """Invariant 8: bibliography_agent.md must match v3.9.3 baseline sha256 (F2 boundary invariant).
+    """Invariant 8: bibliography_agent.md must match the accepted baseline sha256.
 
     Per spec §3.4 + §3.6 F2 closure: M6 citation provenance and M5-stub version-family awareness
     are owned by timeline_extraction_agent, NOT bibliography_agent. This lint enforces the invariant
-    that bibliography_agent.md is unchanged in v3.9.4. If a future v3.x release legitimately modifies
-    bibliography_agent.md, the BIBLIOGRAPHY_AGENT_SHA256 constant above is updated in the same commit.
+    that temporal/version-family logic does not drift into bibliography_agent.md. #257 legitimately
+    adds lit-review distributional-skew advisory text; that text is now part of this guard's baseline.
+    If a future v3.x release legitimately modifies bibliography_agent.md, update the sha256 constant in
+    the same commit.
     """
     if not BIBLIOGRAPHY_AGENT_PATH.exists():
         return [f"missing: {BIBLIOGRAPHY_AGENT_PATH}"]
@@ -113,7 +115,8 @@ def _check_bibliography_agent_unchanged() -> list[str]:
             f"bibliography_agent.md modified — v3.9.4 F2 invariant violated. "
             f"expected sha256 {BIBLIOGRAPHY_AGENT_SHA256}, got {actual}. "
             f"Per spec §3.4 + §3.6, M6 citation provenance and M5-stub version-family awareness "
-            f"are owned by timeline_extraction_agent, NOT bibliography_agent."
+            f"are owned by timeline_extraction_agent, NOT bibliography_agent. #257 distributional-skew "
+            f"advisory text is allowed only as part of the recorded baseline."
         ]
     return []
 

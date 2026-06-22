@@ -88,6 +88,7 @@ Activate `socratic` mode when the user's **intent** matches any of the following
 | Need a quick brief (30 min) / 需要快速摘要 | `quick` | fidelity |
 | Have a paper to evaluate before citing / 有論文需要評估 | `review` | balanced |
 | Need literature review for a topic / 需要文獻回顧 | `lit-review` | fidelity |
+| Need a fast paper-comparison scan / 需要快速比較多篇論文 | `three-way-scan` | fidelity |
 | Need to verify specific claims / 需要查核特定事實 | `fact-check` | fidelity |
 | Need systematic review / meta-analysis / 系統性回顧或後設分析 | `systematic-review` | fidelity |
 
@@ -132,7 +133,9 @@ User Input
     |   |           +-- No --> Need a full report?
     |   |                      +-- Yes --> full mode
     |   |                      +-- No --> Only need literature?
-    |   |                                 +-- Yes --> lit-review mode
+    |   |                                 +-- Yes --> Need rapid paper comparison?
+    |   |                                            +-- Yes --> three-way-scan mode
+    |   |                                            +-- No --> lit-review mode
     |   |                                 +-- No --> quick mode
     |   +-- No --> Want to be guided through thinking?
     |              +-- Yes --> socratic mode
@@ -262,7 +265,7 @@ User: "Research [topic]"
 
 1. **Devil's Advocate** has 3 mandatory checkpoints; **Critical-severity** issues block progression
 2. Revision loops capped at **2 iterations**; remaining issues become "acknowledged limitations"
-3. **Ethics Review** can halt delivery for Critical ethics concerns
+3. ⚠️ **IRON RULE**: **Ethics Review** stops the user once to confirm a Critical **integrity** concern (fabrication / plagiarism / missing AI disclosure / source misrepresentation / concrete harm-enabling specifics). Overridable with recorded reasoning — it confirms, it does not veto. Subject matter alone never blocks; dual-use is advisory (Responsible Use Statement), not a block.
 4. User confirmation required after Phase 1 before proceeding
 
 ---
@@ -467,9 +470,47 @@ User: "Systematic review of [topic]" / "Meta-analysis of [topic]"
 | `quick` | RQ + Biblio + Verification + Report | Research brief | 500-1,500 |
 | `review` | Editor + Devil's Advocate + Ethics | Reviewer report on provided text | N/A |
 | `lit-review` | Biblio + Verification + Synthesis | Annotated bibliography + synthesis | 1,500-4,000 |
+| `three-way-scan` | Biblio + Verification (retrieval + WHY/HOW/WHAT extract) | Paper shortlist compared by WHY/HOW/WHAT + cross-paper synthesis | 800-2,000 |
 | `fact-check` | Source Verification only | Verification report | 300-800 |
 | `socratic` | Socratic Mentor + RQ + Devil's Advocate | Research Plan Summary (INSIGHT collection) | N/A (iterative) |
 | `systematic-review` | RQ + Architect + Biblio + Verification + RoB + Meta-Analysis + Synthesis + Lineage + Report + Editor + Ethics + DA | Full PRISMA 2020 report + concept lineage + forest plot data + GRADE table | 5,000-15,000 |
+
+---
+
+## Three-Way Scan Mode (WHY / HOW / WHAT)
+
+Use `three-way-scan` when the user needs a disciplined shortlist of papers compared in a stable frame, but does **not** yet need a full literature review report.
+
+- **WHY**: what problem or bottleneck the paper addresses and why it matters
+- **HOW**: what strategy, method, or technical route the paper uses
+- **WHAT**: what the paper found, built, or still leaves unresolved
+
+This mode is intentionally lighter than `lit-review`. It prioritizes:
+
+1. candidate retrieval
+2. deduplication
+3. compact per-paper extraction
+4. cross-paper synthesis of shared WHY, divergent HOW, and remaining gaps
+
+Recommended per-paper output:
+
+```markdown
+## <paper title>
+Source: <provider> | Year: <year> | Link: <url>
+
+- WHY: ...
+- HOW: ...
+- WHAT: ...
+```
+
+Then add:
+
+- common `WHY`
+- divergent `HOW`
+- strongest `WHAT`
+- unresolved global gap
+
+If the user later wants a broader evidence matrix, thematic synthesis, or PRISMA-like coverage, escalate from `three-way-scan` to `lit-review` or `systematic-review`.
 
 ---
 
@@ -485,7 +526,7 @@ Key failure path summary:
 | Insufficient literature | bibliography_agent finds < 5 sources | Expand search strategy, alternative keywords |
 | Methodology mismatch | RQ type misaligned with method capability | Return to Phase 1, suggest 3 alternative methods |
 | Devil's Advocate CRITICAL | Fatal logical flaw discovered | STOP, explain the issue, require correction |
-| Ethics BLOCKED | Serious ethical issue | STOP, list issues and remediation path |
+| Ethics BLOCKED | Critical integrity issue (not subject matter) | Stop the user once to confirm; list issues + remediation path; overridable with recorded reasoning |
 | Socratic non-convergence | > 10 rounds without convergence | Suggest switching to full mode |
 | User abandons mid-process | Explicitly states they don't want to continue | Save progress, provide re-entry path |
 | English search returns empty for niche topic | Search returns fewer than 10 results | Broaden keywords or recommend a more specific RQ |
@@ -617,6 +658,7 @@ See `academic-pipeline/SKILL.md` for the complete workflow.
 | `examples/handoff_to_paper.md` | deep-research full mode handoff to academic-paper |
 | `examples/review_mode.md` | Review mode: 3-agent review pipeline for policy recommendation text |
 | `examples/fact_check_mode.md` | Fact-check mode: source verification of HEI claims with per-claim verdicts |
+| `examples/idea_diversity_coverage_gap_advisory.md` | #257 Socratic wording-pattern + lit-review distributional-skew advisories |
 
 ---
 
@@ -628,8 +670,8 @@ Follows the user's language. Academic terminology kept in English. Socratic mode
 
 ## Quality Standards
 
-1. **Every claim must have a citation** — no unsupported assertions
-2. **Evidence hierarchy** — meta-analyses > RCTs > cohort studies > case reports > expert opinion
+1. ⚠️ **IRON RULE**: **Every claim must have a citation** — no unsupported assertions
+2. **Evidence hierarchy** — meta-analyses > RCTs > cohort studies > case reports > expert opinion (field-neutral baseline; grading is **discipline-relative** — a source meeting its own field's gold standard can reach Grade A even at a low design level. See `references/source_quality_hierarchy.md` §Grading Rubric + §Field-Specific Adjustments)
 3. **Contradiction disclosure** — if sources disagree, report both sides with evidence quality comparison
 4. **Limitation transparency** — every report must have an explicit limitations section
 5. **AI disclosure** — all reports include a statement that AI-assisted research tools were used

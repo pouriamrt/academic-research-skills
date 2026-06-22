@@ -1,6 +1,6 @@
 {
   "name": "academic-research-skills",
-  "version": "3.18.0",
+  "version": "3.19.0",
   "description": "Suite of Claude Code skills for rigorous academic research, experimentation, paper writing, peer review, and pipeline orchestration. 8 skills covering the full research lifecycle from literature review to publication. v3.18 merges upstream Imbad0202 v3.8.0 → v3.10 (claim ↔ reference faithfulness audit agent, cross-index triangulation, temporal verification, deterministic command dispatch, /ars-mark-read, /ars-unmark-read, /ars-reviewer commands, phase boundary protocol) on top of v3.17's auto-by-default pipeline (unattended runs; set ARS_INTERACTIVE=1 to restore prompts). English-only output. Builds on v3.16's upstream Imbad0202 v3.4.0–v3.7.3 merge (PRISMA-trAIce + RAISE compliance agent, sprint contract gates, generator-evaluator contract, passport reset boundary, literature corpus adapters, trust-provenance hardening, claim faithfulness locator, contaminated-source advisory) and the fork's v3.15 experiment pipeline (PaperOrchestra + Lu 2026 + experiment-designer / data-analyst / simulation-runner / lab-notebook). Optional integrations: Semantic Scholar + OpenAlex (citation graph APIs), PaperBanana MCP (methodology diagrams), Google Colab MCP (GPU compute).",
   "author": {
     "name": "Pouria Mortezaagha"

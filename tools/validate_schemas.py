@@ -90,9 +90,10 @@ def parse_schemas(schemas_path: Path) -> dict[int, SchemaDefinition]:
     text = schemas_path.read_text(encoding="utf-8")
     schemas: dict[int, SchemaDefinition] = {}
 
-    # Split on Schema headers: "## Schema N: <Name>"
+    # Split on Schema headers: "## Schema N: <Name>" or "## Schema N — <Name>"
+    # (Schemas 19/20 use the em-dash form from the fork v3.16.0 renumbering.)
     header_pattern = re.compile(
-        r"^## Schema (\d+):\s*(.+?)(?:\s*\(.*\))?\s*$", re.MULTILINE
+        r"^## Schema (\d+)\s*[:—]\s*(.+?)(?:\s*\(.*\))?\s*$", re.MULTILINE
     )
     matches = list(header_pattern.finditer(text))
 

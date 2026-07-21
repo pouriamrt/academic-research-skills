@@ -6,14 +6,27 @@ A suite of Claude Code skills for rigorous academic research, experimentation, s
 
 | Skill | Purpose | Key Modes |
 |-------|---------|-----------|
-| `deep-research` v2.9.4 | Universal 14-agent research team (with concept lineage) | full, quick, socratic, review, lit-review, fact-check, systematic-review |
+| `deep-research` v2.9.4 | Universal 14-agent research team (with concept lineage) | full, quick, socratic, review, lit-review, three-way-scan, fact-check, systematic-review |
 | `experiment-designer` v1.0.1 | Experiment protocol and power analysis | full, guided, quick, power-only, instrument |
 | `data-analyst` v1.0.1 | Statistical analysis execution | full, guided, quick, assumption-check, exploratory, replication |
 | `simulation-runner` v1.0.1 | Computational experiments | full, guided, quick, power-sim, sensitivity, bootstrap |
 | `lab-notebook` v1.0.1 | Experiment research record | full, log-entry, deviation, snapshot, export, audit |
-| `academic-paper` v3.2.0 | 11-agent academic paper writing (English-only) | full, plan, outline-only, revision, revision-coach, abstract-only, lit-review, format-convert, citation-check, disclosure |
+| `academic-paper` v3.2.0 | 11-agent academic paper writing (English-only) | full, plan, outline-only, revision, revision-coach, abstract-only, lit-review, format-convert, citation-check, disclosure, rebuttal-audit |
 | `academic-paper-reviewer` v1.9.1 | Multi-perspective paper review (5 reviewers + optional cross-model DA critique) | full, re-review, quick, methodology-focus, guided, calibration |
-| `academic-pipeline` v3.19.0 | Full pipeline orchestrator (suite-version-pinned, auto-by-default) | (coordinates all above) |
+| `academic-pipeline` v3.20.0 | Full pipeline orchestrator (suite-version-pinned, auto-by-default) | (coordinates all above) |
+
+## v3.20.0 Key Additions (upstream sync v3.13.0 → v3.17.0, 2026-07-16)
+
+True git merge of 54 upstream commits (`c22c17e` → `039d94f`) onto the fork's v3.19.0 baseline. Bilingual additions (zh-CN/ja-JP/ko-KR READMEs, Korean trigger keywords #452/#509 + routing fixtures) NOT merged — fork stays English-only. Fork priorities preserved: experiment pipeline (Schemas 10–18), auto-by-default pipeline, English-only output. Full detail in `CHANGELOG.md` [3.20.0].
+
+**Highlights:**
+- **Stage 5/6 boundary semantics (#528/#529/#535):** Stage 5 entry gate is the single MANDATORY finalization checkpoint; Stage 6 gains a decline path + terminal-acknowledgement vocabulary (`finish`/`end`/`done`/`confirm`). Fork adaptation: acknowledgement is interactive-mode-only — AUTO mode proceeds as if acknowledged on delivery. Five pipeline surfaces carry whole-file sha256 content locks (`scripts/check_pipeline_boundary_semantics.py`), re-pinned to the merged fork surfaces.
+- **Canonical cross-model handoff envelope (#527/#536/#523):** machine-stable `[CROSS-MODEL-HANDOFF v1]` envelope + normative grammar (`scripts/cross_model_handoff.py`); transport owned by the dispatching layer; blind disagreement checkpoints union-merged into `research_architect_agent` (design freeze) and `editorial_synthesizer_agent` (editorial decision) alongside the fork's routing gate and verdict block.
+- **Model tiering (#517/#520):** opt-in `ARS_MODEL_TIERING=economy|quality-boost`; fork extends the frozen classification 39 → **61 agents** (29 judgment / 32 execution) covering the 4 experiment skills + `concept_lineage_agent`.
+- **Verification hardening (#518/#519/#515):** risk-stratified sampling (HIGH-IMPACT references 100% at both gates), `CROSS_MODEL_ID_STATUS` allowlist, promotion bakeoff, GPT-5.6 Sol provisional verifier, `ARS_CROSS_MODEL_REASONING_EFFORT`; the generic 6th reviewer is retired, not deferred.
+- **New executable gates:** sprint-contract panel checker + majority-formula fix (#510/#532); degradation registry + hermetic transport-fixture test (#511/#533/#534); tools allowlist + Unicode-normalizing defrift lock (#514/#524); vendored release-discipline toolkit (`tools/release-discipline/` + `.command-invariants.toml`, announce inventory 16 commands).
+- **Writer/reviewer content:** CARS intro-rhetoric + title-crafting reference (#500/#502); WP advisory generalization + sharpened exemption (#501–#507); reviewer calibration documents LLM-as-judge leniency (#484); `draft_writer_agent` TEEL/register dedup (English-only variant); Stage 3' Minor no longer triggers coaching (#529 fix).
+- **Infra:** OpenAlex API-key auth + budget-aware 429 + arXiv backoff (#495/#496); Claude Science importability — fork `marketplace.json` declares all **8** skills (#480); eval-comment renderer (#479); `THIRD_PARTY.md`; prompt-debt retirement rounds 1+2 (#476–#490).
 
 ## v3.19.0 Upstream Sync (Imbad0202 v3.10 → v3.13.0, 2026-06-21)
 
@@ -168,7 +181,7 @@ Merged from upstream (Imbad0202) v2.9-v3.3 while preserving the fork's full expe
 - **Style Calibration**: optional intake step to learn the author's writing voice from past papers. See `shared/style_calibration_protocol.md`.
 - **Anti-sycophancy protocols**: DA agents score rebuttals 1-5 before conceding. No concession below 4/5. Frame-lock detection.
 - **Intent detection**: Socratic Mentor classifies user intent as exploratory vs. goal-oriented. Exploratory mode disables auto-convergence.
-- **Cross-model verification** (optional): Set `ARS_CROSS_MODEL` env var to enable GPT-5.4 Pro or Gemini 3.1 Pro for integrity sample checks and independent Devil's Advocate critique. Peer-review sixth-reviewer support remains planned. See `shared/cross_model_verification.md`.
+- **Cross-model verification** (optional): Set `ARS_CROSS_MODEL` env var to enable a non-Anthropic verifier (currently GPT-5.5 / GPT-5.5 Pro or Gemini 3.1 Pro) for integrity sample checks, independent Devil's Advocate critique, and blind disagreement checkpoints at design freeze + final editorial decision (#518). The once-planned generic sixth reviewer is retired, not deferred — see the "Why there is no generic 6th reviewer" note in `shared/cross_model_verification.md`, which also carries the supported-model table.
 - **AI Self-Reflection Report**: Pipeline Stage 6 now includes AI behavioral self-assessment (concession rate, health alerts, sycophancy risk rating).
 
 ## Routing Rules
@@ -294,9 +307,9 @@ Materials: Sprint Contract (Schema 20, v3.6.2+ for reviewers; Schema 20.1, v3.6.
 Run `python tools/self_test.py` to validate plugin structural integrity (200+ checks). See `tools/` for schema validation, dependency graph generation, pipeline dashboard, and reproducibility replay. CI workflows under `.github/workflows/`: `pytest.yml`, `spec-consistency.yml`, `freshness-check.yml`.
 
 ## Version Info
-- **Version**: 3.19.0
-- **Suite version**: 3.19.0
-- **Last Updated**: 2026-06-21
+- **Version**: 3.20.0
+- **Suite version**: 3.20.0
+- **Last Updated**: 2026-07-16
 - **Author**: Pouria Mortezaagha
-- **Upstream**: Imbad0202 (merged through v3.13.0 / commit c22c17e)
+- **Upstream**: Imbad0202 (merged through v3.17.0 / commit 039d94f)
 - **License**: CC-BY-NC 4.0

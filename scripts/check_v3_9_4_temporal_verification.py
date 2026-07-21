@@ -39,11 +39,13 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 SCHEMAS = REPO_ROOT / "shared/contracts/passport"
 
 BIBLIOGRAPHY_AGENT_PATH = REPO_ROOT / "deep-research/agents/bibliography_agent.md"
-# Fork v3.18.0 baseline (LF-normalized): fork carries v3.9.2 Phase Boundary
-# block + fork-specific Material Passport corpus-consumer protocol on top of
-# upstream's v3.9.3 bibliography_agent. F2 invariant still applies — this
-# pin ensures the file does not silently drift from fork's current state.
-BIBLIOGRAPHY_AGENT_SHA256 = "b28cb8a17c1a7a8f8c7e1efc888982645b5ddb15f7eddac8f18361d081d943b6"
+# Fork v3.20.0 baseline (LF-normalized): fork carries v3.9.2 Phase Boundary
+# block + fork-specific Material Passport corpus-consumer protocol, now merged
+# with upstream #511 Part A "Omission reason-provenance" paragraph (Triangulation
+# Extension § Per-API degradation). F2 ownership invariant intact: NO M6
+# citation-provenance / M5 version-family / temporal logic in bibliography_agent —
+# those remain owned by timeline_extraction_agent per spec §3.4 + §3.6.
+BIBLIOGRAPHY_AGENT_SHA256 = "94b98c5249339be62034c62bd17ab8e76476917cc4c7d48ae8c36c7c67dab431"
 
 
 def _validate(yaml_path: Path, schema_path: Path) -> list[str]:

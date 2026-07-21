@@ -1935,6 +1935,11 @@ class TestCLI:
             f"direct invocation. Run `chmod +x` and `git update-index --chmod=+x`."
         )
 
+    @pytest.mark.skipif(
+        sys.platform == "win32",
+        reason="shebang direct-exec is a POSIX mechanism; Windows CreateProcess "
+               "cannot run a .py without an interpreter prefix",
+    )
     def test_script_runs_via_direct_exec(self):
         # End-to-end smoke: invoke the script directly (no `python` prefix)
         # and confirm it produces the documented harness exit code. Belt

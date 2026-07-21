@@ -96,10 +96,44 @@ jobs:
           PYTHONPATH: .
         run: python3 -m unittest scripts.test_check_collaboration_depth_rubric -v
 
+      - name: Check rubric weight consistency (quality_rubrics / framework / SKILL rule 14)
+        run: python3 scripts/check_rubric_weight_consistency.py
+
+      - name: Check citation-verification intake wiring (#392)
+        run: python3 scripts/check_392_citation_verification_intake.py
+
+      - name: Check agents/ mirror sync (#413)
+        # The pytest companion `test_check_agents_mirror_sync.py` runs via the
+        # unified manifest.
+        run: python3 scripts/check_agents_mirror_sync.py
+
+      - name: Check tools-allowlist content lock (#524)
+        # Pins the #514 allowlist VALUE (mirror-sync pins only the pair) +
+        # the Bucket-A-must-not-advertise-Bash reconciliation. The pytest
+        # companion `test_check_tools_allowlist.py` runs via the unified
+        # manifest.
+        run: python3 scripts/check_tools_allowlist.py
+
+      - name: Check revision-patch discipline (#390 Slice B)
+        # The pytest companion `test_check_390_revision_patch_discipline.py`
+        # runs via the unified manifest.
+        run: python3 scripts/check_390_revision_patch_discipline.py
+
       - name: Check version consistency (CLAUDE.md / SKILL.md / CHANGELOG)
         env:
           PYTHONPATH: scripts
         run: python3 scripts/check_version_consistency.py
+
+      - name: Check SETUP cross-model example parity (#491)
+        # The pytest companion `test_check_setup_cross_model_parity.py`
+        # runs via the unified manifest (and also under pytest.yml's
+        # scripts/ glob — that 2x overlap is the accepted manifest pattern).
+        run: python3 scripts/check_setup_cross_model_parity.py
+
+      - name: Check model-tiering classification (#517)
+        # The pytest companion `test_check_model_tiering.py` runs via the
+        # unified manifest.
+        run: python3 scripts/check_model_tiering.py
 
       - name: Run version consistency unit tests
         env:
@@ -140,6 +174,14 @@ jobs:
 
       - name: Validate literature_corpus schemas and examples
         run: python3 scripts/check_literature_corpus_schema.py
+
+      - name: Validate degradation registry (#511 Part A)
+        # Pins shared/contracts/degradation_registry.json to the repo state it
+        # cites: every authority content-anchor must appear verbatim in its
+        # file, every pinned test/lint/schema must exist (path::function
+        # resolved for .py). The registry indexes, it never re-authors —
+        # semantics stay in each row's authority file.
+        run: python3 scripts/check_degradation_registry.py
 
       - name: Validate corpus consumer protocol (v3.6.5+)
         run: python3 scripts/check_corpus_consumer_protocol.py
@@ -212,6 +254,97 @@ jobs:
         env:
           PYTHONPATH: .
         run: python scripts/check_v3_9_0_triangulation.py
+
+      - name: Firm-rules sync + ID-collision lint (v3.10 PR-A, #127)
+        # Pins the canonical R-L3-2-* (contamination) / R-CIM-* (claim-manifest)
+        # firm-rule wording in shared/references/firm_rules.md against the agent
+        # prompt mirrors, and guards the v3.10 PR-A disambiguation (the two rule
+        # families no longer share the R-L3-2-A/B/C ID). v3.10 PR-B adds a
+        # contradiction guard on the contamination mirrors (no unqualified
+        # "advisory only / never block" claim once strict can block). The pytest
+        # companion `test_check_firm_rules_sync.py` runs via the unified manifest.
+        env:
+          PYTHONPATH: .
+        run: python scripts/check_firm_rules_sync.py
+
+      - name: Judge-prompt-version drift guard (#361)
+        # Recomputes the SHA-256 of the canonical judge-prompt section (between
+        # the JUDGE-PROMPT-CANONICAL markers in claim_ref_alignment_audit_agent.md)
+        # and fails if it drifts from JUDGE_PROMPT_SHA256 in _claim_audit_constants.py.
+        # Forces a prompt edit to re-pin the hash + bump JUDGE_PROMPT_VERSION, so a
+        # judge-prompt change cannot silently leave stale judge-cache entries valid.
+        # The pytest companion `test_check_judge_prompt_version.py` runs via the
+        # unified manifest.
+        env:
+          PYTHONPATH: .
+        run: python scripts/check_judge_prompt_version.py
+
+      - name: v3.10 policy-layer lint (#127 PR-B)
+        # Verifies the v3.10 terminal-policy-layer contract: venue_type /
+        # venue_type_provenance / venue_type_source schema fields (incl. the
+        # explicit `unknown` member + no `_inferred` provenance), the pair
+        # dependency branches, the trusted_source laundering guard, the standalone
+        # terminal_policies schema home (Inv. 11), the marker grammar (severity=
+        # HIGH-BLOCK only inside <!--ref-->, two shapes, policy_hash stamp), the
+        # generic formatter rule 11 + STAMP-ONLY two-gate, and temporal_integrity
+        # accepting only `advisory` (Inv. 3). Runs ALONGSIDE the v3.9.0 lint, not a
+        # rename. The pytest companion `test_check_v3_10_policy.py` runs via the
+        # unified manifest.
+        env:
+          PYTHONPATH: .
+        run: python scripts/check_v3_10_policy.py
+
+      - name: "#394 slice-4 submission-policy lint"
+        # Verifies the submission-package terminality contract: the
+        # terminal_policies submission_package enum {advisory, strict} with no
+        # JSON-Schema default, the orchestrator Submission-Package Terminal
+        # Gate section's load-bearing literals (fix-loop bound, VERIFICATION-
+        # INCOMPLETE, --check-freshness, sole-reader + gate-on-tokens
+        # sentences), the formatter Submission Package Advisories section,
+        # the AST single-homed guard (the verifier never READS
+        # terminal_policies — docstring mentions stay free, gate-1 P2), and
+        # the report schema's closed policy_slug enum. The pytest companion
+        # `test_check_394_submission_policy.py` runs via the unified manifest.
+        env:
+          PYTHONPATH: .
+        run: python scripts/check_394_submission_policy.py
+
+      - name: "#439 format_profile contract lint"
+        # Guards the scholar-declared layout profile feature (8 invariants):
+        # valid standalone Draft 2020-12 schema + locked root (Invariant 11), the
+        # line_spacing.fixed_pt conditional (required iff mode==fixed_pt, AND mode
+        # itself required), NO venue_profile provenance machinery leaked in
+        # (declared-only downgraded to docs, design §3), cut fields stay cut
+        # (design §4), the synthetic example validates, the formatter + intake
+        # prose wiring carry their load-bearing literals (byte-equivalence guard,
+        # fail-closed, venue precedence; write-nothing-when-declined + structural
+        # PCR row), and the POSITIONING ship-contract-not-content boundary (§6).
+        # The pytest companion `test_check_439_format_profile.py` runs via the
+        # unified manifest.
+        env:
+          PYTHONPATH: .
+        run: python scripts/check_439_format_profile.py
+
+      - name: Run #527 cross-model handoff contract lint
+        # Pins the canonical [CROSS-MODEL-HANDOFF v1] envelope + dispatcher
+        # consumer contract across shared/cross_model_verification.md, the
+        # three checkpoint owners, and the Mode-A orchestrator. Normative
+        # grammar: scripts/cross_model_handoff.py; owner->dispatcher->owner
+        # fixtures + this lint's mutation tests run via the unified
+        # manifest (#156).
+        run: python3 scripts/check_cross_model_handoff_contract.py
+
+      - name: Run #528 pipeline boundary-semantics defrift lock
+        # Pins the four Mode-A-replay resolutions (#529 items 1-2 + #528
+        # items 3-4) across academic-pipeline SKILL.md / orchestrator /
+        # state machine / process_summary_protocol: Methodology Blueprint
+        # in the Stage 1->2 handoff, Stage 3' Minor never triggers
+        # coaching, the Stage 5 MANDATORY boundary is the entry gate
+        # (completion checkpoint FULL — never SLIM), and the Stage 6
+        # terminal-acknowledgement semantics. The pytest companion
+        # `test_check_pipeline_boundary_semantics.py` runs via the
+        # unified manifest (#156).
+        run: python3 scripts/check_pipeline_boundary_semantics.py
 
       - name: Run v3.9.2 Phase Boundary coverage lint (#133)
         # Enforces 22 Bucket A agents have ## Phase Boundary (v3.9.2)

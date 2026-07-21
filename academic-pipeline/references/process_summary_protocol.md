@@ -1,6 +1,6 @@
 # Stage 6: Process Summary Protocol (Added in v2.4)
 
-**Trigger**: After Stage 5 (FINALIZE) completion
+**Trigger**: After the user confirms the Stage 5 completion checkpoint (FULL). Stage 6 is non-mandatory — the user may decline it at that checkpoint; it is then marked `skipped` and the pipeline still terminates `completed` (see `pipeline_state_machine.md` § Stage 6 terminal semantics)
 **Purpose**: Document the complete human-AI collaboration history for the paper creation process, for user sharing, reporting, or reflection
 
 > **v3.17.0 AUTO-mode contract:** When `ARS_INTERACTIVE` is unset (AUTO, the default), Stage 6 generates `paper_creation_process.md` + `paper_creation_process.pdf` in English unconditionally — NO language picker. When `ARS_INTERACTIVE=1`, the original interactive prompt fires (English only since v3.17.0; the prompt is retained for symmetry with v3.16 muscle memory but the only valid response is English). The "Failure Mode Audit Log" section MUST include every FAIL marker from `compliance_history[]`, every `auto_retry_history[]` entry (v3.17.0 schema), and every `auto_disclosure_addendum`. When `ARS_AUTO_FAIL_MODE=continue-with-warning` shipped a paper with integrity FAIL on record, this Stage 6 section is the user-readable surface that exposes it.
@@ -17,12 +17,28 @@
    - Quality requirement evolution (e.g., formatting, tone adjustments)
    - Pipeline statistics (stage count, review rounds, integrity verification count, etc.)
 
-2. Generate English Markdown version (paper_creation_process.md)
+2. Dispatch collaboration_depth_agent in whole-pipeline mode (range = all
+   stages, v3.5); its advisory report becomes the "Collaboration Depth
+   Trajectory" chapter of the Process Record — this dispatch happens BEFORE
+   record generation so the chapter is inside the record the user acknowledges
 
-3. Convert to LaTeX and compile PDF:
+3. Generate English Markdown version (paper_creation_process.md)
+
+4. Convert to LaTeX and compile PDF:
    - pandoc MD -> LaTeX body
    - Package complete LaTeX document (with cover page, table of contents, headers/footers)
    - tectonic compile PDF
+
+5. Terminal acknowledgement (pipeline terminal checkpoint):
+   - Interactive mode (ARS_INTERACTIVE=1): After delivering the process record, prompt the user to close the pipeline.
+     Acknowledgement vocabulary: "finish" / "end" / "done" / "confirm", or an
+     unambiguous natural-language equivalent that accepts the deliverables.
+     Change requests (content corrections) keep Stage 6 in_progress — they are not acknowledgements.
+   - AUTO mode (default, ARS_INTERACTIVE unset): no prompt — proceed as if
+     acknowledged immediately after the record is delivered.
+   - On acknowledgement: state_tracker marks Stage 6 completed and sets the pipeline global state to completed. There is no next stage.
+     (In AUTO mode this happens immediately after delivery. See
+     pipeline_state_machine.md § Stage 6 terminal semantics.)
 ```
 
 ## Required Content in Process Record

@@ -49,8 +49,9 @@ Every schema artifact (Schemas 1-20 as defined in `shared/handoff_schemas.md`) *
 | v3.7.1–v3.8.x | v1.0 | v1.0 | — | — | — | No schema changes |
 | v3.9.0–v3.13.x | v1.0 | v1.0 | v1.0 | — | — | Schema 16 (Concept Lineage) + Schema 17 (Style Profile) added |
 | v3.14.0 | v1.0 | v1.0 | v1.0 | v1.0 | — | Schema 18 (R&R Traceability Matrix) added in upstream merge |
+| v3.15.0 | v1.0 | v1.0 | v1.0 | v1.0 | — | Upstream merge: PaperOrchestra (Semantic Scholar API, anti-leakage, VLM verification, score trajectory) + Lu 2026 (failure mode checklist, calibration, disclosure, mode spectrum). No schema breaking changes; Schema 5 gains optional `score_trajectory` substructure (backwards-compatible). |
 | v3.16.0 | v1.0 | v1.0 | v1.0 | v1.0 | v1.0 / v1.1 | Schema 19 (Compliance Report) + Schema 20 (Sprint Contract) added via upstream v3.4.0–v3.7.3 sync; renumbered from upstream Schema 12 / 13 to avoid collision with fork's experiment Schemas |
-| v3.15.0 | v1.0 | v1.0 | v1.0 | v1.0 | Upstream merge: PaperOrchestra (Semantic Scholar API, anti-leakage, VLM verification, score trajectory) + Lu 2026 (failure mode checklist, calibration, disclosure, mode spectrum). No schema breaking changes; Schema 5 gains optional `score_trajectory` substructure (backwards-compatible). |
+| v3.17.0–v3.20.0 | v1.0 | v1.0 | v1.0 | v1.0 | v1.0 / v1.1 | No numbered-schema changes. Passport sub-schemas added: claim-audit set (v3.18.0), citation-verification / provenance / terminal-policies set (v3.19.0). v3.20.0 upstream sync (v3.13.0 → v3.17.0) adds the degradation-registry contract but no schema changes. |
 
 > **Reading this table**: Each row shows which schema versions that plugin version can produce and consume. A plugin version supports all schema versions from its row and all previous rows.
 

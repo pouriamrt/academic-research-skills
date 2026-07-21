@@ -1,6 +1,6 @@
 ---
 name: academic-paper
-description: "Academic paper writing skill with 11-agent pipeline. v3.2.0: 10 modes (full/plan/outline/revision/revision-coach/abstract/lit-review/format-convert/citation-check/disclosure). Experiment results integration (Schema 11/12) from data-analyst, simulation-runner, and lab-notebook. Style Calibration + Writing Quality Check + Anti-Leakage Protocol + VLM Figure Verification + Disclosure Mode (venue-specific AI usage statements) + v3.6.6 generator-evaluator sprint contract (Schema 20.1) + v3.7.3 three-layer citation locator. Supports IMRaD, literature review, theoretical, case study, policy brief, and conference paper structures. APA 7.0 (default), Chicago, MLA, IEEE, Vancouver citation formats. English-only output. Multi-format output (LaTeX, DOCX-via-Pandoc, PDF, Markdown). Triggers on: write paper, academic paper, paper outline, write abstract, revise paper, check citations, convert to LaTeX, guide my paper, parse reviews, revision roadmap, AI disclosure."
+description: "Academic paper writing skill with 11-agent pipeline. v3.2.0: 11 modes (full/plan/outline/revision/revision-coach/abstract/lit-review/format-convert/citation-check/disclosure/rebuttal-audit). Experiment results integration (Schema 11/12) from data-analyst, simulation-runner, and lab-notebook. Style Calibration + Writing Quality Check + Anti-Leakage Protocol + VLM Figure Verification + Disclosure Mode (venue-specific AI usage statements) + v3.6.6 generator-evaluator sprint contract (Schema 20.1) + v3.7.3 three-layer citation locator. Supports IMRaD, literature review, theoretical, case study, policy brief, and conference paper structures. APA 7.0 (default), Chicago, MLA, IEEE, Vancouver citation formats. English-only output. Multi-format output (LaTeX, DOCX-via-Pandoc, PDF, Markdown). Triggers on: write paper, academic paper, paper outline, write abstract, revise paper, check citations, convert to LaTeX, guide my paper, parse reviews, revision roadmap, audit my rebuttal, check my response draft, AI disclosure."
 metadata:
   version: "3.2.0"
   last_updated: "2026-05-15"
@@ -56,6 +56,8 @@ Write a paper on the impact of declining birth rates on private university manag
 ### Trigger Keywords
 
 **Triggers**: write paper, academic paper, paper outline, write abstract, revise paper, literature review paper, check citations, convert to LaTeX, convert format, format paper, conference paper, journal article, thesis chapter, research paper, guide my paper, help me plan my paper, step by step paper, draft manuscript, write methodology, write discussion, parse reviews, revision roadmap, help me with my revision, I got reviewer comments, convert citations
+
+**한국어**: 논문 작성, 논문 초안, 논문 개요, 초록 작성, 논문 수정, 인용 확인, 인용 형식 검사, LaTeX 변환, 서식 변환, 학위논문 작성, 학술지 논문 작성, 학회 논문 작성, 논문 계획을 도와줘, 단계별로 논문 쓰기, 심사 의견을 받았어, 심사 의견 반영, 답변서 점검, AI 사용 고지
 
 ### Plan Mode Activation
 
@@ -262,7 +264,7 @@ Multi-phase agents (Bucket B: `argument_builder` P3+Plan, `visualization` P4+P7)
 
 Routing into Mode B requires explicit user signal — `/ars-<mode>` slash command or `[direct-mode]` prefix. Ambiguous cross-phase input defaults to clarification per `.claude/CLAUDE.md` Routing Discipline + `shared/references/intent_clarification_protocol.md`.
 
-**Enforcement (v3.9.2):** prompt-level via Phase Boundary blocks on Bucket A agents + advisory verifier (`scripts/check_pipeline_integrity.py`). Deterministic PreToolUse hook + multi-phase envelope deferred to v3.10 active conductor (#134).
+**Enforcement (v3.9.2):** Phase Boundary blocks on Bucket A agents + advisory verifier (`scripts/check_pipeline_integrity.py`) + a deterministic PreToolUse write-scope guard in hook-enabled runtimes (#134 rescope, PR #294). Multi-phase envelope remains forward-scope (#134 Slices 3-5).
 
 ## v3.6.6 Generator-Evaluator Contract Protocol
 
@@ -604,6 +606,19 @@ See `agents/intake_agent.md` for the complete field definitions of the Phase 0 c
 
 **Examples** (9 files in `examples/`): `imrad_hei_example`, `literature_review_example`, `plan_mode_guided_writing`, `revision_mode_example`, `revision_recovery_example`, `clinical_citation_verification_checklist`, `clinical_epistemic_status_example`, `commitment_ledger_example`, `version_family_reconciliation_example`.
 
+**References** (27 files in `references/`):
+- Citation: `apa7_extended_guide`, `citation_format_switcher`
+- Writing: `academic_writing_style`, `writing_quality_check`, `writing_judgment_framework`
+- Structure: `paper_structure_patterns` (6 types), `abstract_writing_guide`, `intro_title_rhetoric_guide` (CARS moves + title checklist)
+- Domain: `hei_domain_glossary`, `journal_submission_guide`, `latex_template_reference`, `domain_evidence_profiles` (advisory screening profiles)
+- Process: `failure_paths` (12 scenarios), `mode_selection_guide` (11 modes), `plan_mode_protocol`, `workflow_phase_details`, `revision_patch_protocol` (#390 Mode B commands + marker lifecycle)
+- Ethics: `credit_authorship_guide` (CRediT 14 roles), `funding_statement_guide`, `statistical_visualization_standards`
+- Disclosure (v3.2): `disclosure_mode_protocol` (venue-specific AI-usage statement generation), `venue_disclosure_policies` (v1 database: ICLR, NeurIPS, Nature, Science, ACL, EMNLP)
+- Integrity (v3.3): `anti_leakage_protocol` (knowledge isolation), `vlm_figure_verification` (optional VLM figure check)
+- Policy anchors (#108): `policy_anchor_table`, `policy_anchor_disclosure_protocol`
+- Meta: `changelog` (version history)
+- Also: `deep-research/references/apa7_style_guide.md` (base reference, extended here)
+
 ---
 
 ## Reference Files
@@ -710,6 +725,17 @@ academic-paper + report-to-website    -> Interactive web version of the paper
 academic-paper + notebooklm-slides-generator -> Presentation slides from paper
 academic-paper + academic-paper-reviewer -> Peer review -> revision loop
 ```
+
+---
+
+## Model Tiering (#517, optional)
+
+When `ARS_MODEL_TIERING` is set, the dispatching session routes this skill's agents per `shared/model_tiering.md` (canonical: the full 61-agent judgment/execution table (fork extension: 39 upstream + 22 experiment-skill agents) + rules). Compact rule:
+
+- **Unset (default):** every agent inherits the session model — byte-equivalent pre-#517 behavior.
+- **`economy`** (frontier-tier session): execution-type agents dispatch ONE tier below the session model — floor Opus-class, never lower; judgment-type agents stay on the session model. No-op at or below the floor (announce once).
+- **`quality-boost`** (below-frontier session): judgment-type agents at the checkpoint surfaces (Stage 2.5/4.5 gates; the opt-in Stage 4→5 claim–ref audit; final review) jump UP to the frontier tier (however many tiers away — not a single increment); nothing is ever downgraded. No-op at the frontier (announce once).
+- Unknown values → warn once, behave as unset. Tiers are relative positions, never hard-pinned model ids. When a direction is active, route repeated same-stage calls to the SAME worker so its prompt cache accumulates; unset means dispatch shapes stay byte-equivalent too.
 
 ---
 

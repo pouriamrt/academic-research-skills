@@ -1,6 +1,6 @@
 # ARS Setup
 
-Prerequisites and optional setup for Academic Research Skills. If you only need Markdown output and the default Claude Opus 4.8 pipeline, you can skip most of this — see "Minimum viable setup" below.
+Prerequisites and optional setup for Academic Research Skills. If you only need Markdown output and the default Claude pipeline (the inherited session model), you can skip most of this — see "Minimum viable setup" below.
 
 ---
 
@@ -129,6 +129,7 @@ ARS exposes a few opt-in flags. All default to OFF; setting them changes behavio
 | `ARS_PASSPORT_RESET=1` | v3.6.3 | Promote every FULL checkpoint to a context-reset boundary. Required to *emit* boundary entries; **not** required to invoke `resume_from_passport=<hash>` in a fresh session. With the flag ON in `systematic-review` mode, reset is mandatory at every FULL checkpoint. In auto mode (default), `pending_decision` boundaries cannot resume unattended — supply `branch=<value>` when invoking `resume_from_passport`, or set `ARS_INTERACTIVE=1`. | `academic-pipeline/references/passport_as_reset_boundary.md` |
 | `ARS_CROSS_MODEL_SAMPLE_INTERVAL` | v3.5.0 | Sampling interval for cross-model integrity checks (advisory) | `shared/cross_model_verification.md` |
 | `ARS_VERIFICATION_CACHE_PATH` | v3.11 | Override the citation-verification cache location (see below). Not an on/off flag — the cache is on by default; this only relocates it. | `scripts/verification_cache.py` |
+| `ARS_MODEL_TIERING` | Unreleased (#517) | Opt-in model tiering: `economy` (frontier session — execution-type agents step down one tier, floor Opus-class) or `quality-boost` (below-frontier session — judgment-type agents jump up to the frontier tier at the checkpoint surfaces: Stage 2.5/4.5 gates, the opt-in Stage 4→5 claim–ref audit, and final review). Unset = session model everywhere; unknown values warn once and behave as unset. | `shared/model_tiering.md` |
 
 ---
 
@@ -146,18 +147,22 @@ The cache is single-process (SQLite WAL); concurrent multi-user access to one ca
 
 ## Cross-model verification (optional)
 
-ARS works with Claude Opus 4.8 alone. For higher confidence, you can optionally enable a second AI model to independently verify integrity checks and challenge the devil's advocate.
+ARS works with the inherited Claude session model alone. For higher confidence, you can optionally enable a second AI model to independently verify integrity checks and challenge the devil's advocate.
 
 ### Quick setup
 
 ```bash
 # Step 1: Set your API key (choose one or both)
-export OPENAI_API_KEY="sk-your-key-here"        # For GPT-5.4 Pro
+export OPENAI_API_KEY="sk-your-key-here"        # For GPT-5.5 / GPT-5.5 Pro
 export GOOGLE_AI_API_KEY="AIza-your-key-here"    # For Gemini 3.1 Pro
 
 # Step 2: Choose your cross-verification model
-export ARS_CROSS_MODEL="gpt-5.4-pro"            # Best reasoning
+export ARS_CROSS_MODEL="gpt-5.5"                # Recommended pair (gpt-5.5-pro = strongest reasoning, ~6x cost)
 # or: export ARS_CROSS_MODEL="gemini-3.1-pro-preview"  # Strong at factual verification
+# or: export ARS_CROSS_MODEL="gpt-5.6-sol"      # Frontier, provisional pending ARS validation (same rates as gpt-5.5)
+
+# Optional: reasoning effort for OpenAI verifier calls (unset = provider default)
+# export ARS_CROSS_MODEL_REASONING_EFFORT="medium"
 
 # Step 3: Run Claude Code as normal — cross-verification activates automatically
 claude
@@ -167,13 +172,14 @@ claude
 
 | Feature | Without cross-model | With cross-model |
 |---|---|---|
-| Integrity verification | Single-model 100% check | + 30% sample independently verified by 2nd model |
+| Integrity verification | Single-model 100% check | + risk-stratified verification by 2nd model: 100% of high-impact references (final gate adds 100% of new/changed-claim references) + a sampled remainder |
 | Devil's Advocate | Single-model DA | + Cross-model generates independent critique, novel findings added |
 | Peer Review | 5 reviewers (same model) | Same 5 reviewers + cross-model DA critique/calibration support |
+| Irreversible checkpoints | Single-model decision | + Blind cross-model decision at design freeze + final editorial decision; divergence escalated to you, never averaged |
 
 ### Cost
 
-Full pipeline adds ~$0.60-1.10 in cross-model API costs (GPT-5.4 Pro pricing). See [`shared/cross_model_verification.md`](../shared/cross_model_verification.md) for the detailed breakdown.
+Full pipeline adds ~$0.60-1.10 in cross-model API costs (order-of-magnitude; measured at GPT-5.4 Pro pricing). See [`shared/cross_model_verification.md`](../shared/cross_model_verification.md) for the current model lineup and detailed breakdown.
 
 ### No API key? No problem
 
@@ -183,32 +189,36 @@ Without `ARS_CROSS_MODEL` set, everything works exactly as before. The cross-mod
 
 ## Installation methods
 
-Claude discovers skills at `<install-root>/<skill-name>/SKILL.md`. This repo contains four separate skills, each with its own `SKILL.md`:
+Claude discovers skills at `<install-root>/<skill-name>/SKILL.md`. This repo contains eight separate skills, each with its own `SKILL.md`:
 
 - `deep-research`
 - `academic-paper`
 - `academic-paper-reviewer`
 - `academic-pipeline`
+- `experiment-designer`
+- `data-analyst`
+- `simulation-runner`
+- `lab-notebook`
 
-Do not install the whole repository as one nested skill folder under `.claude/skills/academic-research-skills/`; that buries the four `SKILL.md` files one level too deep for discovery. See Anthropic's [Claude Code Skills documentation](https://code.claude.com/docs/en/skills).
+Do not install the whole repository as one nested skill folder under `.claude/skills/academic-research-skills/`; that buries the eight `SKILL.md` files one level too deep for discovery. See Anthropic's [Claude Code Skills documentation](https://code.claude.com/docs/en/skills).
 
 ### Method 0: Claude Code Plugin (v3.7.0+, recommended for Claude Code CLI / IDE users)
 
 If you use Claude Code CLI, VS Code extension, or JetBrains extension, install ARS as a plugin:
 
 ```text
-/plugin marketplace add Imbad0202/academic-research-skills
+/plugin marketplace add pouriamrt/academic-research-skills
 /plugin install academic-research-skills
 ```
 
-The four skills (`deep-research`, `academic-paper`, `academic-paper-reviewer`, `academic-pipeline`) are auto-discovered from the plugin's `skills/` directory.
+The eight skills (`deep-research`, `academic-paper`, `academic-paper-reviewer`, `academic-pipeline`, `experiment-designer`, `data-analyst`, `simulation-runner`, `lab-notebook`) are auto-discovered from the plugin's `skills/` directory.
 
 **Strongly recommended: open auto-update.** Open the `/plugin` UI, find `academic-research-skills`, and toggle auto-update on. ARS releases roughly every 1–2 weeks; auto-update keeps you in sync without manual refreshes. To refresh manually: `/plugin update academic-research-skills`. (`/plugin marketplace update academic-research-skills` only refreshes the marketplace source list, not the installed plugin itself.)
 
 **Plugin platform scope:**
 - ✅ Claude Code CLI / VS Code extension / JetBrains extension — full support
 - ❌ claude.ai web / Claude for Work / Anthropic API direct calls — plugins not supported; use Method 1 / 2 / 3 below
-- ➡️ Codex CLI — install the sibling distribution [`Imbad0202/academic-research-skills-codex`](https://github.com/Imbad0202/academic-research-skills-codex) (same workflow content, Codex-native packaging)
+- ➡️ Codex CLI — install the sibling distribution [`Imbad0202/academic-research-skills-codex`](https://github.com/Imbad0202/academic-research-skills-codex) (upstream's four-skill workflow content, Codex-native packaging; does not include this fork's experiment skills)
 
 ### Method 1: As project skills (recommended)
 
@@ -217,7 +227,7 @@ Use this when you want ARS available inside an existing Claude Code project.
 Clone the repo to a stable local path, then copy each skill folder into your project's `.claude/skills/` directory:
 
 ```bash
-git clone https://github.com/Imbad0202/academic-research-skills.git ~/academic-research-skills
+git clone https://github.com/pouriamrt/academic-research-skills.git ~/academic-research-skills
 
 cd /path/to/your/project
 mkdir -p .claude/skills
@@ -225,6 +235,10 @@ cp -R ~/academic-research-skills/deep-research .claude/skills/deep-research
 cp -R ~/academic-research-skills/academic-paper .claude/skills/academic-paper
 cp -R ~/academic-research-skills/academic-paper-reviewer .claude/skills/academic-paper-reviewer
 cp -R ~/academic-research-skills/academic-pipeline .claude/skills/academic-pipeline
+cp -R ~/academic-research-skills/experiment-designer .claude/skills/experiment-designer
+cp -R ~/academic-research-skills/data-analyst .claude/skills/data-analyst
+cp -R ~/academic-research-skills/simulation-runner .claude/skills/simulation-runner
+cp -R ~/academic-research-skills/lab-notebook .claude/skills/lab-notebook
 ```
 
 Expected path shape:
@@ -234,20 +248,28 @@ Expected path shape:
 /path/to/your/project/.claude/skills/academic-paper/SKILL.md
 /path/to/your/project/.claude/skills/academic-paper-reviewer/SKILL.md
 /path/to/your/project/.claude/skills/academic-pipeline/SKILL.md
+/path/to/your/project/.claude/skills/experiment-designer/SKILL.md
+/path/to/your/project/.claude/skills/data-analyst/SKILL.md
+/path/to/your/project/.claude/skills/simulation-runner/SKILL.md
+/path/to/your/project/.claude/skills/lab-notebook/SKILL.md
 ```
 
 Then copy the `.claude/CLAUDE.md` content into your project's `.claude/CLAUDE.md` (merge with existing if you have one).
 
-> **Global Claude Code installation:** To make these skills available across your Claude Code projects, install the four folders to `~/.claude/skills/` instead:
+> **Global Claude Code installation:** To make these skills available across your Claude Code projects, install the eight folders to `~/.claude/skills/` instead:
 >
 > ```bash
-> git clone https://github.com/Imbad0202/academic-research-skills.git ~/academic-research-skills
+> git clone https://github.com/pouriamrt/academic-research-skills.git ~/academic-research-skills
 >
 > mkdir -p ~/.claude/skills
 > cp -R ~/academic-research-skills/deep-research ~/.claude/skills/deep-research
 > cp -R ~/academic-research-skills/academic-paper ~/.claude/skills/academic-paper
 > cp -R ~/academic-research-skills/academic-paper-reviewer ~/.claude/skills/academic-paper-reviewer
 > cp -R ~/academic-research-skills/academic-pipeline ~/.claude/skills/academic-pipeline
+> cp -R ~/academic-research-skills/experiment-designer ~/.claude/skills/experiment-designer
+> cp -R ~/academic-research-skills/data-analyst ~/.claude/skills/data-analyst
+> cp -R ~/academic-research-skills/simulation-runner ~/.claude/skills/simulation-runner
+> cp -R ~/academic-research-skills/lab-notebook ~/.claude/skills/lab-notebook
 > ```
 
 ### Method 2: As a standalone project
@@ -255,7 +277,7 @@ Then copy the `.claude/CLAUDE.md` content into your project's `.claude/CLAUDE.md
 Use this when you want to work directly inside the ARS repository.
 
 ```bash
-git clone https://github.com/Imbad0202/academic-research-skills.git
+git clone https://github.com/pouriamrt/academic-research-skills.git
 cd academic-research-skills
 claude
 ```
@@ -263,17 +285,17 @@ claude
 <details>
 <summary><strong>No Git?</strong> Download as ZIP instead</summary>
 
-1. Go to <https://github.com/Imbad0202/academic-research-skills>
+1. Go to <https://github.com/pouriamrt/academic-research-skills>
 2. Click the green **Code** button → **Download ZIP**
 3. Extract the ZIP to your desired location
-4. For Method 1: copy the four extracted skill folders (`deep-research`, `academic-paper`, `academic-paper-reviewer`, `academic-pipeline`) into `.claude/skills/` inside your project
+4. For Method 1: copy the eight extracted skill folders (`deep-research`, `academic-paper`, `academic-paper-reviewer`, `academic-pipeline`, `experiment-designer`, `data-analyst`, `simulation-runner`, `lab-notebook`) into `.claude/skills/` inside your project
 5. For standalone use: open a terminal in the extracted folder and run `claude`
 
 </details>
 
 ### Method 3: Claude Cowork (desktop)
 
-Use this when you want the four ARS skills available in [Claude Cowork](https://support.claude.com/en/articles/13345190-get-started-with-claude-cowork), Claude Desktop's agentic workspace.
+Use this when you want the eight ARS skills available in [Claude Cowork](https://support.claude.com/en/articles/13345190-get-started-with-claude-cowork), Claude Desktop's agentic workspace.
 
 > **Cowork does not read `~/.claude/skills/`.** That directory belongs to Claude Code (the CLI / IDE), and Cowork does not scan it. Cowork loads skills you upload through **Settings → Capabilities → Skills**, each as its own zip. Symlinking or copying the skill folders into `~/.claude/skills/` will not make them appear in Cowork, no matter how many times you restart.
 
@@ -288,18 +310,18 @@ Use this when you want the four ARS skills available in [Claude Cowork](https://
 
 #### Step 1: Build one zip per skill
 
-Clone the repo, then zip each of the four skill folders individually so that each zip has its own `SKILL.md` at the top level (not nested under an extra folder). The `-x "*.DS_Store"` flag keeps macOS metadata out of the archive.
+Clone the repo, then zip each of the eight skill folders individually so that each zip has its own `SKILL.md` at the top level (not nested under an extra folder). The `-x "*.DS_Store"` flag keeps macOS metadata out of the archive.
 
 ```bash
-git clone https://github.com/Imbad0202/academic-research-skills.git
+git clone https://github.com/pouriamrt/academic-research-skills.git
 cd academic-research-skills
 
-for s in deep-research academic-paper academic-paper-reviewer academic-pipeline; do
+for s in deep-research academic-paper academic-paper-reviewer academic-pipeline experiment-designer data-analyst simulation-runner lab-notebook; do
   (cd "$s" && zip -r "../$s.zip" . -x "*.DS_Store")
 done
 ```
 
-This produces four zips in the repo root: `deep-research.zip`, `academic-paper.zip`, `academic-paper-reviewer.zip`, `academic-pipeline.zip`. Each zip's top level looks like:
+This produces eight zips in the repo root: `deep-research.zip`, `academic-paper.zip`, `academic-paper-reviewer.zip`, `academic-pipeline.zip`, `experiment-designer.zip`, `data-analyst.zip`, `simulation-runner.zip`, `lab-notebook.zip`. Each zip's top level looks like:
 
 ```text
 SKILL.md
@@ -312,7 +334,7 @@ templates/
 #### Step 2: Upload each zip
 
 1. In Claude Desktop (or claude.ai — uploaded skills sync to the same account), go to **Settings → Capabilities → Skills**.
-2. Use the **+** in the Skills panel to upload a skill, and select one of the four zips. Repeat for all four, one at a time.
+2. Use the **+** in the Skills panel to upload a skill, and select one of the eight zips. Repeat for all eight, one at a time.
 3. Each skill then appears under **Personal skills**, already enabled, with **Trigger: Slash command + auto**. Re-uploading a skill with the same name replaces the existing one (useful when updating to a new ARS release).
 
 Verified on Claude Desktop (June 2026): `deep-research.zip` built this way installs cleanly, the full skill description is preserved (no 200-character truncation), and `/deep-research` appears in the Cowork command palette.
@@ -323,11 +345,11 @@ Type `/` in a Cowork Task to open the command palette and select a skill, or des
 
 #### One trade-off versus Claude Code
 
-Uploaded this way, each skill runs on its own as a standalone instruction set. This is a different experience from Claude Code. In Claude Code the four skills work as a coordinated team: `academic-pipeline` chains them (research → write → review → revise) and each skill drives its own group of sub-agents. Cowork's uploaded-skill runtime does not provide that sub-agent orchestration, so the individual skills respond, but the full end-to-end pipeline does not run the way it does in Claude Code. For the full orchestrated experience, install ARS in Claude Code via Method 0 (plugin) or Method 1 (project skills) above.
+Uploaded this way, each skill runs on its own as a standalone instruction set. This is a different experience from Claude Code. In Claude Code the eight skills work as a coordinated team: `academic-pipeline` chains them (research → write → review → revise) and each skill drives its own group of sub-agents. Cowork's uploaded-skill runtime does not provide that sub-agent orchestration, so the individual skills respond, but the full end-to-end pipeline does not run the way it does in Claude Code. For the full orchestrated experience, install ARS in Claude Code via Method 0 (plugin) or Method 1 (project skills) above.
 
 ### Method 4: Use with claude.ai (web)
 
-ARS is a Claude Code-native suite. The four skills are 12-13-agent teams that depend on multi-agent orchestration, executable scripts under `scripts/`, and Material Passport file handoffs. claude.ai's web interface delivers a different runtime than Claude Code, and the two access paths it offers reach this repository in different ways:
+ARS is a Claude Code-native suite. The eight skills are 4-14-agent teams that depend on multi-agent orchestration, executable scripts under `scripts/`, and Material Passport file handoffs. claude.ai's web interface delivers a different runtime than Claude Code, and the two access paths it offers reach this repository in different ways:
 
 - **Method 4b — Project + GitHub integration** (recommended for claude.ai users): brings the repository into a claude.ai Project as retrievable knowledge. Claude can read the skill bodies, references, schemas, and example outputs, and answer questions or draft against them. Not a Skill install — auto-loading and skill routing do not happen, but the content is fully available for reading and citation.
 - **Method 4a — Custom Skill upload**: claude.ai's standard Skill install path (Settings → Capabilities → Skills, one zip per skill). Not recommended for this suite — see the rationale below before using it.
@@ -346,7 +368,7 @@ Use this when you want claude.ai to have access to the repo content — includin
 
 1. Sign in to [claude.ai](https://claude.ai).
 2. Create a new Project: **Projects** → **Create Project**.
-3. Import from GitHub: in the Project, click **Files** → **+** → **GitHub** → select `Imbad0202/academic-research-skills`.
+3. Import from GitHub: in the Project, click **Files** → **+** → **GitHub** → select `pouriamrt/academic-research-skills`.
 4. Select the folders/files below.
 
    | Select | Directory / file | Why |
@@ -355,6 +377,10 @@ Use this when you want claude.ai to have access to the repo content — includin
    | ✅ | `academic-paper/` | Core skill content for reading |
    | ✅ | `academic-paper-reviewer/` | Core skill content for reading |
    | ✅ | `academic-pipeline/` | Core skill content for reading |
+   | ✅ | `experiment-designer/` | Experiment pipeline skill content |
+   | ✅ | `data-analyst/` | Experiment pipeline skill content |
+   | ✅ | `simulation-runner/` | Experiment pipeline skill content |
+   | ✅ | `lab-notebook/` | Experiment pipeline skill content |
    | ✅ | `shared/` | Cross-model verification, handoff schemas, shared protocols |
    | ✅ | `scripts/` | `literature_corpus[]` adapters (`folder_scan`, `zotero`, `obsidian`) + schema validators; required for Material Passport corpus mode and CI-style validation |
    | ✅ | `MODE_REGISTRY.md` | Mode definitions |
@@ -371,25 +397,29 @@ Anthropic's current [Project file limits](https://support.claude.com/en/articles
 
 Method 4a is claude.ai's standard Custom Skill install path: zip each skill folder, upload through Settings → Capabilities → Skills, and Claude treats it as an installed Skill with auto-loading and routing. claude.ai's Custom Skills do support multi-file skill packages including `scripts/` (see Anthropic's [How to create custom Skills](https://support.claude.com/en/articles/12512198-how-to-create-custom-skills) on supporting files and code execution), so Method 4a is mechanically capable of hosting skills with executable assets. The reasons not to recommend it for this specific suite are different and compound:
 
-1. **ARS depends on Claude Code-only orchestration features**. Each ARS skill drives 12-13 specialised agents through Claude Code's Task / subagent tooling and Material Passport file handoffs that resume across sessions. The Anthropic-documented scope of claude.ai's Custom Skill runtime — a containerised code-execution environment per session, with the Skills user guide ([Use Skills in Claude](https://support.claude.com/en/articles/12512180-use-skills-in-claude)) describing skill activation but not multi-agent dispatch — does not include Claude Code's Task / subagent control surface. Method 4a is therefore expected to surface ARS as the SKILL.md body's instructions, without the multi-agent dispatch that produces the suite's actual outputs. We have not run a live upload to characterise this in detail; the recommendation is forward-looking based on the Claude Code-specific assumptions baked into the agent orchestration, not on a measured failure.
-2. **Cost to Claude Code and Cowork routing**. claude.ai limits each skill's `description` field to 200 characters per the [Custom Skills documentation](https://claude.com/docs/skills/how-to), while the [Agent Skills specification](https://agentskills.io/specification) and [Claude Code Skills documentation](https://code.claude.com/docs/en/skills) allow up to 1,024 characters. The four ARS descriptions currently sit in the 440-842 range, front-loading routing keywords that Claude Code and Cowork use to discriminate between research, writing, review, and orchestration. Trimming them to fit Method 4a would weaken routing on Claude Code and Cowork — the platforms ARS was built for — in exchange for an unverified partial fit on claude.ai.
+1. **ARS depends on Claude Code-only orchestration features**. Each ARS skill drives 4-14 specialised agents through Claude Code's Task / subagent tooling and Material Passport file handoffs that resume across sessions. The Anthropic-documented scope of claude.ai's Custom Skill runtime — a containerised code-execution environment per session, with the Skills user guide ([Use Skills in Claude](https://support.claude.com/en/articles/12512180-use-skills-in-claude)) describing skill activation but not multi-agent dispatch — does not include Claude Code's Task / subagent control surface. Method 4a is therefore expected to surface ARS as the SKILL.md body's instructions, without the multi-agent dispatch that produces the suite's actual outputs. We have not run a live upload to characterise this in detail; the recommendation is forward-looking based on the Claude Code-specific assumptions baked into the agent orchestration, not on a measured failure.
+2. **Cost to Claude Code and Cowork routing**. claude.ai limits each skill's `description` field to 200 characters per the [Custom Skills documentation](https://claude.com/docs/skills/how-to), while the [Agent Skills specification](https://agentskills.io/specification) and [Claude Code Skills documentation](https://code.claude.com/docs/en/skills) allow up to 1,024 characters. The ARS descriptions currently sit well above 200 characters, front-loading routing keywords that Claude Code and Cowork use to discriminate between research, writing, review, and orchestration. Trimming them to fit Method 4a would weaken routing on Claude Code and Cowork — the platforms ARS was built for — in exchange for an unverified partial fit on claude.ai.
 
 **Recommended paths instead:**
 
-- For skill execution on the desktop, use [Method 3 (Cowork)](#method-3-claude-cowork-desktop). The four skills upload as standalone Cowork skills; the multi-agent pipeline orchestration is only available in Claude Code (Methods 0–2).
+- For skill execution on the desktop, use [Method 3 (Cowork)](#method-3-claude-cowork-desktop). The eight skills upload as standalone Cowork skills; the multi-agent pipeline orchestration is only available in Claude Code (Methods 0–2).
 - For claude.ai web access to the repo content, use [Method 4b (Project + GitHub integration)](#method-4b-project--github-integration-recommended-for-claudeai). Claude reads the skill bodies, references, and examples, and you can ask questions or draft against them in a normal claude.ai chat.
 - For Claude Code projects, use [Method 1 (project skills)](#method-1-as-project-skills-recommended) or [Method 2 (standalone)](#method-2-as-a-standalone-project).
 
 If you still want to try Method 4a despite the limitations above, zip each skill folder so the archive's top-level entry is `<skill-name>/SKILL.md` (not `<skill-name>/<skill-name>/SKILL.md` — that nesting buries the discovery file one level too deep). The `zip -r` commands below produce that shape correctly:
 
 ```bash
-git clone https://github.com/Imbad0202/academic-research-skills.git
+git clone https://github.com/pouriamrt/academic-research-skills.git
 cd academic-research-skills
 
 zip -r deep-research.zip deep-research
 zip -r academic-paper.zip academic-paper
 zip -r academic-paper-reviewer.zip academic-paper-reviewer
 zip -r academic-pipeline.zip academic-pipeline
+zip -r experiment-designer.zip experiment-designer
+zip -r data-analyst.zip data-analyst
+zip -r simulation-runner.zip simulation-runner
+zip -r lab-notebook.zip lab-notebook
 ```
 
 Then in claude.ai:
@@ -398,10 +428,7 @@ Then in claude.ai:
 2. Open **Settings**.
 3. Open **Capabilities**.
 4. Open **Skills**.
-5. Upload `deep-research.zip`.
-6. Upload `academic-paper.zip`.
-7. Upload `academic-paper-reviewer.zip`.
-8. Upload `academic-pipeline.zip`.
+5. Upload each of the eight zips in turn (`deep-research.zip` through `lab-notebook.zip`).
 
 The upload UI will reject each zip with a description-too-long error because every ARS description exceeds claude.ai's 200-character cap. The descriptions are intentionally not trimmed; see the rationale above.
 
@@ -411,3 +438,18 @@ The upload UI will reject each zip with a description-too-long error because eve
 - claude.ai does not support local shell commands; results may be less comprehensive than Claude Code workflows that rely on local scripts.
 - Cross-model verification (`ARS_CROSS_MODEL`) requires Claude Code with API keys.
 - Direct `.docx` generation requires Pandoc, and LaTeX/PDF output requires Claude Code with `tectonic`; claude.ai can still produce Markdown and DOCX conversion instructions.
+
+### Method 5: Claude Science import (v3.20.0+)
+
+Claude Science imports the eight ARS skills straight from GitHub:
+
+1. Open **Customize → Capabilities → Skills → Import from GitHub**.
+2. Paste `https://github.com/pouriamrt/academic-research-skills` and click **Preview**.
+3. All eight skills (`academic-paper`, `academic-paper-reviewer`, `academic-pipeline`, `deep-research`, `experiment-designer`, `data-analyst`, `simulation-runner`, `lab-notebook`) appear — click **Import 8 skills**.
+
+**Notes:**
+
+- Requires repo state v3.20.0+ of this fork — the importer reads the explicit skill paths declared in `.claude-plugin/marketplace.json`, which lists all eight skills as of v3.20.0. Earlier states exposed skills only through the symlinked `skills/` directory, which GitHub-API importers cannot traverse (they report "no skills/ dirs with SKILL.md").
+- Imports are **point-in-time snapshots**: Claude Science does not track the repo. Re-import after an ARS release to pick up changes.
+- **What transfers:** the methodology layer — each skill's `SKILL.md` and its protocols (research / writing / review), which Claude Science's agent reads when relevant.
+- **What does not transfer:** Claude Code-specific machinery — the `/ars-*` slash commands, hooks (including the write-scope guard), cross-model verification scripts, and Task-tool subagent orchestration. Claude Science runs its own specialist-agent system and a built-in citation-checking reviewer; treat a Claude Science run as "ARS methodology + Claude Science's own machinery", not a 1:1 pipeline port.

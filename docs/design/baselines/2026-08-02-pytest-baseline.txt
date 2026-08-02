@@ -1,0 +1,21 @@
+# Pre-existing pytest failures at 7d54ac1 (2026-08-02), Windows + Python 3.13,
+# run WITH PYTHONUTF8=1 as this plan mandates:
+#   11 failed, 3355 passed, 7 skipped, 1 xfailed in 932s.
+# All 11 live in scripts/test_check_v3_6_8_pattern_protection.py: its
+# anti-self-baseline git-history guard needs a PR-shaped base ref and trips on
+# the fork's merge-sync history shape. Not reproducible on a local checkout
+# sitting on main; expected to pass in CI.
+# WITHOUT PYTHONUTF8=1 you get 11 more (Windows cp1252 cannot encode U+2028 /
+# em dash) for 22 total. Always set the variable.
+# GATE: changes must add no node ID beyond this list.
+scripts/test_check_v3_6_8_pattern_protection.py::test_appending_new_h2_directly_after_eof_newline_passes
+scripts/test_check_v3_6_8_pattern_protection.py::test_bom_before_heading_attack_caught_by_lint
+scripts/test_check_v3_6_8_pattern_protection.py::test_happy_path_passes_on_clean_tree
+scripts/test_check_v3_6_8_pattern_protection.py::test_heading_prefix_mutation_is_caught
+scripts/test_check_v3_6_8_pattern_protection.py::test_inserting_blank_line_between_v367_and_step3a_blocks_fails
+scripts/test_check_v3_6_8_pattern_protection.py::test_mutation_inside_v3_6_7_block_fails
+scripts/test_check_v3_6_8_pattern_protection.py::test_pr1_initial_state_empty_files_list_is_ok
+scripts/test_check_v3_6_8_pattern_protection.py::test_step3a_block_addition_does_not_break_v3_6_7_sha_gate
+scripts/test_check_v3_6_8_pattern_protection.py::test_step3a_invariant_iii_canonical_negation_still_passes
+scripts/test_check_v3_6_8_pattern_protection.py::test_step3a_lint_passes_on_clean_tree
+scripts/test_check_v3_6_8_pattern_protection.py::test_v3_6_7_marker_removed_at_head_fails

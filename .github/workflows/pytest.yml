@@ -4,6 +4,7 @@ on:
   pull_request:
     paths:
       - 'scripts/**'
+      - 'hooks/**'
       - 'tests/**'
       - 'shared/contracts/**'
       - 'conftest.py'
@@ -17,6 +18,7 @@ on:
     branches: [main]
     paths:
       - 'scripts/**'
+      - 'hooks/**'
       - 'tests/**'
       - 'shared/contracts/**'
       - 'conftest.py'

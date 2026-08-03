@@ -41,7 +41,7 @@ from jsonschema import Draft202012Validator
 
 if str(Path(__file__).resolve().parent) not in sys.path:
     sys.path.insert(0, str(Path(__file__).resolve().parent))
-from _skill_lint import check_section_literals  # noqa: E402
+from _skill_lint import check_section_literals
 
 ROOT = Path(__file__).resolve().parent.parent
 SCHEMA = ROOT / "shared" / "contracts" / "submission" / "format_profile.schema.json"
@@ -63,7 +63,7 @@ def check_schema_valid(schema: dict) -> list[str]:
     errors: list[str] = []
     try:
         Draft202012Validator.check_schema(schema)
-    except Exception as exc:  # noqa: BLE001 - surface any schema-meta failure
+    except Exception as exc:
         errors.append(f"format_profile schema is not a valid Draft 2020-12 schema: {exc}")
     if schema.get("additionalProperties") is not False:
         errors.append("format_profile root must set additionalProperties:false")

@@ -27,7 +27,7 @@ from typing import Any, Callable
 # package-style invocations (`python -m unittest scripts.test_*`) to resolve
 # the shared constants module via the same import.
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from _claim_audit_constants import (  # noqa: E402
+from _claim_audit_constants import (
     DRIFT_RULE_VERSION,
     INV6_RATIONALE_PREFIX,
     JUDGE_PROMPT_SHA256,
@@ -373,7 +373,7 @@ def _invoke_judge(
         raise JudgeInvocationError(
             "judge_parse_error", str(exc) or "judge returned malformed payload"
         ) from exc
-    except Exception as exc:  # noqa: BLE001 — translation boundary; the source class is captured
+    except Exception as exc:
         raise JudgeInvocationError("judge_api_error", f"{type(exc).__name__}: {exc}") from exc
 
     return _validate_judge_dict(
@@ -420,7 +420,7 @@ def _invoke_retrieve(
             "retrieval_api_error",
             str(exc) or "retrieve_fn returned malformed payload",
         ) from exc
-    except Exception as exc:  # noqa: BLE001 — translation boundary
+    except Exception as exc:
         raise RetrievalInvocationError(
             "retrieval_api_error", f"{type(exc).__name__}: {exc}"
         ) from exc

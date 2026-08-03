@@ -18,7 +18,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-import migrate_literature_corpus_to_v3_10 as mig  # noqa: E402
+import migrate_literature_corpus_to_v3_10 as mig
 
 
 def _yaml():

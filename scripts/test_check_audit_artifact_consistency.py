@@ -1597,7 +1597,7 @@ class TestCLI:
         (tmp_path / f"{run_id}.verdict.yaml").write_text(_yaml.safe_dump(verdict))
         (tmp_path / f"{run_id}.jsonl").write_text(
             "\n".join(json.dumps(e) for e in truncated_events) + "\n")
-        rc = main([
+        main([
             "--mode", "proposal",
             "--output-dir", str(tmp_path),
             "--run-id", run_id,
@@ -1771,7 +1771,7 @@ class TestCLI:
         (tmp_path / f"{run_id}.verdict.yaml").write_text(_yaml.safe_dump(verdict))
         (tmp_path / f"{run_id}.jsonl").write_text(
             "\n".join(json.dumps(e) for e in events) + "\n")
-        rc = main([
+        main([
             "--mode", "proposal",
             "--output-dir", str(tmp_path),
             "--run-id", run_id,

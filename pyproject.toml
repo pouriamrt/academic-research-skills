@@ -1,2 +1,28 @@
 [tool.pytest.ini_options]
 pythonpath = ["."]
+
+[tool.ruff]
+target-version = "py311"
+line-length = 100
+extend-exclude = ["examples", "docs"]
+
+[tool.ruff.lint]
+# Phase 1 deliberately pins ruff's DEFAULT rule set. Wider families (I, UP, RUF,
+# SIM, PERF, ...) are opted into one per PR so each diff stays reviewable.
+# PLW1510 (subprocess-run-without-check, 60 hits) and BLE001 (blind-except, 24)
+# are held back on purpose: each encodes a real decision about failure handling
+# in a repo whose guard design is about failing in a chosen direction.
+select = ["E4", "E7", "E9", "F"]
+
+[tool.ruff.format]
+# Pin LF explicitly rather than relying on ruff's default of "auto".
+# Proven: with this set, `ruff format` normalizes a CRLF file back to LF —
+# which is what Task 7 (repo-wide format pass) depends on.
+# Not proven: whether this also prevents the LF -> CRLF flips seen across ~20
+# files during Task 6's bulk `ruff check --fix`. Those were not reproducible in
+# isolated tests with or without this setting, so the cause there may have been
+# the editor rather than ruff. Pinning costs nothing and removes ruff as a
+# variable either way.
+# Context: core.autocrlf is false and .gitattributes pins only *.sh, so any flip
+# on a .py/.toml/.yml is committed permanently.
+line-ending = "lf"

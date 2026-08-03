@@ -548,7 +548,6 @@ def test_contamination_signals_backfilled_at_non_string_rejected():
 
 def test_v3_9_0_openalex_unmatched_field_accepted():
     """v3.9.0 — schema accepts new openalex_unmatched optional boolean."""
-    import jsonschema
     schema = _load_schema()
     entry = _base_entry() | {
         "contamination_signals": {
@@ -560,7 +559,6 @@ def test_v3_9_0_openalex_unmatched_field_accepted():
 
 def test_v3_9_0_crossref_unmatched_field_accepted():
     """v3.9.0 — schema accepts new crossref_unmatched optional boolean."""
-    import jsonschema
     schema = _load_schema()
     entry = _base_entry() | {
         "contamination_signals": {
@@ -572,7 +570,6 @@ def test_v3_9_0_crossref_unmatched_field_accepted():
 
 def test_v3_9_0_all_four_contamination_fields_accepted():
     """v3.9.0 — schema accepts all four contamination fields together."""
-    import jsonschema
     schema = _load_schema()
     entry = _base_entry() | {
         "contamination_signals": {
@@ -612,7 +609,6 @@ def test_v3_9_0_manual_entry_with_crossref_unmatched_rejected():
 
 def test_v3_9_0_manual_entry_with_preprint_flag_passes():
     """v3.9.0 — manual entry MAY carry preprint_post_llm_inflection (heuristic, not lookup)."""
-    import jsonschema
     schema = _load_schema()
     entry = _base_entry() | {
         "obtained_via": "manual",

@@ -195,29 +195,29 @@ def check_legacy_compat(subsection_text: str) -> list[str]:
             # Preprint legacy row must carry CONTAMINATED-PREPRINT+UNMATCHED.
             if "`CONTAMINATED-PREPRINT+UNMATCHED`" not in line:
                 failures.append(
-                    f"rule 3 (legacy compat — preprint variant): k=1 k_max=1 "
-                    f"semantic_scholar_unmatched preprint=true row does NOT preserve "
-                    f"`CONTAMINATED-PREPRINT+UNMATCHED` legacy suffix"
+                    "rule 3 (legacy compat — preprint variant): k=1 k_max=1 "
+                    "semantic_scholar_unmatched preprint=true row does NOT preserve "
+                    "`CONTAMINATED-PREPRINT+UNMATCHED` legacy suffix"
                 )
             if "`CONTAMINATED-PREPRINT+COVERAGE-NOISE`" in line:
                 failures.append(
-                    f"rule 3 (legacy compat — preprint drift): preprint legacy row contains "
-                    f"`CONTAMINATED-PREPRINT+COVERAGE-NOISE` (should be "
-                    f"`CONTAMINATED-PREPRINT+UNMATCHED`)"
+                    "rule 3 (legacy compat — preprint drift): preprint legacy row contains "
+                    "`CONTAMINATED-PREPRINT+COVERAGE-NOISE` (should be "
+                    "`CONTAMINATED-PREPRINT+UNMATCHED`)"
                 )
         else:
             seen_bare_legacy = True
             # Bare (preprint=false / absent) legacy row must carry CONTAMINATED-UNMATCHED.
             if "`CONTAMINATED-UNMATCHED`" not in line:
                 failures.append(
-                    f"rule 3 (legacy compat — bare variant): k=1 k_max=1 "
-                    f"semantic_scholar_unmatched preprint=false row does NOT preserve "
-                    f"`CONTAMINATED-UNMATCHED` legacy suffix"
+                    "rule 3 (legacy compat — bare variant): k=1 k_max=1 "
+                    "semantic_scholar_unmatched preprint=false row does NOT preserve "
+                    "`CONTAMINATED-UNMATCHED` legacy suffix"
                 )
             if "`CONTAMINATED-COVERAGE-NOISE`" in line:
                 failures.append(
-                    f"rule 3 (legacy compat — bare drift): bare legacy row contains "
-                    f"`CONTAMINATED-COVERAGE-NOISE` (should be `CONTAMINATED-UNMATCHED`)"
+                    "rule 3 (legacy compat — bare drift): bare legacy row contains "
+                    "`CONTAMINATED-COVERAGE-NOISE` (should be `CONTAMINATED-UNMATCHED`)"
                 )
     if not seen_bare_legacy:
         failures.append(

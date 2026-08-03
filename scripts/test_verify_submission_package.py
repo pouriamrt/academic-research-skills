@@ -1070,7 +1070,7 @@ def test_strict_heuristic_fail_never_promotes(tmp_path, capsys):
     assert "TERMINAL-BLOCK" not in out
     assert rc == 4  # VERIFICATION-INCOMPLETE from Family B, not the C1 fail
     assert "C1" not in next(
-        l for l in out.splitlines() if "VERIFICATION-INCOMPLETE" in l)
+        line for line in out.splitlines() if "VERIFICATION-INCOMPLETE" in line)
 
 
 def test_evaluate_policy_unit_contract():
@@ -1168,8 +1168,8 @@ def test_strict_not_applicable_never_blocks(tmp_path, capsys):
     assert by_id["A1"]["status"] == "not_applicable"
     assert rc == 4  # from Family B not_checked, NOT from Family A
     assert "VERIFICATION-INCOMPLETE" in out
-    token_line = next(l for l in out.splitlines()
-                      if "VERIFICATION-INCOMPLETE" in l)
+    token_line = next(line for line in out.splitlines()
+                      if "VERIFICATION-INCOMPLETE" in line)
     for aid in (f"A{i}" for i in range(1, 8)):
         assert aid not in token_line
 

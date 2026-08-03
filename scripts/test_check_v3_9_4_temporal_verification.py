@@ -5,6 +5,8 @@ Per docs/design/2026-05-18-ars-v3.9.4-temporal-verification-spec.md §7.
 from __future__ import annotations
 
 import json
+import subprocess
+import sys as _sys
 from pathlib import Path
 
 import jsonschema
@@ -294,9 +296,6 @@ def test_temporal_audit_p1_requires_bound_dates():
     with pytest.raises(jsonschema.ValidationError):
         jsonschema.validate(bad, schema)
 
-
-import subprocess
-import sys as _sys
 
 SCRIPT = REPO_ROOT / "scripts/check_v3_9_4_temporal_verification.py"
 

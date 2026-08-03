@@ -4,7 +4,6 @@ listing, so it is pure resident-context cost. Cap it."""
 import pathlib
 import re
 import subprocess
-import sys
 
 REPO = pathlib.Path(__file__).resolve().parents[1]
 SCRIPT = REPO / "scripts" / "announce-ars-loaded.sh"

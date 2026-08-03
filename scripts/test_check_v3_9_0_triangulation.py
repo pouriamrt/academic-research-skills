@@ -6,7 +6,6 @@ import subprocess
 import sys
 from pathlib import Path
 
-import pytest
 
 
 SCRIPT = Path(__file__).parent / "check_v3_9_0_triangulation.py"

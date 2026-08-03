@@ -151,7 +151,7 @@ class TestPassportResetContractLint(unittest.TestCase):
         """Duplicate value within one options array must produce a violation."""
         with TemporaryDirectory() as td:
             root = Path(td)
-            path = _write(root, "shared/handoff_schemas.md", _DUPLICATE_VALUE_MD)
+            _write(root, "shared/handoff_schemas.md", _DUPLICATE_VALUE_MD)
             violations = scan_duplicate_option_values(root)
             self.assertTrue(
                 violations,

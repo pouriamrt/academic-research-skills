@@ -144,7 +144,7 @@ def _judge_unsupported(*, defect_stage: str = "source_description") -> Callable[
     def fn(**kwargs: Any) -> dict[str, Any]:
         return {
             "judgment": "UNSUPPORTED",
-            "rationale": f"Source describes a different population than the claim asserts.",
+            "rationale": "Source describes a different population than the claim asserts.",
             "defect_stage_hint": defect_stage,
         }
 

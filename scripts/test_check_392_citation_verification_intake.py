@@ -80,9 +80,9 @@ class TestCitationVerificationIntakeLint(unittest.TestCase):
             _write(
                 root,
                 "\n".join(
-                    l
-                    for l in GOOD_INTAKE.splitlines()
-                    if "**Citation Verification**" not in l
+                    line
+                    for line in GOOD_INTAKE.splitlines()
+                    if "**Citation Verification**" not in line
                 ),
             )
             result = _run(root)

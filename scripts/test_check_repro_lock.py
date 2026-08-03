@@ -96,7 +96,7 @@ class TestReproLock(unittest.TestCase):
             p = Path(tmp) / "passport.yaml"
             y = _valid_passport_yaml()
             # Remove the stochasticity_declaration line
-            lines = [l for l in y.splitlines() if "stochasticity_declaration" not in l]
+            lines = [line for line in y.splitlines() if "stochasticity_declaration" not in line]
             p.write_text("\n".join(lines) + "\n")
             result = _run(p)
             self.assertEqual(result.returncode, 1)

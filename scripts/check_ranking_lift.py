@@ -244,8 +244,8 @@ def evaluate_gate(
     """Run the full gate. Returns {blocked, reasons[], lifts[], regressions[]}."""
     lifts = compute_lifts(baseline, compare)
     regressions = [
-        l for l in lifts
-        if l["is_regression"] or l["is_zero_baseline_change"]
+        lift for lift in lifts
+        if lift["is_regression"] or lift["is_zero_baseline_change"]
     ]
     parsed = parse_pr_body(pr_body)
     reasons: list[str] = []

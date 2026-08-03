@@ -157,8 +157,11 @@ def extract_handoff_block(text: str) -> str | None:
     # strict (raw line equality at column 0, exact v1) so an indented or
     # re-versioned fence is malformed, never transported (codex #527
     # round-5 P1: indented fences).
-    opens = [i for i, l in enumerate(lines) if _ANY_OPEN_FENCE_RE.match(_fold_for_detection(l))]
-    closes = [i for i, l in enumerate(lines) if _fold_for_detection(l) == CLOSE_FENCE]
+    opens = [
+        i for i, line in enumerate(lines)
+        if _ANY_OPEN_FENCE_RE.match(_fold_for_detection(line))
+    ]
+    closes = [i for i, line in enumerate(lines) if _fold_for_detection(line) == CLOSE_FENCE]
     if not opens and not closes:
         return None
     if len(opens) > 1 or len(closes) > 1:

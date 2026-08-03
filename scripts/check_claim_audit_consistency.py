@@ -40,7 +40,7 @@ import sys
 import urllib.parse
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Iterable
+from typing import Any
 
 from jsonschema import Draft202012Validator
 

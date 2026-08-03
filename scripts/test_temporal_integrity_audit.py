@@ -1,7 +1,7 @@
 """Tests for v3.9.4 temporal_integrity_audit.py 5-pass verifier."""
 from __future__ import annotations
 
-import json
+import importlib.util
 import subprocess
 import sys
 from pathlib import Path
@@ -331,8 +331,6 @@ def test_freeze_regression_byte_identical_across_dates(tmp_path):
 
 
 # v3.9.4.1 hotfix: _date_to_interval coverage for all schema-valid shapes
-import importlib.util
-
 _AUDIT_SPEC = importlib.util.spec_from_file_location(
     "temporal_integrity_audit", REPO_ROOT / "scripts/temporal_integrity_audit.py"
 )

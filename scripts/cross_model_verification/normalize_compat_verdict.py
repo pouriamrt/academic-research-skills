@@ -36,7 +36,8 @@ def normalize_compat_verdict(raw: str) -> dict:
 
 
 def _main() -> int:
-    import sys, json
+    import sys
+    import json
     raw = sys.stdin.read()
     result = normalize_compat_verdict(raw)
     # Single-line JSON: the consumer reads .status; raw text lives JSON-escaped in .context

@@ -54,6 +54,10 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements-dev.txt pytest
 
+      - name: Lint (ruff)
+        run: |
+          pipx run ruff check .
+
       - name: Run test suite
         env:
           PYTHONPATH: .

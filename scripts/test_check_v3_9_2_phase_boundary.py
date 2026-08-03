@@ -116,7 +116,6 @@ class CanonicalEnforcementDefriftTests(unittest.TestCase):
         )
 
     def _check(self, module, content: str) -> list[str]:
-        from tempfile import TemporaryDirectory
         with TemporaryDirectory() as tmp:
             root = Path(tmp)
             fixture = root / "fixture_agent.md"

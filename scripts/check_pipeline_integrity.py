@@ -67,7 +67,6 @@ import re
 import sys
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Iterable
 
 PHASE_DIR_RE = re.compile(r"^phase([1-6])(?:_.*)?$")
 
@@ -250,7 +249,7 @@ def check_same_call_heuristic(report: Report, window_seconds: int) -> None:
 
 
 def format_text(report: Report) -> str:
-    lines = [f"ARS pipeline integrity check (v3.9.2 advisory)"]
+    lines = ["ARS pipeline integrity check (v3.9.2 advisory)"]
     lines.append(f"Workdir: {report.workdir}")
     lines.append(f"Phase dirs found: {dict(sorted(report.phase_dirs.items()))}")
     lines.append("")

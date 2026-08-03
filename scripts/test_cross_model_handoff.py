@@ -214,8 +214,8 @@ class ParseTests(unittest.TestCase):
         """codex round-5 P1: fences must sit at column 0 — an indented
         envelope is malformed, never transported and never a deliverable."""
         indented = "\n".join(
-            "  " + l if l.strip() in (cmh.OPEN_FENCE, cmh.CLOSE_FENCE) else l
-            for l in _envelope("design_freeze", "enum_comparison", OWNER_SOUND).splitlines()
+            "  " + line if line.strip() in (cmh.OPEN_FENCE, cmh.CLOSE_FENCE) else line
+            for line in _envelope("design_freeze", "enum_comparison", OWNER_SOUND).splitlines()
         )
         with self.assertRaises(cmh.HandoffError):
             cmh.extract_handoff_block(indented)
@@ -324,7 +324,7 @@ class ParseTests(unittest.TestCase):
             "expected_result": "expected_result: enum_comparison",
         }
         for name, line in removable.items():
-            mutated = "\n".join(l for l in base.splitlines() if l != line)
+            mutated = "\n".join(text_line for text_line in base.splitlines() if text_line != line)
             self.assertNotEqual(mutated, base, msg=name)
             with self.assertRaises(cmh.HandoffError, msg=name):
                 cmh.parse_handoff(mutated)

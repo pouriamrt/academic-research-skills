@@ -22,7 +22,6 @@ if str(REPO_ROOT / "scripts") not in sys.path:
 import migrate_literature_corpus_to_v3_9_0 as mig  # noqa: E402
 
 from openalex_client import OpenAlexUnavailable  # noqa: E402
-from crossref_client import CrossrefUnavailable  # noqa: E402
 
 
 # ---------------------------------------------------------------------------

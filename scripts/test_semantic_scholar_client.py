@@ -344,7 +344,8 @@ class RateLimitThrottleTest(unittest.TestCase):
         client = ssc.SemanticScholarClient(
             sleep=sleep, clock=clock, min_interval_seconds=1.0
         )
-        resp_factory = lambda: self._good_resp({"paperId": "x", "title": "T"})
+        def resp_factory():
+            return self._good_resp({"paperId": "x", "title": "T"})
         with patch(
             "urllib.request.urlopen",
             MagicMock(side_effect=[resp_factory(), resp_factory()]),
@@ -366,7 +367,8 @@ class RateLimitThrottleTest(unittest.TestCase):
         client = ssc.SemanticScholarClient(
             sleep=sleep, clock=clock, min_interval_seconds=1.0
         )
-        resp_factory = lambda: self._good_resp({"paperId": "x", "title": "T"})
+        def resp_factory():
+            return self._good_resp({"paperId": "x", "title": "T"})
         with patch(
             "urllib.request.urlopen",
             MagicMock(side_effect=[resp_factory(), resp_factory()]),
@@ -385,7 +387,8 @@ class RateLimitThrottleTest(unittest.TestCase):
         client = ssc.SemanticScholarClient(
             api_key="test-key", sleep=sleep, clock=clock
         )
-        resp_factory = lambda: self._good_resp({"paperId": "x", "title": "T"})
+        def resp_factory():
+            return self._good_resp({"paperId": "x", "title": "T"})
         with patch(
             "urllib.request.urlopen",
             MagicMock(side_effect=[resp_factory(), resp_factory()]),
@@ -444,7 +447,8 @@ class RateLimitThrottleTest(unittest.TestCase):
         client = ssc.SemanticScholarClient(
             sleep=sleep, clock=clock, min_interval_seconds=0.0
         )
-        resp_factory = lambda: self._good_resp({"paperId": "x", "title": "T"})
+        def resp_factory():
+            return self._good_resp({"paperId": "x", "title": "T"})
         with patch(
             "urllib.request.urlopen",
             MagicMock(side_effect=[resp_factory(), resp_factory()]),

@@ -219,7 +219,6 @@ def validate_patch(
     # Structural-shape flags (§3.3) — deterministic, computed on the
     # validated patch only.
     heading_op_indexes: list[int] = []
-    headings_before = sum(1 for b in base.blocks if b.kind == "heading")
     headings_delta = 0
     touched = 0
     for analysis in analyses:

@@ -153,7 +153,7 @@ def test_lower_is_better_polarity_inverted(monkeypatch):
     cmp = _report(task="rq_framing_patterns", agg_metric="balanced_accuracy", per_class=pc_cmp)
     result = crl.evaluate_gate(base, cmp, pr_body="")
     assert result["blocked"] is False
-    fnr_lift = next(l for l in result["lifts"] if l["metric"] == "fnr")
+    fnr_lift = next(lift for lift in result["lifts"] if lift["metric"] == "fnr")
     assert fnr_lift["signed_lift"] == pytest.approx(0.5)
 
 
@@ -165,7 +165,7 @@ def test_boundary_minus_005_passes_strict(monkeypatch):
     base = _report(agg_value=1.00)
     cmp = _report(agg_value=0.95)  # nominal -0.05
     result = crl.evaluate_gate(base, cmp, pr_body="")
-    agg_lift = next(l for l in result["lifts"] if l["class"] == "aggregate")
+    agg_lift = next(lift for lift in result["lifts"] if lift["class"] == "aggregate")
     assert agg_lift["signed_lift"] == pytest.approx(-0.05)
     assert result["blocked"] is False
 
@@ -282,7 +282,7 @@ def test_dropped_metric_is_a_violation(monkeypatch):
     base = _report_two_metrics()              # has aggregate + true.accuracy
     cmp = _report(agg_value=0.95)             # only aggregate, true.accuracy DROPPED
     lifts = crl.compute_lifts(base, cmp)
-    dropped = [l for l in lifts if l.get("is_dropped")]
+    dropped = [lift for lift in lifts if lift.get("is_dropped")]
     assert len(dropped) == 1
     assert dropped[0]["class"] == "true"
     assert dropped[0]["is_regression"] is True

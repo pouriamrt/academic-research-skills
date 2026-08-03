@@ -116,10 +116,14 @@ def test_all_unreachable_is_unresolvable():
     from arxiv_client import ArxivUnavailable
     from contamination_signals import SemanticScholarUnavailable
 
-    cr = MagicMock(); cr.doi_lookup_with_title_check.side_effect = CrossrefUnavailable("x")
-    oa = MagicMock(); oa.doi_lookup_with_title_check.side_effect = OpenAlexUnavailable("x")
-    s2 = MagicMock(); s2.lookup.side_effect = SemanticScholarUnavailable("x")
-    ax = MagicMock(); ax.arxiv_id_lookup.side_effect = ArxivUnavailable("x")
+    cr = MagicMock()
+    cr.doi_lookup_with_title_check.side_effect = CrossrefUnavailable("x")
+    oa = MagicMock()
+    oa.doi_lookup_with_title_check.side_effect = OpenAlexUnavailable("x")
+    s2 = MagicMock()
+    s2.lookup.side_effect = SemanticScholarUnavailable("x")
+    ax = MagicMock()
+    ax.arxiv_id_lookup.side_effect = ArxivUnavailable("x")
     outcome = verify_citation(
         _entry(arxiv_id="1706.03762"),
         _clients(crossref=cr, openalex=oa, semantic_scholar=s2, arxiv=ax),
@@ -140,7 +144,8 @@ def test_manual_entry_all_skipped_unresolvable():
 
 def test_arxiv_skipped_on_non_arxiv_citation():
     from verification_gate import verify_citation
-    cr = MagicMock(); cr.doi_lookup_with_title_check.return_value = {"title": ["X"]}
+    cr = MagicMock()
+    cr.doi_lookup_with_title_check.return_value = {"title": ["X"]}
     outcome = verify_citation(_entry(), _clients(crossref=cr), ref_slug=_DEFAULT_REF_SLUG)  # no arxiv_id
     assert outcome["resolver_outcomes"]["arxiv"]["status"] == "skipped"
 
@@ -242,7 +247,8 @@ def test_corpus_fixture_is_schema_valid():
 def test_verify_passport_runs_each_entry():
     from verification_gate import verify_passport
 
-    cr = MagicMock(); cr.doi_lookup_with_title_check.return_value = {"title": ["X"]}
+    cr = MagicMock()
+    cr.doi_lookup_with_title_check.return_value = {"title": ["X"]}
     passport = {
         "literature_corpus": [
             _entry(citation_key="a"),

@@ -289,7 +289,7 @@ def test_refusal_message_never_carries_api_key(monkeypatch):
 
 def test_doi_404_treated_as_miss_not_unavailable(monkeypatch):
     """DOI not indexed in OpenAlex (404) → return None (miss), not raise OpenAlexUnavailable."""
-    from openalex_client import OpenAlexClient, OpenAlexUnavailable
+    from openalex_client import OpenAlexClient
 
     def mock_urlopen(*args, **kwargs):
         raise urllib.error.HTTPError(

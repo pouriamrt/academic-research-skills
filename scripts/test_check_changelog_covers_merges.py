@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import subprocess
+import sys
 import textwrap
 import unittest
 from pathlib import Path
@@ -10,7 +11,6 @@ from tempfile import TemporaryDirectory
 from tests.test_helpers import run_script
 
 SCRIPT = Path(__file__).resolve().parent / "check_changelog_covers_merges.py"
-import sys
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from check_changelog_covers_merges import (  # noqa: E402
     all_refs,
@@ -353,7 +353,8 @@ class CliEndToEndTest(unittest.TestCase):
     def _make_repo(self, stack, changelog_body):
         import os
         repo = Path(stack.enter_context(TemporaryDirectory()))
-        env = os.environ.copy(); env.update(_GIT_ENV)
+        env = os.environ.copy()
+        env.update(_GIT_ENV)
         subprocess.run(["git", "-C", str(repo), "init", "-q"], check=True, env=env)
         subprocess.run(["git", "-C", str(repo), "config", "tag.gpgSign", "false"], check=True, env=env)
         (repo / "CHANGELOG.md").write_text(changelog_body)
@@ -387,10 +388,12 @@ class CliEndToEndTest(unittest.TestCase):
             self.assertIn("#2", proc.stdout + proc.stderr)
 
     def test_fail_closed_no_previous_tag(self):
-        import contextlib, os
+        import contextlib
+        import os
         with contextlib.ExitStack() as stack:
             repo = Path(stack.enter_context(TemporaryDirectory()))
-            env = os.environ.copy(); env.update(_GIT_ENV)
+            env = os.environ.copy()
+            env.update(_GIT_ENV)
             subprocess.run(["git", "-C", str(repo), "init", "-q"], check=True, env=env)
             (repo / "CHANGELOG.md").write_text("## [Unreleased]\n- x (#1)\n")
             subprocess.run(["git", "-C", str(repo), "add", "."], check=True, env=env)
@@ -401,10 +404,12 @@ class CliEndToEndTest(unittest.TestCase):
             self.assertIn("no previous release tag", (proc.stdout + proc.stderr).lower())
 
     def test_first_release_flag_passes(self):
-        import contextlib, os
+        import contextlib
+        import os
         with contextlib.ExitStack() as stack:
             repo = Path(stack.enter_context(TemporaryDirectory()))
-            env = os.environ.copy(); env.update(_GIT_ENV)
+            env = os.environ.copy()
+            env.update(_GIT_ENV)
             subprocess.run(["git", "-C", str(repo), "init", "-q"], check=True, env=env)
             (repo / "CHANGELOG.md").write_text("## [Unreleased]\n- x (#1)\n")
             subprocess.run(["git", "-C", str(repo), "add", "."], check=True, env=env)
@@ -413,10 +418,12 @@ class CliEndToEndTest(unittest.TestCase):
             self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
 
     def test_fail_when_changelog_missing(self):
-        import contextlib, os
+        import contextlib
+        import os
         with contextlib.ExitStack() as stack:
             repo = Path(stack.enter_context(TemporaryDirectory()))
-            env = os.environ.copy(); env.update(_GIT_ENV)
+            env = os.environ.copy()
+            env.update(_GIT_ENV)
             subprocess.run(["git", "-C", str(repo), "init", "-q"], check=True, env=env)
             subprocess.run(["git", "-C", str(repo), "config", "tag.gpgSign", "false"], check=True, env=env)
             (repo / "f.txt").write_text("x")

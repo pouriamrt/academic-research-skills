@@ -7,8 +7,6 @@ import json
 import shutil
 from pathlib import Path
 
-import pytest
-import yaml
 
 from scripts import check_evals_gold_set
 

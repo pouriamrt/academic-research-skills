@@ -251,7 +251,8 @@ class CheckPolicyAnchorTableNatureSourceOfTruthTest(unittest.TestCase):
     def test_main_command_invokes_dedup_helper(self) -> None:
         # Codex round-7 P3 #1 closure: removing the canonical Nature source
         # file should fail the main lint command (not just the unit test).
-        import shutil, tempfile
+        import shutil
+        import tempfile
         with tempfile.TemporaryDirectory() as td:
             tdir = Path(td)
             anchor = REPO_ROOT / "academic-paper/references/policy_anchor_table.md"

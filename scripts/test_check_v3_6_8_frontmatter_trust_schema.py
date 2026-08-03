@@ -444,7 +444,6 @@ def test_v3_10_venue_mutation_one_way_rule_is_load_bearing(schema: dict[str, Any
     branch is load-bearing rather than redundant (feedback_schema_mutation_test_for_constraints)."""
     import copy
     mutated = copy.deepcopy(schema)
-    target = "venue_type == unknown ⟹ venue_type_provenance == unknown"
     found = False
     for branch in mutated["allOf"]:
         if isinstance(branch.get("description"), str) and "venue_type == unknown" in branch["description"]:

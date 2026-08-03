@@ -41,7 +41,7 @@ Run:
 from __future__ import annotations
 
 import unittest
-from typing import Any, Callable
+from typing import Any
 
 try:
     from scripts.claim_audit_finalizer import (

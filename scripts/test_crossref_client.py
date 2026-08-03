@@ -150,7 +150,7 @@ def test_5xx_skips_immediately(monkeypatch):
 
 def test_doi_404_treated_as_miss_not_unavailable(monkeypatch):
     """DOI not indexed in Crossref (404) -> return None (miss), not raise CrossrefUnavailable."""
-    from crossref_client import CrossrefClient, CrossrefUnavailable
+    from crossref_client import CrossrefClient
 
     def mock_urlopen(*args, **kwargs):
         raise urllib.error.HTTPError(

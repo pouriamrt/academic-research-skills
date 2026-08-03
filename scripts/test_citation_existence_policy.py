@@ -33,7 +33,6 @@ machine-checkable substrate the prompt is bound to:
 from __future__ import annotations
 
 import json
-from pathlib import Path
 
 import pytest
 from jsonschema import Draft202012Validator

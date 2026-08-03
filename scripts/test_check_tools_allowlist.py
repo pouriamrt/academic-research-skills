@@ -17,7 +17,6 @@ the guarded property is broken. Two load-bearing families:
 from __future__ import annotations
 
 import json
-import sys
 from pathlib import Path
 
 from check_tools_allowlist import (

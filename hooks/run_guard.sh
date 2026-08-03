@@ -66,6 +66,9 @@ PAYLOAD=$(cat)
 # NOT keyed on "file_path": the schema-drift deny fires precisely when file_path is ABSENT,
 # so a Write payload lacking it carries neither substring. Keying on the tool name closes that
 # hole and needs no reasoning about which paths are infra-protected.
+# Known, unreachable divergence: a \u-escaped tool name would deny in the guard but
+# fast-path here. json.dumps never escapes ASCII, so Claude Code cannot emit it, and anyone
+# who controls hook serialization already controls the tool call.
 case $PAYLOAD in
     *'"agent_type"'* ) ;;                              # Bucket A possible -> real guard
     *'"Write"'* | *'"Edit"'* | *'"MultiEdit"'* ) ;;    # structured write -> real guard

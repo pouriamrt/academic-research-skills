@@ -15,11 +15,19 @@ def test_file_is_within_budget() -> None:
 
 
 def test_no_embedded_version_history() -> None:
-    """Any heading that is a bare version-release header belongs in CHANGELOG.md."""
+    """Any heading that is a bare version-release header belongs in CHANGELOG.md.
+
+    Exception: exactly ONE `## vX.Y[.Z] Key Additions` heading is REQUIRED by
+    scripts/check_version_consistency.py invariant 11, which compares it against the
+    suite version. It is a lint anchor, not changelog prose, so it is permitted here —
+    but only one, and only in that exact form. The point of this test is to stop the
+    ~19k chars of release narration that used to live in this file from creeping back.
+    """
     text = DOC.read_text(encoding="utf-8")
     offenders = re.findall(r"^#{2,3} v\d+\.\d+.*$", text, re.M)
-    allowed = {"## Version Info"}
-    offenders = [h for h in offenders if h.strip() not in allowed]
+    key_additions = [h for h in offenders if re.match(r"^## v[\d.]+ Key Additions\s*$", h)]
+    assert len(key_additions) <= 1, f"more than one Key Additions heading: {key_additions}"
+    offenders = [h for h in offenders if h not in key_additions and h.strip() != "## Version Info"]
     assert not offenders, f"version-history headings still present: {offenders[:5]}"
 
 

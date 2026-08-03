@@ -16,6 +16,18 @@ A suite of Claude Code skills for rigorous academic research, experimentation, s
 | `academic-pipeline` v3.20.1 | Full pipeline orchestrator (suite-version-pinned, auto-by-default) | (coordinates all above) |
 
 
+## v3.20.1 Key Additions
+
+Patch release — hot-path latency, session context, first lint gate. Full detail in `CHANGELOG.md`.
+
+- `hooks/run_guard.sh`: the PreToolUse guard now costs **zero** Python spawns for Bash calls and
+  three for structured writes (was four). Shell fast path keyed on the guard's own
+  `INSPECTED_TOOLS`; every deny decision is byte-identical, pinned by `GuardConstantsMirrorTest`.
+- SessionStart banner trimmed to ~500 chars; per-command model routing relocated to this file.
+- First lint gate: ruff (`E4,E7,E9,F,I,RUF100,UP`) + `ruff format` + mypy on the write-scope
+  guard, all enforced in CI. Markdown is excluded from ruff — it formats Python inside `.md`
+  code fences, which would rewrite SHA-pinned agent files.
+
 ## Version history
 
 See `CHANGELOG.md` for the full release history. Current: v3.20.1.

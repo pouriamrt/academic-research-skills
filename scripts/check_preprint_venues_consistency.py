@@ -72,7 +72,11 @@ def _extract_prose_venues(text: str) -> set[str]:
 def _extract_python_venues(text: str) -> set[str]:
     """Pull the items from the `PREPRINT_VENUES = frozenset({ ... })` literal."""
     m = re.search(
-        r"PREPRINT_VENUES\s*=\s*frozenset\(\{([^}]+)\}\)",
+        # Whitespace-tolerant on BOTH sides of the braces: ruff format rewrites
+        # frozenset({...}) onto separate lines, and an adjacent-brace pattern then
+        # fails to match — this lint would ERROR instead of comparing, so real venue
+        # drift between the agent prose and this frozenset would go undetected.
+        r"PREPRINT_VENUES\s*=\s*frozenset\(\s*\{([^}]+)\}\s*\)",
         text,
         flags=re.DOTALL,
     )

@@ -283,7 +283,7 @@ def check_readme_sections() -> None:
     rel_path = "README.md"
     text = read(rel_path)
 
-    expect_contains(rel_path, "version-v3.20.0-blue")
+    expect_contains(rel_path, "version-v3.20.1-blue")
     expect_contains(rel_path, "### v3.20.0 (2026-07-16)")
     expect_contains(rel_path, "### v3.18.0 (2026-05-23)")
     expect_contains(rel_path, "### v3.17.0 (2026-05-15)")
@@ -311,7 +311,7 @@ def check_readme_sections() -> None:
         "### Deep Research (v2.9.4)",
         "### Academic Paper (v3.2.0)",
         "### Academic Paper Reviewer (v1.9.1)",
-        "### Academic Pipeline (v3.20.0",
+        "### Academic Pipeline (v3.20.1",
     ):
         if heading not in text:
             fail(f"{rel_path}: missing heading {heading!r}")

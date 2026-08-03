@@ -682,5 +682,25 @@ class GuardConstantsMirrorTest(unittest.TestCase):
         )
 
 
+class RenderShapeContractTest(unittest.TestCase):
+    """The launcher validates guard output with an ANCHORED PREFIX match
+    (case $GUARD_OUT in '{"hookSpecificOutput"'*). That avoids the substring
+    false-accept the old is_valid_hook_json() comment warned about, but it couples to
+    render_hook_output()'s exact wire shape: an indent=2, or any key emitted before
+    "hookSpecificOutput", would make the launcher treat EVERY decision as broken and
+    silently degrade each deny to a pass-through. Pin the contract."""
+
+    def test_render_hook_output_wire_shape(self):
+        for decision in ({"decision": "allow", "reason": ""}, {"decision": "deny", "reason": "x"}):
+            out = guard.render_hook_output(decision)
+            self.assertTrue(
+                out.startswith('{"hookSpecificOutput"'),
+                "render_hook_output() no longer starts with the hookSpecificOutput key — "
+                "the prefix match in hooks/run_guard.sh would reject every decision and "
+                "degrade denies to pass-throughs. Update both together.",
+            )
+            self.assertNotIn(chr(10), out, "must stay single-line for the prefix match")
+
+
 if __name__ == "__main__":
     unittest.main()

@@ -16,8 +16,13 @@ extend-exclude = [
 ]
 
 [tool.ruff.lint]
-# Phase 1 deliberately pins ruff's DEFAULT rule set. Wider families (I, UP, RUF,
-# SIM, PERF, ...) are opted into one per PR so each diff stays reviewable.
+# Staged adoption: the default set (E4,E7,E9,F) landed first, then I, RUF100 and UP
+# one commit each so any single family can be reverted alone. Further families
+# (SIM, PERF, ...) follow the same one-per-PR rule.
+# NOTE: never run `--select <RULE> --fix` in ISOLATION. RUF100 (unused-noqa) judges
+# suppressions against the SELECTED rules only, so an isolated run strips every noqa
+# for unselected rules — it removed the F401 re-export guards and E402 late-import
+# suppressions once already (reverted in 7b49cb9). Add to `select`, then run `ruff check`.
 # PLW1510 (subprocess-run-without-check, 60 hits) and BLE001 (blind-except, 24)
 # are held back on purpose: each encodes a real decision about failure handling
 # in a repo whose guard design is about failing in a chosen direction.

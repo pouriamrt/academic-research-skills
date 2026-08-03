@@ -34,7 +34,7 @@ import unittest
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))  # scripts/ -> repo root
 
-import ars_write_scope_guard as guard  # noqa: E402
+import ars_write_scope_guard as guard
 
 # A minimal in-test manifest mirroring the real shape (keys = frontmatter name).
 TEST_MANIFEST = {

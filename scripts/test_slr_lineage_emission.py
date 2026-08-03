@@ -29,8 +29,8 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 if str(REPO_ROOT / "scripts") not in sys.path:
     sys.path.insert(0, str(REPO_ROOT / "scripts"))
 
-import policy_anchor_disclosure_referee as referee  # noqa: E402
-import slr_lineage  # noqa: E402
+import policy_anchor_disclosure_referee as referee
+import slr_lineage
 
 
 # ============================================================================

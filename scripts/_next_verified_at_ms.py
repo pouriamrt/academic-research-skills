@@ -130,7 +130,7 @@ def _load_passport_audit_artifacts(path: Path) -> list[dict[str, Any]]:
             # to datetime objects, which would break parse_rfc3339_ms()
             # downstream. The schema constrains verified_at to a string;
             # strict string load matches that contract.
-            data = yaml.load(text, Loader=yaml.BaseLoader)  # noqa: S506 - intentional, str-only
+            data = yaml.load(text, Loader=yaml.BaseLoader)
     except (yaml.YAMLError, json.JSONDecodeError) as e:
         raise ValueError(f"failed to parse {path}: {e}") from e
 

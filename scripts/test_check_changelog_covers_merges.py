@@ -13,7 +13,7 @@ from tests.test_helpers import run_script
 
 SCRIPT = Path(__file__).resolve().parent / "check_changelog_covers_merges.py"
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from check_changelog_covers_merges import (  # noqa: E402
+from check_changelog_covers_merges import (
     Uncovered,
     all_refs,
     audit,
@@ -227,7 +227,7 @@ class ExtractUnreleasedTest(unittest.TestCase):
         self.assertIsNone(extract_unreleased("# Changelog\n## [3.12.0]\n- x\n"))
 
 
-from check_changelog_covers_merges import (  # noqa: E402
+from check_changelog_covers_merges import (
     merged_commit_subjects,
     previous_release_tag,
 )

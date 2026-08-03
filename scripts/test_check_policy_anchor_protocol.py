@@ -12,7 +12,7 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 if str(REPO_ROOT / "scripts") not in sys.path:
     sys.path.insert(0, str(REPO_ROOT / "scripts"))
 
-import check_policy_anchor_protocol as cpap  # noqa: E402
+import check_policy_anchor_protocol as cpap
 
 # Each named invariant from impl spec §4.3 must be referenced verbatim. The
 # protocol doc must also resolve each §4.4 #1–#11 concern by name and carry

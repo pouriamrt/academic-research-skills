@@ -57,7 +57,7 @@ from pathlib import Path
 # "The extractor is the byte-equivalent function shared between v3.6.7 lint
 # and v3.7.1 lint to guarantee identical results").
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from check_v3_6_7_pattern_protection import (  # noqa: E402
+from check_v3_6_7_pattern_protection import (
     PROTECTION_BLOCK as V3_6_7_PROTECTION_BLOCK,
 )
 

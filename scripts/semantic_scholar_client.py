@@ -31,7 +31,7 @@ try:
         _BACKOFF_SECONDS,
         _MAX_RETRIES,
         _TITLE_SIMILARITY_THRESHOLD,
-        _normalize_title,  # noqa: F401 — re-exported; consumed as ssc._normalize_title by tests
+        _normalize_title,
         _similarity,
         exact_normalized_title,
         generic_title,
@@ -42,7 +42,7 @@ except ImportError:
         _BACKOFF_SECONDS,
         _MAX_RETRIES,
         _TITLE_SIMILARITY_THRESHOLD,
-        _normalize_title,  # noqa: F401 — re-exported; consumed as ssc._normalize_title by tests
+        _normalize_title,
         _similarity,
         exact_normalized_title,
         generic_title,

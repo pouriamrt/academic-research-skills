@@ -59,7 +59,13 @@ def _stub(path):
 
 def _fake_real_python(path, real=REAL_PY):
     """A fake `python3`/`python`/`py` that behaves like a real interpreter by delegating to
-    an actual python. Handles the marker probe (`-c ...`) and running the guard script."""
+    an actual python. Handles the marker probe (`-c ...`) and running the guard script.
+
+    `path` may be a specific interpreter file path (existing callers), or an existing bin
+    directory — the latter gets a `python3` created inside it (the candidate the launcher
+    reaches right after `py -3`, which these callers leave unresolvable on PATH)."""
+    if os.path.isdir(path):
+        path = os.path.join(path, "python3")
     _write_exec(path, f'#!/bin/sh\nexec "{real}" "$@"\n')
 
 
@@ -79,7 +85,7 @@ def _run_launcher(bin_dir, payload, extra_env=None, launcher=LAUNCHER):
     a temp plugin layout (the only way to exercise a broken/alternate guard now that the
     ARS_GUARD_PATH_FOR_TEST back door is gone — the guard is ALWAYS resolved from the
     launcher's own ../scripts/, P2-e)."""
-    path = bin_dir + os.pathsep + _SYS_PATH
+    path = os.fspath(bin_dir) + os.pathsep + _SYS_PATH
     env = {
         "PATH": path,
         # Short probe bound keeps the suite fast; a hanging-candidate is killed in ~1s.
@@ -461,6 +467,88 @@ class LauncherInfraProtectionTest(unittest.TestCase):
             self.assertEqual(code, 0)
             self.assertEqual(json.loads(out)["hookSpecificOutput"].get("permissionDecision"), "deny",
                              "writing the launcher itself must be infra-denied")
+
+
+class LauncherFastPathTest(unittest.TestCase):
+    """v2 fast path: skip Python when no deny is reachable.
+
+    The guard inspects only INSPECTED_TOOLS = STRUCTURED_WRITE_TOOLS | {"Bash"}.
+    For Bash the sole deny needs Bucket A gating (agent_type). So `not a
+    structured write tool AND no agent_type` => allow is the only outcome.
+    """
+
+    def _bucket_a_agent(self):
+        # REPO_ROOT is a plain str (os.path.dirname(...)), not a Path, so join via the
+        # Path(...) constructor rather than the `/` operator.
+        manifest = json.loads(Path(REPO_ROOT, "scripts",
+                              "ars_phase_scope_manifest.json").read_text(encoding="utf-8"))
+        return sorted(manifest["agents"])[0]
+
+    def test_main_session_bash_spawns_no_python(self):
+        """Proves the fast path FIRED, not merely that the answer was right."""
+        with tempfile.TemporaryDirectory() as td:
+            bin_dir = Path(td) / "bin"
+            bin_dir.mkdir()
+            counter = Path(td) / "spawns.txt"
+            # Every python candidate on PATH records an invocation.
+            for name in ("py", "python3", "python"):
+                _write_exec(bin_dir / name, f'#!/bin/sh\necho x >> "{counter.as_posix()}"\nexit 1\n')
+            code, out, err = _run_launcher(
+                bin_dir, {"tool_name": "Bash", "tool_input": {"command": "ls -la"}})
+            self.assertEqual(code, 0)
+            self.assertEqual(json.loads(out),
+                             {"hookSpecificOutput": {"hookEventName": "PreToolUse"}})
+            self.assertFalse(counter.exists(),
+                             "fast path did not fire — Python was spawned for a main-session Bash call")
+
+    def test_bucket_a_bash_still_denied(self):
+        with tempfile.TemporaryDirectory() as td:
+            bin_dir = Path(td) / "bin"
+            bin_dir.mkdir()
+            _fake_real_python(bin_dir)
+            code, out, err = _run_launcher(
+                bin_dir,
+                {"tool_name": "Bash", "tool_input": {"command": "ls"},
+                 "cwd": str(REPO_ROOT), "agent_type": self._bucket_a_agent()},
+                extra_env={"CLAUDE_PROJECT_DIR": str(REPO_ROOT),
+                           "CLAUDE_PLUGIN_ROOT": str(REPO_ROOT)})
+            self.assertEqual(
+                json.loads(out)["hookSpecificOutput"]["permissionDecision"], "deny")
+
+    def test_schema_drift_write_without_file_path_still_denied(self):
+        """The case that killed the v1 predicate: the schema-drift deny fires
+        precisely BECAUSE file_path is absent, so such a payload carries neither
+        `agent_type` nor `file_path`. Keying on the tool name is what closes it."""
+        for tool, tool_input in (("Write", {"path": "x.txt", "content": "y"}),
+                                 ("Edit", {"old": "a", "new": "b"}),
+                                 ("MultiEdit", {"edits": []})):
+            with self.subTest(tool=tool), tempfile.TemporaryDirectory() as td:
+                bin_dir = Path(td) / "bin"
+                bin_dir.mkdir()
+                _fake_real_python(bin_dir)
+                code, out, err = _run_launcher(
+                    bin_dir, {"tool_name": tool, "tool_input": tool_input,
+                              "cwd": str(REPO_ROOT)},
+                    extra_env={"CLAUDE_PROJECT_DIR": str(REPO_ROOT),
+                               "CLAUDE_PLUGIN_ROOT": str(REPO_ROOT)})
+                self.assertEqual(
+                    json.loads(out)["hookSpecificOutput"]["permissionDecision"], "deny",
+                    f"{tool} without file_path must still be denied")
+
+    def test_main_session_write_to_infra_still_denied(self):
+        with tempfile.TemporaryDirectory() as td:
+            bin_dir = Path(td) / "bin"
+            bin_dir.mkdir()
+            _fake_real_python(bin_dir)
+            code, out, err = _run_launcher(
+                bin_dir,
+                {"tool_name": "Write",
+                 "tool_input": {"file_path": "hooks/run_guard.sh", "content": "x"},
+                 "cwd": str(REPO_ROOT)},
+                extra_env={"CLAUDE_PROJECT_DIR": str(REPO_ROOT),
+                           "CLAUDE_PLUGIN_ROOT": str(REPO_ROOT)})
+            self.assertEqual(
+                json.loads(out)["hookSpecificOutput"]["permissionDecision"], "deny")
 
 
 if __name__ == "__main__":

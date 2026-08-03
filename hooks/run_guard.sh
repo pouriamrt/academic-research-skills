@@ -52,6 +52,26 @@ GUARD="$SELF_DIR/../scripts/ars_write_scope_guard.py"
 # documented degradation rather than fixed speculatively.
 PAYLOAD=$(cat)
 
+# --- Fast path: skip Python entirely when no deny is reachable ----------------------------
+# The guard inspects only INSPECTED_TOOLS = STRUCTURED_WRITE_TOOLS | {"Bash"}; every other
+# tool hits its `if tool_name not in INSPECTED_TOOLS: return allow` first branch. For Bash the
+# only deny needs Bucket A gating, which needs `agent_type`. So: not a structured write tool
+# AND no agent_type => `allow` is the guard's only reachable outcome, and we can emit the
+# canonical pass-through without paying an interpreter cold start.
+#
+# Conservative by construction. A false MATCH (a Bash command string containing the text
+# "Write") falls through to the real guard — slower, still correct. A false SKIP is impossible:
+# both arms key on JSON that Claude Code must emit for the guard to reach the matching branch.
+#
+# NOT keyed on "file_path": the schema-drift deny fires precisely when file_path is ABSENT,
+# so a Write payload lacking it carries neither substring. Keying on the tool name closes that
+# hole and needs no reasoning about which paths are infra-protected.
+case $PAYLOAD in
+    *'"agent_type"'* ) ;;                              # Bucket A possible -> real guard
+    *'"Write"'* | *'"Edit"'* | *'"MultiEdit"'* ) ;;    # structured write -> real guard
+    * ) emit_passthrough_and_exit ;;
+esac
+
 # --- Marker probe: does this candidate run real Python? ----------------------------------
 # A candidate is "real" iff the probe exits 0 AND prints the exact marker on stdout. A 0-byte
 # Store stub fails to execute / prints nothing, so it is skipped. We bound each probe so a
@@ -184,22 +204,6 @@ find_real_python() {
 REAL_PY=$(find_real_python) || emit_passthrough_and_exit
 [ -n "$REAL_PY" ] || emit_passthrough_and_exit
 
-# is_valid_hook_json: true iff $1 parses as a JSON object containing a top-level
-# "hookSpecificOutput" key. Uses the REAL Python we already found (no jq dependency, P1-c:
-# substring grep false-accepts e.g. `not json "hookSpecificOutput"`). Reads candidate on stdin.
-is_valid_hook_json() {
-    # shellcheck disable=SC2086  # $REAL_PY is "py -3" or "python3" — intentional split
-    set -- $REAL_PY
-    printf '%s' "$GUARD_OUT" | "$@" -c '
-import sys, json
-try:
-    d = json.load(sys.stdin)
-except Exception:
-    sys.exit(1)
-sys.exit(0 if isinstance(d, dict) and "hookSpecificOutput" in d else 1)
-' >/dev/null 2>&1
-}
-
 # --- Supervise the guard subprocess (P1-b: time-bound it too; P1-c: validate JSON) --------
 # Run the guard with the found interpreter, replaying the captured payload on its stdin,
 # under the SAME wall-clock bound as the probes so a hung guard can't wedge the hot path.
@@ -220,7 +224,11 @@ GUARD_ERR=$(mktemp 2>/dev/null) || emit_passthrough_and_exit
 GUARD_OUT=$(printf '%s' "$PAYLOAD" | run_bounded "$@" "$GUARD" 2>"$GUARD_ERR")
 GUARD_STATUS=$?
 
-if [ "$GUARD_STATUS" -eq 0 ] && is_valid_hook_json; then
+case $GUARD_OUT in
+    '{"hookSpecificOutput"'*) GUARD_VALID=1 ;;
+    *) GUARD_VALID="" ;;
+esac
+if [ "$GUARD_STATUS" -eq 0 ] && [ -n "$GUARD_VALID" ]; then
     # Healthy guard decision: relay its stderr advisories, then forward its JSON verbatim.
     [ -s "$GUARD_ERR" ] && cat "$GUARD_ERR" >&2
     rm -f "$GUARD_ERR" 2>/dev/null

@@ -34,7 +34,7 @@ from __future__ import annotations
 import argparse
 import json
 import sys
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from typing import Any
 
@@ -50,7 +50,7 @@ _RFC3339_MS_FORMAT = "%Y-%m-%dT%H:%M:%S.%f"
 
 def utc_now_ms() -> str:
     """Current UTC time as RFC 3339 with millisecond precision (Z suffix)."""
-    return rfc3339_ms(datetime.now(timezone.utc))
+    return rfc3339_ms(datetime.now(UTC))
 
 
 def parse_rfc3339_ms(s: str) -> datetime:
@@ -62,15 +62,15 @@ def parse_rfc3339_ms(s: str) -> datetime:
     """
     if not (len(s) == 24 and s.endswith("Z") and s[-5] == "." and s[10] == "T"):
         raise ValueError(f"not RFC 3339 ms UTC ('...Z' with .NNN): {s!r}")
-    return datetime.strptime(s[:-1] + "000", _RFC3339_MS_FORMAT).replace(tzinfo=timezone.utc)
+    return datetime.strptime(s[:-1] + "000", _RFC3339_MS_FORMAT).replace(tzinfo=UTC)
 
 
 def rfc3339_ms(dt: datetime) -> str:
     """Format a UTC datetime as RFC 3339 with millisecond precision."""
     if dt.tzinfo is None:
-        dt = dt.replace(tzinfo=timezone.utc)
+        dt = dt.replace(tzinfo=UTC)
     else:
-        dt = dt.astimezone(timezone.utc)
+        dt = dt.astimezone(UTC)
     return dt.strftime(_RFC3339_MS_FORMAT)[:-3] + "Z"
 
 

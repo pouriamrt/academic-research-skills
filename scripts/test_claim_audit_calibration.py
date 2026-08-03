@@ -36,8 +36,9 @@ from __future__ import annotations
 
 import json
 import unittest
+from collections.abc import Callable
 from pathlib import Path
-from typing import Any, Callable
+from typing import Any
 
 from scripts.claim_audit_calibration import (
     GoldSetValidationError,

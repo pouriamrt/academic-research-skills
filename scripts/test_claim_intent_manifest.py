@@ -38,7 +38,8 @@ Run:
 from __future__ import annotations
 
 import unittest
-from typing import Any, Callable
+from collections.abc import Callable
+from typing import Any
 
 try:
     from scripts._claim_audit_constants import SENTINEL_MANIFEST_ID

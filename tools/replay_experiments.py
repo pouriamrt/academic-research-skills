@@ -36,7 +36,7 @@ import shutil
 import subprocess
 import sys
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 
 # ---------------------------------------------------------------------------
@@ -295,7 +295,7 @@ def execute_script(
         metadata=meta,
     )
 
-    start_time = datetime.now(timezone.utc)
+    start_time = datetime.now(UTC)
     try:
         proc = subprocess.run(
             [python_exe, str(script_path)],
@@ -305,7 +305,7 @@ def execute_script(
             cwd=str(project_root),
             env={**os.environ, "PYTHONDONTWRITEBYTECODE": "1"},
         )
-        elapsed = (datetime.now(timezone.utc) - start_time).total_seconds()
+        elapsed = (datetime.now(UTC) - start_time).total_seconds()
         result.exit_code = proc.returncode
         result.stdout = proc.stdout
         result.stderr = proc.stderr
@@ -318,7 +318,7 @@ def execute_script(
             result.status = "REPRODUCED"  # provisional; comparison may downgrade
 
     except subprocess.TimeoutExpired:
-        elapsed = (datetime.now(timezone.utc) - start_time).total_seconds()
+        elapsed = (datetime.now(UTC) - start_time).total_seconds()
         result.execution_time_seconds = round(elapsed, 2)
         result.status = "FAILED"
         result.error_message = (
@@ -757,7 +757,7 @@ def generate_report(
 ) -> str:
     """Generate a reproducibility report in Markdown format."""
 
-    now = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC")
+    now = datetime.now(UTC).strftime("%Y-%m-%d %H:%M:%S UTC")
     n_total = len(results)
     n_reproduced = sum(1 for r in results if r.status == "REPRODUCED")
     n_diverged = sum(1 for r in results if r.status == "DIVERGED")

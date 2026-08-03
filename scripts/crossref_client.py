@@ -22,7 +22,8 @@ import time
 import urllib.error
 import urllib.parse
 import urllib.request
-from typing import Any, Mapping
+from collections.abc import Mapping
+from typing import Any
 
 # Dual-path import: see openalex_client.py comment.
 try:

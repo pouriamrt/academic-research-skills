@@ -68,8 +68,7 @@ def _first_title_word_non_stopword(title_hint: str | None) -> str:
 
 def _alpha_suffixes():
     """Yield 'a', 'b', ..., 'z', 'aa', 'ab', ..., 'zz'."""
-    for c in "abcdefghijklmnopqrstuvwxyz":
-        yield c
+    yield from "abcdefghijklmnopqrstuvwxyz"
     for c1 in "abcdefghijklmnopqrstuvwxyz":
         for c2 in "abcdefghijklmnopqrstuvwxyz":
             yield c1 + c2

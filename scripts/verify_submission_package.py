@@ -50,8 +50,9 @@ import re
 import sys
 import xml.etree.ElementTree as ET
 import zipfile
+from collections.abc import Iterator
 from pathlib import Path
-from typing import Any, Iterator, Optional
+from typing import Any
 
 import yaml
 
@@ -196,7 +197,7 @@ _PAREN_SEGMENT_RE = re.compile(
 )
 
 
-def compute_package_fingerprint(package_dir: Path, report_relpath: Optional[str] = None) -> str:
+def compute_package_fingerprint(package_dir: Path, report_relpath: str | None = None) -> str:
     """Audit-snapshot manifest convention over the package files (§10 item 3):
     one `<package-relative-path>:<sha256>` line per file, LC_ALL=C byte-sorted,
     trailing newline; fingerprint = SHA-256 of the manifest text. The report
@@ -223,7 +224,7 @@ def compute_package_fingerprint(package_dir: Path, report_relpath: Optional[str]
 
 
 def compute_inputs_fingerprint(
-    venue_profile_path: Optional[str], join_map_path: Optional[str], passport_path: Optional[str]
+    venue_profile_path: str | None, join_map_path: str | None, passport_path: str | None
 ) -> str:
     """SHA-256 over the external-inputs manifest (gate-2 review P1): one
     `<name>:<sha256-of-file-bytes|absent>` line per input, sorted by name,
@@ -366,8 +367,8 @@ def _check(
     detail: str,
     *,
     signal_class: str = "deterministic",
-    location: Optional[str] = None,
-    strict_eligible: Optional[bool] = None,
+    location: str | None = None,
+    strict_eligible: bool | None = None,
 ) -> dict[str, Any]:
     family, fail_capable, fixed_class = _CHECK_REGISTRY[check_id]
     if fixed_class is not None:
@@ -412,7 +413,7 @@ def _compare_sets(
     signal_class: str,
     in_text_label: str,
     reference_label: str,
-    unjoined: Optional[dict[str, str]] = None,
+    unjoined: dict[str, str] | None = None,
     unjoined_label: str = ("with no join entry in the supplied join source"),
 ) -> list[dict[str, Any]]:
     """Two-way set check (§3.3): orphan in-text citation = fail (C1); uncited
@@ -513,7 +514,7 @@ _NO_REFERENCE_LIST_REASON = (
 _NO_MANUSCRIPT_REASON = "no manuscript found (no .md/.tex/.txt file in the package)"
 
 
-def _reference_list(bib_keys: set[str], passport: Optional[dict[str, Any]]) -> tuple[set[str], str]:
+def _reference_list(bib_keys: set[str], passport: dict[str, Any] | None) -> tuple[set[str], str]:
     """The machine-readable reference list both Family C and B5 compare
     against: package .bib keys, or the passport's declared
     literature_corpus[] keys. Empty set + empty label = no source."""
@@ -531,8 +532,8 @@ def run_family_c(
     bib_keys: set[str],
     reference_keys: set[str],
     reference_label: str,
-    passport: Optional[dict[str, Any]] = None,
-    join_map: Optional[dict[str, str]] = None,
+    passport: dict[str, Any] | None = None,
+    join_map: dict[str, str] | None = None,
 ) -> tuple[list[dict[str, Any]], str]:
     """Run Family C over the collected package texts.
     Returns (checks, extraction_path)."""
@@ -550,7 +551,7 @@ def run_family_c(
         # scholar-supplied map > the run's citation_verification_summary[] >
         # .bib identity relation.
         if join_map is not None:
-            join: Optional[dict[str, str]] = dict(join_map)
+            join: dict[str, str] | None = dict(join_map)
         elif summary_join:
             join = summary_join
         elif bib_keys:
@@ -698,7 +699,7 @@ def _countable_body(rel: str, text: str, scope: str) -> tuple[str, str]:
     return text, "everything counted (tool markers stripped)"
 
 
-def _abstract_text(rel: str, text: str) -> Optional[str]:
+def _abstract_text(rel: str, text: str) -> str | None:
     if rel.lower().endswith(".tex"):
         m = _TEX_ABSTRACT_RE.search(text)
         return _detex(m.group(1)) if m else None
@@ -709,7 +710,7 @@ def _abstract_text(rel: str, text: str) -> Optional[str]:
     return None
 
 
-def _keyword_list(text: str) -> Optional[list[str]]:
+def _keyword_list(text: str) -> list[str] | None:
     m = _KEYWORDS_LINE_RE.search(text) or _TEX_KEYWORDS_RE.search(text)
     if not m:
         return None
@@ -728,7 +729,7 @@ _NON_MANUSCRIPT_PREFIXES = ("cover_letter", "cover-letter", "response", "rebutta
 
 def _primary_manuscript(
     manuscripts: dict[str, str],
-) -> tuple[Optional[str], Optional[str], Optional[str]]:
+) -> tuple[str | None, str | None, str | None]:
     """(rel, text, blocked_reason) — the manuscript the limits are checked
     against; rel/text are None iff blocked_reason says why. Canonical
     filenames (paper/manuscript/main) win; known package-document names
@@ -770,7 +771,7 @@ def _ceiling_check(
     count: int,
     limit: int,
     what: str,
-    location: Optional[str] = None,
+    location: str | None = None,
     tolerance: float = 1.0,
 ) -> dict[str, Any]:
     tol_note = " (±2% tolerance)" if tolerance > 1.0 else ""
@@ -784,7 +785,7 @@ def run_family_b(
     manuscripts: dict[str, str],
     reference_keys: set[str],
     reference_label: str,
-    profile: Optional[dict[str, Any]],
+    profile: dict[str, Any] | None,
 ) -> list[dict[str, Any]]:
     """Family B: venue-declared limits vs actuals (§3.2). Without a profile,
     every check is NOT-CHECKED — limits are never guessed from the journal
@@ -933,7 +934,7 @@ _PROFILE_SCHEMA_PATH = (
     / "submission"
     / "venue_profile.schema.json"
 )
-_profile_schema_cache: Optional[dict[str, Any]] = None
+_profile_schema_cache: dict[str, Any] | None = None
 
 
 def _profile_schema() -> dict[str, Any]:
@@ -1073,7 +1074,7 @@ def _is_anonymized_name(rel: str) -> bool:
     return any(t in _BLIND_STEM_TOKENS for t in tokens)
 
 
-def _a4_strict(profile: Optional[dict[str, Any]]) -> bool:
+def _a4_strict(profile: dict[str, Any] | None) -> bool:
     """A4 is strict-eligible ONLY when the venue profile explicitly declares
     acknowledgments must be removed from the blind version (§3.1 load-bearing
     — the deterministic signal stays advisory otherwise because the
@@ -1091,7 +1092,7 @@ def _package_files(package_dir: Path) -> list[str]:
 
 
 def _blanket_family_a(
-    ids, status: str, reason: str, profile: Optional[dict[str, Any]]
+    ids, status: str, reason: str, profile: dict[str, Any] | None
 ) -> list[dict[str, Any]]:
     """One emitter for every whole-family blanket path (untriggered
     not_applicable / no-variant not_checked), so A4's profile-conditional
@@ -1103,7 +1104,7 @@ def _blanket_family_a(
 
 
 def run_family_a(
-    package_dir: Path, manuscripts: dict[str, str], profile: Optional[dict[str, Any]]
+    package_dir: Path, manuscripts: dict[str, str], profile: dict[str, Any] | None
 ) -> list[dict[str, Any]]:
     """Family A: blind-review residue scan (§3.1). Trigger is
     presence-or-declaration: an anonymized variant in the package, or a
@@ -1150,7 +1151,7 @@ def _scan_blind_set(
     manuscripts: dict[str, str],
     all_rels: list[str],
     anon_rels: list[str],
-    profile: Optional[dict[str, Any]],
+    profile: dict[str, Any] | None,
 ) -> list[dict[str, Any]]:
     """A1-A6 over the blind submission set (the anonymized variants)."""
     checks: list[dict[str, Any]] = []
@@ -1166,7 +1167,7 @@ def _scan_blind_set(
 
 
 def _residue_verdict(
-    check_id: str, findings: "list[tuple[str, str]]", unreadable: list[str], what: str
+    check_id: str, findings: list[tuple[str, str]], unreadable: list[str], what: str
 ) -> dict[str, Any]:
     """fail on any (rel, message) finding; otherwise not_checked if any
     artifact was unreadable (incompleteness is never folded into pass, §1.4);
@@ -1202,7 +1203,7 @@ def _pdf_metadata_checks(package_dir: Path, pdf_rels: list[str]) -> list[dict[st
                 "install pypdf) — PDF metadata cannot be scanned",
             )
         ]
-    findings: "list[tuple[str, str]]" = []
+    findings: list[tuple[str, str]] = []
     unreadable: list[str] = []
     for rel in pdf_rels:
         try:
@@ -1234,7 +1235,7 @@ def _pdf_info_author(reader) -> str:
     return str(meta.get("/Author") or "").strip() if meta else ""
 
 
-def _read_zip_part(z: "zipfile.ZipFile", name: str) -> bytes:
+def _read_zip_part(z: zipfile.ZipFile, name: str) -> bytes:
     """Bounded read of one zip part (the zip-bomb guard): the declared
     uncompressed size must stay under _MAX_XML_PART_BYTES."""
     if z.getinfo(name).file_size > _MAX_XML_PART_BYTES:
@@ -1242,7 +1243,7 @@ def _read_zip_part(z: "zipfile.ZipFile", name: str) -> bytes:
     return z.read(name)
 
 
-def _open_docx_guarded(path: Path) -> "zipfile.ZipFile":
+def _open_docx_guarded(path: Path) -> zipfile.ZipFile:
     """Open a .docx with the zip-bomb entry-count guard applied — the one
     opening path for every DOCX reader (A2/A3 and the A6 token harvest), so
     the guards cannot drift apart."""
@@ -1253,7 +1254,7 @@ def _open_docx_guarded(path: Path) -> "zipfile.ZipFile":
     return z
 
 
-def _docx_core_author_fields(z: "zipfile.ZipFile") -> "list[tuple[str, str]]":
+def _docx_core_author_fields(z: zipfile.ZipFile) -> list[tuple[str, str]]:
     """[(label, value)] for the non-empty author fields of docProps/core.xml
     — the one extraction A2 and the A6 token harvest share."""
     if "docProps/core.xml" not in set(z.namelist()):
@@ -1289,8 +1290,8 @@ def _docx_residue_checks(package_dir: Path, docx_rels: list[str]) -> list[dict[s
             _check("A2", "not_applicable", "no DOCX in the blind submission set"),
             _check("A3", "not_applicable", "no DOCX in the blind submission set"),
         ]
-    meta_findings: "list[tuple[str, str]]" = []
-    rev_findings: "list[tuple[str, str]]" = []
+    meta_findings: list[tuple[str, str]] = []
+    rev_findings: list[tuple[str, str]] = []
     unreadable: list[str] = []
     for rel in docx_rels:
         try:
@@ -1316,7 +1317,7 @@ def _docx_residue_checks(package_dir: Path, docx_rels: list[str]) -> list[dict[s
 
 
 def _text_residue_checks(
-    manuscripts: dict[str, str], text_rels: list[str], profile: Optional[dict[str, Any]]
+    manuscripts: dict[str, str], text_rels: list[str], profile: dict[str, Any] | None
 ) -> list[dict[str, Any]]:
     """A4 (acknowledgments section) + A5 (self-citation phrasing) over the
     text-form anonymized variants."""
@@ -1473,9 +1474,9 @@ def _filename_leakage_check(
 
 def run_checks(
     package_dir: Path,
-    passport: Optional[dict[str, Any]] = None,
-    join_map: Optional[dict[str, str]] = None,
-    venue_profile: Optional[dict[str, Any]] = None,
+    passport: dict[str, Any] | None = None,
+    join_map: dict[str, str] | None = None,
+    venue_profile: dict[str, Any] | None = None,
 ) -> tuple[list[dict[str, Any]], str]:
     """Collect the package texts once and run every check family.
     Returns (checks sorted by id, extraction_path)."""
@@ -1496,7 +1497,7 @@ def run_checks(
     return (sorted(checks_a + checks_b + checks_c, key=lambda c: c["id"]), extraction_path)
 
 
-def _report_relpath(package_dir: Path, report_path: Optional[Path]) -> Optional[str]:
+def _report_relpath(package_dir: Path, report_path: Path | None) -> str | None:
     """Package-relative posix path of the report file, or None when the
     report lives outside the package (nothing extra to exclude from the
     fingerprint). Single home for the resolve-relative logic so the
@@ -1514,9 +1515,9 @@ def build_report(
     package_dir: Path,
     checks: list[dict[str, Any]],
     extraction_path: str,
-    report_path: Optional[Path] = None,
-    policy_slug: Optional[str] = None,
-    inputs_fingerprint: Optional[str] = None,
+    report_path: Path | None = None,
+    policy_slug: str | None = None,
+    inputs_fingerprint: str | None = None,
 ) -> dict[str, Any]:
     emitted = {c["id"] for c in checks}
     if emitted != set(_CHECK_REGISTRY):
@@ -1574,7 +1575,7 @@ def exit_code_for(report: dict[str, Any]) -> int:
     return 0
 
 
-def evaluate_policy(report: dict[str, Any], policy: Optional[str]) -> tuple[Optional[str], int]:
+def evaluate_policy(report: dict[str, Any], policy: str | None) -> tuple[str | None, int]:
     """Slice-4 policy evaluation (§5.2/§5.3, applied with an
     already-resolved policy value — the orchestrator selects the policy,
     this is its deterministic tooling). The advisory/strict divergence
@@ -1678,7 +1679,7 @@ def check_freshness(
     return message, code
 
 
-def run(argv: Optional[list[str]] = None) -> int:
+def run(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(
         prog="verify_submission_package",
         description="Deterministic submission-package verifier (#394: Family "

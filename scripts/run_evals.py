@@ -35,7 +35,7 @@ import argparse
 import json
 import secrets
 import sys
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
@@ -374,7 +374,7 @@ def run_task(task_name: str, gold_root: Path = GOLD_ROOT) -> dict[str, Any]:
 # Report assembly + compare mode
 # ---------------------------------------------------------------------------
 def _new_run_id() -> str:
-    stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+    stamp = datetime.now(UTC).strftime("%Y%m%dT%H%M%SZ")
     return f"{stamp}-{secrets.token_hex(4)}"
 
 
@@ -432,7 +432,7 @@ def build_report(task_names: list[str], gold_root: Path = GOLD_ROOT) -> dict[str
         "harness_version": HARNESS_VERSION,
         "run_id": _new_run_id(),
         "gold_set_version": _gold_set_version(per_task),
-        "generated_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+        "generated_at": datetime.now(UTC).strftime("%Y-%m-%dT%H:%M:%SZ"),
         "mode": "single",
         "per_task": per_task,
         "caveats": caveats,
@@ -475,7 +475,7 @@ def build_compare_report(baseline: dict[str, Any], compare: dict[str, Any]) -> d
         "harness_version": HARNESS_VERSION,
         "run_id": _new_run_id(),
         "gold_set_version": _gold_set_version(per_task),
-        "generated_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+        "generated_at": datetime.now(UTC).strftime("%Y-%m-%dT%H:%M:%SZ"),
         "mode": "compare",
         "per_task": per_task,
         "caveats": [

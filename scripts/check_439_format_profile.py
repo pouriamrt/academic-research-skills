@@ -223,7 +223,7 @@ PCR_HEADING_RE = re.compile(r"^## Paper Configuration Record\s*$", re.MULTILINE)
 PCR_FORMAT_ROW_RE = re.compile(r"^\|\s*\*\*Format Profile\*\*\s*\|", re.MULTILINE)
 
 
-def _h2_block(text: str, heading_re: "re.Pattern[str]") -> str | None:
+def _h2_block(text: str, heading_re: re.Pattern[str]) -> str | None:
     """The block from an H2 heading (located by regex) to the next `## ` heading.
 
     Used to scope the production PCR table, matched exactly so the Plan Mode PCR variant

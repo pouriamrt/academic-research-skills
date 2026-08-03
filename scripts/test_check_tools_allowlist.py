@@ -631,14 +631,14 @@ def test_bom_prefixed_bucket_a_bash_fails_closed(tmp_path):
     # strips the BOM so the two agree; the smuggled Bash fails closed.
     make_tree(tmp_path)
     eic = tmp_path / "academic-paper-reviewer/agents/eic_agent.md"
-    eic.write_bytes("﻿---\nname: eic_agent\ntools: Read, Bash\n---\n\nbody\n".encode("utf-8"))
+    eic.write_bytes("﻿---\nname: eic_agent\ntools: Read, Bash\n---\n\nbody\n".encode())
     assert any("declares Bash" in e for e in check(tmp_path) if "eic_agent" in e)
 
 
 def test_bom_prefixed_clean_file_passes(tmp_path):
     make_tree(tmp_path)
     eic = tmp_path / "academic-paper-reviewer/agents/eic_agent.md"
-    eic.write_bytes("﻿---\nname: eic_agent\ntools: Read, Grep\n---\n\nbody\n".encode("utf-8"))
+    eic.write_bytes("﻿---\nname: eic_agent\ntools: Read, Grep\n---\n\nbody\n".encode())
     assert not [e for e in check(tmp_path) if "eic_agent" in e]
 
 
@@ -760,7 +760,7 @@ def test_bare_cr_frontmatter_bucket_a_bash_fails_closed(tmp_path):
     # the declaration is caught.
     make_tree(tmp_path)
     eic = tmp_path / "academic-paper-reviewer/agents/eic_agent.md"
-    eic.write_bytes("---\rname: eic_agent\rtools: Read, Bash\r---\r".encode("utf-8"))
+    eic.write_bytes(b"---\rname: eic_agent\rtools: Read, Bash\r---\r")
     assert any("declares Bash" in e for e in check(tmp_path) if "eic_agent" in e)
 
 

@@ -27,9 +27,10 @@ from __future__ import annotations
 
 import argparse
 import sys
+from collections.abc import Mapping
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
-from typing import Any, Mapping
+from typing import Any
 
 # Dual-path import: see openalex_client.py comment.
 try:

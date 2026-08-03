@@ -23,7 +23,8 @@ shared/contracts/degradation_registry.json.
 
 from __future__ import annotations
 
-from typing import Any, Mapping, MutableMapping, Protocol
+from collections.abc import Mapping, MutableMapping
+from typing import Any, Protocol
 
 # Re-export ArxivUnavailable so callers (and tests) can reference it from the
 # signals module alongside the other resolver exceptions. Dual-path import

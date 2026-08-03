@@ -59,7 +59,7 @@ class _Snapshot:
         self._bytes: bytes | None = None
         self._existed: bool = False
 
-    def __enter__(self) -> "_Snapshot":
+    def __enter__(self) -> _Snapshot:
         self._existed = self.path.exists()
         if self._existed:
             self._bytes = self.path.read_bytes()
@@ -289,8 +289,8 @@ def test_extractor_includes_heading_prefix_bytes() -> None:
     """
     from scripts.check_v3_6_8_pattern_protection import _extract_block_bytes
 
-    h2_bytes_in = "prelude\n\n## PATTERN PROTECTION (v3.6.7)\n\nbody1\n".encode("utf-8")
-    h3_bytes_in = "prelude\n\n### PATTERN PROTECTION (v3.6.7)\n\nbody1\n".encode("utf-8")
+    h2_bytes_in = b"prelude\n\n## PATTERN PROTECTION (v3.6.7)\n\nbody1\n"
+    h3_bytes_in = b"prelude\n\n### PATTERN PROTECTION (v3.6.7)\n\nbody1\n"
     h2_bytes = _extract_block_bytes(h2_bytes_in)
     h3_bytes = _extract_block_bytes(h3_bytes_in)
     assert h2_bytes is not None and h3_bytes is not None
@@ -325,15 +325,15 @@ def test_prose_mention_does_not_truncate_block_range() -> None:
     from scripts.check_v3_6_8_pattern_protection import _extract_block_bytes
 
     text = (
-        "## Two-Layer Citation Emission (v3.7.1)\n"
-        "\n"
-        "This relates to the existing PATTERN PROTECTION (v3.6.7) block.\n"
-        "\n"
-        "## PATTERN PROTECTION (v3.6.7)\n"
-        "\n"
-        "real block body line 1\n"
-        "real block body line 2\n"
-    ).encode("utf-8")
+        b"## Two-Layer Citation Emission (v3.7.1)\n"
+        b"\n"
+        b"This relates to the existing PATTERN PROTECTION (v3.6.7) block.\n"
+        b"\n"
+        b"## PATTERN PROTECTION (v3.6.7)\n"
+        b"\n"
+        b"real block body line 1\n"
+        b"real block body line 2\n"
+    )
     block = _extract_block_bytes(text)
     assert block is not None
     # The block must START at the real heading line.
@@ -366,16 +366,16 @@ def test_prose_mention_of_marker_does_not_misanchor_extractor() -> None:
     from scripts.check_v3_6_8_pattern_protection import _extract_block_bytes
 
     text = (
-        "## Two-Layer Citation Emission (v3.7.1)\n"
-        "\n"
-        "This section relates to the existing PATTERN PROTECTION (v3.6.7) "
-        "block by extending its invariant set. Note that the prose mention "
-        "above must NOT misanchor the v3.7.1 SHA gate's extractor.\n"
-        "\n"
-        "## PATTERN PROTECTION (v3.6.7)\n"
-        "\n"
-        "real block body\n"
-    ).encode("utf-8")
+        b"## Two-Layer Citation Emission (v3.7.1)\n"
+        b"\n"
+        b"This section relates to the existing PATTERN PROTECTION (v3.6.7) "
+        b"block by extending its invariant set. Note that the prose mention "
+        b"above must NOT misanchor the v3.7.1 SHA gate's extractor.\n"
+        b"\n"
+        b"## PATTERN PROTECTION (v3.6.7)\n"
+        b"\n"
+        b"real block body\n"
+    )
     block = _extract_block_bytes(text)
     assert block is not None
     # The extracted block must START with the heading line, not the prose
@@ -399,15 +399,11 @@ def test_extractor_strips_only_file_level_bom_not_block_level() -> None:
     from scripts.check_v3_6_8_pattern_protection import _extract_block_bytes
 
     BOM = b"\xef\xbb\xbf"
-    base = "prelude\n\n## PATTERN PROTECTION (v3.6.7)\n\nbody\n".encode("utf-8")
+    base = b"prelude\n\n## PATTERN PROTECTION (v3.6.7)\n\nbody\n"
     # Variant A: BOM at file start. This is a file-level BOM; spec says strip.
     file_bom_in = BOM + base
     # Variant B: BOM right before the heading (mid-file). NOT spec-stripped.
-    block_bom_in = (
-        "prelude\n\n".encode("utf-8")
-        + BOM
-        + "## PATTERN PROTECTION (v3.6.7)\n\nbody\n".encode("utf-8")
-    )
+    block_bom_in = b"prelude\n\n" + BOM + b"## PATTERN PROTECTION (v3.6.7)\n\nbody\n"
     base_block = _extract_block_bytes(base)
     file_bom_block = _extract_block_bytes(file_bom_in)
     block_bom_block = _extract_block_bytes(block_bom_in)

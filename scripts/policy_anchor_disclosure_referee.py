@@ -23,8 +23,8 @@ References:
 
 from __future__ import annotations
 
+from collections.abc import Iterable
 from dataclasses import dataclass, field
-from typing import Iterable
 
 CANONICAL_ANCHORS = ("prisma-trAIce", "icmje", "nature", "ieee")
 SLR_MODES = ("systematic-review", "slr")

@@ -12,7 +12,7 @@ touched and runs are isolated.
 from __future__ import annotations
 
 import sqlite3
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 
 import pytest
 
@@ -68,7 +68,7 @@ def test_expired_entry_returns_none(tmp_path, monkeypatch):
 
     # Backdate the stored verification_timestamp past the TTL by writing
     # directly to the underlying row.
-    stale = (datetime.now(timezone.utc) - timedelta(days=_TTL_DAYS + 1)).isoformat()
+    stale = (datetime.now(UTC) - timedelta(days=_TTL_DAYS + 1)).isoformat()
     conn = sqlite3.connect(str(db))
     conn.execute(
         "UPDATE verification_cache SET verification_timestamp = ? WHERE citation_key = ?",
@@ -88,7 +88,7 @@ def test_fresh_entry_within_ttl_returns_value(tmp_path, monkeypatch):
     c = VerificationCache()
     c.put("recent2026", "arxiv", "2605.18661", {"matched": True})
 
-    fresh = (datetime.now(timezone.utc) - timedelta(days=_TTL_DAYS - 1)).isoformat()
+    fresh = (datetime.now(UTC) - timedelta(days=_TTL_DAYS - 1)).isoformat()
     conn = sqlite3.connect(str(db))
     conn.execute(
         "UPDATE verification_cache SET verification_timestamp = ? WHERE citation_key = ?",

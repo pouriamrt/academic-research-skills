@@ -49,6 +49,7 @@ import re
 import subprocess
 import sys
 from dataclasses import dataclass, field
+from datetime import UTC
 from pathlib import Path
 from typing import Any
 
@@ -848,12 +849,12 @@ def check_b5(sidecar: dict[str, Any] | None, location: str = "<sidecar>") -> lis
         # Schema-level rejection territory; B5 still flags arithmetic mismatch
         # but only if we can parse. Skip non-RFC3339-ms here.
         return []
-    from datetime import datetime, timezone
+    from datetime import datetime
 
     fmt = "%Y-%m-%dT%H:%M:%S.%fZ"
     try:
-        dt_s = datetime.strptime(started, fmt).replace(tzinfo=timezone.utc)
-        dt_e = datetime.strptime(ended, fmt).replace(tzinfo=timezone.utc)
+        dt_s = datetime.strptime(started, fmt).replace(tzinfo=UTC)
+        dt_e = datetime.strptime(ended, fmt).replace(tzinfo=UTC)
     except ValueError:
         return []
     delta = (dt_e - dt_s).total_seconds()

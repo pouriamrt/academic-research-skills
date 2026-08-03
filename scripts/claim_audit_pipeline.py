@@ -20,8 +20,9 @@ from __future__ import annotations
 import hashlib
 import json
 import sys
+from collections.abc import Callable
 from pathlib import Path
-from typing import Any, Callable
+from typing import Any
 
 # Allow both CLI invocations (`python3 scripts/claim_audit_pipeline.py`) AND
 # package-style invocations (`python -m unittest scripts.test_*`) to resolve

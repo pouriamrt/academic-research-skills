@@ -40,7 +40,8 @@ expects.
 from __future__ import annotations
 
 import re
-from typing import Any, Iterable
+from collections.abc import Iterable
+from typing import Any
 
 from scripts._claim_audit_constants import (
     RE_BARE_NUMERIC_YEAR,

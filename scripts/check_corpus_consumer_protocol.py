@@ -10,8 +10,8 @@ from __future__ import annotations
 import json
 import re
 import sys
+from collections.abc import Callable
 from pathlib import Path
-from typing import Callable
 
 # Path.cwd() (not __file__) is intentional: fixture-based tests in
 # scripts/adapters/tests/test_check_corpus_consumer_protocol.py invoke

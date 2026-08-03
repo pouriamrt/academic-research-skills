@@ -82,7 +82,7 @@ class _Snapshot:
         self._bytes: bytes | None = None
         self._existed: bool = False
 
-    def __enter__(self) -> "_Snapshot":
+    def __enter__(self) -> _Snapshot:
         self._existed = self.path.exists()
         if self._existed:
             self._bytes = self.path.read_bytes()

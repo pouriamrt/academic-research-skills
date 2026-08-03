@@ -21,7 +21,7 @@ extend-exclude = [
 # PLW1510 (subprocess-run-without-check, 60 hits) and BLE001 (blind-except, 24)
 # are held back on purpose: each encodes a real decision about failure handling
 # in a repo whose guard design is about failing in a chosen direction.
-select = ["E4", "E7", "E9", "F", "I", "RUF100"]
+select = ["E4", "E7", "E9", "F", "I", "RUF100", "UP"]
 
 [tool.ruff.format]
 # Pin LF explicitly rather than relying on ruff's default of "auto".

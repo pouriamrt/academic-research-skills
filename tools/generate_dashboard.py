@@ -21,7 +21,7 @@ import argparse
 import json
 import re
 import sys
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 
 # Resolve paths relative to this script's location (tools/ directory).
@@ -35,7 +35,7 @@ DEFAULT_STATE_PATH = PROJECT_ROOT / "experiment_outputs" / "pipeline_state.json"
 
 def blank_state() -> dict:
     """Return a blank pipeline state with all stages pending."""
-    now = datetime.now(timezone.utc).isoformat(timespec="seconds")
+    now = datetime.now(UTC).isoformat(timespec="seconds")
     return {
         "meta": {
             "topic": "",
@@ -529,7 +529,7 @@ def main() -> None:
     # Update last_updated timestamp
     if "meta" not in state:
         state["meta"] = {}
-    state["meta"]["last_updated"] = datetime.now(timezone.utc).isoformat(timespec="seconds")
+    state["meta"]["last_updated"] = datetime.now(UTC).isoformat(timespec="seconds")
 
     # Read the template
     template_path = args.template

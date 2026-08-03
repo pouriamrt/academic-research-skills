@@ -20,8 +20,9 @@ Run:
 from __future__ import annotations
 
 import unittest
+from collections.abc import Callable
 from pathlib import Path
-from typing import Any, Callable
+from typing import Any
 from unittest import mock
 
 from tests.test_helpers import build_schema_validator, load_json_schema

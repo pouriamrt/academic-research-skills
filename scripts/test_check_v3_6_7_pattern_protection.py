@@ -43,8 +43,7 @@ def _run_lint(repo_dir: Path) -> tuple[int, str, str]:
         ["python3", LINT_SCRIPT_REL],
         cwd=repo_dir,
         text=True,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
+        capture_output=True,
     )
     return proc.returncode, proc.stdout, proc.stderr
 

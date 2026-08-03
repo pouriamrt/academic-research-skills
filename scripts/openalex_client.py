@@ -18,7 +18,8 @@ import time
 import urllib.error
 import urllib.parse
 import urllib.request
-from typing import Any, Mapping
+from collections.abc import Mapping
+from typing import Any
 
 # Dual-path import: sibling-first (so module identity matches when callers
 # import via the sibling path, e.g. tests), namespace-package fallback (for

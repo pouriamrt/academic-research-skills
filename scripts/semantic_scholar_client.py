@@ -20,7 +20,8 @@ import time
 import urllib.error
 import urllib.parse
 import urllib.request
-from typing import Any, Mapping
+from collections.abc import Mapping
+from typing import Any
 
 # Dual-path import: try sibling-style first (scripts/-on-sys.path, used by
 # tests and direct CLI invocation) so module identity matches when callers

@@ -21,7 +21,8 @@ from __future__ import annotations
 import os
 import re
 import sys
-from typing import Any, Callable
+from collections.abc import Callable
+from typing import Any
 
 # Share the true-partial content gate with the lint + runtime (single source of
 # truth in _claim_audit_constants). Mirror the bare-import form the other two

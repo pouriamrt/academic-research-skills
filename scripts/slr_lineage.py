@@ -13,7 +13,7 @@ Contract: policy_anchor_disclosure_protocol.md §3.1 (G2 invariant)
 
 from __future__ import annotations
 
-from typing import Mapping
+from collections.abc import Mapping
 
 # Dual-path import: when this module is loaded via `from scripts.slr_lineage
 # import emit` from the repo root (the namespace-package style used by

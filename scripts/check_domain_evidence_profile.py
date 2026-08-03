@@ -10,8 +10,8 @@ from __future__ import annotations
 
 import re
 import sys
+from collections.abc import Callable
 from pathlib import Path
-from typing import Callable
 
 # Path.cwd() (not __file__) so fixture tests can subprocess.run(cwd=fixture_repo).
 REPO_ROOT = Path.cwd()

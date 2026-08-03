@@ -41,7 +41,7 @@ import argparse
 import json
 import re
 import sys
-from functools import lru_cache
+from functools import cache
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
@@ -135,7 +135,7 @@ def _check_shape(data: dict) -> list[str]:
     return errors
 
 
-@lru_cache(maxsize=None)
+@cache
 def _read(path: Path) -> str:
     """Memoized file read: authority files repeat across rows as the registry
     grows (firm_rules.md, the corpus-entry schema), and the mutation-test

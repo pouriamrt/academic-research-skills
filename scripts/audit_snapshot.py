@@ -54,7 +54,6 @@ import hashlib
 import json
 import os
 import sys
-from typing import Optional
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -206,7 +205,7 @@ def render_prompt(
     git_sha: str,
     stage: int,
     agent: str,
-    prior_findings: Optional[bytes],
+    prior_findings: bytes | None,
 ) -> bytes:
     """Render the audit prompt sent to codex stdin.
 
@@ -292,13 +291,13 @@ def render_prompt(
     parts.append(section_3_to_7.encode("utf-8"))
     parts.append(b"\n\n## Primary deliverables (audit target)\n\n")
     for path, content in zip(primary_paths, primary_contents):
-        parts.append(f"--- PRIMARY: {path} ---\n".encode("utf-8"))
+        parts.append(f"--- PRIMARY: {path} ---\n".encode())
         parts.append(content)
         parts.append(b"\n")
     if supporting_paths:
         parts.append(b"\n## Supporting context (reference only)\n\n")
         for path, content in zip(supporting_paths, supporting_contents):
-            parts.append(f"--- SUPPORTING: {path} ---\n".encode("utf-8"))
+            parts.append(f"--- SUPPORTING: {path} ---\n".encode())
             parts.append(content)
             parts.append(b"\n")
     return b"".join(parts)
@@ -407,7 +406,7 @@ def cmd_snapshot(args: argparse.Namespace) -> int:
     # F-023 (P1, R6): pass stage/agent/prior_findings so render_prompt can
     # substitute audit-template placeholders and select the agent-specific
     # Section 4(f) clause.
-    prior_findings_bytes: Optional[bytes] = None
+    prior_findings_bytes: bytes | None = None
     if args.previous_findings:
         # PREV_FINDINGS was just snapshotted as part of supporting; locate its content.
         for path, content in zip([s for s, _ in supporting_shas], supporting_contents):
@@ -565,7 +564,7 @@ def build_parser() -> argparse.ArgumentParser:
     return p
 
 
-def main(argv: Optional[list[str]] = None) -> int:
+def main(argv: list[str] | None = None) -> int:
     parser = build_parser()
     args = parser.parse_args(argv)
     if args.mode == "snapshot":

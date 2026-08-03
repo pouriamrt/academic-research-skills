@@ -44,7 +44,8 @@ Run:
 from __future__ import annotations
 
 import unittest
-from typing import Any, Callable
+from collections.abc import Callable
+from typing import Any
 
 from scripts.claim_audit_finalizer import (
     ANNOTATION_CLAIM_AUDIT_AMBIGUOUS,

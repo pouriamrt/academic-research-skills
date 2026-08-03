@@ -24,8 +24,9 @@ Spec: docs/design/2026-05-21-v3.10-182-promote-citation-gate-spec.md §2 Delta 5
 
 from __future__ import annotations
 
-from datetime import datetime, timezone
-from typing import Any, Mapping
+from collections.abc import Mapping
+from datetime import UTC, datetime
+from typing import Any
 
 try:
     from arxiv_client import ArxivUnavailable
@@ -202,7 +203,7 @@ def verify_citation(
         "ref_slug": ref_slug,
         "lookup_verified": reduce_lookup_verified(resolver_outcomes),
         "anchor_present": _anchor_present(anchor),
-        "verification_timestamp": datetime.now(timezone.utc).isoformat(),
+        "verification_timestamp": datetime.now(UTC).isoformat(),
         "resolver_outcomes": resolver_outcomes,
     }
 

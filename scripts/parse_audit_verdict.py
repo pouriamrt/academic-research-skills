@@ -21,8 +21,7 @@ import json
 import os
 import re
 import sys
-from datetime import datetime, timezone
-from typing import Optional
+from datetime import UTC, datetime
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -375,7 +374,7 @@ def _parse_dimension(raw: str) -> str:
     raise ParseError(f"malformed finding entry: unknown dimension '{raw}'")
 
 
-def _parse_finding_line(line: str) -> Optional[dict]:
+def _parse_finding_line(line: str) -> dict | None:
     """Attempt to parse one numbered finding line.  Returns None if no match."""
     m = _FINDING_HEADER.match(line)
     if not m:
@@ -415,7 +414,7 @@ def _parse_finding_line(line: str) -> Optional[dict]:
 
 def parse_section6(
     text: str,
-    current_round: Optional[int] = None,
+    current_round: int | None = None,
 ) -> tuple[dict, list[dict]]:
     """Parse Section 6 verdict text.
 
@@ -437,9 +436,9 @@ def parse_section6(
     # If current_round is known, we require the summary to match that round.
     # If not (probe), we accept any match and take the last one.
 
-    summary_counts: Optional[tuple[int, int, int]] = None  # (p1, p2, p3)
+    summary_counts: tuple[int, int, int] | None = None  # (p1, p2, p3)
     # F-011: track the authoritative summary line's text for last-line check
-    _authoritative_summary_line: Optional[str] = None
+    _authoritative_summary_line: str | None = None
 
     for line in lines:
         # Try Form B first (zero-findings convergence line)
@@ -630,7 +629,7 @@ class ParseError(Exception):
 
 def _now_rfc3339_ms() -> str:
     """Return current UTC timestamp with millisecond precision: YYYY-MM-DDTHH:MM:SS.mmmZ"""
-    now = datetime.now(timezone.utc)
+    now = datetime.now(UTC)
     return now.strftime("%Y-%m-%dT%H:%M:%S.") + f"{now.microsecond // 1000:03d}Z"
 
 

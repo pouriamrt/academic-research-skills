@@ -26,7 +26,7 @@ import json
 import os
 import sqlite3
 from contextlib import closing
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from typing import Any
 
@@ -126,7 +126,7 @@ class VerificationCache:
         response: dict[str, Any],
     ) -> None:
         """Store (or overwrite) the resolver response, stamping it now (UTC)."""
-        now = datetime.now(timezone.utc).isoformat()
+        now = datetime.now(UTC).isoformat()
         with closing(self._connect()) as conn, conn:
             conn.execute(
                 "INSERT OR REPLACE INTO verification_cache "
@@ -154,4 +154,4 @@ class VerificationCache:
     @staticmethod
     def _is_expired(verification_timestamp: str) -> bool:
         stored = datetime.fromisoformat(verification_timestamp)
-        return datetime.now(timezone.utc) - stored > timedelta(days=_TTL_DAYS)
+        return datetime.now(UTC) - stored > timedelta(days=_TTL_DAYS)

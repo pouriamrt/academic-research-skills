@@ -58,6 +58,7 @@ jobs:
         run: |
           pipx run ruff check .
           pipx run ruff format --check .
+          pipx run mypy
 
       - name: Run test suite
         env:

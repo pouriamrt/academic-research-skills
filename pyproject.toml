@@ -35,3 +35,12 @@ select = ["E4", "E7", "E9", "F", "I", "RUF100", "UP"]
 # Context: core.autocrlf is false and .gitattributes pins only *.sh, so any flip
 # on a .py/.toml/.yml is committed permanently.
 line-ending = "lf"
+
+[tool.mypy]
+# Scoped deliberately to the write-scope guard: it is the security-critical path
+# (a PreToolUse hook that decides allow/deny on every Write/Edit/MultiEdit/Bash).
+# Repo-wide typing across 251 files is a separate project, out of scope here.
+files = ["scripts/ars_write_scope_guard.py"]
+python_version = "3.11"
+ignore_missing_imports = true
+warn_unused_ignores = true

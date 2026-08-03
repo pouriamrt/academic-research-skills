@@ -41,3 +41,9 @@ audit_artifacts/
 
 # Subagent-driven-development scratch (ledger, briefs, review packages)
 .superpowers/
+
+# Local tooling scratch directory (not part of the project)
+.gstack/
+.coverage
+.coverage.*
+htmlcov/

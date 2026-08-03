@@ -25,13 +25,45 @@ If content changes are needed, raise them to the caller — do not silently revi
 
 **Enforcement (v3.9.2):** prompt-level fence + advisory verifier (`scripts/check_pipeline_integrity.py`). Since the #134 rescope (PR #294), a deterministic PreToolUse write-scope guard enforces the WRITE clause where a hook runs; where none runs, this fence is the enforcement layer. The existing v3.7.1 hard-gate rules below (NO-LOCATOR, refuse-rules 1-10) coexist with this Phase Boundary — both apply.
 
+## Standalone `disclosure` mode dispatch (v3.2 + #596)
+
+This agent has a second, narrowly scoped entry path when `academic-paper` dispatches
+the standalone **`disclosure` mode**. Evaluate this dispatch before the Phase 7
+formatting workflow:
+
+1. Load `references/disclosure_mode_protocol.md` in full.
+2. Follow its selector dispatch. For the venue track, also load
+   `references/venue_disclosure_policies.md`; for the policy-anchor track, load the
+   anchor references named by the protocol.
+3. Branch by the selected track. On the **venue track**, execute the protocol's
+   category/use-record confirmation, venue-specific prohibited-use
+   discriminators, applicability decision, venue-required fact ledger,
+   rendering, and placement steps in its stated order. On the **policy-anchor
+   track**, run the shared category confirmation and then follow
+   `policy_anchor_disclosure_protocol.md`'s own decision, input, rendering, and
+   placement contract; do not run venue Phase 2a/2b.
+4. On the venue track, if the protocol returns `execution_status=HALTED` for
+   any typed reason, halt. On the anchor track, halt when its protocol returns
+   a pending/reject result. This includes uncurated/policy-scope/contract gaps,
+   shared intake pending or unclassified use, unknown/missing facts,
+   incompatible facts, prohibited use, and Nature venue-image containment. Do
+   not substitute a generic statement.
+5. Return only the selected track's disclosure bundle (if any), placement or
+   action instructions, and audit ledger/status required by the protocol. Do
+   not run manuscript formatting, cover-letter generation, the Phase 7
+   checklist, or the fixed full-pipeline disclosure text below.
+
+This branch does not change normal `full` or `format-convert` behavior. In
+particular, the generic full-pipeline statement is not a fallback for standalone
+`disclosure` mode.
+
 ## Core Principles
 
 1. **Format fidelity** — output must perfectly match the target format's requirements
 2. **Content preservation** — formatting changes must NEVER alter content or meaning
 3. **Journal compliance** — when a target journal is specified, follow its submission guidelines
 4. **Package completeness** — deliver all required files (main text, bibliography, figures, cover letter)
-5. **AI disclosure** — ensure the AI usage statement is present in every output
+5. **AI disclosure** — on the normal Phase 7 path, ensure the AI usage statement is present; on the standalone `disclosure` path, use only the protocol-driven bundle above
 
 ## Supported Output Formats
 
@@ -236,9 +268,11 @@ Sincerely,
 [Contact Information]
 ```
 
-## AI Disclosure Statement
+## Full-pipeline AI Disclosure Statement (not standalone `disclosure` mode)
 
-Every output must include:
+Normal Phase 7 outputs include the existing statement below. The standalone
+`disclosure` branch MUST NOT use it as a fallback or claim these activities unless
+the venue protocol's confirmed ledger supports them.
 
 ```
 AI Disclosure: This paper was prepared with the assistance of AI-powered
@@ -394,7 +428,7 @@ Before emitting any final converted artifact (LaTeX / DOCX / PDF), scan the inpu
 1. A literal `[UNVERIFIED CITATION — NO ORIGINAL]` marker (HIGH-WARN; v3.7.1).
 2. A literal `[UNVERIFIED CITATION — AI HAS NOT CROSS-CHECKED]` marker (MED-WARN; v3.7.1).
 3. A literal `[UNVERIFIED CITATION — NO QUOTE OR PAGE LOCATOR]` marker (MED-WARN-NO-LOCATOR; v3.7.3).
-4. Any `<!--ref:slug-->` HTML comment with status neither `ok` nor LOW-WARN-acknowledged (the finalizer pass either failed or was skipped).
+4. Any `<!--ref:slug-->` HTML comment with status neither `ok`, LOW-WARN-acknowledged, nor `LOW-WARN-PARTIAL-COVERAGE` (the finalizer pass either failed or was skipped). `LOW-WARN-PARTIAL-COVERAGE` (#513) is the acknowledged-partial state — the user attested a read scope that does not cover this citation's anchor — and passes the gate as an acknowledged LOW-WARN variant, with the coverage note surfaced in `provenance_summary.md`, never refused.
 5. **Any `<!--anchor:none:` marker anywhere in the draft, regardless of the preceding ref status** (v3.7.3 codex round-8 F20 closure). A stale or skipped finalizer pass can leave `<!--ref:slug ok--><!--anchor:none:-->` in the draft — the ref status reads `ok` (so rule 4 passes) but the anchor is `none` (NO-LOCATOR). Since v3.7.3 makes `none` unacknowledgeable per Q5 (resolved), the formatter's terminal scan MUST refuse on the raw anchor pattern, not only on the finalized literal warning text. This is the belt-and-suspenders check against finalizer skip/stale paths.
 6. A literal `[HIGH-WARN-CLAIM-NOT-SUPPORTED]` annotation (v3.8 §3.6 8-row matrix; UNSUPPORTED + source-level defect_stage). The prose misrepresents the cited source — the L3 faithfulness failure v3.8 exists to catch. Mirrors v3.7.3 R-L3-1-A asymmetry — `/ars-mark-read` does NOT clear this; remediation is fixing the prose (re-cite, drop claim, or revise).
 7. A literal `[HIGH-WARN-NEGATIVE-CONSTRAINT-VIOLATION` annotation (v3.8 §3.6; UNSUPPORTED + negative_constraint_violation). The author explicitly declared "MUST NOT" against this scope; gate-refuses regardless of citation strength.
@@ -410,7 +444,7 @@ When refusing, surface the unresolved markers to the user with their per-section
 - HIGH-WARN (v3.7.1 NO ORIGINAL — rule 1): acquire the original source (set `source_acquired: true` on the entry).
 - MED-WARN (cross-check — rule 2): run cross-check audit (set `source_verified_against_original: true` with `source_verification_method` ∈ {codex_audit, manual_grep, vision_check}).
 - MED-WARN-NO-LOCATOR (rule 3): re-emit the citation with a `<!--anchor:<kind>:<value>-->` where `<kind>` ≠ `none`. This is the ONLY remediation path. `/ars-mark-read` does NOT clear NO-LOCATOR — the finalizer precedence-zero rule resolves anchor=`none` BEFORE applying the trust-state matrix, so `human_read_source: true` cannot promote a NO-LOCATOR marker. The locator is a structural property of the citation, not an acknowledgment-eligible trust state. If the user genuinely cannot produce any locator, they must either acquire that capability (read the source, then emit `quote`/`page`/`section`/`paragraph`) or remove the citation. v3.7.3 codex review P2-2 closure.
-- LOW-WARN (rule 4): run `/ars-mark-read <slug>` to acknowledge.
+- LOW-WARN (rule 4): run `/ars-mark-read <slug>` to acknowledge — optionally with a #513 read-scope attestation (`--scope`, `--locator`, `--note`). A partial-coverage attestation (`abstract_only`/`toc_only`, or `sections` whose locators do not cover this citation's anchor) resolves the marker to `LOW-WARN-PARTIAL-COVERAGE` — an acknowledged state that passes the gate with the coverage note surfaced — instead of promoting to `ok`; read the relevant part of the source (or attest `full_text`) for full promotion.
 - v3.8 HIGH-WARN-CLAIM-NOT-SUPPORTED (rule 6): rewrite the claim so it matches the cited source, or replace the citation with a source that does support the claim, or drop the claim. `/ars-mark-read` does NOT clear this — the verdict is a structural assertion about prose faithfulness, not an acknowledgment-eligible trust state (mirrors v3.7.3 R-L3-1-A asymmetry). v3.8 codex round-5 P2 closure: this row's remediation is the L3 fix the audit exists to surface, not source-acquisition.
 - v3.8 HIGH-WARN-NEGATIVE-CONSTRAINT-VIOLATION (rule 7): revise the claim to comply with the author-declared MUST NOT rule the violated_constraint_id names, or drop the claim, or — if the constraint itself is wrong — re-issue the writing-stage manifest with the constraint removed/edited. `/ars-mark-read` does NOT clear this — the author explicitly declared MUST NOT, so acknowledgment cannot override the declaration.
 - v3.8 HIGH-WARN-FABRICATED-REFERENCE (rule 8): the cited reference does not exist in the retrieval API. Either re-look up the reference (the citation may have a typo / wrong DOI / wrong year), replace it with a verified source, or drop the citation+claim pair. `/ars-mark-read` does NOT clear this — fabrication is the L3-1 failure mode v3.8 exists to surface.
@@ -547,7 +581,8 @@ Step 1: Confirm Output Requirements
 Step 2: Content Pre-Processing
   2.1 Confirm all sections exist and are complete
   2.2 Confirm Reference List has been corrected by citation_compliance_agent
-  2.3 Insert AI Disclosure Statement (if not already present)
+  2.3 Insert AI Disclosure Statement (if not already present; normal Phase 7 only —
+      standalone disclosure mode has already exited to its protocol branch)
   2.4 Insert Limitations section (if not already present)
   2.5 Confirm Abstract(s) exist
 
@@ -801,7 +836,7 @@ Template D: "The data that support the findings of this study are available from
 ```
 === Content Integrity ===
 □ All sections exist and are complete (compare with Draft section by section)
-□ Format conversion did not cause content loss (word count comparison: deviation < 1%)
+□ Format conversion did not cause content loss (word count comparison: deviation < 1%; stripping the `<!--protected-hedges: ...-->` control comment (#548) is required, not content loss — it is machine transport, consumed upstream by the abstract stage)
 □ Tables fully preserved (row and column counts match)
 □ Figure reference paths correct
 □ All in-text citations preserved

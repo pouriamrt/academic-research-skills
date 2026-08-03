@@ -64,7 +64,7 @@ def check_relative_markdown_links(rel_path: str) -> None:
 def check_mode_registry() -> None:
     rel_path = "MODE_REGISTRY.md"
     text = read(rel_path)
-    expect_contains(rel_path, "Last updated: v3.20.0 (2026-07-16)")
+    expect_contains(rel_path, "Last updated: v3.21.0 (2026-08-03)")
     for heading in (
         "## deep-research (8 modes)",
         "## academic-paper (11 modes)",
@@ -78,7 +78,7 @@ def check_claude_md() -> None:
     rel_path = ".claude/CLAUDE.md"
     expect_contains(rel_path, "integrity check (Stage 2.5)")
     expect_contains(rel_path, "final integrity check (Stage 4.5)")
-    expect_contains(rel_path, "**Version**: 3.20.1")
+    expect_contains(rel_path, "**Version**: 3.21.0")
     expect_contains(rel_path, "Output language: English only")
     for forbidden in (
         "6th independent reviewer",
@@ -283,7 +283,7 @@ def check_readme_sections() -> None:
     rel_path = "README.md"
     text = read(rel_path)
 
-    expect_contains(rel_path, "version-v3.20.1-blue")
+    expect_contains(rel_path, "version-v3.21.0-blue")
     expect_contains(rel_path, "### v3.20.0 (2026-07-16)")
     expect_contains(rel_path, "### v3.18.0 (2026-05-23)")
     expect_contains(rel_path, "### v3.17.0 (2026-05-15)")
@@ -311,7 +311,7 @@ def check_readme_sections() -> None:
         "### Deep Research (v2.9.4)",
         "### Academic Paper (v3.2.0)",
         "### Academic Paper Reviewer (v1.9.1)",
-        "### Academic Pipeline (v3.20.1",
+        "### Academic Pipeline (v3.21.0",
     ):
         if heading not in text:
             fail(f"{rel_path}: missing heading {heading!r}")

@@ -320,7 +320,9 @@ def _check_reverse_scan(manifest: dict, fixture_root: Path) -> list[str]:
     for path in sorted(fixture_root.rglob("*")):
         if not path.is_file():
             continue
-        rel = str(path.relative_to(fixture_root))
+        # as_posix(): manifest paths are POSIX; a bare str() yields backslashes
+        # on Windows and every tracked fixture reads as an orphan.
+        rel = path.relative_to(fixture_root).as_posix()
         if rel == MANIFEST_RELPATH:
             continue
         if rel not in declared:

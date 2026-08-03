@@ -24,6 +24,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import sys
 from pathlib import Path
 
@@ -72,6 +73,16 @@ def run(argv: list[str] | None = None, *, clients_factory=_real_clients) -> int:
         "output (the tool refuses by default; this is not a real prose "
         "join, #332).",
     )
+    parser.add_argument(
+        "--no-cache",
+        action="store_true",
+        help="#541: run fully live, bypassing the persistent verification "
+        "cache. Default: cache-through is ON (rows served/populated at "
+        "~/.cache/ars/verification.db or ARS_VERIFICATION_CACHE_PATH), "
+        "and summaries carry cache_age_days/cache_stale_advisory when "
+        "served from cache. ARS_CACHE_REVALIDATE=1 additionally "
+        "re-verifies stale rows live (cost scales with stale-row count).",
+    )
     args = parser.parse_args(argv)
 
     path = Path(args.passport)
@@ -107,7 +118,21 @@ def run(argv: list[str] | None = None, *, clients_factory=_real_clients) -> int:
         file=sys.stderr,
     )
 
-    outcomes = verify_passport(passport, clients=clients_factory(), ref_slug_by_key=ref_slug_by_key)
+    cache = None
+    if not args.no_cache:
+        try:
+            from verification_cache import VerificationCache
+        except ImportError:  # pragma: no cover - dual-path import
+            from scripts.verification_cache import VerificationCache
+        cache = VerificationCache()
+    revalidate = os.environ.get("ARS_CACHE_REVALIDATE") == "1"
+    outcomes = verify_passport(
+        passport,
+        clients=clients_factory(),
+        ref_slug_by_key=ref_slug_by_key,
+        cache=cache,
+        revalidate_stale=revalidate,
+    )
     print(json.dumps(outcomes, indent=2))
     return 0
 

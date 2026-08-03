@@ -2,7 +2,7 @@
 name: academic-pipeline
 description: "Orchestrator for the full academic research pipeline: research -> experiment (optional) -> write -> integrity check -> review -> revise -> re-review -> re-revise -> final integrity check -> finalize -> process summary. Coordinates deep-research, experiment-designer, data-analyst, simulation-runner, lab-notebook, academic-paper, and academic-paper-reviewer into a seamless workflow with auto-detected experiment stages, mandatory integrity verification, two-stage peer review, AI Research Failure Mode Checklist (Lu 2026), Score Trajectory tracking, Early-Stopping criterion, and reproducible quality gates. Triggers on: academic pipeline, research to paper, full paper workflow, paper pipeline, end-to-end paper, research-to-publication, complete paper workflow."
 metadata:
-  version: "3.20.1"
+  version: "3.21.0"
   last_updated: "2026-08-03"
   depends_on: "deep-research, experiment-designer, data-analyst, simulation-runner, lab-notebook, academic-paper, academic-paper-reviewer"
   status: active
@@ -302,9 +302,10 @@ After user confirmation:
    - Stage 2  --> 2.5: Pass complete paper to integrity_verification_agent
    - Stage 2.5 --> 3: Pass verified paper to reviewer
    - Stage 3  --> experiment check --> 4: Check Roadmap for experiment items; if found, dispatch Stage 1.5-R first; then pass Revision Roadmap + new Schema 11 (if any) to academic-paper revision mode
-   - Stage 4  --> 3': Pass revised draft and Response to Reviewers to reviewer
-   - Stage 3' --> experiment check --> 4': Check Roadmap for experiment items; if found, dispatch Stage 1.5-R2 (last chance); then pass new Revision Roadmap + new Schema 11 (if any) to academic-paper revision mode
-   - Stage 4/4' --> 4.5: Pass revision-completed paper to integrity_verification_agent (final verification)
+   - Stage 4  --> 3': Pass revised draft, the original (pre-revision) draft (#576 §3.1 Phase 2A comparison base — without it every new issue degrades to `indeterminate`), Response to Reviewers, the Editorial Decision Letter (its Review Panel Provenance block feeds the #539 Judge Record), the Round-1 review findings (Schema 6 reports — #576 §4 level-3 criterion layer), the Round-1 Revision Roadmap being verified, the round's apply report(s) with their paired revision patch/diff files (#390/#576 §11 — the two travel together), and the Round-1 Reviewer Configuration Cards (yardstick continuity — field_analyst is NOT re-run at Stage 3'; `re_review_mode_protocol.md` § Yardstick Continuity) to reviewer. This is the re-review-mode transfer, the default Stage 3' — dispatched under the #576 three-gate contract (`pipeline_orchestrator_agent.md` § Stage 3' Re-Review Contract Dispatch; legacy single-pass only behind `ARS_RE_REVIEW_LEGACY=1`); a user-requested fresh full review at 3' instead (mid-entry quick→full path: no Roadmap or Round-1 cards exist) transfers the revised draft + available context only and runs full mode, field_analyst included
+   - Stage 3' --> experiment check --> 4': Check Roadmap for experiment items; if found, dispatch Stage 1.5-R2 (last chance); then pass new Revision Roadmap + new Schema 11 (if any) to academic-paper revision mode; the R&R Traceability Matrix (Schema 18) and the #576 §8 traceability sidecar (frozen `previously_missed`/`indeterminate` records) ride through 4' toward Stage 4.5
+   - Stage 3' --> 4.5 (Accept/Minor direct path): Pass verified revised draft + the traceability sidecar's frozen records to integrity_verification_agent as gate input
+   - Stage 4/4' --> 4.5: Pass revision-completed paper to integrity_verification_agent (final verification); on the Major-via-4' path the Stage 3' traceability sidecar travels along as gate input
    - Stage 4.5 --> 5: Pass verified final draft to format-convert mode
    - Stage 5  --> 6: Pass final deliverables list + pipeline state history to Process Summary (user may decline Stage 6 at the Stage 5 completion checkpoint)
 3. Begin next stage
@@ -387,11 +388,13 @@ EIC uses Socratic dialogue to guide the user in understanding review comments an
 ### Stage 3': Second Review (Verification Review)
 
 - **Input**: Revised draft + Response to Reviewers + original Revision Roadmap
-- **Mode**: `academic-paper-reviewer` re-review mode
+- **Mode**: `academic-paper-reviewer` re-review mode (default; #576 three-gate contract)
 - **Output**: Revision response comparison table + new issues list + new Editorial Decision
 - **Decision branches**: Accept|Minor -> Stage 4.5 / Major -> Residual Coaching -> Stage 4'
 
-See `academic-paper-reviewer/SKILL.md` Re-Review Mode for verification review process.
+Stage 3' runs under the #576 three-gate evidence-before-persuasion contract by default: the orchestrator emits a hash-bound input manifest, dispatches Phase 1 (criteria commitment, revision-blind) → Phase 2A (evidence verdict, persuasion-blind) → Phase 2B (claim matching, letter revealed), and invokes `scripts/check_re_review_synthesis.py` as a MANDATORY step before any decision surfaces — outcomes are Accept / Minor / Major, a `user_review_required` deferral, or a fail-closed abort (never Reject). The sidecar's frozen `previously_missed`/`indeterminate` new-issue records forward to Stage 4.5 on both routes. Legacy single-pass re-review requires the explicit `ARS_RE_REVIEW_LEGACY=1` flag and is marked `[LEGACY-NO-CONTRACT]`. Authority: `pipeline_orchestrator_agent.md` § Stage 3' Re-Review Contract Dispatch + `academic-paper-reviewer/references/re_review_mode_protocol.md`.
+
+See `academic-paper-reviewer/SKILL.md` Re-Review Mode for verification review process, and `references/two_stage_review_protocol.md` for detailed stage flows and coaching dialogue limits.
 
 ### Stage 3' -> 4' Transition: Residual Coaching
 
@@ -834,7 +837,7 @@ Stage 2.5: integrity_verification_agent (Mode 1: pre-review)
 Stage 4.5: integrity_verification_agent (Mode 2: final-check)
 
 Stage 3: academic-paper-reviewer
-  - full mode: Complete 5-person review (EIC + R1/R2/R3 + Devil's Advocate)
+  - full mode: Complete 5-person review (Journal-Fit Reviewer + R1/R2/R3 + Devil's Advocate)
 
 Stage 3': academic-paper-reviewer
   - re-review mode: Verification review (focused on revision responses)
@@ -880,7 +883,7 @@ When `ARS_MODEL_TIERING` is set, the dispatching session routes this skill's age
 
 | Item | Content |
 |------|---------|
-| Skill Version | 3.20.1 |
+| Skill Version | 3.21.0 |
 | Last Updated | 2026-08-03 |
 | Maintainer | Pouria Mortezaagha (fork) / Cheng-I Wu (upstream) |
 | Dependent Skills | deep-research v2.0+, experiment-designer v1.0+, data-analyst v1.0+, simulation-runner v1.0+, lab-notebook v1.0+, academic-paper v2.0+, academic-paper-reviewer v1.1+ |

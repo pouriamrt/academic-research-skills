@@ -28,9 +28,13 @@ Both writer + evaluator templates ship under Schema 13.1 (allOf branches 11/12 r
 
 ### Reserved reviewer modes without shipped templates
 
-`reviewer_re_review`, `reviewer_calibration`, `reviewer_guided` are in the schema enum
-but ship without templates in v3.6.2. Those modes continue to operate in their existing
-form (no contract, no hard-gate) until a follow-up patch release adds their templates.
+`reviewer_calibration` and `reviewer_guided` are in the schema enum but ship without
+templates. Those modes continue to operate in their existing form (no contract, no
+hard-gate) until a follow-up patch release adds their templates. `reviewer_re_review`
+left the Schema 13 enum with #576 Spec B: re-review is governed by the dedicated
+contract family under `re_review/` (four schemas + `scripts/check_re_review_synthesis.py`),
+not by a Schema 13 template — a contract claiming `mode: reviewer_re_review` no longer
+validates.
 
 ### How to add a new template
 
@@ -59,6 +63,12 @@ Schemas for Material Passport input ports.
   `phase2_investigation/version_records.yaml` sidecar for academic citation version
   families (preprint -> proceedings -> journal extension). This is deliberately a
   sidecar: `literature_corpus_entry.schema.json` stays adapter-owned and unmodified.
+- `passport/human_read_log.schema.json` (#513) — the user-owned human-read ledger
+  (`<passport-stem>_human_read_log.yaml`, written by `scripts/ars_mark_read.py`),
+  including the optional #513 `read_scope` honest-coverage attestation
+  (`level`/`locators`/`note`, declaration-only). Deliberately a sidecar for the same
+  reason as above: corpus entries MUST NOT carry human-read state (v3.6.8 firm rule 3).
+  Audit/test-time validation only — the CLI stays dependency-light at runtime.
 
 ## Audit artifact contracts (v3.6.7 Step 6)
 

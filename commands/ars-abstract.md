@@ -1,4 +1,5 @@
 ---
+name: ars-abstract
 description: ARS academic-paper `abstract-only` mode — English abstract + keywords
 model: sonnet
 ---

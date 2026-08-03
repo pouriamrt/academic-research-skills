@@ -144,6 +144,10 @@ jobs:
         env:
           PYTHONPATH: .
         run: python3 -m unittest scripts.test_check_sprint_contract -v
+      - name: Run spec consistency unit tests
+        env:
+          PYTHONPATH: .
+        run: python3 -m unittest scripts.test_check_spec_consistency -v
 
       - name: Validate sprint contract templates
         shell: bash
@@ -359,6 +363,179 @@ jobs:
           PYTHONPATH: .
         run: python3 scripts/check_v3_9_2_phase_boundary.py
 
+      - name: Run #215 field-norm severity coverage lint
+        # Asserts the three #215 reviewer surfaces (domain_reviewer Step 5,
+        # devils_advocate dimension 9 + CRITICAL fields, calibration Phase 3.5)
+        # carry their scoped field-norm-severity blocks. Block-scoped keyword
+        # checks (not file-wide) so a stray keyword cannot mask a missing rule.
+        # The pytest companion test_check_215_field_norm.py (mutation tests) runs
+        # via the unified manifest (#156). Issue #215 (Kim et al. 2026 W1/§F.3.4).
+        env:
+          PYTHONPATH: .
+        run: python3 scripts/check_215_field_norm.py
+
+      - name: Run #216 surface-form parity gold-set integrity lint
+        # Validates the mixed-provenance §F.3.6 gold set: structural completeness,
+        # provenance honesty (paper_verbatim quotes the paper; counterfactual_rewrite /
+        # maintainer_boundary are labelled as maintainer-authored, never paper-verbatim),
+        # pair invariants (paired items hold claim + verdict constant, differ in framing),
+        # no rotting pdftotext line anchors, and gold<->manifest agreement. NOT an FNR/FPR
+        # detector — there is no deterministic predictor for the surface-form bias.
+        # Companion test_check_surface_form_parity.py (mutation + serializer-strip) runs
+        # via the unified manifest (#156). Issue #216 (Kim et al. 2026 §F.3.6).
+        env:
+          PYTHONPATH: .
+        run: python3 -m scripts.check_surface_form_parity
+
+      - name: Run #216 surface-form parity coverage lint
+        # Asserts the Devil's Advocate agent carries the Surface-Form Parity self-check
+        # block at verdict time, with every load-bearing clause inside its marker block
+        # (block-scoped + fence-aware), so a stray keyword cannot mask a missing rule.
+        # Companion test_check_216_surface_form.py (6-class mutation suite) runs via the
+        # unified manifest (#156). Issue #216 (Kim et al. 2026 §F.3.6).
+        env:
+          PYTHONPATH: .
+        run: python3 scripts/check_216_surface_form.py
+
+      - name: Run #574 reviewer seeded-defect fixture integrity lint
+        # Structure-only gate for evals/heldout/reviewer_seeded_defects/ (the E4
+        # acceptance instrument for reviewer-prompt changes): manifest schema +
+        # closed enums + defect-count agreement + every anchor_quote verbatim-unique
+        # in its manuscript + clean control present and never manifested. Fixture
+        # integrity, NOT a behavioral measurer (baseline runs are the manual
+        # protocol in the set's README). Companion
+        # test_check_seeded_defect_fixtures.py (mutation suite) runs via the
+        # unified manifest (#156). Issue #574 E4.
+        env:
+          PYTHONPATH: .
+        run: python3 scripts/check_seeded_defect_fixtures.py
+
+      - name: Run #576 persuasion-invariance fixture integrity lint
+        # Structure-only gate for evals/heldout/re_review_persuasion_invariance/ (the
+        # Spec B §14 paired controls, joining the E4 harness per SD-11): index/disk
+        # agreement + pinned scenario+arm inventory + closed relation/observable enums
+        # + pair-cell referential integrity + relation-vs-expected-value agreement +
+        # the P-1 claim-set equality its construct validity rests on + apply-report
+        # hash placeholders + P-6 pointer arms + the held-out boundary (no material
+        # file names the ground truth or carries a scripted checkpoint answer) +
+        # the packet/arm section split. Fixture integrity, NOT a behavioral measurer
+        # (baseline runs are the manual protocol in the set's README). Companion
+        # test_check_persuasion_invariance_fixtures.py (mutation suite) runs via the
+        # unified manifest (#156). Issue #576 Spec B §14.
+        env:
+          PYTHONPATH: .
+        run: python3 scripts/check_persuasion_invariance_fixtures.py
+
+      - name: Run #574 reviewer data-fence lint (A6 / PR #578 pin)
+        # Pins the <paper_content> + <phase1_output> data-fence contract across
+        # all five reviewer panel agents (both canonical paragraphs verbatim,
+        # exactly once each), the sprint-contract delivery side, and the
+        # cross-model Reviewer 2 transport — so a prompt edit cannot silently
+        # drop or weaken the untrusted-manuscript boundary. Companion
+        # test_check_reviewer_data_fences.py (mutation suite) runs via the
+        # unified manifest (#156). Issue #574 A6 (shipped with the behavior batch).
+        env:
+          PYTHONPATH: .
+        run: python3 scripts/check_reviewer_data_fences.py
+
+      - name: Run #574 reviewer finding-contract lint (behavior batch pin)
+        # Pins the A1/A2/A3/B1 behavior-batch surfaces: no finding quotas +
+        # Coverage Receipt (A1), typed evidence-anchor vocabulary + DA anchor
+        # columns (A2), Schema 6 severity single-source + synthesizer transport
+        # tags (A3), decision-symmetry section + no base-rate anchors (B1), and
+        # the P0-3 overlap-prohibition residue. Companion
+        # test_check_reviewer_finding_contract.py (mutation suite) runs via the
+        # unified manifest (#156). Issue #574 behavior batch.
+        env:
+          PYTHONPATH: .
+        run: python3 scripts/check_reviewer_finding_contract.py
+
+      - name: Run #574 Schema 13.2 role-scoped contract lints
+        # Mutation companions and the executable checker suites run through
+        # scripts/_ci_pytest_manifest.toml in the same commit.
+        env:
+          PYTHONPATH: .
+        run: |
+          python3 scripts/check_role_scoped_contract.py
+          python3 scripts/check_decision_contract.py
+
+      - name: Run #611 reviewer protocol/name/calibration lints
+        # Mutation companions run through scripts/_ci_pytest_manifest.toml.
+        env:
+          PYTHONPATH: .
+        run: |
+          python3 scripts/check_reviewer_sprint_prompt_sync.py
+          python3 scripts/check_reviewer_role_label.py
+          python3 scripts/check_calibration_tiers.py
+
+      - name: Run v3.10 #134 write-scope three-way name cross-check lint
+        # THE FAIL-OPEN GUARD for the Slice 1 write-scope hook. Asserts the 23 Bucket A
+        # agent names match across the classification roster, the scope manifest keys,
+        # and the on-disk agent frontmatter `name` fields. A drift would silently fail
+        # the PreToolUse hook OPEN (treat a fenced agent as unconstrained). The pytest
+        # companions test_ars_write_scope_guard.py + test_check_v3_10_134_write_scope.py
+        # (hook decision tests + lint mutation tests) run via the unified manifest (#156).
+        # Spec: docs/design/2026-06-01-ars-134-conductor-rescope-deterministic-write-guard-spec.md
+        env:
+          PYTHONPATH: .
+        run: python3 scripts/check_v3_10_134_write_scope.py
+
+      - name: Validate ARS plugin hooks.json wires the write-scope guard
+        # Pins hooks/hooks.json to (a) be valid JSON, (b) carry a PreToolUse entry whose
+        # matcher covers the structured write tools + Bash, (c) invoke the cross-platform
+        # launcher hooks/run_guard.sh via ${CLAUDE_PLUGIN_ROOT}, AND (d) confirm the launcher
+        # actually execs the guard script (so the launcher->guard chain can't be silently
+        # severed by a future edit). The hook went via run_guard.sh in #454: a bare `python3`
+        # command broke on Windows where python3 is a 0-byte Microsoft Store alias stub.
+        run: |
+          python3 - <<'PY'
+          import json
+          h = json.load(open("hooks/hooks.json"))
+          pre = h.get("hooks", {}).get("PreToolUse", [])
+          assert pre, "hooks.json has no PreToolUse entry"
+          entry = pre[0]
+          matcher = entry.get("matcher", "")
+          for tool in ("Write", "Edit", "MultiEdit", "Bash"):
+              assert tool in matcher, f"PreToolUse matcher missing {tool!r}: {matcher!r}"
+          cmds = " ".join(hk.get("command", "") for hk in entry.get("hooks", []))
+          assert "hooks/run_guard.sh" in cmds, "PreToolUse does not invoke the run_guard.sh launcher"
+          assert "${CLAUDE_PLUGIN_ROOT}" in cmds, "hook command must use ${CLAUDE_PLUGIN_ROOT}"
+          # The launcher must still chain to the guard script — pin it so the chain stays intact.
+          # P2-f: do NOT use a bare substring (a COMMENT mentioning the guard would false-pass and
+          # the launcher->guard chain could be severed while CI stays green). Skip whole-line
+          # comments, then require non-comment EXECUTABLE shapes: (1) the guard path is ASSIGNED
+          # from the launcher's own location, and (2) that assigned path is EXEC'd in the guard
+          # call site's command-substitution. This is a fast smoke pin, not full semantic proof —
+          # the authoritative launcher->guard exec verification is scripts/test_run_guard_launcher.py
+          # (run via the CI pytest manifest), which actually runs the launcher and asserts a real
+          # `deny` is forwarded. So we keep the static check tight enough to catch an obvious
+          # severance (commenting out the exec line) without trying to out-parse the shell:
+          # the exec match is bound to the GUARD_OUT=$( ... run_bounded ... "$GUARD" ) call-site
+          # shape. The assignment line is ANCHORED at line start (^\s*) so an inline comment like
+          # `ls # GUARD_OUT=$(run_bounded "$GUARD")` can't satisfy it, and the run_bounded/"$GUARD"
+          # tokens are confined to a single command substitution (no `)` between them) so
+          # `GUARD_OUT=$( echo run_bounded "$GUARD" )` doesn't false-pass either (gemini r6 P2,
+          # tightening the codex r6 P2 fix).
+          import re
+          guard_assigned = guard_run = False
+          for raw in open("hooks/run_guard.sh"):
+              if raw.lstrip().startswith("#"):
+                  continue  # whole-line comment — never load-bearing
+              # (1) GUARD=...ars_write_scope_guard.py  (assignment, derived from $0 dir)
+              if re.search(r'\bGUARD=.*ars_write_scope_guard\.py', raw):
+                  guard_assigned = True
+              # (2) the guard call site, anchored at line start; run_bounded must be the command
+              #     run inside the substitution (only a pipe `|` may precede it), and "$GUARD" its
+              #     argument — all within one $( ... ) (the [^)]* forbids a closing paren between).
+              if re.search(r'^\s*GUARD_OUT=\$\([^)]*\|\s*run_bounded\b[^)]*"\$GUARD"', raw):
+                  guard_run = True
+          assert guard_assigned, \
+              "run_guard.sh has no non-comment GUARD=...ars_write_scope_guard.py assignment — chain severed"
+          assert guard_run, \
+              'run_guard.sh has no anchored GUARD_OUT=$(... | run_bounded ... "$GUARD") call site — launcher->guard exec chain severed'
+          print("hooks.json PreToolUse write-scope guard wiring OK (via run_guard.sh launcher)")
+          PY
+
       - name: Run v3.9.4 temporal verification lint (#135)
         # Verifies check_v3_9_4_temporal_verification.py against all bundled
         # fixtures in tests/fixtures/v3.9.4-temporal/. Each fixture directory
@@ -444,6 +621,9 @@ jobs:
       - name: Validate v3.6.7 Step 8 pattern-eval fixture manifests (Phase 6.8)
         run: python3 scripts/check_pattern_eval_manifest.py
 
+      - name: "Check venue disclosure policy database structure (#596)"
+        run: python3 scripts/check_venue_disclosure_policies.py
+
       - name: "Check policy anchor table structural lint (#108)"
         run: python3 scripts/check_policy_anchor_table.py
 
@@ -465,3 +645,20 @@ jobs:
           PYTHONPATH: .
         run: python3 -m unittest scripts.test_policy_anchor_disclosure -v
 
+      - name: Validate evals gold sets (#184)
+        # Phase 1a citation-extraction gold subset validator.
+        # Enforces 9 invariants (I1-I7, I9, I10) per
+        # docs/design/2026-05-21-v3.10-184-extend-eval-harness-spec.md.
+        env:
+          PYTHONPATH: .
+        run: python3 -m scripts.check_evals_gold_set evals/gold/citation_extraction
+
+      - name: Validate #268 nested-object Commitment Ledger
+        # Schema 11 parallel-list -> nested-object refactor (#268). N1-N5:
+        # seed extraction-field presence, no retired parallel-list keys,
+        # per-commitment lifecycle coherence, and no surviving index notation
+        # in the Schema 11 prose + re_review_mode_protocol surfaces.
+        # Spec: docs/design/2026-05-31-ars-268-schema11-nested-commitment-ledger-spec.md.
+        env:
+          PYTHONPATH: .
+        run: python3 -m scripts.check_268_nested_commitment_ledger

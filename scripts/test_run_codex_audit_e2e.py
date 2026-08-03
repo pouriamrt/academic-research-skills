@@ -55,6 +55,7 @@ def _bash_major_version() -> int:
             check=True,
             capture_output=True,
             text=True,
+            encoding="utf-8",
         ).stdout.strip()
         return int(out.split(".", 1)[0])
     except Exception:  # pragma: no cover - defensive
@@ -107,7 +108,7 @@ def _make_codex_mock(bin_dir: Path) -> Path:
         JSONL
         """
     )
-    mock.write_text(mock_script)
+    mock.write_text(mock_script, encoding="utf-8")
     mock.chmod(mock.stat().st_mode | stat.S_IEXEC | stat.S_IXGRP | stat.S_IXOTH)
     return mock
 
@@ -122,7 +123,8 @@ def _make_synthetic_deliverable(repo_clone: Path) -> Path:
     deliv = deliv_dir / "synthetic_deliverable.md"
     deliv.write_text(
         "# Synthetic deliverable\n\n"
-        "Single-claim text; mock codex emits PASS regardless of content.\n"
+        "Single-claim text; mock codex emits PASS regardless of content.\n",
+        encoding="utf-8",
     )
     return deliv
 
@@ -174,7 +176,7 @@ def _stage_repo_clone(work_dir: Path) -> Path:
 def _validate_against_schema(doc: dict, schema_path: Path, mode: str | None = None):
     from jsonschema import Draft202012Validator, FormatChecker
 
-    schema = json.loads(schema_path.read_text())
+    schema = json.loads(schema_path.read_text(encoding="utf-8"))
     if mode == "proposal" and "oneOf" in schema:
         # The audit_artifact_entry schema has oneOf [proposal, persisted]; we
         # validate against the proposal arm explicitly. jsonschema's default
@@ -222,6 +224,7 @@ def test_wrapper_dispatches_end_to_end(tmp_path):
         env=env,
         capture_output=True,
         text=True,
+        encoding="utf-8",
     )
 
     assert result.returncode == 0, (
@@ -250,7 +253,7 @@ def test_wrapper_dispatches_end_to_end(tmp_path):
 
     # Proposal entry validates against audit_artifact_entry.schema.json
     # in proposal mode (verified_at / verified_by must be absent).
-    proposal_doc = json.loads(proposal_path.read_text())
+    proposal_doc = json.loads(proposal_path.read_text(encoding="utf-8"))
     _validate_against_schema(
         proposal_doc,
         SCHEMA_DIR_PASSPORT / "audit_artifact_entry.schema.json",
@@ -266,7 +269,7 @@ def test_wrapper_dispatches_end_to_end(tmp_path):
     # Verdict file validates against audit_verdict.schema.json.
     import yaml as pyyaml
 
-    verdict_doc = pyyaml.safe_load(verdict_path.read_text())
+    verdict_doc = pyyaml.safe_load(verdict_path.read_text(encoding="utf-8"))
     _validate_against_schema(
         verdict_doc,
         SCHEMA_DIR_AUDIT / "audit_verdict.schema.json",
@@ -277,7 +280,7 @@ def test_wrapper_dispatches_end_to_end(tmp_path):
     assert verdict_doc["finding_counts"]["p3"] == 0
 
     # Sidecar validates against audit_sidecar.schema.json.
-    sidecar_doc = json.loads(sidecar_path.read_text())
+    sidecar_doc = json.loads(sidecar_path.read_text(encoding="utf-8"))
     _validate_against_schema(
         sidecar_doc,
         SCHEMA_DIR_AUDIT / "audit_sidecar.schema.json",
@@ -287,7 +290,9 @@ def test_wrapper_dispatches_end_to_end(tmp_path):
     assert sidecar_doc["process"]["exit_code"] == 0
 
     # JSONL events each validate against audit_jsonl.schema.json's row schema.
-    jsonl_lines = [json.loads(ln) for ln in jsonl_path.read_text().splitlines() if ln.strip()]
+    jsonl_lines = [
+        json.loads(ln) for ln in jsonl_path.read_text(encoding="utf-8").splitlines() if ln.strip()
+    ]
     assert len(jsonl_lines) >= 4, "expected canonical 4-event minimum stream"
     assert jsonl_lines[0]["type"] == "thread.started"
     assert jsonl_lines[-1]["type"] == "turn.completed"
@@ -327,6 +332,7 @@ def test_wrapper_dry_run_writes_nothing(tmp_path):
         env=env,
         capture_output=True,
         text=True,
+        encoding="utf-8",
     )
     assert result.returncode == 0, (
         f"--dry-run wrapper exited {result.returncode} (expected 0).\n"
@@ -373,6 +379,7 @@ def test_wrapper_rejects_round_2_without_previous_findings(tmp_path):
         env=env,
         capture_output=True,
         text=True,
+        encoding="utf-8",
     )
     # EX_USAGE = 64
     assert result.returncode == 64, (

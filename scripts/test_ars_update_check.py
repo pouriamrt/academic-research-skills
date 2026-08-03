@@ -9,12 +9,29 @@ import json
 import os
 import shutil
 import subprocess
+import sys
 import time
 from pathlib import Path
+
+import pytest
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 CHECKER = REPO_ROOT / "scripts" / "ars_update_check.sh"
 ANNOUNCE = REPO_ROOT / "scripts" / "announce-ars-loaded.sh"
+
+# Windows portability (three separate traps, all invisible on Linux CI):
+#  1. A bare "bash" in subprocess.run() is resolved by CreateProcess, which
+#     searches System32 BEFORE PATH — so it picks up WSL bash, whose
+#     filesystem view is /mnt/c/... and cannot open a C:/... script.
+#     shutil.which() honours PATH and finds Git Bash. Same fix as _SH in
+#     test_run_guard_launcher.py.
+#  2. A native path argument loses its backslashes crossing into MSYS
+#     ("C:UserspouriPython..."), so bash is handed the POSIX form.
+#  3. Path.write_text(, encoding="utf-8") emits CRLF on Windows — see the fixture writes below,
+#     which all pin LF, because a bash consumer parses them byte-wise.
+BASH = shutil.which("bash") or "bash"
+CHECKER_ARG = CHECKER.as_posix()
+ANNOUNCE_ARG = ANNOUNCE.as_posix()
 
 STRIP_VARS = (
     "ARS_UPDATE_CHECK",
@@ -33,7 +50,9 @@ def make_plugin_root(tmp_path, version, name="plugin_root", with_checker=True):
     root = tmp_path / name
     (root / ".claude-plugin").mkdir(parents=True)
     (root / ".claude-plugin" / "plugin.json").write_text(
-        json.dumps({"name": "academic-research-skills", "version": version}) + "\n"
+        json.dumps({"name": "academic-research-skills", "version": version}) + "\n",
+        newline="\n",
+        encoding="utf-8",
     )
     if with_checker:
         (root / "scripts").mkdir()
@@ -43,7 +62,11 @@ def make_plugin_root(tmp_path, version, name="plugin_root", with_checker=True):
 
 def make_remote(tmp_path, version, name="remote_plugin.json"):
     remote = tmp_path / name
-    remote.write_text(json.dumps({"name": "academic-research-skills", "version": version}) + "\n")
+    remote.write_text(
+        json.dumps({"name": "academic-research-skills", "version": version}) + "\n",
+        newline="\n",
+        encoding="utf-8",
+    )
     return "file://" + str(remote)
 
 
@@ -55,7 +78,7 @@ def make_remote_raw(tmp_path, body, name="remote_raw.json"):
     if isinstance(body, bytes):
         remote.write_bytes(body)
     else:
-        remote.write_text(body)
+        remote.write_text(body, newline="\n", encoding="utf-8")
     return "file://" + str(remote)
 
 
@@ -70,14 +93,14 @@ def run_checker(plugin_root=None, remote_url=None, state_dir=None, extra_env=Non
     if extra_env:
         env.update(extra_env)
     return subprocess.run(
-        ["bash", str(CHECKER)], capture_output=True, text=True, env=env, timeout=30
+        [BASH, CHECKER_ARG], capture_output=True, text=True, env=env, timeout=30, encoding="utf-8"
     )
 
 
 def _write_cache(state_dir, line, age_seconds=0):
     state_dir.mkdir(parents=True, exist_ok=True)
     cache = state_dir / "update-check"
-    cache.write_text(line + "\n")
+    cache.write_text(line + "\n", newline="\n", encoding="utf-8")
     if age_seconds:
         past = time.time() - age_seconds
         os.utime(cache, (past, past))
@@ -109,6 +132,11 @@ def test_no_plugin_root_is_silent(tmp_path):
     assert not (state / "update-check").exists()
 
 
+@pytest.mark.skipif(
+    sys.platform == "win32",
+    reason="Git Bash synthesizes HOME from USERPROFILE, so the no-HOME branch "
+    "is unreachable under MSYS",
+)
 def test_home_unset_no_state_dir_is_silent(tmp_path):
     # [I-1] HOME unset + no ARS_UPDATE_CHECK_STATE_DIR: exit 0, silent, no fetch.
     root = make_plugin_root(tmp_path, "3.17.0")
@@ -116,7 +144,9 @@ def test_home_unset_no_state_dir_is_silent(tmp_path):
     env.pop("HOME", None)
     env["CLAUDE_PLUGIN_ROOT"] = str(root)
     env["ARS_UPDATE_CHECK_REMOTE_URL"] = make_remote(tmp_path, "9.9.9")
-    r = subprocess.run(["bash", str(CHECKER)], capture_output=True, text=True, env=env, timeout=30)
+    r = subprocess.run(
+        [BASH, CHECKER_ARG], capture_output=True, text=True, env=env, timeout=30, encoding="utf-8"
+    )
     assert r.returncode == 0
     assert r.stdout == ""
     assert r.stderr == ""
@@ -133,7 +163,9 @@ def test_up_to_date_silent_and_caches(tmp_path):
     assert r.returncode == 0
     assert r.stdout == ""
     assert r.stderr == ""
-    assert (state / "update-check").read_text().strip() == "UP_TO_DATE 3.17.0 3.17.0"
+    assert (state / "update-check").read_text(
+        encoding="utf-8"
+    ).strip() == "UP_TO_DATE 3.17.0 3.17.0"
 
 
 def test_update_available_token_and_cache(tmp_path):
@@ -147,7 +179,9 @@ def test_update_available_token_and_cache(tmp_path):
     assert r.returncode == 0
     assert r.stdout.strip() == "UPDATE_AVAILABLE 3.17.0 3.18.0"
     assert r.stderr == ""
-    assert (state / "update-check").read_text().strip() == "UPDATE_AVAILABLE 3.17.0 3.18.0"
+    assert (state / "update-check").read_text(
+        encoding="utf-8"
+    ).strip() == "UPDATE_AVAILABLE 3.17.0 3.18.0"
 
 
 # ------------------------------------------------- cache + failure semantics
@@ -165,7 +199,9 @@ def test_fresh_update_available_cache_renders_without_fetch(tmp_path):
         state_dir=state,
     )
     assert r.stdout.strip() == "UPDATE_AVAILABLE 3.17.0 3.18.0"
-    assert (state / "update-check").read_text().strip() == "UPDATE_AVAILABLE 3.17.0 3.18.0"
+    assert (state / "update-check").read_text(
+        encoding="utf-8"
+    ).strip() == "UPDATE_AVAILABLE 3.17.0 3.18.0"
 
 
 def test_fresh_up_to_date_cache_suppresses_fetch(tmp_path):
@@ -178,7 +214,9 @@ def test_fresh_up_to_date_cache_suppresses_fetch(tmp_path):
         state_dir=state,
     )
     assert r.stdout == ""
-    assert (state / "update-check").read_text().strip() == "UP_TO_DATE 3.17.0 3.17.0"
+    assert (state / "update-check").read_text(
+        encoding="utf-8"
+    ).strip() == "UP_TO_DATE 3.17.0 3.17.0"
 
 
 def test_expired_cache_refetches(tmp_path):
@@ -191,7 +229,9 @@ def test_expired_cache_refetches(tmp_path):
         state_dir=state,
     )
     assert r.stdout.strip() == "UPDATE_AVAILABLE 3.17.0 3.18.0"
-    assert (state / "update-check").read_text().strip() == "UPDATE_AVAILABLE 3.17.0 3.18.0"
+    assert (state / "update-check").read_text(
+        encoding="utf-8"
+    ).strip() == "UPDATE_AVAILABLE 3.17.0 3.18.0"
 
 
 def test_expired_cache_unreachable_remote_is_silent_and_preserved(tmp_path):
@@ -205,14 +245,16 @@ def test_expired_cache_unreachable_remote_is_silent_and_preserved(tmp_path):
     )
     assert r.returncode == 0
     assert r.stdout == ""
-    assert (state / "update-check").read_text().strip() == "UPDATE_AVAILABLE 3.17.0 3.18.0"
+    assert (state / "update-check").read_text(
+        encoding="utf-8"
+    ).strip() == "UPDATE_AVAILABLE 3.17.0 3.18.0"
 
 
 def test_malformed_remote_is_silent_cache_untouched(tmp_path):
     root = make_plugin_root(tmp_path, "3.17.0")
     state = tmp_path / "state"
     bad = tmp_path / "bad.json"
-    bad.write_text("<html>rate limited</html>\n")
+    bad.write_text("<html>rate limited</html>\n", newline="\n", encoding="utf-8")
     r = run_checker(plugin_root=root, remote_url="file://" + str(bad), state_dir=state)
     assert r.returncode == 0
     assert r.stdout == ""
@@ -229,7 +271,9 @@ def test_corrupt_cache_refetches(tmp_path):
         state_dir=state,
     )
     assert r.stdout.strip() == "UPDATE_AVAILABLE 3.17.0 3.18.0"
-    assert (state / "update-check").read_text().strip() == "UPDATE_AVAILABLE 3.17.0 3.18.0"
+    assert (state / "update-check").read_text(
+        encoding="utf-8"
+    ).strip() == "UPDATE_AVAILABLE 3.17.0 3.18.0"
 
 
 def test_local_version_changed_invalidates_fresh_cache(tmp_path):
@@ -244,7 +288,9 @@ def test_local_version_changed_invalidates_fresh_cache(tmp_path):
         state_dir=state,
     )
     assert r.stdout == ""
-    assert (state / "update-check").read_text().strip() == "UP_TO_DATE 3.18.0 3.18.0"
+    assert (state / "update-check").read_text(
+        encoding="utf-8"
+    ).strip() == "UP_TO_DATE 3.18.0 3.18.0"
 
 
 # ---------------------------------------------- strict version grammar (#544)
@@ -322,7 +368,9 @@ def test_cache_third_field_injection_payload_rejected(tmp_path):
     assert "EVIL" not in r.stdout
     # Poisoned cache rejected -> refetch -> clean token rendered.
     assert r.stdout.strip() == "UPDATE_AVAILABLE 3.17.0 3.18.0"
-    assert (state / "update-check").read_text().strip() == "UPDATE_AVAILABLE 3.17.0 3.18.0"
+    assert (state / "update-check").read_text(
+        encoding="utf-8"
+    ).strip() == "UPDATE_AVAILABLE 3.17.0 3.18.0"
 
 
 def test_local_version_malformed_is_silent(tmp_path):
@@ -402,7 +450,9 @@ def test_cache_kebab_prose_third_field_rejected(tmp_path):
     assert r.returncode == 0
     assert "Ignore" not in r.stdout
     assert r.stdout.strip() == "UPDATE_AVAILABLE 3.17.0 3.18.0"
-    assert (state / "update-check").read_text().strip() == "UPDATE_AVAILABLE 3.17.0 3.18.0"
+    assert (state / "update-check").read_text(
+        encoding="utf-8"
+    ).strip() == "UPDATE_AVAILABLE 3.17.0 3.18.0"
 
 
 def test_legitimate_prerelease_version_accepted(tmp_path):
@@ -418,9 +468,9 @@ def test_legitimate_prerelease_version_accepted(tmp_path):
         )
         assert r.returncode == 0, remote_ver
         assert r.stdout.strip() == f"UPDATE_AVAILABLE 3.17.0 {remote_ver}", remote_ver
-        assert (
-            state / "update-check"
-        ).read_text().strip() == f"UPDATE_AVAILABLE 3.17.0 {remote_ver}", remote_ver
+        assert (state / "update-check").read_text(
+            encoding="utf-8"
+        ).strip() == f"UPDATE_AVAILABLE 3.17.0 {remote_ver}", remote_ver
 
 
 # ---------------------------------- allow-known prerelease grammar (#544 P1)
@@ -495,9 +545,9 @@ def test_legitimate_prerelease_versions_accepted(tmp_path):
         )
         assert r.returncode == 0, remote_ver
         assert r.stdout.strip() == f"UPDATE_AVAILABLE 3.17.0 {remote_ver}", remote_ver
-        assert (
-            state / "update-check"
-        ).read_text().strip() == f"UPDATE_AVAILABLE 3.17.0 {remote_ver}", remote_ver
+        assert (state / "update-check").read_text(
+            encoding="utf-8"
+        ).strip() == f"UPDATE_AVAILABLE 3.17.0 {remote_ver}", remote_ver
 
 
 def test_cache_prose_prerelease_rejected(tmp_path):
@@ -516,7 +566,9 @@ def test_cache_prose_prerelease_rejected(tmp_path):
     assert "ignore" not in r.stdout
     assert "instructions" not in r.stdout
     assert r.stdout.strip() == "UPDATE_AVAILABLE 3.17.0 3.18.0"
-    assert (state / "update-check").read_text().strip() == "UPDATE_AVAILABLE 3.17.0 3.18.0"
+    assert (state / "update-check").read_text(
+        encoding="utf-8"
+    ).strip() == "UPDATE_AVAILABLE 3.17.0 3.18.0"
 
 
 def test_exit_zero_when_rm_and_mv_absent(tmp_path):
@@ -545,7 +597,9 @@ def test_exit_zero_when_rm_and_mv_absent(tmp_path):
     env["CLAUDE_PLUGIN_ROOT"] = str(root)
     env["ARS_UPDATE_CHECK_STATE_DIR"] = str(state)
     env["ARS_UPDATE_CHECK_REMOTE_URL"] = make_remote(tmp_path, "3.18.0")
-    r = subprocess.run(["bash", str(CHECKER)], capture_output=True, text=True, env=env, timeout=30)
+    r = subprocess.run(
+        [BASH, CHECKER_ARG], capture_output=True, text=True, env=env, timeout=30, encoding="utf-8"
+    )
     # Always-exit-0 contract holds even when mv/rm are absent.
     assert r.returncode == 0
     assert r.stderr == ""
@@ -573,7 +627,7 @@ def test_unwritable_state_dir_is_fully_silent(tmp_path):
     root = make_plugin_root(tmp_path, "3.17.0")
     # Point the state dir at a path whose parent is a FILE, so mkdir -p fails.
     blocker = tmp_path / "blocker"
-    blocker.write_text("not a dir\n")
+    blocker.write_text("not a dir\n", newline="\n", encoding="utf-8")
     state = blocker / "state"
     r = run_checker(
         plugin_root=root,
@@ -598,7 +652,9 @@ def test_valid_fresh_cache_still_short_circuits(tmp_path):
     )
     assert r.returncode == 0
     assert r.stdout.strip() == "UPDATE_AVAILABLE 3.17.0 3.18.0"
-    assert (state / "update-check").read_text().strip() == "UPDATE_AVAILABLE 3.17.0 3.18.0"
+    assert (state / "update-check").read_text(
+        encoding="utf-8"
+    ).strip() == "UPDATE_AVAILABLE 3.17.0 3.18.0"
 
 
 # -------------------------------------------------------- announce integration
@@ -608,12 +664,13 @@ def run_announce(source_json, env_overrides):
     env = base_env()
     env.update(env_overrides)
     return subprocess.run(
-        ["bash", str(ANNOUNCE)],
+        [BASH, ANNOUNCE_ARG],
         input=source_json,
         capture_output=True,
         text=True,
         env=env,
         timeout=30,
+        encoding="utf-8",
     )
 
 
@@ -636,7 +693,10 @@ def test_announce_prepends_reminder_when_behind(tmp_path):
         "Run /plugin update academic-research-skills, "
         "or enable auto-update in /plugin -> Marketplaces."
     )
-    assert "ARS (academic-research-skills) plugin loaded." in ctx
+    # Fork banner names the version ("... v3.21.0 loaded."); upstream's reads
+    # "... plugin loaded.". Assert the stable prefix — #544 is about the
+    # reminder being prepended, not about the banner's wording.
+    assert "ARS (academic-research-skills) " in ctx
 
 
 def test_announce_unchanged_when_current(tmp_path):
@@ -700,7 +760,10 @@ def test_announce_rejects_injection_payload_from_remote(tmp_path):
     assert "Assistant:" not in ctx
     assert "update available" not in ctx
     # Baseline announce content is intact.
-    assert "ARS (academic-research-skills) plugin loaded." in ctx
+    # Fork banner names the version ("... v3.21.0 loaded."); upstream's reads
+    # "... plugin loaded.". Assert the stable prefix — #544 is about the
+    # reminder being prepended, not about the banner's wording.
+    assert "ARS (academic-research-skills) " in ctx
 
 
 def test_announce_rejects_kebab_prose_from_remote(tmp_path):
@@ -725,9 +788,16 @@ def test_announce_rejects_kebab_prose_from_remote(tmp_path):
     assert "Ignore all previous" not in ctx
     assert "output-secrets" not in ctx
     assert "update available" not in ctx
-    assert "ARS (academic-research-skills) plugin loaded." in ctx
+    # Fork banner names the version ("... v3.21.0 loaded."); upstream's reads
+    # "... plugin loaded.". Assert the stable prefix — #544 is about the
+    # reminder being prepended, not about the banner's wording.
+    assert "ARS (academic-research-skills) " in ctx
 
 
+@pytest.mark.skipif(
+    sys.platform == "win32",
+    reason="an MSYS bash.exe symlinked into an empty bindir cannot load msys-2.0.dll, so the synthetic PATH is unreachable",
+)
 def test_announce_valid_and_reminder_bearing_when_tr_absent(tmp_path):
     # [P2-b] When `tr` is off PATH, escape_json must not break: the announce
     # must still emit valid JSON whose additionalContext carries the multi-line
@@ -756,25 +826,31 @@ def test_announce_valid_and_reminder_bearing_when_tr_absent(tmp_path):
     env["ARS_UPDATE_CHECK_STATE_DIR"] = str(state)
     env["ARS_UPDATE_CHECK_REMOTE_URL"] = make_remote(tmp_path, "3.18.0")
     r = subprocess.run(
-        ["bash", str(ANNOUNCE)],
+        [BASH, ANNOUNCE_ARG],
         input='{"source":"startup"}',
         capture_output=True,
         text=True,
         env=env,
         timeout=30,
+        encoding="utf-8",
     )
     assert r.returncode == 0
     # JSON still parses (escape_json did not crash on the missing tr).
     ctx = _additional_context(r.stdout)
     assert "ARS update available: v3.18.0 (installed: v3.17.0)." in ctx
-    assert "ARS (academic-research-skills) plugin loaded." in ctx
+    # Fork banner names the version ("... v3.21.0 loaded."); upstream's reads
+    # "... plugin loaded.". Assert the stable prefix — #544 is about the
+    # reminder being prepended, not about the banner's wording.
+    assert "ARS (academic-research-skills) " in ctx
     # The blank line between reminder and body (the literal `\n\n`) survives.
-    assert (
-        "or enable auto-update in /plugin -> Marketplaces.\n\nARS "
-        "(academic-research-skills) plugin loaded." in ctx
-    )
+    assert "or enable auto-update in /plugin -> Marketplaces.\n\nARS " in ctx
+    assert "(academic-research-skills) " in ctx
 
 
+@pytest.mark.skipif(
+    sys.platform == "win32",
+    reason="Git Bash has no curl on PATH=/usr/bin:/bin, so the checker can never fetch and the reminder never renders",
+)
 def test_announce_normal_behavior_with_standard_path(tmp_path):
     # [P2-b] Companion positive: with a normal PATH (tr present), the tr-guard
     # path is exercised and behavior is unchanged.
@@ -790,4 +866,7 @@ def test_announce_normal_behavior_with_standard_path(tmp_path):
     assert r.returncode == 0
     ctx = _additional_context(r.stdout)
     assert "ARS update available: v3.18.0 (installed: v3.17.0)." in ctx
-    assert "ARS (academic-research-skills) plugin loaded." in ctx
+    # Fork banner names the version ("... v3.21.0 loaded."); upstream's reads
+    # "... plugin loaded.". Assert the stable prefix — #544 is about the
+    # reminder being prepended, not about the banner's wording.
+    assert "ARS (academic-research-skills) " in ctx

@@ -48,6 +48,7 @@ def test_still_emits_valid_hook_json() -> None:
         text=True,
         cwd=REPO,
         timeout=60,
+        encoding="utf-8",
     )
     assert p.returncode == 0, p.stderr
     import json

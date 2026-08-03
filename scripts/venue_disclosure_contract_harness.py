@@ -993,15 +993,14 @@ def evaluate(case: Mapping[str, object]) -> ContractResult:
     return _Evaluator(case).run()
 
 
+# Fork: the ja-JP / ko-KR / zh-CN / zh-TW READMEs were deleted in the v3.17.0
+# bilingual purge (check_spec_consistency.check_bilingual_purge asserts they stay
+# deleted), so only the English surface is policed here.
 SURFACE_FILES = (
     "academic-paper/SKILL.md",
     "commands/ars-disclosure.md",
     "academic-paper/references/mode_selection_guide.md",
     "README.md",
-    "README.ja-JP.md",
-    "README.ko-KR.md",
-    "README.zh-CN.md",
-    "README.zh-TW.md",
 )
 SURFACE_TOKENS = {
     "ACL": ("ACL",),

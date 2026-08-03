@@ -2336,6 +2336,11 @@ def test_a_file_named_bundle_prints_no_absolute_path(tmp_path, capsys):
 # Thirteenth round: codex r12 and the seventh closing security pass.
 
 
+@pytest.mark.skipif(
+    sys.platform == "win32",
+    reason="no /tmp on Windows; the macOS /tmp -> /private/tmp alias this "
+    "exercises does not exist there",
+)
 def test_a_tmp_spelled_work_dir_is_scrubbed_from_the_record(monkeypatch):
     """RUN_ROOTS stored only RESOLVED spellings, but an OSError message
     carries the caller's spelling: on darwin `/tmp` resolves to

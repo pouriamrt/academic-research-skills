@@ -50,7 +50,7 @@ class TestReproLock(unittest.TestCase):
     def test_valid_block_passes(self) -> None:
         with TemporaryDirectory() as tmp:
             p = Path(tmp) / "passport.yaml"
-            p.write_text(_valid_passport_yaml())
+            p.write_text(_valid_passport_yaml(), encoding="utf-8")
             result = _run(p)
             self.assertEqual(result.returncode, 0, msg=result.stderr + result.stdout)
 
@@ -58,7 +58,7 @@ class TestReproLock(unittest.TestCase):
         with TemporaryDirectory() as tmp:
             p = Path(tmp) / "passport.yaml"
             y = _valid_passport_yaml().split("repro_lock:")[0] + "repro_lock: null\n"
-            p.write_text(y)
+            p.write_text(y, encoding="utf-8")
             result = _run(p)
             self.assertEqual(result.returncode, 0)
             # WARN signal must reach at least stderr; stdout OK line also mentions WARN
@@ -69,7 +69,7 @@ class TestReproLock(unittest.TestCase):
         with TemporaryDirectory() as tmp:
             p = Path(tmp) / "passport.yaml"
             y = _valid_passport_yaml().split("repro_lock:")[0]  # strip the key entirely
-            p.write_text(y)
+            p.write_text(y, encoding="utf-8")
             result = _run(p)
             self.assertEqual(result.returncode, 1)
             self.assertIn("repro_lock", result.stdout)
@@ -78,7 +78,7 @@ class TestReproLock(unittest.TestCase):
         with TemporaryDirectory() as tmp:
             p = Path(tmp) / "passport.yaml"
             y = _valid_passport_yaml().replace('ars_version: "3.3.5"\n  ', "")
-            p.write_text(y)
+            p.write_text(y, encoding="utf-8")
             result = _run(p)
             self.assertEqual(result.returncode, 1)
             self.assertIn("ars_version", result.stdout)
@@ -87,7 +87,7 @@ class TestReproLock(unittest.TestCase):
         with TemporaryDirectory() as tmp:
             p = Path(tmp) / "passport.yaml"
             y = _valid_passport_yaml().replace('schema_version: "1.0"', 'schema_version: "9.9"')
-            p.write_text(y)
+            p.write_text(y, encoding="utf-8")
             result = _run(p)
             self.assertEqual(result.returncode, 1)
             self.assertIn("schema_version", result.stdout)
@@ -98,7 +98,7 @@ class TestReproLock(unittest.TestCase):
             y = _valid_passport_yaml()
             # Remove the stochasticity_declaration line
             lines = [line for line in y.splitlines() if "stochasticity_declaration" not in line]
-            p.write_text("\n".join(lines) + "\n")
+            p.write_text("\n".join(lines) + "\n", encoding="utf-8")
             result = _run(p)
             self.assertEqual(result.returncode, 1)
             self.assertIn("stochasticity_declaration", result.stdout)

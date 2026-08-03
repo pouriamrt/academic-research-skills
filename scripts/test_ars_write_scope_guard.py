@@ -943,7 +943,12 @@ class MainPluginRootComputationTest(unittest.TestCase):
                 }
             )
             out = subprocess.run(
-                [sys.executable, guard_path], input=inp, env=env, capture_output=True, text=True
+                [sys.executable, guard_path],
+                input=inp,
+                env=env,
+                capture_output=True,
+                text=True,
+                encoding="utf-8",
             )
             decision = json.loads(out.stdout)
             self.assertNotIn("permissionDecision", decision["hookSpecificOutput"])
@@ -966,7 +971,12 @@ class MainPluginRootComputationTest(unittest.TestCase):
                 }
             )
             out = subprocess.run(
-                [sys.executable, guard_path], input=inp, env=env, capture_output=True, text=True
+                [sys.executable, guard_path],
+                input=inp,
+                env=env,
+                capture_output=True,
+                text=True,
+                encoding="utf-8",
             )
             decision = json.loads(out.stdout)
             self.assertEqual(decision["hookSpecificOutput"].get("permissionDecision"), "deny")

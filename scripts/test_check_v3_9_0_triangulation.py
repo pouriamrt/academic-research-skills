@@ -13,7 +13,7 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 
 def run_lint(args: list[str] | None = None) -> subprocess.CompletedProcess:
     cmd = [sys.executable, str(SCRIPT)] + (args or [])
-    return subprocess.run(cmd, capture_output=True, text=True, cwd=str(REPO_ROOT))
+    return subprocess.run(cmd, capture_output=True, text=True, cwd=str(REPO_ROOT), encoding="utf-8")
 
 
 def test_lint_passes_on_clean_repo():
@@ -238,12 +238,12 @@ def test_delta1_missing_arxiv_allowlist_token_fails(tmp_path):
     """Drop CONTAMINATED-ARXIV-UNMATCHED from the formatter allowlist — set-equality
     (rule 5) must fail (the Delta-1 token is load-bearing, not incidentally present)."""
     formatter = REPO_ROOT / "academic-paper/agents/formatter_agent.md"
-    content = formatter.read_text()
+    content = formatter.read_text(encoding="utf-8")
     # Remove the bare ARXIV token from the allowlist sentence (keep the PREPRINT+ARXIV
     # composite so the failure is specifically the bare-token drop).
     broken = content.replace("`CONTAMINATED-ARXIV-UNMATCHED`, ", "", 1)
     p = tmp_path / "formatter_agent.md"
-    p.write_text(broken)
+    p.write_text(broken, encoding="utf-8")
     result = run_lint(["--formatter-path", str(p)])
     assert result.returncode == 1
     assert "CONTAMINATED-ARXIV-UNMATCHED" in result.stderr
@@ -260,7 +260,7 @@ def test_delta1_missing_quadrangulation_matrix_row_fails(tmp_path):
     occurrence would mask this — it strips the prose too, so a subsection-wide token
     scan would fail for the wrong reason rather than because the row is gone.)"""
     orch = REPO_ROOT / "academic-pipeline/agents/pipeline_orchestrator_agent.md"
-    content = orch.read_text()
+    content = orch.read_text(encoding="utf-8")
     # Mistoken the suffix in the k=4 k_max=4 (non-preprint) table row only.
     matrix_cell = "| 4 | 4 | — | `CONTAMINATED-QUADRANGULATION-UNMATCHED`"
     broken_cell = "| 4 | 4 | — | `CONTAMINATED-QUADXXX`"
@@ -270,7 +270,7 @@ def test_delta1_missing_quadrangulation_matrix_row_fails(tmp_path):
     # from the row scan, not from blanket token absence.
     assert "`CONTAMINATED-QUADRANGULATION-UNMATCHED`" in broken
     p = tmp_path / "orch.md"
-    p.write_text(broken)
+    p.write_text(broken, encoding="utf-8")
     result = run_lint(["--orchestrator-path", str(p)])
     assert result.returncode == 1
     assert "QUADRANGULATION" in result.stderr or "Delta-1" in result.stderr
@@ -282,7 +282,7 @@ def test_delta1_token_in_prose_only_still_passes_is_not_contract(tmp_path):
     the negative twin of the row-oracle test: it proves rule 1 keys off the matrix
     row, not subsection-wide presence (so prose edits don't cause false failures)."""
     orch = REPO_ROOT / "academic-pipeline/agents/pipeline_orchestrator_agent.md"
-    content = orch.read_text()
+    content = orch.read_text(encoding="utf-8")
     # The arxiv carve-out bullet starts with the bolded token; neutralise the bolded
     # prose mention without touching its `| 1 | 1 |` matrix row.
     prose_bullet = "- **`CONTAMINATED-ARXIV-UNMATCHED` (k=1, k_max=1"
@@ -291,7 +291,7 @@ def test_delta1_token_in_prose_only_still_passes_is_not_contract(tmp_path):
     # Matrix row for the token is untouched.
     assert "| 1 | 1 | `arxiv_unmatched` | `CONTAMINATED-ARXIV-UNMATCHED`" in broken
     p = tmp_path / "orch.md"
-    p.write_text(broken)
+    p.write_text(broken, encoding="utf-8")
     result = run_lint(["--orchestrator-path", str(p)])
     assert result.returncode == 0, f"prose-only edit should pass: stderr={result.stderr}"
 
@@ -301,7 +301,9 @@ def test_delta1_arxiv_is_kmax1_carveout_documented():
     documented verbatim in the orchestrator subsection so a future edit cannot
     silently widen it (the resolved reading of the ambiguous 'single-index' phrase:
     single-index means k_max=1, not merely k=1). This pins the prompt contract."""
-    orch = (REPO_ROOT / "academic-pipeline/agents/pipeline_orchestrator_agent.md").read_text()
+    orch = (REPO_ROOT / "academic-pipeline/agents/pipeline_orchestrator_agent.md").read_text(
+        encoding="utf-8"
+    )
     # The disambiguating sentence must be present.
     assert "single-index" in orch and "k_max=1" in orch
     assert "CONTAMINATED-COVERAGE-NOISE" in orch  # the k=1 k_max>=2 arxiv fallback

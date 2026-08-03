@@ -68,6 +68,7 @@ def _run_lint() -> subprocess.CompletedProcess[str]:
         capture_output=True,
         text=True,
         check=False,
+        encoding="utf-8",
     )
 
 
@@ -344,6 +345,7 @@ def test_t11_target_relative_path_does_not_crash() -> None:
         capture_output=True,
         text=True,
         check=False,
+        encoding="utf-8",
     )
     # The lint must produce a deterministic exit code (0 or 1 — both indicate
     # the lint ran), NOT crash with ValueError or ImportError.
@@ -946,6 +948,7 @@ def test_t12_target_outside_repo_does_not_crash(tmp_path) -> None:
         capture_output=True,
         text=True,
         check=False,
+        encoding="utf-8",
     )
     assert "Traceback" not in result.stderr, (
         f"Expected --target outside the repo to be handled gracefully; "

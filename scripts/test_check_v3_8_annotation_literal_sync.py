@@ -121,6 +121,7 @@ class LintScriptTest(unittest.TestCase):
             capture_output=True,
             text=True,
             cwd=str(REPO_ROOT),
+            encoding="utf-8",
         )
         self.assertEqual(
             result.returncode,
@@ -149,13 +150,13 @@ class LintScriptTest(unittest.TestCase):
                 ),
             )
             tmp_formatter = tmp_root / "academic-paper" / "agents" / "formatter_agent.md"
-            text = tmp_formatter.read_text()
+            text = tmp_formatter.read_text(encoding="utf-8")
             mutated = text.replace(
                 "`[HIGH-WARN-NEGATIVE-CONSTRAINT-VIOLATION`",
                 "`[HIGH-WARN-NEGATIVE-CONSTRAINT-VIOLATION-RENAMED`",
             )
             self.assertNotEqual(text, mutated, "mutation should replace the literal")
-            tmp_formatter.write_text(mutated)
+            tmp_formatter.write_text(mutated, encoding="utf-8")
 
             result = subprocess.run(
                 [
@@ -165,6 +166,7 @@ class LintScriptTest(unittest.TestCase):
                 capture_output=True,
                 text=True,
                 cwd=str(tmp_root),
+                encoding="utf-8",
             )
             self.assertEqual(
                 result.returncode,
@@ -196,7 +198,7 @@ class LintScriptTest(unittest.TestCase):
                 ),
             )
             tmp_formatter = tmp_root / "academic-paper" / "agents" / "formatter_agent.md"
-            text = tmp_formatter.read_text()
+            text = tmp_formatter.read_text(encoding="utf-8")
             # Replace the closed literal in the formatter REFUSE rule with a
             # superstring that PRESERVES the original as a prefix. A naive
             # `prefix in text` check would still pass; the exact-closing-
@@ -206,7 +208,7 @@ class LintScriptTest(unittest.TestCase):
                 "[HIGH-WARN-FABRICATED-REFERENCE-RENAMED]",
             )
             self.assertNotEqual(text, mutated, "mutation should replace the literal")
-            tmp_formatter.write_text(mutated)
+            tmp_formatter.write_text(mutated, encoding="utf-8")
 
             result = subprocess.run(
                 [
@@ -216,6 +218,7 @@ class LintScriptTest(unittest.TestCase):
                 capture_output=True,
                 text=True,
                 cwd=str(tmp_root),
+                encoding="utf-8",
             )
             self.assertEqual(
                 result.returncode,
@@ -245,7 +248,7 @@ class LintScriptTest(unittest.TestCase):
                 ),
             )
             tmp_finalizer = tmp_root / "scripts" / "claim_audit_finalizer.py"
-            text = tmp_finalizer.read_text()
+            text = tmp_finalizer.read_text(encoding="utf-8")
             # Rename the CLAIM-NOT-SUPPORTED literal in place — the formatter
             # prose still says NOT-SUPPORTED, so the lint must surface the
             # divergence on the renamed literal.
@@ -254,7 +257,7 @@ class LintScriptTest(unittest.TestCase):
                 'ANNOTATION_HIGH_WARN_CLAIM_NOT_SUPPORTED = "[HIGH-WARN-CLAIM-UNSUPPORTED-RENAMED]"',
             )
             self.assertNotEqual(text, mutated, "mutation should have replaced the literal")
-            tmp_finalizer.write_text(mutated)
+            tmp_finalizer.write_text(mutated, encoding="utf-8")
 
             result = subprocess.run(
                 [
@@ -264,6 +267,7 @@ class LintScriptTest(unittest.TestCase):
                 capture_output=True,
                 text=True,
                 cwd=str(tmp_root),
+                encoding="utf-8",
             )
             self.assertEqual(
                 result.returncode,

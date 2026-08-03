@@ -936,9 +936,11 @@ def main(argv: list[str] | None = None) -> int:
         draft, timeline, citation_provenance, args.report_reference_date, args.audit_run_id
     )
 
-    args.output.write_text(yaml.safe_dump(result, sort_keys=False))
+    # Explicit codec: write_text defaults to the locale encoding, and cp1252
+    # cannot represent the em-dashes this report renders (Windows-only).
+    args.output.write_text(yaml.safe_dump(result, sort_keys=False), encoding="utf-8")
     if args.markdown_output:
-        args.markdown_output.write_text(_render_markdown(result))
+        args.markdown_output.write_text(_render_markdown(result), encoding="utf-8")
     return 0
 
 

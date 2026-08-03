@@ -52,6 +52,7 @@ def test_ars_mark_read_writes_read_log(passport_with_corpus: Path) -> None:
         capture_output=True,
         text=True,
         check=False,
+        encoding="utf-8",
     )
 
     assert result.returncode == 0, f"Script failed (exit={result.returncode}): {result.stderr}"
@@ -75,6 +76,7 @@ def test_ars_mark_read_rejects_zero_keys(passport_with_corpus: Path) -> None:
         capture_output=True,
         text=True,
         check=False,
+        encoding="utf-8",
     )
 
     assert result.returncode != 0, "Script should fail with zero citation keys"
@@ -96,6 +98,7 @@ def test_ars_mark_read_rejects_unknown_key(passport_with_corpus: Path) -> None:
         capture_output=True,
         text=True,
         check=False,
+        encoding="utf-8",
     )
 
     assert result.returncode != 0, "Script should reject unknown citation key"
@@ -113,6 +116,7 @@ def test_ars_mark_read_argument_parsing(passport_with_corpus: Path) -> None:
         capture_output=True,
         text=True,
         check=False,
+        encoding="utf-8",
     )
 
     assert result.returncode == 0, f"Script failed (exit={result.returncode}): {result.stderr}"

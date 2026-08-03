@@ -13,6 +13,11 @@ from check_reviewer_role_label import REQUIRED
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 CHECKER = REPO_ROOT / "scripts" / "check_reviewer_role_label.py"
+# Fork adaptation: the zh-TW / zh-CN / ja-JP / ko-KR READMEs and
+# docs/PERFORMANCE.zh-TW.md were deleted in the v3.17.0 bilingual purge, so their
+# rows are dropped from the surface dicts below — the `tree` fixture copies every
+# listed file out of the repo and would otherwise raise FileNotFoundError before
+# any assertion runs. check_reviewer_role_label.py carries the matching adaptation.
 UNCOVERED_PUBLIC_SURFACES = {
     "academic-paper/examples/revision_recovery_example.md": (
         "Journal-Fit Reviewer (serialized source ID EIC):",
@@ -41,7 +46,6 @@ UNCOVERED_PUBLIC_SURFACES = {
     "docs/PERFORMANCE.md": (
         "Two reviewers (Journal-Fit Reviewer + methodology) each run two phases",
     ),
-    "docs/PERFORMANCE.zh-TW.md": ("Journal-Fit Reviewer + methodology 兩位 reviewer 各跑兩階段",),
 }
 REVIEW_DISPATCH_SURFACES = {
     "academic-paper-reviewer/references/re_review_mode_protocol.md": (
@@ -57,10 +61,6 @@ REVIEW_DISPATCH_SURFACES = {
         "Do not reuse Stage 3 `eic` or `editorial_synthesizer` workers for Stage 3'",
     ),
     "README.md": ("First-round review panel vs. contract-governed re-review dispatch boundary",),
-    "README.zh-TW.md": ("第一輪審查面板 vs. 契約治理再審派送的分界",),
-    "README.zh-CN.md": ("第一轮审查面板 vs. 契约治理再审调度的分界",),
-    "README.ja-JP.md": ("初回レビューパネル vs. 契約管理された再レビューディスパッチの境界",),
-    "README.ko-KR.md": ("1차 심사 패널 대 계약 기반 re-review 디스패치 경계",),
 }
 FILES = tuple(dict.fromkeys((*REQUIRED, *UNCOVERED_PUBLIC_SURFACES, *REVIEW_DISPATCH_SURFACES)))
 
@@ -70,6 +70,7 @@ def _run(root: Path) -> subprocess.CompletedProcess[str]:
         [sys.executable, str(CHECKER), "--root", str(root)],
         capture_output=True,
         text=True,
+        encoding="utf-8",
     )
 
 
@@ -146,7 +147,12 @@ def test_field_card_has_public_display_and_stable_wire_role(tree: Path) -> None:
 def test_field_card_preserves_existing_non_eic_role_values(tree: Path) -> None:
     rel = "academic-paper-reviewer/agents/field_analyst_agent.md"
     text = (tree / rel).read_text(encoding="utf-8")
-    existing_role_field = "**Role**: [EIC / Peer Reviewer 1 / Peer Reviewer 2 / Peer Reviewer 3]"
+    # Fork: five-seat panel — the DA seat is load-bearing for the DA-CRITICAL
+    # terminal gate in check_panel_synthesis.py, so the serialized token
+    # carries it. check_reviewer_role_label.py pins the same string.
+    existing_role_field = (
+        "**Role**: [EIC / Peer Reviewer 1 / Peer Reviewer 2 / Peer Reviewer 3 / Devil's Advocate]"
+    )
     assert existing_role_field in text
 
     _mutate(

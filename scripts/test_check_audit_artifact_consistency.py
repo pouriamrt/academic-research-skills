@@ -582,7 +582,7 @@ class TestB2:
             {"path": "deliverable.md", "sha": "a" * 64}
         ]
         # Write a real file but with content whose SHA is NOT all-a's
-        (tmp_path / "deliverable.md").write_text("totally different content\n")
+        (tmp_path / "deliverable.md").write_text("totally different content\n", encoding="utf-8")
         findings = check_b2(e, s, tmp_path)
         assert any(f.rule_id == "B2" and "current_file" in f.message for f in findings)
 
@@ -625,10 +625,7 @@ class TestB4:
     def test_real_git_sha_passes(self):
         # Use the actual repo HEAD
         result = subprocess.run(
-            ["git", "rev-parse", "HEAD"],
-            capture_output=True,
-            text=True,
-            cwd=REPO,
+            ["git", "rev-parse", "HEAD"], capture_output=True, text=True, cwd=REPO, encoding="utf-8"
         )
         head = result.stdout.strip()
         s = make_valid_sidecar()
@@ -1250,7 +1247,7 @@ class TestAggregator:
         # against CLI-loaded paths. Aggregator test writes placeholder
         # files at the recorded basename so the resolution succeeds.
         for ext in (".jsonl", ".meta.json", ".verdict.yaml", ".audit_artifact_entry.json"):
-            (tmp_path / f"{VALID_RUN_ID}{ext}").write_text("placeholder")
+            (tmp_path / f"{VALID_RUN_ID}{ext}").write_text("placeholder", encoding="utf-8")
         ctx = LintContext(
             mode="persisted",
             entry=entry,
@@ -1271,7 +1268,7 @@ class TestAggregator:
         entry = make_valid_proposal_entry_pass()
         entry["bundle_manifest_sha"] = sidecar["prompt"]["bundle"]["bundle_manifest_sha"]
         for ext in (".jsonl", ".meta.json", ".verdict.yaml", ".audit_artifact_entry.json"):
-            (tmp_path / f"{VALID_RUN_ID}{ext}").write_text("placeholder")
+            (tmp_path / f"{VALID_RUN_ID}{ext}").write_text("placeholder", encoding="utf-8")
         ctx = LintContext(
             mode="proposal",
             entry=entry,
@@ -1317,7 +1314,7 @@ class TestCLI:
     def test_jsonl_stream_clean_returns_0(self, tmp_path: Path, capsys):
         jsonl = tmp_path / f"{VALID_RUN_ID}.jsonl"
         events = make_valid_jsonl_events_tool_using()
-        jsonl.write_text("\n".join(json.dumps(e) for e in events) + "\n")
+        jsonl.write_text("\n".join(json.dumps(e) for e in events) + "\n", encoding="utf-8")
         rc = main(["--mode", "jsonl-stream", "--jsonl", str(jsonl)])
         assert rc == 0
 
@@ -1327,7 +1324,7 @@ class TestCLI:
             {"type": "thread.started", "thread_id": VALID_THREAD_ID},
             {"type": "item.completed", "item": {"id": "orphan", "type": "command_execution"}},
         ]
-        jsonl.write_text("\n".join(json.dumps(e) for e in events) + "\n")
+        jsonl.write_text("\n".join(json.dumps(e) for e in events) + "\n", encoding="utf-8")
         rc = main(["--mode", "jsonl-stream", "--jsonl", str(jsonl)])
         assert rc == 1
 
@@ -1339,13 +1336,17 @@ class TestCLI:
         entry["bundle_manifest_sha"] = sidecar["prompt"]["bundle"]["bundle_manifest_sha"]
         verdict = make_valid_verdict_file_minor()
         events = make_valid_jsonl_events_no_tool()
-        (tmp_path / f"{run_id}.audit_artifact_entry.json").write_text(json.dumps(entry))
-        (tmp_path / f"{run_id}.meta.json").write_text(json.dumps(sidecar))
+        (tmp_path / f"{run_id}.audit_artifact_entry.json").write_text(
+            json.dumps(entry), encoding="utf-8"
+        )
+        (tmp_path / f"{run_id}.meta.json").write_text(json.dumps(sidecar), encoding="utf-8")
         # verdict as YAML
         import yaml as _yaml
 
-        (tmp_path / f"{run_id}.verdict.yaml").write_text(_yaml.safe_dump(verdict))
-        (tmp_path / f"{run_id}.jsonl").write_text("\n".join(json.dumps(e) for e in events) + "\n")
+        (tmp_path / f"{run_id}.verdict.yaml").write_text(_yaml.safe_dump(verdict), encoding="utf-8")
+        (tmp_path / f"{run_id}.jsonl").write_text(
+            "\n".join(json.dumps(e) for e in events) + "\n", encoding="utf-8"
+        )
         rc = main(
             [
                 "--mode",
@@ -1368,11 +1369,15 @@ class TestCLI:
         entry = make_valid_persisted_entry_minor()
         verdict = make_valid_verdict_file_minor()
         events = make_valid_jsonl_events_no_tool()
-        (tmp_path / f"{run_id}.audit_artifact_entry.json").write_text(json.dumps(entry))
+        (tmp_path / f"{run_id}.audit_artifact_entry.json").write_text(
+            json.dumps(entry), encoding="utf-8"
+        )
         import yaml as _yaml
 
-        (tmp_path / f"{run_id}.verdict.yaml").write_text(_yaml.safe_dump(verdict))
-        (tmp_path / f"{run_id}.jsonl").write_text("\n".join(json.dumps(e) for e in events) + "\n")
+        (tmp_path / f"{run_id}.verdict.yaml").write_text(_yaml.safe_dump(verdict), encoding="utf-8")
+        (tmp_path / f"{run_id}.jsonl").write_text(
+            "\n".join(json.dumps(e) for e in events) + "\n", encoding="utf-8"
+        )
         rc = main(
             [
                 "--mode",
@@ -1403,12 +1408,16 @@ class TestCLI:
         entry["verdict"].pop("verified_by", None)
         verdict = make_valid_verdict_file_minor()
         events = make_valid_jsonl_events_no_tool()
-        (tmp_path / f"{run_id}.audit_artifact_entry.json").write_text(json.dumps(entry))
-        (tmp_path / f"{run_id}.meta.json").write_text(json.dumps(sidecar))
+        (tmp_path / f"{run_id}.audit_artifact_entry.json").write_text(
+            json.dumps(entry), encoding="utf-8"
+        )
+        (tmp_path / f"{run_id}.meta.json").write_text(json.dumps(sidecar), encoding="utf-8")
         import yaml as _yaml
 
-        (tmp_path / f"{run_id}.verdict.yaml").write_text(_yaml.safe_dump(verdict))
-        (tmp_path / f"{run_id}.jsonl").write_text("\n".join(json.dumps(e) for e in events) + "\n")
+        (tmp_path / f"{run_id}.verdict.yaml").write_text(_yaml.safe_dump(verdict), encoding="utf-8")
+        (tmp_path / f"{run_id}.jsonl").write_text(
+            "\n".join(json.dumps(e) for e in events) + "\n", encoding="utf-8"
+        )
         rc = main(
             [
                 "--mode",
@@ -1437,12 +1446,16 @@ class TestCLI:
         entry["verdict"]["finding_counts"] = {"p1": 0, "p2": 0, "p3": 0}
         verdict = make_valid_verdict_file_minor()
         events = make_valid_jsonl_events_no_tool()
-        (tmp_path / f"{run_id}.audit_artifact_entry.json").write_text(json.dumps(entry))
-        (tmp_path / f"{run_id}.meta.json").write_text(json.dumps(sidecar))
+        (tmp_path / f"{run_id}.audit_artifact_entry.json").write_text(
+            json.dumps(entry), encoding="utf-8"
+        )
+        (tmp_path / f"{run_id}.meta.json").write_text(json.dumps(sidecar), encoding="utf-8")
         import yaml as _yaml
 
-        (tmp_path / f"{run_id}.verdict.yaml").write_text(_yaml.safe_dump(verdict))
-        (tmp_path / f"{run_id}.jsonl").write_text("\n".join(json.dumps(e) for e in events) + "\n")
+        (tmp_path / f"{run_id}.verdict.yaml").write_text(_yaml.safe_dump(verdict), encoding="utf-8")
+        (tmp_path / f"{run_id}.jsonl").write_text(
+            "\n".join(json.dumps(e) for e in events) + "\n", encoding="utf-8"
+        )
         rc = main(
             [
                 "--mode",
@@ -1475,13 +1488,15 @@ class TestCLI:
             {"type": "thread.started", "thread_id": VALID_THREAD_ID},
             {"type": "turn.started"},
         ]
-        (tmp_path / f"{run_id}.audit_artifact_entry.json").write_text(json.dumps(entry))
-        (tmp_path / f"{run_id}.meta.json").write_text(json.dumps(sidecar))
+        (tmp_path / f"{run_id}.audit_artifact_entry.json").write_text(
+            json.dumps(entry), encoding="utf-8"
+        )
+        (tmp_path / f"{run_id}.meta.json").write_text(json.dumps(sidecar), encoding="utf-8")
         import yaml as _yaml
 
-        (tmp_path / f"{run_id}.verdict.yaml").write_text(_yaml.safe_dump(verdict))
+        (tmp_path / f"{run_id}.verdict.yaml").write_text(_yaml.safe_dump(verdict), encoding="utf-8")
         (tmp_path / f"{run_id}.jsonl").write_text(
-            "\n".join(json.dumps(e) for e in truncated_events) + "\n"
+            "\n".join(json.dumps(e) for e in truncated_events) + "\n", encoding="utf-8"
         )
         rc = main(
             [
@@ -1508,12 +1523,16 @@ class TestCLI:
         entry["bundle_manifest_sha"] = sidecar["prompt"]["bundle"]["bundle_manifest_sha"]
         verdict = make_valid_verdict_file_minor()
         events = make_valid_jsonl_events_no_tool()
-        (tmp_path / f"{run_id}.audit_artifact_entry.json").write_text(json.dumps(entry))
-        (tmp_path / f"{run_id}.meta.json").write_text(json.dumps(sidecar))
+        (tmp_path / f"{run_id}.audit_artifact_entry.json").write_text(
+            json.dumps(entry), encoding="utf-8"
+        )
+        (tmp_path / f"{run_id}.meta.json").write_text(json.dumps(sidecar), encoding="utf-8")
         import yaml as _yaml
 
-        (tmp_path / f"{run_id}.verdict.yaml").write_text(_yaml.safe_dump(verdict))
-        (tmp_path / f"{run_id}.jsonl").write_text("\n".join(json.dumps(e) for e in events) + "\n")
+        (tmp_path / f"{run_id}.verdict.yaml").write_text(_yaml.safe_dump(verdict), encoding="utf-8")
+        (tmp_path / f"{run_id}.jsonl").write_text(
+            "\n".join(json.dumps(e) for e in events) + "\n", encoding="utf-8"
+        )
         # Passport with hand-edited AUDIT_FAILED entry that passes E1/E2/E6
         # presence checks (verified_at + verified_by both set, verified_by
         # is the canonical orchestrator value).
@@ -1544,7 +1563,7 @@ class TestCLI:
             ]
         }
         passport_path = tmp_path / "passport.yaml"
-        passport_path.write_text(_yaml.safe_dump(passport))
+        passport_path.write_text(_yaml.safe_dump(passport), encoding="utf-8")
         rc = main(
             [
                 "--mode",
@@ -1581,12 +1600,16 @@ class TestCLI:
         }
         verdict = make_valid_verdict_file_minor()
         events = make_valid_jsonl_events_no_tool()
-        (tmp_path / f"{run_id}.audit_artifact_entry.json").write_text(json.dumps(entry))
-        (tmp_path / f"{run_id}.meta.json").write_text(json.dumps(sidecar))
+        (tmp_path / f"{run_id}.audit_artifact_entry.json").write_text(
+            json.dumps(entry), encoding="utf-8"
+        )
+        (tmp_path / f"{run_id}.meta.json").write_text(json.dumps(sidecar), encoding="utf-8")
         import yaml as _yaml
 
-        (tmp_path / f"{run_id}.verdict.yaml").write_text(_yaml.safe_dump(verdict))
-        (tmp_path / f"{run_id}.jsonl").write_text("\n".join(json.dumps(e) for e in events) + "\n")
+        (tmp_path / f"{run_id}.verdict.yaml").write_text(_yaml.safe_dump(verdict), encoding="utf-8")
+        (tmp_path / f"{run_id}.jsonl").write_text(
+            "\n".join(json.dumps(e) for e in events) + "\n", encoding="utf-8"
+        )
         rc = main(
             [
                 "--mode",
@@ -1615,6 +1638,7 @@ class TestCLI:
             ],
             capture_output=True,
             text=True,
+            encoding="utf-8",
         )
         assert result.returncode == 64, (
             f"argparse usage error returned {result.returncode}, expected 64\n"
@@ -1630,6 +1654,7 @@ class TestCLI:
             ],
             capture_output=True,
             text=True,
+            encoding="utf-8",
         )
         assert result.returncode == 64, (
             f"unknown flag returned {result.returncode}, expected 64\nstderr: {result.stderr}"
@@ -1666,15 +1691,19 @@ class TestCLI:
             }
         ]
         events = make_valid_jsonl_events_no_tool()
-        (tmp_path / f"{run_id}.audit_artifact_entry.json").write_text(json.dumps(entry))
-        (tmp_path / f"{run_id}.meta.json").write_text(json.dumps(sidecar))
+        (tmp_path / f"{run_id}.audit_artifact_entry.json").write_text(
+            json.dumps(entry), encoding="utf-8"
+        )
+        (tmp_path / f"{run_id}.meta.json").write_text(json.dumps(sidecar), encoding="utf-8")
         import yaml as _yaml
 
-        (tmp_path / f"{run_id}.verdict.yaml").write_text(_yaml.safe_dump(verdict))
-        (tmp_path / f"{run_id}.jsonl").write_text("\n".join(json.dumps(e) for e in events) + "\n")
+        (tmp_path / f"{run_id}.verdict.yaml").write_text(_yaml.safe_dump(verdict), encoding="utf-8")
+        (tmp_path / f"{run_id}.jsonl").write_text(
+            "\n".join(json.dumps(e) for e in events) + "\n", encoding="utf-8"
+        )
         # Empty passport — no prior MATERIAL entry to copy from
         passport_path = tmp_path / "passport.yaml"
-        passport_path.write_text(_yaml.safe_dump({"audit_artifact": []}))
+        passport_path.write_text(_yaml.safe_dump({"audit_artifact": []}), encoding="utf-8")
         rc = main(
             [
                 "--mode",
@@ -1698,7 +1727,7 @@ class TestCLI:
         # Codex round 5 traceback closure: a non-object entry payload (e.g., `[]`)
         # must surface as a clean error, not an AttributeError traceback.
         entry_path = tmp_path / "entry.json"
-        entry_path.write_text("[]")
+        entry_path.write_text("[]", encoding="utf-8")
         rc = main(
             [
                 "--mode",
@@ -1732,16 +1761,18 @@ class TestCLI:
             {"type": "thread.started", "thread_id": VALID_THREAD_ID},
             {"type": "turn.started"},
         ]
-        (tmp_path / f"{run_id}.audit_artifact_entry.json").write_text(json.dumps(entry))
-        (tmp_path / f"{run_id}.meta.json").write_text(json.dumps(sidecar))
+        (tmp_path / f"{run_id}.audit_artifact_entry.json").write_text(
+            json.dumps(entry), encoding="utf-8"
+        )
+        (tmp_path / f"{run_id}.meta.json").write_text(json.dumps(sidecar), encoding="utf-8")
         import yaml as _yaml
 
         (tmp_path / f"{run_id}.verdict.yaml").write_text(
-            _yaml.safe_dump(truncated_events[0])
+            _yaml.safe_dump(truncated_events[0]), encoding="utf-8"
         )  # placeholder
-        (tmp_path / f"{run_id}.verdict.yaml").write_text(_yaml.safe_dump(verdict))
+        (tmp_path / f"{run_id}.verdict.yaml").write_text(_yaml.safe_dump(verdict), encoding="utf-8")
         (tmp_path / f"{run_id}.jsonl").write_text(
-            "\n".join(json.dumps(e) for e in truncated_events) + "\n"
+            "\n".join(json.dumps(e) for e in truncated_events) + "\n", encoding="utf-8"
         )
         # Run via subprocess so we exercise the actual import path the gate
         # uses (importlib loads parse_audit_verdict by file path).
@@ -1760,6 +1791,7 @@ class TestCLI:
             ],
             capture_output=True,
             text=True,
+            encoding="utf-8",
         )
         assert result.returncode == 1, result.stdout + result.stderr
         assert "L2-3/L2-4" in result.stdout or "stream-shape" in result.stdout, result.stdout
@@ -1793,13 +1825,15 @@ class TestCLI:
             {"type": "turn.started"},
             {"type": "item.started", "item": {"id": "killed_tool", "type": "command_execution"}},
         ]
-        (tmp_path / f"{run_id}.audit_artifact_entry.json").write_text(json.dumps(entry))
-        (tmp_path / f"{run_id}.meta.json").write_text(json.dumps(sidecar))
+        (tmp_path / f"{run_id}.audit_artifact_entry.json").write_text(
+            json.dumps(entry), encoding="utf-8"
+        )
+        (tmp_path / f"{run_id}.meta.json").write_text(json.dumps(sidecar), encoding="utf-8")
         import yaml as _yaml
 
-        (tmp_path / f"{run_id}.verdict.yaml").write_text(_yaml.safe_dump(verdict))
+        (tmp_path / f"{run_id}.verdict.yaml").write_text(_yaml.safe_dump(verdict), encoding="utf-8")
         (tmp_path / f"{run_id}.jsonl").write_text(
-            "\n".join(json.dumps(e) for e in truncated_events) + "\n"
+            "\n".join(json.dumps(e) for e in truncated_events) + "\n", encoding="utf-8"
         )
         main(
             [
@@ -1826,12 +1860,16 @@ class TestCLI:
         entry = make_valid_persisted_entry_minor()
         verdict = make_valid_verdict_file_minor()
         events = make_valid_jsonl_events_no_tool()
-        (tmp_path / f"{run_id}.audit_artifact_entry.json").write_text(json.dumps(entry))
-        (tmp_path / f"{run_id}.meta.json").write_text("[]")  # non-object
+        (tmp_path / f"{run_id}.audit_artifact_entry.json").write_text(
+            json.dumps(entry), encoding="utf-8"
+        )
+        (tmp_path / f"{run_id}.meta.json").write_text("[]", encoding="utf-8")  # non-object
         import yaml as _yaml
 
-        (tmp_path / f"{run_id}.verdict.yaml").write_text(_yaml.safe_dump(verdict))
-        (tmp_path / f"{run_id}.jsonl").write_text("\n".join(json.dumps(e) for e in events) + "\n")
+        (tmp_path / f"{run_id}.verdict.yaml").write_text(_yaml.safe_dump(verdict), encoding="utf-8")
+        (tmp_path / f"{run_id}.jsonl").write_text(
+            "\n".join(json.dumps(e) for e in events) + "\n", encoding="utf-8"
+        )
         rc = main(
             [
                 "--mode",
@@ -1857,10 +1895,14 @@ class TestCLI:
         entry = make_valid_persisted_entry_minor()
         entry["bundle_manifest_sha"] = sidecar["prompt"]["bundle"]["bundle_manifest_sha"]
         events = make_valid_jsonl_events_no_tool()
-        (tmp_path / f"{run_id}.audit_artifact_entry.json").write_text(json.dumps(entry))
-        (tmp_path / f"{run_id}.meta.json").write_text(json.dumps(sidecar))
-        (tmp_path / f"{run_id}.verdict.yaml").write_text("[]")  # non-object
-        (tmp_path / f"{run_id}.jsonl").write_text("\n".join(json.dumps(e) for e in events) + "\n")
+        (tmp_path / f"{run_id}.audit_artifact_entry.json").write_text(
+            json.dumps(entry), encoding="utf-8"
+        )
+        (tmp_path / f"{run_id}.meta.json").write_text(json.dumps(sidecar), encoding="utf-8")
+        (tmp_path / f"{run_id}.verdict.yaml").write_text("[]", encoding="utf-8")  # non-object
+        (tmp_path / f"{run_id}.jsonl").write_text(
+            "\n".join(json.dumps(e) for e in events) + "\n", encoding="utf-8"
+        )
         rc = main(
             [
                 "--mode",
@@ -1909,12 +1951,16 @@ class TestCLI:
                 },
             },
         ]
-        (tmp_path / f"{run_id}.audit_artifact_entry.json").write_text(json.dumps(entry))
-        (tmp_path / f"{run_id}.meta.json").write_text(json.dumps(sidecar))
+        (tmp_path / f"{run_id}.audit_artifact_entry.json").write_text(
+            json.dumps(entry), encoding="utf-8"
+        )
+        (tmp_path / f"{run_id}.meta.json").write_text(json.dumps(sidecar), encoding="utf-8")
         import yaml as _yaml
 
-        (tmp_path / f"{run_id}.verdict.yaml").write_text(_yaml.safe_dump(verdict))
-        (tmp_path / f"{run_id}.jsonl").write_text("\n".join(json.dumps(e) for e in events) + "\n")
+        (tmp_path / f"{run_id}.verdict.yaml").write_text(_yaml.safe_dump(verdict), encoding="utf-8")
+        (tmp_path / f"{run_id}.jsonl").write_text(
+            "\n".join(json.dumps(e) for e in events) + "\n", encoding="utf-8"
+        )
         rc = main(
             [
                 "--mode",
@@ -1947,12 +1993,16 @@ class TestCLI:
         }
         verdict = make_valid_verdict_file_minor()
         events = make_valid_jsonl_events_no_tool()
-        (tmp_path / f"{run_id}.audit_artifact_entry.json").write_text(json.dumps(entry))
-        (tmp_path / f"{run_id}.meta.json").write_text(json.dumps(sidecar))
+        (tmp_path / f"{run_id}.audit_artifact_entry.json").write_text(
+            json.dumps(entry), encoding="utf-8"
+        )
+        (tmp_path / f"{run_id}.meta.json").write_text(json.dumps(sidecar), encoding="utf-8")
         import yaml as _yaml
 
-        (tmp_path / f"{run_id}.verdict.yaml").write_text(_yaml.safe_dump(verdict))
-        (tmp_path / f"{run_id}.jsonl").write_text("\n".join(json.dumps(e) for e in events) + "\n")
+        (tmp_path / f"{run_id}.verdict.yaml").write_text(_yaml.safe_dump(verdict), encoding="utf-8")
+        (tmp_path / f"{run_id}.jsonl").write_text(
+            "\n".join(json.dumps(e) for e in events) + "\n", encoding="utf-8"
+        )
         rc = main(
             [
                 "--mode",
@@ -2009,12 +2059,16 @@ class TestCLI:
             {"type": "turn.started"},
             # codex was killed before final agent_message + turn.completed
         ]
-        (tmp_path / f"{run_id}.audit_artifact_entry.json").write_text(json.dumps(entry))
-        (tmp_path / f"{run_id}.meta.json").write_text(json.dumps(sidecar))
+        (tmp_path / f"{run_id}.audit_artifact_entry.json").write_text(
+            json.dumps(entry), encoding="utf-8"
+        )
+        (tmp_path / f"{run_id}.meta.json").write_text(json.dumps(sidecar), encoding="utf-8")
         import yaml as _yaml
 
-        (tmp_path / f"{run_id}.verdict.yaml").write_text(_yaml.safe_dump(verdict))
-        (tmp_path / f"{run_id}.jsonl").write_text("\n".join(json.dumps(e) for e in events) + "\n")
+        (tmp_path / f"{run_id}.verdict.yaml").write_text(_yaml.safe_dump(verdict), encoding="utf-8")
+        (tmp_path / f"{run_id}.jsonl").write_text(
+            "\n".join(json.dumps(e) for e in events) + "\n", encoding="utf-8"
+        )
         main(
             [
                 "--mode",
@@ -2065,12 +2119,14 @@ class TestCLI:
             + "\n"
             + '{"type":"item.start'  # truncated mid-write, no closing quote/brace
         )
-        (tmp_path / f"{run_id}.audit_artifact_entry.json").write_text(json.dumps(entry))
-        (tmp_path / f"{run_id}.meta.json").write_text(json.dumps(sidecar))
+        (tmp_path / f"{run_id}.audit_artifact_entry.json").write_text(
+            json.dumps(entry), encoding="utf-8"
+        )
+        (tmp_path / f"{run_id}.meta.json").write_text(json.dumps(sidecar), encoding="utf-8")
         import yaml as _yaml
 
-        (tmp_path / f"{run_id}.verdict.yaml").write_text(_yaml.safe_dump(verdict))
-        (tmp_path / f"{run_id}.jsonl").write_text(partial_jsonl)
+        (tmp_path / f"{run_id}.verdict.yaml").write_text(_yaml.safe_dump(verdict), encoding="utf-8")
+        (tmp_path / f"{run_id}.jsonl").write_text(partial_jsonl, encoding="utf-8")
         rc = main(
             [
                 "--mode",
@@ -2106,12 +2162,16 @@ class TestCLI:
         entry["bundle_manifest_sha"] = sidecar["prompt"]["bundle"]["bundle_manifest_sha"]
         verdict = make_valid_verdict_file_minor()
         events = make_valid_jsonl_events_no_tool()
-        (tmp_path / f"{run_id}.audit_artifact_entry.json").write_text(json.dumps(entry))
-        (tmp_path / f"{run_id}.meta.json").write_text(json.dumps(sidecar))
+        (tmp_path / f"{run_id}.audit_artifact_entry.json").write_text(
+            json.dumps(entry), encoding="utf-8"
+        )
+        (tmp_path / f"{run_id}.meta.json").write_text(json.dumps(sidecar), encoding="utf-8")
         import yaml as _yaml
 
-        (tmp_path / f"{run_id}.verdict.yaml").write_text(_yaml.safe_dump(verdict))
-        (tmp_path / f"{run_id}.jsonl").write_text("\n".join(json.dumps(e) for e in events) + "\n")
+        (tmp_path / f"{run_id}.verdict.yaml").write_text(_yaml.safe_dump(verdict), encoding="utf-8")
+        (tmp_path / f"{run_id}.jsonl").write_text(
+            "\n".join(json.dumps(e) for e in events) + "\n", encoding="utf-8"
+        )
         rc = main(
             [
                 "--mode",
@@ -2149,13 +2209,17 @@ class TestCLI:
         # it as an unmerged proposal (matches §4.9 step 9 convention).
         consumed = tmp_path / "consumed"
         consumed.mkdir()
-        (consumed / f"{run_id}.audit_artifact_entry.json").write_text(json.dumps(entry))
+        (consumed / f"{run_id}.audit_artifact_entry.json").write_text(
+            json.dumps(entry), encoding="utf-8"
+        )
         # Companion files in output_dir (where the lint expects them)
-        (tmp_path / f"{run_id}.meta.json").write_text(json.dumps(sidecar))
+        (tmp_path / f"{run_id}.meta.json").write_text(json.dumps(sidecar), encoding="utf-8")
         import yaml as _yaml
 
-        (tmp_path / f"{run_id}.verdict.yaml").write_text(_yaml.safe_dump(verdict))
-        (tmp_path / f"{run_id}.jsonl").write_text("\n".join(json.dumps(e) for e in events) + "\n")
+        (tmp_path / f"{run_id}.verdict.yaml").write_text(_yaml.safe_dump(verdict), encoding="utf-8")
+        (tmp_path / f"{run_id}.jsonl").write_text(
+            "\n".join(json.dumps(e) for e in events) + "\n", encoding="utf-8"
+        )
 
         # Higher-round proposal in output_dir (round 2 > persisted round 1)
         proposal_run_id = "2026-04-30T15-30-00Z-eeee"
@@ -2172,7 +2236,7 @@ class TestCLI:
             "verdict": f"{proposal_run_id}.verdict.yaml",
         }
         (tmp_path / f"{proposal_run_id}.audit_artifact_entry.json").write_text(
-            json.dumps(proposal_entry)
+            json.dumps(proposal_entry), encoding="utf-8"
         )
 
         rc = main(
@@ -2223,6 +2287,7 @@ class TestCLI:
             [str(script_path), "--example-validation-harness"],
             capture_output=True,
             text=True,
+            encoding="utf-8",
         )
         assert result.returncode == 0, (
             f"direct exec returned {result.returncode} (expected 0)\n"
@@ -2242,12 +2307,16 @@ class TestCLI:
         verdict = make_valid_verdict_file_minor()
         verdict["run_id"] = "2026-04-30T15-30-00Z-ffff"  # different run!
         events = make_valid_jsonl_events_no_tool()
-        (tmp_path / f"{run_id}.audit_artifact_entry.json").write_text(json.dumps(entry))
-        (tmp_path / f"{run_id}.meta.json").write_text(json.dumps(sidecar))
+        (tmp_path / f"{run_id}.audit_artifact_entry.json").write_text(
+            json.dumps(entry), encoding="utf-8"
+        )
+        (tmp_path / f"{run_id}.meta.json").write_text(json.dumps(sidecar), encoding="utf-8")
         import yaml as _yaml
 
-        (tmp_path / f"{run_id}.verdict.yaml").write_text(_yaml.safe_dump(verdict))
-        (tmp_path / f"{run_id}.jsonl").write_text("\n".join(json.dumps(e) for e in events) + "\n")
+        (tmp_path / f"{run_id}.verdict.yaml").write_text(_yaml.safe_dump(verdict), encoding="utf-8")
+        (tmp_path / f"{run_id}.jsonl").write_text(
+            "\n".join(json.dumps(e) for e in events) + "\n", encoding="utf-8"
+        )
         rc = main(
             [
                 "--mode",
@@ -2279,12 +2348,16 @@ class TestCLI:
         # Companion files in tmp_path; entry.artifact_paths records them
         # as repo-relative basenames (matching the round-7+8 fixture
         # convention).
-        (tmp_path / f"{run_id}.audit_artifact_entry.json").write_text(json.dumps(entry))
-        (tmp_path / f"{run_id}.meta.json").write_text(json.dumps(sidecar))
+        (tmp_path / f"{run_id}.audit_artifact_entry.json").write_text(
+            json.dumps(entry), encoding="utf-8"
+        )
+        (tmp_path / f"{run_id}.meta.json").write_text(json.dumps(sidecar), encoding="utf-8")
         import yaml as _yaml
 
-        (tmp_path / f"{run_id}.verdict.yaml").write_text(_yaml.safe_dump(verdict))
-        (tmp_path / f"{run_id}.jsonl").write_text("\n".join(json.dumps(e) for e in events) + "\n")
+        (tmp_path / f"{run_id}.verdict.yaml").write_text(_yaml.safe_dump(verdict), encoding="utf-8")
+        (tmp_path / f"{run_id}.jsonl").write_text(
+            "\n".join(json.dumps(e) for e in events) + "\n", encoding="utf-8"
+        )
         # ONLY --entry + --repo-root, no --output-dir, no --sidecar/verdict/jsonl
         rc = main(
             [
@@ -2311,12 +2384,16 @@ class TestCLI:
         entry["bundle_manifest_sha"] = sidecar["prompt"]["bundle"]["bundle_manifest_sha"]
         verdict = make_valid_verdict_file_minor()
         events = make_valid_jsonl_events_no_tool()
-        (tmp_path / f"{run_id}.audit_artifact_entry.json").write_text(json.dumps(entry))
-        (tmp_path / f"{run_id}.meta.json").write_text(json.dumps(sidecar))
+        (tmp_path / f"{run_id}.audit_artifact_entry.json").write_text(
+            json.dumps(entry), encoding="utf-8"
+        )
+        (tmp_path / f"{run_id}.meta.json").write_text(json.dumps(sidecar), encoding="utf-8")
         import yaml as _yaml
 
-        (tmp_path / f"{run_id}.verdict.yaml").write_text(_yaml.safe_dump(verdict))
-        (tmp_path / f"{run_id}.jsonl").write_text("\n".join(json.dumps(e) for e in events) + "\n")
+        (tmp_path / f"{run_id}.verdict.yaml").write_text(_yaml.safe_dump(verdict), encoding="utf-8")
+        (tmp_path / f"{run_id}.jsonl").write_text(
+            "\n".join(json.dumps(e) for e in events) + "\n", encoding="utf-8"
+        )
         rc = main(
             [
                 "--mode",
@@ -2391,6 +2468,7 @@ class TestFixtureSmoke:
             ],
             capture_output=True,
             text=True,
+            encoding="utf-8",
         )
         assert result.returncode == 0, (
             f"positive fixture persisted_minor returned {result.returncode}\n"
@@ -2414,6 +2492,7 @@ class TestFixtureSmoke:
             ],
             capture_output=True,
             text=True,
+            encoding="utf-8",
         )
         assert result.returncode == 0, (
             f"positive fixture proposal_pass returned {result.returncode}\n"
@@ -2437,6 +2516,7 @@ class TestFixtureSmoke:
             ],
             capture_output=True,
             text=True,
+            encoding="utf-8",
         )
         assert result.returncode == 1, result.stdout
         assert "A1" in result.stdout, result.stdout
@@ -2454,6 +2534,7 @@ class TestFixtureSmoke:
             ],
             capture_output=True,
             text=True,
+            encoding="utf-8",
         )
         assert result.returncode == 1, result.stdout
         assert "A7" in result.stdout, result.stdout

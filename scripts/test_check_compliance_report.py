@@ -359,6 +359,7 @@ class TestComplianceReportValidator(unittest.TestCase):
                 capture_output=True,
                 text=True,
                 env=env,
+                encoding="utf-8",
             )
         self.assertEqual(result.returncode, 0, msg=result.stderr)
         self.assertNotIn("protocol_maturity", result.stderr)

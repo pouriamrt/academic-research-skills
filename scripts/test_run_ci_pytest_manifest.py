@@ -34,7 +34,7 @@ def _run(
         cmd.extend(["--root", str(root)])
     if only_id is not None:
         cmd.extend(["--id", only_id])
-    return subprocess.run(cmd, capture_output=True, text=True)
+    return subprocess.run(cmd, capture_output=True, text=True, encoding="utf-8")
 
 
 def _write(path: Path, content: str) -> None:

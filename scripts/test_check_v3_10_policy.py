@@ -382,10 +382,10 @@ def test_laundering_guard_word_boundary_no_false_positive():
 
 
 def test_lint_passes_on_real_files():
-    entry_schema = json.loads(DEFAULT_ENTRY_SCHEMA.read_text())
-    tp_schema = json.loads(DEFAULT_TP_SCHEMA.read_text())
-    orchestrator = DEFAULT_ORCHESTRATOR.read_text()
-    formatter = DEFAULT_FORMATTER.read_text()
+    entry_schema = json.loads(DEFAULT_ENTRY_SCHEMA.read_text(encoding="utf-8"))
+    tp_schema = json.loads(DEFAULT_TP_SCHEMA.read_text(encoding="utf-8"))
+    orchestrator = DEFAULT_ORCHESTRATOR.read_text(encoding="utf-8")
+    formatter = DEFAULT_FORMATTER.read_text(encoding="utf-8")
     assert check_entry_schema(entry_schema) == []
     assert check_terminal_policies_schema(tp_schema) == []
     assert check_finalizer_prompt(orchestrator) == []
@@ -399,12 +399,12 @@ def test_lint_passes_on_real_files():
 
 @pytest.fixture()
 def entry_schema():
-    return json.loads(DEFAULT_ENTRY_SCHEMA.read_text())
+    return json.loads(DEFAULT_ENTRY_SCHEMA.read_text(encoding="utf-8"))
 
 
 @pytest.fixture()
 def tp_schema():
-    return json.loads(DEFAULT_TP_SCHEMA.read_text())
+    return json.loads(DEFAULT_TP_SCHEMA.read_text(encoding="utf-8"))
 
 
 def test_mutation_inferred_provenance_fails(entry_schema):
@@ -441,7 +441,7 @@ def test_mutation_formatter_missing_citation_existence_advisory_fails():
     'Citation Existence Advisories' section header, the lint must fail — otherwise
     an advisory lookup_verified==false (a provably-bogus DOI) has no visibility
     carrier (the marker stays byte-equivalent v3.9.x, so it can't be the carrier)."""
-    formatter = DEFAULT_FORMATTER.read_text()
+    formatter = DEFAULT_FORMATTER.read_text(encoding="utf-8")
     # Rename the section header so _extract_section can't find it.
     mutated = formatter.replace("## Citation Existence Advisory", "## Removed Section")
     fails = check_formatter_prompt(mutated)
@@ -454,7 +454,7 @@ def test_mutation_formatter_advisory_not_in_provenance_summary_fails():
     it ONLY within that subsection — the pre-existing contamination/version-family
     provenance_summary mentions must NOT mask the gap (the codex P2: a whole-prompt
     scan false-passes here)."""
-    formatter = DEFAULT_FORMATTER.read_text()
+    formatter = DEFAULT_FORMATTER.read_text(encoding="utf-8")
     # Rewrite provenance_summary -> some_other_file only inside the CE section.
     header = "## Citation Existence Advisory"
     start = formatter.index(header)
@@ -473,7 +473,7 @@ def test_mutation_formatter_advisory_label_renamed_fails():
     'Citation Existence Advisories' inside the section — while keeping the section
     header and provenance_summary — must still fail, because that label is what a
     consumer greps for in provenance_summary.md."""
-    formatter = DEFAULT_FORMATTER.read_text()
+    formatter = DEFAULT_FORMATTER.read_text(encoding="utf-8")
     header = "## Citation Existence Advisory"
     start = formatter.index(header)
     end = formatter.index("\n## ", start + len(header))

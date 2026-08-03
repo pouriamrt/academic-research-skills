@@ -50,7 +50,7 @@ class TestBenchmarkReport(unittest.TestCase):
     def test_valid_report_passes(self) -> None:
         with TemporaryDirectory() as tmp:
             p = Path(tmp) / "r.json"
-            p.write_text(json.dumps(_valid_report()))
+            p.write_text(json.dumps(_valid_report()), encoding="utf-8")
             result = _run(p)
             self.assertEqual(result.returncode, 0, msg=result.stderr + result.stdout)
 
@@ -59,7 +59,7 @@ class TestBenchmarkReport(unittest.TestCase):
             r = _valid_report()
             del r["human_baseline"]["sample_size"]
             p = Path(tmp) / "r.json"
-            p.write_text(json.dumps(r))
+            p.write_text(json.dumps(r), encoding="utf-8")
             result = _run(p)
             self.assertEqual(result.returncode, 1)
             self.assertIn("sample_size", result.stdout)
@@ -69,7 +69,7 @@ class TestBenchmarkReport(unittest.TestCase):
             r = _valid_report()
             r["human_baseline"]["sample_size"] = 0
             p = Path(tmp) / "r.json"
-            p.write_text(json.dumps(r))
+            p.write_text(json.dumps(r), encoding="utf-8")
             result = _run(p)
             self.assertEqual(result.returncode, 1)
 
@@ -78,7 +78,7 @@ class TestBenchmarkReport(unittest.TestCase):
             r = _valid_report()
             r["caveats"] = []
             p = Path(tmp) / "r.json"
-            p.write_text(json.dumps(r))
+            p.write_text(json.dumps(r), encoding="utf-8")
             result = _run(p)
             self.assertEqual(result.returncode, 1)
             self.assertIn("caveats", result.stdout)
@@ -88,7 +88,7 @@ class TestBenchmarkReport(unittest.TestCase):
             r = _valid_report()
             r["human_baseline"]["author_independence"] = "unspecified"
             p = Path(tmp) / "r.json"
-            p.write_text(json.dumps(r))
+            p.write_text(json.dumps(r), encoding="utf-8")
             result = _run(p)
             self.assertEqual(result.returncode, 1)
 
@@ -97,7 +97,7 @@ class TestBenchmarkReport(unittest.TestCase):
             r = _valid_report()
             r["metrics"]["scoring_independence"] = "self-scored"
             p = Path(tmp) / "r.json"
-            p.write_text(json.dumps(r))
+            p.write_text(json.dumps(r), encoding="utf-8")
             result = _run(p)
             # Schema permits; script emits warning to stderr, exits 0.
             self.assertEqual(result.returncode, 0)
@@ -108,7 +108,7 @@ class TestBenchmarkReport(unittest.TestCase):
             r = _valid_report()
             r["human_baseline"]["tools_allowed"] = []
             p = Path(tmp) / "r.json"
-            p.write_text(json.dumps(r))
+            p.write_text(json.dumps(r), encoding="utf-8")
             result = _run(p)
             self.assertEqual(result.returncode, 1)
             self.assertIn("tools_allowed", result.stdout)

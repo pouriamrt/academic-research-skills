@@ -55,6 +55,7 @@ def test_cli_reports_metrics() -> None:
         capture_output=True,
         text=True,
         check=False,
+        encoding="utf-8",
     )
     assert result.returncode == 0, result.stderr
     assert "fnr=0.000" in result.stdout

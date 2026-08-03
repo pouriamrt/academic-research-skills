@@ -59,7 +59,7 @@ def _run_jq_raw(filter_path: Path, json_text: str, *, raw: bool = False, exit_te
     if raw:
         args.append("-r")
     args += ["-f", str(filter_path)]
-    proc = subprocess.run(args, input=json_text, capture_output=True, text=True)
+    proc = subprocess.run(args, input=json_text, capture_output=True, text=True, encoding="utf-8")
     return proc.returncode, proc.stdout.strip()
 
 
@@ -71,7 +71,9 @@ def _run_jq(filter_path: Path, payload: dict, *, raw: bool = False, exit_test: b
 def test_jq_version_diagnostic():
     """Print the jq version for CI diagnostics; assert jq is present (no exact-version pin)."""
     jq = _require_jq()
-    out = subprocess.run([jq, "--version"], capture_output=True, text=True).stdout.strip()
+    out = subprocess.run(
+        [jq, "--version"], capture_output=True, text=True, encoding="utf-8"
+    ).stdout.strip()
     print(f"jq under test: {out}")
     assert out.startswith("jq")
 
@@ -845,7 +847,11 @@ def test_mutation_accept_all_guard_would_be_caught():
     # Real OpenAI guard rejects from-memory; accept-all must instead accept it.
     rc_real, _ = _run_jq(OPENAI_GUARD, OPENAI_FROM_MEMORY, exit_test=True)
     rc_mut = subprocess.run(
-        [jq, "-e", "true"], input=json.dumps(OPENAI_FROM_MEMORY), capture_output=True, text=True
+        [jq, "-e", "true"],
+        input=json.dumps(OPENAI_FROM_MEMORY),
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
     ).returncode
     # The real guard rejects (non-0) and the accept-all mutant accepts (0): the fixture
     # discriminates a working guard from a broken one (these two facts imply rc_real != rc_mut).
@@ -859,6 +865,7 @@ def test_mutation_accept_all_guard_would_be_caught():
         input=json.dumps(GEMINI_SEARCH_NO_SUPPORT),
         capture_output=True,
         text=True,
+        encoding="utf-8",
     ).returncode
     assert rc_real_g != 0
     assert rc_mut_g == 0
@@ -880,6 +887,7 @@ def test_mutation_naive_sources_would_leak_negative_index():
         input=json.dumps(GEMINI_NEGATIVE_INDEX),
         capture_output=True,
         text=True,
+        encoding="utf-8",
     ).stdout.strip()
     # The naive filter fabricates the last chunk's URL from index -1 ...
     assert naive_out == "https://last.org"

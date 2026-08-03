@@ -22,13 +22,14 @@ def _run_audit(
     report_reference_date: str = "2026-05-18",
 ) -> dict:
     """Helper: write inputs, run audit, return parsed output."""
-    (tmp_path / "draft.md").write_text(draft)
-    (tmp_path / "timeline.yaml").write_text(yaml.safe_dump(timeline))
+    (tmp_path / "draft.md").write_text(draft, encoding="utf-8")
+    (tmp_path / "timeline.yaml").write_text(yaml.safe_dump(timeline), encoding="utf-8")
     (tmp_path / "citation_provenance.yaml").write_text(
         yaml.safe_dump(
             citation_provenance
             or {"schema_version": "1.0", "audit_run_id": "2026-05-18T12:34:56Z-a1b2", "entries": []}
-        )
+        ),
+        encoding="utf-8",
     )
     out = tmp_path / "temporal_audit_results.yaml"
     result = subprocess.run(
@@ -50,9 +51,10 @@ def _run_audit(
         ],
         capture_output=True,
         text=True,
+        encoding="utf-8",
     )
     assert result.returncode == 0, f"audit failed: stderr={result.stderr!r}"
-    return yaml.safe_load(out.read_text())
+    return yaml.safe_load(out.read_text(encoding="utf-8"))
 
 
 def test_audit_scaffold_returns_empty_findings_on_empty_draft(tmp_path):
@@ -276,10 +278,13 @@ def test_positive_fixture_golden(tmp_path, fixture_name):
         ],
         capture_output=True,
         text=True,
+        encoding="utf-8",
     )
     assert result.returncode == 0, f"stderr={result.stderr}"
-    actual = yaml.safe_load(out.read_text())
-    expected = yaml.safe_load((fixture_dir / "expected_temporal_audit_results.yaml").read_text())
+    actual = yaml.safe_load(out.read_text(encoding="utf-8"))
+    expected = yaml.safe_load(
+        (fixture_dir / "expected_temporal_audit_results.yaml").read_text(encoding="utf-8")
+    )
     assert actual == expected, f"diff for {fixture_name}:\nactual={actual}\nexpected={expected}"
 
 
@@ -316,10 +321,13 @@ def test_negative_fixture_golden(tmp_path, fixture_name):
         ],
         capture_output=True,
         text=True,
+        encoding="utf-8",
     )
     assert result.returncode == 0, f"audit failed: stderr={result.stderr!r}"
-    actual = yaml.safe_load(out.read_text())
-    expected = yaml.safe_load((fixture_dir / "expected_temporal_audit_results.yaml").read_text())
+    actual = yaml.safe_load(out.read_text(encoding="utf-8"))
+    expected = yaml.safe_load(
+        (fixture_dir / "expected_temporal_audit_results.yaml").read_text(encoding="utf-8")
+    )
     assert actual == expected, f"diff for {fixture_name}: actual={actual}\nexpected={expected}"
     # Optional: assert no Mode N findings for the matching mode
     mode_n = int(fixture_name.split("_")[1])
@@ -333,14 +341,17 @@ def test_negative_fixture_golden(tmp_path, fixture_name):
 
 def test_audit_writes_markdown_report(tmp_path):
     """Audit must write phase4_composition/temporal_audit.md alongside the YAML."""
-    (tmp_path / "draft.md").write_text("Currently, the framework is under review.\n")
+    (tmp_path / "draft.md").write_text(
+        "Currently, the framework is under review.\n", encoding="utf-8"
+    )
     (tmp_path / "timeline.yaml").write_text(
-        yaml.safe_dump({"schema_version": "1.0", "sources": [], "events": []})
+        yaml.safe_dump({"schema_version": "1.0", "sources": [], "events": []}), encoding="utf-8"
     )
     (tmp_path / "citation_provenance.yaml").write_text(
         yaml.safe_dump(
             {"schema_version": "1.0", "audit_run_id": "2026-05-18T12:34:56Z-a1b2", "entries": []}
-        )
+        ),
+        encoding="utf-8",
     )
     out_yaml = tmp_path / "temporal_audit_results.yaml"
     out_md = tmp_path / "temporal_audit.md"
@@ -366,11 +377,12 @@ def test_audit_writes_markdown_report(tmp_path):
         ],
         capture_output=True,
         text=True,
+        encoding="utf-8",
     )
     assert result.returncode == 0, f"stderr={result.stderr}"
     assert out_yaml.exists()
     assert out_md.exists()
-    md = out_md.read_text()
+    md = out_md.read_text(encoding="utf-8")
     assert "# Temporal Audit Results" in md
     assert "TEMPORAL-DEICTIC" in md
 
@@ -398,10 +410,13 @@ def test_metadata_missing_fixture(tmp_path):
         ],
         capture_output=True,
         text=True,
+        encoding="utf-8",
     )
     assert result.returncode == 0
-    actual = yaml.safe_load(out.read_text())
-    expected = yaml.safe_load((fixture_dir / "expected_temporal_audit_results.yaml").read_text())
+    actual = yaml.safe_load(out.read_text(encoding="utf-8"))
+    expected = yaml.safe_load(
+        (fixture_dir / "expected_temporal_audit_results.yaml").read_text(encoding="utf-8")
+    )
     assert actual == expected
     # Spec contract: METADATA-MISSING for the ref
     metadata_missing = [
@@ -441,6 +456,7 @@ def test_freeze_regression_byte_identical_across_dates(tmp_path):
             ],
             capture_output=True,
             text=True,
+            encoding="utf-8",
         )
         assert result.returncode == 0, f"stderr={result.stderr}"
     assert out1.read_bytes() == out2.read_bytes(), "byte-identical regression failed"

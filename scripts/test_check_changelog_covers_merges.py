@@ -251,11 +251,12 @@ def _git(repo: Path, *args: str) -> str:
         text=True,
         check=True,
         env=env,
+        encoding="utf-8",
     ).stdout.strip()
 
 
 def _commit(repo: Path, subject: str) -> None:
-    (repo / "f.txt").write_text(subject)
+    (repo / "f.txt").write_text(subject, encoding="utf-8")
     _git(repo, "add", "f.txt")
     _git(repo, "commit", "-m", subject)
 
@@ -364,7 +365,7 @@ class CliEndToEndTest(unittest.TestCase):
         subprocess.run(
             ["git", "-C", str(repo), "config", "tag.gpgSign", "false"], check=True, env=env
         )
-        (repo / "CHANGELOG.md").write_text(changelog_body)
+        (repo / "CHANGELOG.md").write_text(changelog_body, encoding="utf-8")
         subprocess.run(["git", "-C", str(repo), "add", "."], check=True, env=env)
         subprocess.run(
             ["git", "-C", str(repo), "commit", "-q", "-m", "base (#1)"], check=True, env=env
@@ -373,7 +374,7 @@ class CliEndToEndTest(unittest.TestCase):
         return repo, env
 
     def _add_commit(self, repo, env, subject):
-        (repo / "f.txt").write_text(subject)
+        (repo / "f.txt").write_text(subject, encoding="utf-8")
         subprocess.run(["git", "-C", str(repo), "add", "f.txt"], check=True, env=env)
         subprocess.run(["git", "-C", str(repo), "commit", "-q", "-m", subject], check=True, env=env)
 
@@ -407,7 +408,7 @@ class CliEndToEndTest(unittest.TestCase):
             env = os.environ.copy()
             env.update(_GIT_ENV)
             subprocess.run(["git", "-C", str(repo), "init", "-q"], check=True, env=env)
-            (repo / "CHANGELOG.md").write_text("## [Unreleased]\n- x (#1)\n")
+            (repo / "CHANGELOG.md").write_text("## [Unreleased]\n- x (#1)\n", encoding="utf-8")
             subprocess.run(["git", "-C", str(repo), "add", "."], check=True, env=env)
             subprocess.run(
                 ["git", "-C", str(repo), "commit", "-q", "-m", "base (#1)"], check=True, env=env
@@ -426,7 +427,7 @@ class CliEndToEndTest(unittest.TestCase):
             env = os.environ.copy()
             env.update(_GIT_ENV)
             subprocess.run(["git", "-C", str(repo), "init", "-q"], check=True, env=env)
-            (repo / "CHANGELOG.md").write_text("## [Unreleased]\n- x (#1)\n")
+            (repo / "CHANGELOG.md").write_text("## [Unreleased]\n- x (#1)\n", encoding="utf-8")
             subprocess.run(["git", "-C", str(repo), "add", "."], check=True, env=env)
             subprocess.run(
                 ["git", "-C", str(repo), "commit", "-q", "-m", "base (#1)"], check=True, env=env
@@ -446,7 +447,7 @@ class CliEndToEndTest(unittest.TestCase):
             subprocess.run(
                 ["git", "-C", str(repo), "config", "tag.gpgSign", "false"], check=True, env=env
             )
-            (repo / "f.txt").write_text("x")
+            (repo / "f.txt").write_text("x", encoding="utf-8")
             subprocess.run(["git", "-C", str(repo), "add", "."], check=True, env=env)
             subprocess.run(
                 ["git", "-C", str(repo), "commit", "-q", "-m", "base (#1)"], check=True, env=env
@@ -539,6 +540,7 @@ class CliEndToEndTest(unittest.TestCase):
                 env=env,
                 capture_output=True,
                 text=True,
+                encoding="utf-8",
             ).stdout.strip()
             self._add_commit(repo, env, "feat: uncovered in-flight work")
             proc = run_script(SCRIPT, "--repo", str(repo), cwd=repo)

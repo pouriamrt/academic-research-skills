@@ -34,6 +34,7 @@ def run_script(
         text=True,
         cwd=cwd,
         env=env,
+        encoding="utf-8",
     )
 
 

@@ -1423,25 +1423,33 @@ def test_format_12_report_without_patch_digest_is_incomplete(tmp_path, capsys):
     s = scenario_accept()
     s["reports"][0]["patch_digest"] = None  # blocks the setdefault fill
     argv, _m = emit(tmp_path, s)
-    payload = json.loads((tmp_path / "apply-report-0.json").read_text())
+    payload = json.loads((tmp_path / "apply-report-0.json").read_text(encoding="utf-8"))
     del payload["patch_digest"]
-    (tmp_path / "apply-report-0.json").write_text(json.dumps(payload, indent=2))
+    (tmp_path / "apply-report-0.json").write_text(json.dumps(payload, indent=2), encoding="utf-8")
     # re-sync the manifest hash for the rewritten report so ONLY the missing
     # digest fires (not the file-hash binding)
-    manifest = json.loads((tmp_path / "manifest.json").read_text())
+    manifest = json.loads((tmp_path / "manifest.json").read_text(encoding="utf-8"))
     manifest["artifacts"]["apply_reports"]["items"][0]["sha256"] = hashlib.sha256(
         (tmp_path / "apply-report-0.json").read_bytes()
     ).hexdigest()
-    (tmp_path / "manifest.json").write_text(json.dumps(manifest, ensure_ascii=False, indent=2))
-    pre = json.loads((tmp_path / "precommitment.json").read_text())
+    (tmp_path / "manifest.json").write_text(
+        json.dumps(manifest, ensure_ascii=False, indent=2), encoding="utf-8"
+    )
+    pre = json.loads((tmp_path / "precommitment.json").read_text(encoding="utf-8"))
     pre["input_manifest_hash"] = crs.canonical_hash(manifest)
-    (tmp_path / "precommitment.json").write_text(json.dumps(pre, ensure_ascii=False, indent=2))
-    vr = json.loads((tmp_path / "verdict_record.json").read_text())
+    (tmp_path / "precommitment.json").write_text(
+        json.dumps(pre, ensure_ascii=False, indent=2), encoding="utf-8"
+    )
+    vr = json.loads((tmp_path / "verdict_record.json").read_text(encoding="utf-8"))
     vr["precommitment_hash"] = crs.canonical_hash(pre)
-    (tmp_path / "verdict_record.json").write_text(json.dumps(vr, ensure_ascii=False, indent=2))
-    tr = json.loads((tmp_path / "traceability.json").read_text())
+    (tmp_path / "verdict_record.json").write_text(
+        json.dumps(vr, ensure_ascii=False, indent=2), encoding="utf-8"
+    )
+    tr = json.loads((tmp_path / "traceability.json").read_text(encoding="utf-8"))
     tr["verdict_record_hash"] = crs.canonical_hash(vr)
-    (tmp_path / "traceability.json").write_text(json.dumps(tr, ensure_ascii=False, indent=2))
+    (tmp_path / "traceability.json").write_text(
+        json.dumps(tr, ensure_ascii=False, indent=2), encoding="utf-8"
+    )
     code = crs.run(argv)
     out = capsys.readouterr().out
     assert code == crs.EXIT_INVALID
@@ -1496,9 +1504,11 @@ def test_letter_declared_but_not_provided_is_incomplete(tmp_path, capsys):
 def test_stale_input_manifest_hash(tmp_path, capsys):
     s = scenario_accept()
     argv, _m = emit(tmp_path, s)
-    pre = json.loads((tmp_path / "precommitment.json").read_text())
+    pre = json.loads((tmp_path / "precommitment.json").read_text(encoding="utf-8"))
     pre["input_manifest_hash"] = "f" * 64
-    (tmp_path / "precommitment.json").write_text(json.dumps(pre, ensure_ascii=False))
+    (tmp_path / "precommitment.json").write_text(
+        json.dumps(pre, ensure_ascii=False), encoding="utf-8"
+    )
     code = crs.run(argv)
     out = capsys.readouterr().out
     assert code == crs.EXIT_INVALID
@@ -1508,9 +1518,11 @@ def test_stale_input_manifest_hash(tmp_path, capsys):
 def test_stale_precommitment_hash(tmp_path, capsys):
     s = scenario_accept()
     argv, _m = emit(tmp_path, s)
-    vr = json.loads((tmp_path / "verdict_record.json").read_text())
+    vr = json.loads((tmp_path / "verdict_record.json").read_text(encoding="utf-8"))
     vr["precommitment_hash"] = "f" * 64
-    (tmp_path / "verdict_record.json").write_text(json.dumps(vr, ensure_ascii=False))
+    (tmp_path / "verdict_record.json").write_text(
+        json.dumps(vr, ensure_ascii=False), encoding="utf-8"
+    )
     code = crs.run(argv)
     out = capsys.readouterr().out
     assert code == crs.EXIT_INVALID
@@ -1520,9 +1532,11 @@ def test_stale_precommitment_hash(tmp_path, capsys):
 def test_stale_verdict_record_hash(tmp_path, capsys):
     s = scenario_accept()
     argv, _m = emit(tmp_path, s)
-    tr = json.loads((tmp_path / "traceability.json").read_text())
+    tr = json.loads((tmp_path / "traceability.json").read_text(encoding="utf-8"))
     tr["verdict_record_hash"] = "f" * 64
-    (tmp_path / "traceability.json").write_text(json.dumps(tr, ensure_ascii=False))
+    (tmp_path / "traceability.json").write_text(
+        json.dumps(tr, ensure_ascii=False), encoding="utf-8"
+    )
     code = crs.run(argv)
     out = capsys.readouterr().out
     assert code == crs.EXIT_INVALID

@@ -45,6 +45,7 @@ def _run_lint() -> subprocess.CompletedProcess[str]:
         capture_output=True,
         text=True,
         check=False,
+        encoding="utf-8",
     )
 
 

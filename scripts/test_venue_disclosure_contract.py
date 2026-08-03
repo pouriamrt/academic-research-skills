@@ -203,10 +203,6 @@ def _copy_contract_tree(tmp_path: Path) -> Path:
         "commands/ars-disclosure.md",
         "academic-paper/references/mode_selection_guide.md",
         "README.md",
-        "README.ja-JP.md",
-        "README.ko-KR.md",
-        "README.zh-CN.md",
-        "README.zh-TW.md",
     )
     for rel in rels:
         dst = tmp_path / rel
@@ -231,6 +227,7 @@ def test_existing_15_venue_structural_checker_passes() -> None:
         cwd=REPO_ROOT,
         capture_output=True,
         text=True,
+        encoding="utf-8",
     )
     assert result.returncode == 0, result.stderr
 
@@ -254,6 +251,7 @@ def test_existing_structural_checker_rejects_mutations(tmp_path: Path, mutation:
         [sys.executable, str(POLICY_CHECKER), str(policies)],
         capture_output=True,
         text=True,
+        encoding="utf-8",
     )
     assert result.returncode == 1
 

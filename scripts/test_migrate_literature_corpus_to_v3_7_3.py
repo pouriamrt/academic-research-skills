@@ -82,10 +82,10 @@ class SinglePassportMigrationTest(unittest.TestCase):
     def test_dry_run_writes_no_file(self) -> None:
         with tempfile.TemporaryDirectory() as td:
             p = Path(td) / "passport.yaml"
-            p.write_text(SAMPLE_PASSPORT_YAML)
-            before = p.read_text()
+            p.write_text(SAMPLE_PASSPORT_YAML, encoding="utf-8")
+            before = p.read_text(encoding="utf-8")
             report = mig.migrate_passport(p, ss_client=_make_ss_client(), dry_run=True)
-            after = p.read_text()
+            after = p.read_text(encoding="utf-8")
             self.assertEqual(before, after, "dry-run must not write")
             self.assertEqual(report["patched"], 3)
             self.assertEqual(report["manual_unmatched_omitted"], 1)
@@ -97,7 +97,7 @@ class SinglePassportMigrationTest(unittest.TestCase):
         omits the unmatched field."""
         with tempfile.TemporaryDirectory() as td:
             p = Path(td) / "passport.yaml"
-            p.write_text(SAMPLE_PASSPORT_YAML)
+            p.write_text(SAMPLE_PASSPORT_YAML, encoding="utf-8")
             report = mig.migrate_passport(
                 p,
                 ss_client=_make_ss_client(unmatched_for_keys=["chen2024ai"]),
@@ -132,11 +132,11 @@ class SinglePassportMigrationTest(unittest.TestCase):
         re-write, or update the backfilled_at timestamp."""
         with tempfile.TemporaryDirectory() as td:
             p = Path(td) / "passport.yaml"
-            p.write_text(SAMPLE_PASSPORT_YAML)
+            p.write_text(SAMPLE_PASSPORT_YAML, encoding="utf-8")
             mig.migrate_passport(p, ss_client=_make_ss_client(), dry_run=False)
-            after_first = p.read_text()
+            after_first = p.read_text(encoding="utf-8")
             report = mig.migrate_passport(p, ss_client=_make_ss_client(), dry_run=False)
-            after_second = p.read_text()
+            after_second = p.read_text(encoding="utf-8")
             self.assertEqual(report["patched"], 0)
             self.assertEqual(report["skipped_already_migrated"], 3)
             self.assertEqual(
@@ -165,7 +165,7 @@ literature_corpus:
 """
         with tempfile.TemporaryDirectory() as td:
             p = Path(td) / "passport.yaml"
-            p.write_text(yaml_no_venue)
+            p.write_text(yaml_no_venue, encoding="utf-8")
             report = mig.migrate_passport(p, ss_client=_make_ss_client(), dry_run=False)
             self.assertEqual(report["patched"], 1)
             self.assertEqual(report["skipped_insufficient_data"], 0)
@@ -198,7 +198,7 @@ literature_corpus:
 """
         with tempfile.TemporaryDirectory() as td:
             p = Path(td) / "passport.yaml"
-            p.write_text(partial_yaml)
+            p.write_text(partial_yaml, encoding="utf-8")
             report = mig.migrate_passport(
                 p,
                 ss_client=_make_ss_client(unmatched_for_keys=["chen2024ai"]),
@@ -241,7 +241,7 @@ literature_corpus:
 """
         with tempfile.TemporaryDirectory() as td:
             p = Path(td) / "passport.yaml"
-            p.write_text(ingest_partial_yaml)
+            p.write_text(ingest_partial_yaml, encoding="utf-8")
             mig.migrate_passport(
                 p,
                 ss_client=_make_ss_client(unmatched_for_keys=["chen2024ai"]),
@@ -279,7 +279,7 @@ literature_corpus:
 """
         with tempfile.TemporaryDirectory() as td:
             p = Path(td) / "passport.yaml"
-            p.write_text(partial_with_ts)
+            p.write_text(partial_with_ts, encoding="utf-8")
             mig.migrate_passport(p, ss_client=_make_ss_client(), dry_run=False)
             doc = mig.load_passport(p)
             self.assertEqual(
@@ -295,7 +295,7 @@ literature_corpus:
 
         with tempfile.TemporaryDirectory() as td:
             p = Path(td) / "passport.yaml"
-            p.write_text(SAMPLE_PASSPORT_YAML)
+            p.write_text(SAMPLE_PASSPORT_YAML, encoding="utf-8")
             buf = io.StringIO()
             with redirect_stderr(buf):
                 mig.migrate_passport(
@@ -338,15 +338,15 @@ literature_corpus:
 """
         with tempfile.TemporaryDirectory() as td:
             p = Path(td) / "passport.yaml"
-            p.write_text(partial_yaml)
-            before = p.read_text()
+            p.write_text(partial_yaml, encoding="utf-8")
+            before = p.read_text(encoding="utf-8")
             # Simulate API still degraded — SS lookup raises
             from contamination_signals import SemanticScholarUnavailable
 
             bad_client = MagicMock()
             bad_client.lookup.side_effect = SemanticScholarUnavailable("still down")
             report = mig.migrate_passport(p, ss_client=bad_client, dry_run=False)
-            after = p.read_text()
+            after = p.read_text(encoding="utf-8")
             self.assertEqual(report["patched"], 1)
             self.assertNotEqual(before, after, "first degraded run records the omission")
             self.assertIn("contamination_signal_omissions", after)
@@ -354,7 +354,7 @@ literature_corpus:
             # Re-run with the API still down: omission already recorded,
             # nothing new — no re-patch, byte-identical passport.
             report2 = mig.migrate_passport(p, ss_client=bad_client, dry_run=False)
-            after2 = p.read_text()
+            after2 = p.read_text(encoding="utf-8")
             self.assertEqual(report2["patched"], 0)
             self.assertEqual(report2["skipped_already_migrated"], 1)
             self.assertEqual(after, after2, "no rewrite when nothing was added")
@@ -385,12 +385,12 @@ literature_corpus:
 """
         with tempfile.TemporaryDirectory() as td:
             p = Path(td) / "passport.yaml"
-            p.write_text(partial_yaml)
+            p.write_text(partial_yaml, encoding="utf-8")
             good_client = MagicMock()
             good_client.lookup.return_value = {"matched": True, "paperId": "x"}
             report = mig.migrate_passport(p, ss_client=good_client, dry_run=False)
             self.assertEqual(report["patched"], 1)
-            after = p.read_text()
+            after = p.read_text(encoding="utf-8")
             self.assertIn("semantic_scholar_unmatched: false", after)
             self.assertNotIn(
                 "contamination_signal_omissions",
@@ -421,7 +421,7 @@ literature_corpus:
 """
         with tempfile.TemporaryDirectory() as td:
             p = Path(td) / "passport.yaml"
-            p.write_text(manual_yaml)
+            p.write_text(manual_yaml, encoding="utf-8")
             report = mig.migrate_passport(p, ss_client=_make_ss_client(), dry_run=False)
             self.assertEqual(report["patched"], 0)
             self.assertEqual(report["skipped_already_migrated"], 1)
@@ -444,7 +444,7 @@ literature_corpus:
 """
         with tempfile.TemporaryDirectory() as td:
             p = Path(td) / "passport.yaml"
-            p.write_text(yaml_no_year)
+            p.write_text(yaml_no_year, encoding="utf-8")
             # Note: schema-invalid passport — `year` is required. This test
             # exercises the migration tool's defensive behavior, not the
             # schema validator. Real corpora won't reach here, but if they
@@ -460,7 +460,7 @@ verification_status: VERIFIED
 """
         with tempfile.TemporaryDirectory() as td:
             p = Path(td) / "passport.yaml"
-            p.write_text(yaml_no_corpus)
+            p.write_text(yaml_no_corpus, encoding="utf-8")
             report = mig.migrate_passport(p, ss_client=_make_ss_client(), dry_run=False)
             self.assertEqual(report["processed"], 0)
             self.assertEqual(report["patched"], 0)
@@ -473,9 +473,9 @@ class DirectoryScanTest(unittest.TestCase):
     def test_scan_dir_finds_yaml_files(self) -> None:
         with tempfile.TemporaryDirectory() as td:
             d = Path(td)
-            (d / "passport_a.yaml").write_text(SAMPLE_PASSPORT_YAML)
-            (d / "passport_b.yaml").write_text(SAMPLE_PASSPORT_YAML)
-            (d / "notes.txt").write_text("ignore me")
+            (d / "passport_a.yaml").write_text(SAMPLE_PASSPORT_YAML, encoding="utf-8")
+            (d / "passport_b.yaml").write_text(SAMPLE_PASSPORT_YAML, encoding="utf-8")
+            (d / "notes.txt").write_text("ignore me", encoding="utf-8")
             paths = sorted(mig.discover_passports(d))
             self.assertEqual(
                 [p.name for p in paths],
@@ -487,10 +487,10 @@ class DirectoryScanTest(unittest.TestCase):
         A passport in a subdir is intentionally NOT discovered."""
         with tempfile.TemporaryDirectory() as td:
             d = Path(td)
-            (d / "passport.yaml").write_text(SAMPLE_PASSPORT_YAML)
+            (d / "passport.yaml").write_text(SAMPLE_PASSPORT_YAML, encoding="utf-8")
             sub = d / "subdir"
             sub.mkdir()
-            (sub / "nested.yaml").write_text(SAMPLE_PASSPORT_YAML)
+            (sub / "nested.yaml").write_text(SAMPLE_PASSPORT_YAML, encoding="utf-8")
             paths = sorted(mig.discover_passports(d))
             self.assertEqual([p.name for p in paths], ["passport.yaml"])
 
@@ -498,7 +498,7 @@ class DirectoryScanTest(unittest.TestCase):
         with tempfile.TemporaryDirectory() as td:
             d = Path(td)
             for name in ("a.yaml", "b.yaml"):
-                (d / name).write_text(SAMPLE_PASSPORT_YAML)
+                (d / name).write_text(SAMPLE_PASSPORT_YAML, encoding="utf-8")
             client = _make_ss_client(unmatched_for_keys=["chen2024ai"])
             agg = mig.migrate_directory(d, ss_client=client, dry_run=False)
             self.assertEqual(agg["files_processed"], 2)
@@ -526,9 +526,9 @@ literature_corpus:
 """
         with tempfile.TemporaryDirectory() as td:
             p = Path(td) / "passport.yaml"
-            p.write_text(yaml_with_comments)
+            p.write_text(yaml_with_comments, encoding="utf-8")
             mig.migrate_passport(p, ss_client=_make_ss_client(), dry_run=False)
-            after = p.read_text()
+            after = p.read_text(encoding="utf-8")
             self.assertIn("# Top-level comment", after)
             self.assertIn("# inline note about chen", after)
 

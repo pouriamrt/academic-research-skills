@@ -188,7 +188,7 @@ def _read_prompt() -> str:
     Module-level cache: the orchestrator prompt is treated as immutable
     by every test in this file (no mutation, no fixture write). Step 8
     /simplify advisory P2-1 closure — 10 test methods each calling
-    `read_text()` produced 10 disk reads of the same ~600-line file per
+    `read_text(encoding="utf-8")` produced 10 disk reads of the same ~600-line file per
     `python -m unittest` invocation. The cache collapses to 1× IO with
     zero behavioral change.
 

@@ -415,6 +415,7 @@ class CliTest(unittest.TestCase):
             capture_output=True,
             text=True,
             timeout=60,
+            encoding="utf-8",
         )
 
     def test_cli_stdout_json_and_exit_zero_on_verdict(self):
@@ -433,7 +434,7 @@ class CliTest(unittest.TestCase):
         out = Path(self.tmp) / "doc.read_integrity.json"
         proc = self._cli(str(p), "--output", str(out))
         self.assertEqual(proc.returncode, 0, proc.stderr)
-        self.assertEqual(json.loads(out.read_text())["verdict"], "PASS")
+        self.assertEqual(json.loads(out.read_text(encoding="utf-8"))["verdict"], "PASS")
 
     def test_cli_no_args_usage_error(self):
         proc = self._cli()

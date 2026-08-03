@@ -259,10 +259,18 @@ def _v3_6_7_manifest_unchanged_in_pr() -> tuple[bool, str | None]:
     #
     # Read from disk to preserve PR-mutation detection, then normalize
     # CRLF→LF so Windows core.autocrlf=true checkouts don't false-positive
-    # against the LF-normalized git blob from _read_blob_at_commit.
+    # against the git blob from _read_blob_at_commit.
+    #
+    # BOTH sides are normalized. Normalizing only the disk side assumes the blob
+    # is always LF, which is false for any file committed WITH CRLF — the two
+    # then never compare equal and the guard reports a permanent history-shape
+    # anomaly on a tree nobody touched. A line-ending-only delta on a JSON
+    # manifest is semantically null, so this cannot hide a self-baseline change.
     head_path = REPO_ROOT / rel
     head_bytes = head_path.read_bytes().replace(b"\r\n", b"\n") if head_path.exists() else None
     base_bytes, err = _read_blob_at_commit(mb, rel)
+    if base_bytes is not None:
+        base_bytes = base_bytes.replace(b"\r\n", b"\n")
     if err is not None:
         return False, (
             "[ARS-V3.7.1 LINT ERROR: anti-self-baseline guard tripped: "

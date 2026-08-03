@@ -82,12 +82,16 @@ def _valid_skill_md_text() -> str:
 
 def _make_repo(root: Path) -> None:
     (root / "shared").mkdir(parents=True)
-    (root / "shared" / "collaboration_depth_rubric.md").write_text(_valid_rubric_text())
+    (root / "shared" / "collaboration_depth_rubric.md").write_text(
+        _valid_rubric_text(), encoding="utf-8"
+    )
     agents = root / "academic-pipeline" / "agents"
     agents.mkdir(parents=True)
-    (agents / "collaboration_depth_agent.md").write_text(_valid_agent_text())
-    (agents / "pipeline_orchestrator_agent.md").write_text(_valid_orchestrator_text())
-    (root / "academic-pipeline" / "SKILL.md").write_text(_valid_skill_md_text())
+    (agents / "collaboration_depth_agent.md").write_text(_valid_agent_text(), encoding="utf-8")
+    (agents / "pipeline_orchestrator_agent.md").write_text(
+        _valid_orchestrator_text(), encoding="utf-8"
+    )
+    (root / "academic-pipeline" / "SKILL.md").write_text(_valid_skill_md_text(), encoding="utf-8")
 
 
 class TestCollaborationDepthRubric(unittest.TestCase):
@@ -112,7 +116,9 @@ class TestCollaborationDepthRubric(unittest.TestCase):
             root = Path(tmp)
             _make_repo(root)
             path = root / "shared" / "collaboration_depth_rubric.md"
-            path.write_text(_valid_rubric_text().replace("10.1186/s41239-026-00585-x", ""))
+            path.write_text(
+                _valid_rubric_text().replace("10.1186/s41239-026-00585-x", ""), encoding="utf-8"
+            )
             r = _run(root)
             self.assertEqual(r.returncode, 1)
             self.assertIn("Wang & Zhang", r.stdout)
@@ -122,7 +128,10 @@ class TestCollaborationDepthRubric(unittest.TestCase):
             root = Path(tmp)
             _make_repo(root)
             path = root / "shared" / "collaboration_depth_rubric.md"
-            path.write_text(_valid_rubric_text().replace('rubric_version: "1.0"', "unused: true"))
+            path.write_text(
+                _valid_rubric_text().replace('rubric_version: "1.0"', "unused: true"),
+                encoding="utf-8",
+            )
             r = _run(root)
             self.assertEqual(r.returncode, 1)
             self.assertIn("rubric_version", r.stdout)
@@ -133,7 +142,8 @@ class TestCollaborationDepthRubric(unittest.TestCase):
             _make_repo(root)
             path = root / "shared" / "collaboration_depth_rubric.md"
             path.write_text(
-                _valid_rubric_text().replace("## Cognitive Vigilance", "## Something Else")
+                _valid_rubric_text().replace("## Cognitive Vigilance", "## Something Else"),
+                encoding="utf-8",
             )
             r = _run(root)
             self.assertEqual(r.returncode, 1)
@@ -145,7 +155,8 @@ class TestCollaborationDepthRubric(unittest.TestCase):
             _make_repo(root)
             agent = root / "academic-pipeline" / "agents" / "collaboration_depth_agent.md"
             agent.write_text(
-                _valid_agent_text().replace("shared/collaboration_depth_rubric.md", "nope.md")
+                _valid_agent_text().replace("shared/collaboration_depth_rubric.md", "nope.md"),
+                encoding="utf-8",
             )
             r = _run(root)
             self.assertEqual(r.returncode, 1)
@@ -168,7 +179,7 @@ class TestCollaborationDepthRubric(unittest.TestCase):
             )
             # Sanity: the drifted text still has the right path in the body.
             assert "shared/collaboration_depth_rubric.md" in drifted
-            agent.write_text(drifted)
+            agent.write_text(drifted, encoding="utf-8")
             r = _run(root)
             self.assertEqual(r.returncode, 1)
             self.assertIn("rubric_ref", r.stdout)
@@ -178,7 +189,9 @@ class TestCollaborationDepthRubric(unittest.TestCase):
             root = Path(tmp)
             _make_repo(root)
             agent = root / "academic-pipeline" / "agents" / "collaboration_depth_agent.md"
-            agent.write_text(_valid_agent_text().replace("blocking: false", "blocking: true"))
+            agent.write_text(
+                _valid_agent_text().replace("blocking: false", "blocking: true"), encoding="utf-8"
+            )
             r = _run(root)
             self.assertEqual(r.returncode, 1)
             self.assertIn("blocking", r.stdout)
@@ -188,7 +201,9 @@ class TestCollaborationDepthRubric(unittest.TestCase):
             root = Path(tmp)
             _make_repo(root)
             orch = root / "academic-pipeline" / "agents" / "pipeline_orchestrator_agent.md"
-            orch.write_text("# pipeline_orchestrator_agent\n\nNo observer mentioned.\n")
+            orch.write_text(
+                "# pipeline_orchestrator_agent\n\nNo observer mentioned.\n", encoding="utf-8"
+            )
             r = _run(root)
             self.assertEqual(r.returncode, 1)
             self.assertIn("collaboration_depth_agent", r.stdout)
@@ -198,7 +213,9 @@ class TestCollaborationDepthRubric(unittest.TestCase):
             root = Path(tmp)
             _make_repo(root)
             orch = root / "academic-pipeline" / "agents" / "pipeline_orchestrator_agent.md"
-            orch.write_text("At FULL checkpoint, dispatch collaboration_depth_agent.\n")
+            orch.write_text(
+                "At FULL checkpoint, dispatch collaboration_depth_agent.\n", encoding="utf-8"
+            )
             r = _run(root)
             self.assertEqual(r.returncode, 1)
             self.assertIn("pipeline-completion", r.stdout)
@@ -221,7 +238,8 @@ class TestCollaborationDepthRubric(unittest.TestCase):
                 "# pipeline_orchestrator_agent\n\n"
                 "Checkpoints exist. Stage 6 is the last stage.\n\n"
                 "The Agent Team includes collaboration_depth_agent as the "
-                "fourth member; see the Agent Team table.\n"
+                "fourth member; see the Agent Team table.\n",
+                encoding="utf-8",
             )
             r = _run(root)
             self.assertEqual(r.returncode, 1)
@@ -232,7 +250,9 @@ class TestCollaborationDepthRubric(unittest.TestCase):
             root = Path(tmp)
             _make_repo(root)
             skill = root / "academic-pipeline" / "SKILL.md"
-            skill.write_text("# academic-pipeline\n\nWe use collaboration_depth_agent.\n")
+            skill.write_text(
+                "# academic-pipeline\n\nWe use collaboration_depth_agent.\n", encoding="utf-8"
+            )
             r = _run(root)
             self.assertEqual(r.returncode, 1)
             self.assertIn("non-blocking", r.stdout)

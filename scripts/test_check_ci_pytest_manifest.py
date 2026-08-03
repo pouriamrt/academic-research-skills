@@ -47,7 +47,7 @@ def _run(
         cmd.extend(["--root", str(root)])
     if extra_args:
         cmd.extend(extra_args)
-    return subprocess.run(cmd, capture_output=True, text=True)
+    return subprocess.run(cmd, capture_output=True, text=True, encoding="utf-8")
 
 
 def _write(path: Path, content: str) -> None:
@@ -59,8 +59,12 @@ def workdir(tmp_path: Path) -> Path:
     (tmp_path / "scripts").mkdir()
     (tmp_path / ".github" / "workflows").mkdir(parents=True)
     # Plant two real test files referenced by happy-path manifest entries.
-    (tmp_path / "scripts" / "test_real_a.py").write_text("def test_a(): assert True\n")
-    (tmp_path / "scripts" / "test_real_b.py").write_text("def test_b(): assert True\n")
+    (tmp_path / "scripts" / "test_real_a.py").write_text(
+        "def test_a(): assert True\n", encoding="utf-8"
+    )
+    (tmp_path / "scripts" / "test_real_b.py").write_text(
+        "def test_b(): assert True\n", encoding="utf-8"
+    )
     return tmp_path
 
 

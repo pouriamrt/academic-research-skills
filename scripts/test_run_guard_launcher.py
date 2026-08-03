@@ -120,6 +120,7 @@ def _run_launcher(bin_dir, payload, extra_env=None, launcher=LAUNCHER):
         capture_output=True,
         text=True,
         timeout=_LAUNCHER_TIMEOUT,
+        encoding="utf-8",
     )
     return proc.returncode, proc.stdout, proc.stderr
 
@@ -359,6 +360,7 @@ class LauncherSelfResolveTest(unittest.TestCase):
                 capture_output=True,
                 text=True,
                 timeout=_LAUNCHER_TIMEOUT,
+                encoding="utf-8",
             )
             self.assertEqual(proc.returncode, 0, f"stderr={proc.stderr!r}")
             self.assertEqual(

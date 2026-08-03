@@ -322,6 +322,7 @@ class CliTests(unittest.TestCase):
             capture_output=True,
             text=True,
             cwd=REPO_ROOT,
+            encoding="utf-8",
         )
 
     def test_pair_mode_advisory_exit_zero_despite_delta(self):

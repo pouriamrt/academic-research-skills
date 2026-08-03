@@ -40,17 +40,19 @@ def test_bootstrap_dry_run_emits_skeleton(tmp_path):
                     },
                 ]
             }
-        )
+        ),
+        encoding="utf-8",
     )
     out = tmp_path / "timeline.yaml"
     result = subprocess.run(
         [sys.executable, str(SCRIPT), "--corpus", str(corpus), "--output", str(out), "--dry-run"],
         capture_output=True,
         text=True,
+        encoding="utf-8",
     )
     assert result.returncode == 0, f"stderr={result.stderr}"
     assert out.exists()
-    data = yaml.safe_load(out.read_text())
+    data = yaml.safe_load(out.read_text(encoding="utf-8"))
     assert data["schema_version"] == "1.0"
     sources = data["sources"]
     assert len(sources) == 1
@@ -81,17 +83,21 @@ def test_bootstrap_validates_against_timeline_schema(tmp_path):
                     },
                 ]
             }
-        )
+        ),
+        encoding="utf-8",
     )
     out = tmp_path / "timeline.yaml"
     result = subprocess.run(
         [sys.executable, str(SCRIPT), "--corpus", str(corpus), "--output", str(out), "--dry-run"],
         capture_output=True,
         text=True,
+        encoding="utf-8",
     )
     assert result.returncode == 0
-    data = yaml.safe_load(out.read_text())
-    schema = json.loads((REPO_ROOT / "shared/contracts/passport/timeline.schema.json").read_text())
+    data = yaml.safe_load(out.read_text(encoding="utf-8"))
+    schema = json.loads(
+        (REPO_ROOT / "shared/contracts/passport/timeline.schema.json").read_text(encoding="utf-8")
+    )
     jsonschema.validate(data, schema)  # should not raise
 
 

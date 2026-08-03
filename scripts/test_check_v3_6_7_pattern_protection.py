@@ -40,10 +40,7 @@ def _archive_repo(dest: Path) -> None:
 def _run_lint(repo_dir: Path) -> tuple[int, str, str]:
     """Run the v3.6.7 lint inside `repo_dir`. Returns (rc, stdout, stderr)."""
     proc = subprocess.run(
-        ["python3", LINT_SCRIPT_REL],
-        cwd=repo_dir,
-        text=True,
-        capture_output=True,
+        ["python3", LINT_SCRIPT_REL], cwd=repo_dir, text=True, capture_output=True, encoding="utf-8"
     )
     return proc.returncode, proc.stdout, proc.stderr
 

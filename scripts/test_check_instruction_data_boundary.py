@@ -40,6 +40,7 @@ def _run2(root: Path):
         [sys.executable, str(CHECKER), "--root", str(root)],
         capture_output=True,
         text=True,
+        encoding="utf-8",
     )
     return proc.returncode, proc.stderr
 

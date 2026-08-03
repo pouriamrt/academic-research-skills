@@ -19,7 +19,7 @@ SCHEMAS = REPO_ROOT / "shared/contracts/passport"
 
 
 def _load_schema(name: str) -> dict:
-    return json.loads((SCHEMAS / name).read_text())
+    return json.loads((SCHEMAS / name).read_text(encoding="utf-8"))
 
 
 def test_timeline_schema_validates_canonical_example():
@@ -373,7 +373,8 @@ def test_lint_exits_zero_on_clean_fixture(tmp_path):
                 "sources": [],
                 "events": [],
             }
-        )
+        ),
+        encoding="utf-8",
     )
     provenance = tmp_path / "citation_provenance.yaml"
     provenance.write_text(
@@ -383,7 +384,8 @@ def test_lint_exits_zero_on_clean_fixture(tmp_path):
                 "audit_run_id": "2026-05-18T12:34:56Z-a1b2",
                 "entries": [],
             }
-        )
+        ),
+        encoding="utf-8",
     )
     audit = tmp_path / "temporal_audit_results.yaml"
     audit.write_text(
@@ -394,7 +396,8 @@ def test_lint_exits_zero_on_clean_fixture(tmp_path):
                 "report_reference_date": "2026-05-18",
                 "findings": [],
             }
-        )
+        ),
+        encoding="utf-8",
     )
 
     result = subprocess.run(
@@ -410,6 +413,7 @@ def test_lint_exits_zero_on_clean_fixture(tmp_path):
         ],
         capture_output=True,
         text=True,
+        encoding="utf-8",
     )
     assert result.returncode == 0, f"stdout={result.stdout!r} stderr={result.stderr!r}"
 
@@ -427,7 +431,8 @@ def test_lint_detects_supersession_cycle(tmp_path):
                 ],
                 "events": [],
             }
-        )
+        ),
+        encoding="utf-8",
     )
     provenance = tmp_path / "citation_provenance.yaml"
     provenance.write_text(
@@ -437,7 +442,8 @@ def test_lint_detects_supersession_cycle(tmp_path):
                 "audit_run_id": "2026-05-18T12:34:56Z-a1b2",
                 "entries": [],
             }
-        )
+        ),
+        encoding="utf-8",
     )
     audit = tmp_path / "temporal_audit_results.yaml"
     audit.write_text(
@@ -448,7 +454,8 @@ def test_lint_detects_supersession_cycle(tmp_path):
                 "report_reference_date": "2026-05-18",
                 "findings": [],
             }
-        )
+        ),
+        encoding="utf-8",
     )
 
     result = subprocess.run(
@@ -464,6 +471,7 @@ def test_lint_detects_supersession_cycle(tmp_path):
         ],
         capture_output=True,
         text=True,
+        encoding="utf-8",
     )
     assert result.returncode == 1, (
         f"expected exit 1 for cycle, got {result.returncode}; stderr={result.stderr!r}"
@@ -474,12 +482,15 @@ def test_lint_detects_supersession_cycle(tmp_path):
 def test_lint_bibliography_agent_unchanged(tmp_path):
     """F2 invariant: bibliography_agent.md unmodified passes the lint."""
     timeline = tmp_path / "timeline.yaml"
-    timeline.write_text(yaml.safe_dump({"schema_version": "1.0", "sources": [], "events": []}))
+    timeline.write_text(
+        yaml.safe_dump({"schema_version": "1.0", "sources": [], "events": []}), encoding="utf-8"
+    )
     provenance = tmp_path / "citation_provenance.yaml"
     provenance.write_text(
         yaml.safe_dump(
             {"schema_version": "1.0", "audit_run_id": "2026-05-18T12:34:56Z-a1b2", "entries": []}
-        )
+        ),
+        encoding="utf-8",
     )
     audit = tmp_path / "temporal_audit_results.yaml"
     audit.write_text(
@@ -490,7 +501,8 @@ def test_lint_bibliography_agent_unchanged(tmp_path):
                 "report_reference_date": "2026-05-18",
                 "findings": [],
             }
-        )
+        ),
+        encoding="utf-8",
     )
 
     result = subprocess.run(
@@ -506,6 +518,7 @@ def test_lint_bibliography_agent_unchanged(tmp_path):
         ],
         capture_output=True,
         text=True,
+        encoding="utf-8",
     )
     assert result.returncode == 0, (
         f"baseline mismatch — bibliography_agent.md was modified? stderr={result.stderr}"
@@ -519,12 +532,15 @@ def test_lint_bibliography_agent_modified_fails(tmp_path, monkeypatch):
     lint as a function (not subprocess) so we can override the module constant.
     """
     timeline = tmp_path / "timeline.yaml"
-    timeline.write_text(yaml.safe_dump({"schema_version": "1.0", "sources": [], "events": []}))
+    timeline.write_text(
+        yaml.safe_dump({"schema_version": "1.0", "sources": [], "events": []}), encoding="utf-8"
+    )
     provenance = tmp_path / "citation_provenance.yaml"
     provenance.write_text(
         yaml.safe_dump(
             {"schema_version": "1.0", "audit_run_id": "2026-05-18T12:34:56Z-a1b2", "entries": []}
-        )
+        ),
+        encoding="utf-8",
     )
     audit = tmp_path / "temporal_audit_results.yaml"
     audit.write_text(
@@ -535,7 +551,8 @@ def test_lint_bibliography_agent_modified_fails(tmp_path, monkeypatch):
                 "report_reference_date": "2026-05-18",
                 "findings": [],
             }
-        )
+        ),
+        encoding="utf-8",
     )
 
     # Import the lint module and monkeypatch the expected sha256 to a bogus value
@@ -562,7 +579,7 @@ def test_lint_bibliography_agent_modified_fails(tmp_path, monkeypatch):
 def test_timeline_extraction_agent_has_phase_boundary_block():
     agent_path = REPO_ROOT / "deep-research/agents/timeline_extraction_agent.md"
     assert agent_path.exists(), "timeline_extraction_agent.md not created"
-    content = agent_path.read_text()
+    content = agent_path.read_text(encoding="utf-8")
     # 4 load-bearing keywords from canonical v3.9.4 boundary block
     assert "## Phase Boundary (v3.9.4)" in content
     assert "MUST NOT" in content
@@ -574,7 +591,7 @@ def test_timeline_extraction_agent_has_phase_boundary_block():
 
 def test_timeline_extraction_agent_lists_sidecar_deliverables():
     agent_path = REPO_ROOT / "deep-research/agents/timeline_extraction_agent.md"
-    content = agent_path.read_text()
+    content = agent_path.read_text(encoding="utf-8")
     assert "timeline.yaml" in content
     assert "citation_provenance.yaml" in content
     assert "version_records.yaml" in content
@@ -590,7 +607,7 @@ M3_KEY_PHRASES = [
 
 def test_m3_iron_rule_present_in_report_compiler():
     path = REPO_ROOT / "deep-research/agents/report_compiler_agent.md"
-    content = path.read_text()
+    content = path.read_text(encoding="utf-8")
     assert M3_IRON_RULE_MARKER in content
     for phrase in M3_KEY_PHRASES:
         assert phrase in content, f"missing phrase: {phrase}"
@@ -598,7 +615,7 @@ def test_m3_iron_rule_present_in_report_compiler():
 
 def test_m3_iron_rule_present_in_draft_writer():
     path = REPO_ROOT / "academic-paper/agents/draft_writer_agent.md"
-    content = path.read_text()
+    content = path.read_text(encoding="utf-8")
     assert M3_IRON_RULE_MARKER in content
     for phrase in M3_KEY_PHRASES:
         assert phrase in content

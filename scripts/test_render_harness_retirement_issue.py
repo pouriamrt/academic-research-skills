@@ -27,14 +27,16 @@ def manifest() -> dict:
 def test_current_manifest_renders_complete_bucket_a_inventory(manifest: dict) -> None:
     body = render_issue("2026-08", manifest)
 
-    assert "All 23 Bucket A agents" in body
+    # Fork inventory: 22, not upstream's 23 — academic-paper is ×6 because
+    # abstract_bilingual_agent was deleted in the v3.17.0 bilingual purge.
+    assert "All 22 Bucket A agents" in body
     assert "`deep-research` (×10):" in body
-    assert "`academic-paper` (×7):" in body
+    assert "`academic-paper` (×6):" in body
     assert "`academic-paper-reviewer` (×6):" in body
     assert "`timeline_extraction_agent`" in body
 
     bucket_a_names = {name for name, row in manifest["agents"].items() if row["bucket"] == "A"}
-    assert len(bucket_a_names) == 23
+    assert len(bucket_a_names) == 22
     for name in bucket_a_names:
         assert body.count(f"`{name}`") == 1
 
@@ -52,7 +54,7 @@ def test_added_bucket_a_agent_updates_total_and_group_without_code_change(
 
     body = render_issue("2026-08", mutated)
 
-    assert "All 24 Bucket A agents" in body
+    assert "All 23 Bucket A agents" in body
     assert "`deep-research` (×11):" in body
     assert body.count("`future_research_agent`") == 1
 
@@ -89,6 +91,7 @@ def test_cli_writes_deterministic_body(tmp_path: Path, manifest: dict) -> None:
         text=True,
         capture_output=True,
         check=False,
+        encoding="utf-8",
     )
 
     assert result.returncode == 0, result.stderr

@@ -25,7 +25,9 @@ from scripts.ars_anchorize_draft import anchorize_file, anchorize_text, main
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 MANIFEST_SCHEMA = json.loads(
-    (REPO_ROOT / "shared" / "contracts" / "patch" / "block_manifest.schema.json").read_text()
+    (REPO_ROOT / "shared" / "contracts" / "patch" / "block_manifest.schema.json").read_text(
+        encoding="utf-8"
+    )
 )
 
 FIXTURE = """---
@@ -117,12 +119,12 @@ class TestAnchorizeFile(unittest.TestCase):
 
     def test_manifest_validates_against_schema(self):
         _, manifest_path, _ = self._run(FIXTURE)
-        manifest = json.loads(manifest_path.read_text())
+        manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
         jsonschema.validate(manifest, MANIFEST_SCHEMA)
 
     def test_manifest_agreement_with_independent_recomputation(self):
         draft, manifest_path, _ = self._run(FIXTURE)
-        manifest = json.loads(manifest_path.read_text())
+        manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
         raw = draft.read_bytes()
         parsed = parse_document(raw.decode("utf-8"))
         self.assertEqual(manifest["base_draft_hash"], base_draft_hash(raw))
@@ -134,7 +136,7 @@ class TestAnchorizeFile(unittest.TestCase):
     def test_excerpt_truncated_to_80(self):
         long_line = "x" * 200
         _, manifest_path, _ = self._run(long_line + "\n")
-        manifest = json.loads(manifest_path.read_text())
+        manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
         excerpt = manifest["blocks"][0]["first_line_excerpt"]
         self.assertLessEqual(len(excerpt), 80)
         self.assertTrue(excerpt.endswith("…"))
@@ -149,24 +151,24 @@ class TestCli(unittest.TestCase):
     def test_rejection_exits_2(self):
         tmp = Path(tempfile.mkdtemp())
         draft = tmp / "bad.md"
-        draft.write_text("Heading\n===\n")
+        draft.write_text("Heading\n===\n", encoding="utf-8")
         self.assertEqual(main([str(draft)]), 2)
         self.assertFalse(Path(str(draft) + ".block-manifest.json").exists())
-        self.assertEqual(draft.read_text(), "Heading\n===\n")
+        self.assertEqual(draft.read_text(encoding="utf-8"), "Heading\n===\n")
 
     def test_ok_exits_0_writes_manifest(self):
         tmp = Path(tempfile.mkdtemp())
         draft = tmp / "ok.md"
-        draft.write_text("Para.\n")
+        draft.write_text("Para.\n", encoding="utf-8")
         self.assertEqual(main([str(draft)]), 0)
-        manifest = json.loads(Path(str(draft) + ".block-manifest.json").read_text())
+        manifest = json.loads(Path(str(draft) + ".block-manifest.json").read_text(encoding="utf-8"))
         self.assertEqual(len(manifest["blocks"]), 1)
 
     def test_manifest_out_override(self):
         tmp = Path(tempfile.mkdtemp())
         draft = tmp / "ok.md"
         out = tmp / "custom-manifest.json"
-        draft.write_text("Para.\n")
+        draft.write_text("Para.\n", encoding="utf-8")
         self.assertEqual(main([str(draft), "--manifest-out", str(out)]), 0)
         self.assertTrue(out.exists())
 

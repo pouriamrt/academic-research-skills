@@ -114,9 +114,9 @@ class IdempotencyTest(unittest.TestCase):
             tmp = Path(d)
             p = _write_passport(tmp, {"literature_corpus": [_v3_9_0_entry()]})
             mig.migrate_passport(p, dry_run=False)
-            first = p.read_text()
+            first = p.read_text(encoding="utf-8")
             report2 = mig.migrate_passport(p, dry_run=False)
-            second = p.read_text()
+            second = p.read_text(encoding="utf-8")
             self.assertEqual(report2["seeded_keys"], [])  # nothing left to seed
             self.assertEqual(first, second, "second run must be byte-stable")
 
@@ -126,13 +126,13 @@ class DryRunTest(unittest.TestCase):
         with tempfile.TemporaryDirectory() as d:
             tmp = Path(d)
             p = _write_passport(tmp, {"literature_corpus": [_v3_9_0_entry()]})
-            before = p.read_text()
+            before = p.read_text(encoding="utf-8")
             report = mig.migrate_passport(p, dry_run=True)
             self.assertEqual(
                 report["seeded_keys"],
                 ["contamination_triangulation", "temporal_integrity"],
             )
-            self.assertEqual(p.read_text(), before, "dry-run must not write")
+            self.assertEqual(p.read_text(encoding="utf-8"), before, "dry-run must not write")
 
 
 class NoVenueBackfillTest(unittest.TestCase):
@@ -162,11 +162,13 @@ class ScopeBoundaryTest(unittest.TestCase):
                 "source_pointer": "file:///old.pdf",
             }  # no contamination_signals at all
             p = _write_passport(tmp, {"literature_corpus": [entry]})
-            before = p.read_text()
+            before = p.read_text(encoding="utf-8")
             report = mig.migrate_passport(p, dry_run=False)
             self.assertTrue(report["out_of_scope"])
             self.assertFalse(report["in_scope"])
-            self.assertEqual(p.read_text(), before, "out-of-scope passport untouched")
+            self.assertEqual(
+                p.read_text(encoding="utf-8"), before, "out-of-scope passport untouched"
+            )
 
     def test_empty_corpus_seeded_corpus_independent(self) -> None:
         """Empty corpus → seed is corpus-independent, treated as in scope."""
@@ -198,7 +200,8 @@ class MalformedShapeTest(unittest.TestCase):
             tmp = Path(d)
             p = tmp / "passport.yaml"
             p.write_text(
-                "terminal_policies: null\nliterature_corpus:\n  - citation_key: smith2024\n    title: S\n    authors:\n      - family: Smith\n    year: 2024\n    source_pointer: file:///x.pdf\n    contamination_signals:\n      semantic_scholar_unmatched: false\n"
+                "terminal_policies: null\nliterature_corpus:\n  - citation_key: smith2024\n    title: S\n    authors:\n      - family: Smith\n    year: 2024\n    source_pointer: file:///x.pdf\n    contamination_signals:\n      semantic_scholar_unmatched: false\n",
+                encoding="utf-8",
             )
             with self.assertRaises(mig.PassportShapeError):
                 mig.migrate_passport(p, dry_run=False)
@@ -234,10 +237,11 @@ class CommentPreservationTest(unittest.TestCase):
                 "    year: 2024\n"
                 "    source_pointer: file:///x.pdf\n"
                 "    contamination_signals:\n"
-                "      semantic_scholar_unmatched: false\n"
+                "      semantic_scholar_unmatched: false\n",
+                encoding="utf-8",
             )
             mig.migrate_passport(p, dry_run=False)
-            text = p.read_text()
+            text = p.read_text(encoding="utf-8")
             self.assertIn("# top comment", text)
             self.assertIn("# inline", text)
             self.assertIn("terminal_policies", text)

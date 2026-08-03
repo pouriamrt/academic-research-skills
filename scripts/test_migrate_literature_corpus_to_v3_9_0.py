@@ -493,12 +493,12 @@ class OmissionProvenanceTest(unittest.TestCase):
             mig.migrate_passport(
                 p, oa_client=self._degraded_oa(), cr_client=_make_cr_client(), dry_run=False
             )
-            before = p.read_text()
+            before = p.read_text(encoding="utf-8")
             report2 = mig.migrate_passport(
                 p, oa_client=self._degraded_oa(), cr_client=_make_cr_client(), dry_run=False
             )
             self.assertEqual(report2["patched"], 0)
-            self.assertEqual(before, p.read_text())
+            self.assertEqual(before, p.read_text(encoding="utf-8"))
 
     def test_recovery_clears_stale_omission(self):
         with tempfile.TemporaryDirectory() as td:
@@ -517,12 +517,12 @@ class OmissionProvenanceTest(unittest.TestCase):
     def test_dry_run_reports_omission_without_writing(self):
         with tempfile.TemporaryDirectory() as td:
             p = _make_passport(Path(td), [self._entry()])
-            before = p.read_text()
+            before = p.read_text(encoding="utf-8")
             report = mig.migrate_passport(
                 p, oa_client=self._degraded_oa(), cr_client=_make_cr_client(), dry_run=True
             )
             self.assertEqual(report["degraded_openalex"], 1)
-            self.assertEqual(before, p.read_text())
+            self.assertEqual(before, p.read_text(encoding="utf-8"))
 
 
 if __name__ == "__main__":

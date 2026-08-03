@@ -1887,13 +1887,33 @@ def repo_relative(text: str) -> str:
     # aliases `/private/tmp/x` and both spellings register in set order,
     # so a shorter root processed first would rewrite the longer one's
     # occurrences mid-path and corrupt the diagnostic it was cleaning.
-    roots = sorted({str(REPO), str(Path.home()), *RUN_ROOTS}, key=len, reverse=True)
+    # Each root can reach a diagnostic in two spellings: literally, or with its
+    # separators backslash-escaped because the text went through repr()
+    # (OSError.__str__ reprs its filename). Matching only the literal spelling
+    # left an operator's home directory in a record destined for a public repo
+    # AND stamped it `verbatim`. On POSIX the two spellings coincide, so the
+    # extra entries dedupe away and behaviour is unchanged.
+    _spellings: dict[str, str] = {}
+    for _root in {str(REPO), str(Path.home()), *RUN_ROOTS}:
+        _spellings.setdefault(_root, os.sep)
+        _escaped = _root.replace("\\", "\\\\")
+        if _escaped != _root:
+            _spellings.setdefault(_escaped, os.sep.replace("\\", "\\\\"))
+    roots = sorted(_spellings, key=len, reverse=True)
     for root in roots:
         # Guarded at the point of USE, so a caller that sets RUN_ROOTS
         # directly is safe too: a filesystem root would reduce to "/" and
         # delete every slash in every diagnostic, including a DOI URL.
         if root and Path(root).parent != Path(root):
-            text = text.replace(root + os.sep, "")
+            text = text.replace(root + _spellings[root], "")
+            # os.altsep is "/" on Windows, None on POSIX. The harness joins its
+            # own paths with "/", so on Windows the separator pass above alone
+            # misses them and the bare-root pass below leaves a stray leading
+            # separator — which also flips diagnostic_form to `verbatim` and
+            # lets an absolute local path into a record destined for a public
+            # repo. No-op on POSIX.
+            if os.altsep:
+                text = text.replace(root + os.altsep, "")
             # The bare-root pass needs a boundary: `/tmp` registered must
             # not eat the `/tmp` inside a sibling `/tmp2/file`.
             text = re.sub(re.escape(root) + r"(?![\w-])", "", text)

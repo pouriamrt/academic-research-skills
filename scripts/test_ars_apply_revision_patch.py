@@ -120,7 +120,7 @@ class TestReplaceBlock(ApplyHarness):
         )
         self._write(anchored, patch)
         report = self._run()
-        out = self.output_path.read_text()
+        out = self.output_path.read_text(encoding="utf-8")
         self.assertIn("<!--block:B0003-->\nSecond paragraph, fully revised.\n", out)
         self.assertNotIn("destined for surgery", out)
         self.assertEqual(report["counters"]["blocks_touched"], 1)
@@ -144,7 +144,7 @@ class TestReplaceBlock(ApplyHarness):
         )
         self._write(anchored, patch)
         report = self._run()
-        out_doc = parse_document(self.output_path.read_text())
+        out_doc = parse_document(self.output_path.read_text(encoding="utf-8"))
         ids = [b.block_id for b in out_doc.blocks]
         self.assertIn("B0003", ids)
         self.assertEqual(report["ops_applied"][0]["new_block_ids"], ["B0009", "B0010"])
@@ -168,7 +168,7 @@ class TestReplaceBlock(ApplyHarness):
         )
         self._write(anchored, patch)
         self._run()
-        self.assertTrue(self.output_path.read_text().endswith("Replaced final."))
+        self.assertTrue(self.output_path.read_text(encoding="utf-8").endswith("Replaced final."))
 
 
 class TestInsertAfter(ApplyHarness):
@@ -189,7 +189,7 @@ class TestInsertAfter(ApplyHarness):
         )
         self._write(anchored, patch)
         report = self._run()
-        out = self.output_path.read_text()
+        out = self.output_path.read_text(encoding="utf-8")
         self.assertEqual(report["ops_applied"][0]["new_block_ids"], ["B0009", "B0010"])
         self.assertIn(
             "<!--block:B0009-->\nA new paragraph.\n\n<!--block:B0010-->\nAnd a second new paragraph.\n",
@@ -216,7 +216,7 @@ class TestInsertAfter(ApplyHarness):
         )
         self._write(anchored, patch)
         self._run()
-        out = self.output_path.read_text()
+        out = self.output_path.read_text(encoding="utf-8")
         self.assertTrue(out.startswith("---\ntitle: fixture\n---\n"))
         pos_fm_end = out.index("---\n", 4) + 4
         pos_new = out.index("A brand-new opening paragraph.")
@@ -238,7 +238,7 @@ class TestInsertAfter(ApplyHarness):
         )
         self._write(anchored, patch)
         self._run()
-        out = self.output_path.read_text()
+        out = self.output_path.read_text(encoding="utf-8")
         pos_new = out.index("Opening paragraph.")
         pos_intro = out.index("# Introduction")
         self.assertTrue(pos_new < pos_intro)
@@ -261,7 +261,7 @@ class TestDeleteBlock(ApplyHarness):
         )
         self._write(anchored, patch)
         report = self._run()
-        out = self.output_path.read_text()
+        out = self.output_path.read_text(encoding="utf-8")
         self.assertNotIn("A quoted remark.", out)
         self.assertNotIn("<!--block:B0007-->", out)
         self.assertEqual(report["counters"]["blocks_touched"], 1)
@@ -282,7 +282,9 @@ class TestDeleteBlock(ApplyHarness):
         )
         self._write(anchored, patch)
         self._run()
-        self.assertEqual(self.output_path.read_text(), "<!--block:B0001-->\nPara one.\n")
+        self.assertEqual(
+            self.output_path.read_text(encoding="utf-8"), "<!--block:B0001-->\nPara one.\n"
+        )
 
 
 class TestPhase1Rejections(ApplyHarness):
@@ -533,11 +535,14 @@ class TestPhase1Rejections(ApplyHarness):
             ],
         )
         self._write(anchored, patch)
-        self.output_path.write_text("pre-existing artifact, not ours to replace")
+        self.output_path.write_text("pre-existing artifact, not ours to replace", encoding="utf-8")
         with self.assertRaises(ApplyRejection) as ctx:
             self._run()
         self.assertEqual(ctx.exception.failures[0]["kind"], "artifact_already_exists")
-        self.assertEqual(self.output_path.read_text(), "pre-existing artifact, not ours to replace")
+        self.assertEqual(
+            self.output_path.read_text(encoding="utf-8"),
+            "pre-existing artifact, not ours to replace",
+        )
 
     def test_report_naming_output_is_rejected(self):
         anchored = self.anchored_fixture()
@@ -646,7 +651,7 @@ class TestStructuralTriggers(ApplyHarness):
         report = self._run(acknowledge_structural=True)
         self.assertTrue(report["structural_flags"]["any"])
         self.assertTrue(report["structural_flags"]["acknowledged"])
-        self.assertIn("# Renamed Introduction", self.output_path.read_text())
+        self.assertIn("# Renamed Introduction", self.output_path.read_text(encoding="utf-8"))
 
     def test_insert_after_heading_anchor_exempt_when_no_heading_segments(self):
         # #424 heading-anchor exemption: an insert_after ANCHORED on a
@@ -878,7 +883,7 @@ class TestAtomicityAndSelfCheck(ApplyHarness):
         ]
         self._write(anchored, _base_patch(anchored, ops))
         self._run()
-        out_doc = parse_document(self.output_path.read_text())
+        out_doc = parse_document(self.output_path.read_text(encoding="utf-8"))
         ids = [b.block_id for b in out_doc.blocks]
         self.assertEqual(len(ids), len(set(ids)))
         self.assertTrue(all(i is not None for i in ids))
@@ -959,7 +964,7 @@ class TestCliExitCodes(ApplyHarness):
         self.assertEqual(main(argv), 0)
 
         patch["base_draft_hash"] = "0" * 12
-        self.patch_path.write_text(json.dumps(patch))
+        self.patch_path.write_text(json.dumps(patch), encoding="utf-8")
         self.assertEqual(main(argv + ["--report-out", str(self.tmp / "r2.json")]), 2)
 
         heading_patch = _base_patch(
@@ -974,7 +979,7 @@ class TestCliExitCodes(ApplyHarness):
                 }
             ],
         )
-        self.patch_path.write_text(json.dumps(heading_patch))
+        self.patch_path.write_text(json.dumps(heading_patch), encoding="utf-8")
         out2 = self.tmp / "revised2.md"
         self.assertEqual(
             main([str(self.base_path), str(self.patch_path), "--output", str(out2)]), 3
@@ -1057,7 +1062,7 @@ class TestByteIdentityProperty(ApplyHarness):
             patch_path = tmp / "patch.json"
             output_path = tmp / "out.md"
             base_path.write_bytes(anchored.encode("utf-8"))
-            patch_path.write_text(json.dumps(patch))
+            patch_path.write_text(json.dumps(patch), encoding="utf-8")
             run(
                 base_path,
                 patch_path,

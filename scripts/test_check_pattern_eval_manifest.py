@@ -135,14 +135,22 @@ def _materialize_micro_dir(parent: Path, doc: dict) -> Path:
     (fixture_dir / "bad_run").mkdir()
     (fixture_dir / "good_run").mkdir()
     (fixture_dir / "manifest.json").write_text(json.dumps(doc), encoding="utf-8")
-    (fixture_dir / "upstream_context" / "passport_snippet.yaml").write_text("schema_version: 9\n")
-    (fixture_dir / "bad_run" / "deliverable.md").write_text("# bad\n")
-    (fixture_dir / "bad_run" / "expected_audit_findings.yaml").write_text(_BAD_VERDICT_YAML)
-    (fixture_dir / "bad_run" / "expected_orchestrator_action.yaml").write_text("expected_path: B\n")
-    (fixture_dir / "good_run" / "deliverable.md").write_text("# good\n")
-    (fixture_dir / "good_run" / "expected_audit_findings.yaml").write_text(_GOOD_VERDICT_YAML)
+    (fixture_dir / "upstream_context" / "passport_snippet.yaml").write_text(
+        "schema_version: 9\n", encoding="utf-8"
+    )
+    (fixture_dir / "bad_run" / "deliverable.md").write_text("# bad\n", encoding="utf-8")
+    (fixture_dir / "bad_run" / "expected_audit_findings.yaml").write_text(
+        _BAD_VERDICT_YAML, encoding="utf-8"
+    )
+    (fixture_dir / "bad_run" / "expected_orchestrator_action.yaml").write_text(
+        "expected_path: B\n", encoding="utf-8"
+    )
+    (fixture_dir / "good_run" / "deliverable.md").write_text("# good\n", encoding="utf-8")
+    (fixture_dir / "good_run" / "expected_audit_findings.yaml").write_text(
+        _GOOD_VERDICT_YAML, encoding="utf-8"
+    )
     (fixture_dir / "good_run" / "expected_orchestrator_action.yaml").write_text(
-        "expected_path: B\n"
+        "expected_path: B\n", encoding="utf-8"
     )
     return fixture_dir
 
@@ -185,6 +193,7 @@ def _run_script(fixture_root: Path) -> subprocess.CompletedProcess:
         [sys.executable, str(repo_clone / "scripts" / SCRIPT.name)],
         capture_output=True,
         text=True,
+        encoding="utf-8",
     )
 
 

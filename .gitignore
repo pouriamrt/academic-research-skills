@@ -38,3 +38,6 @@ audit_artifacts/
 *.local.json
 *.local.yaml
 *.local.yml
+
+# Subagent-driven-development scratch (ledger, briefs, review packages)
+.superpowers/

@@ -39,7 +39,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-import check_sprint_contract
+import check_sprint_contract  # noqa: E402  reused, never forked
 
 EXIT_PASS = 0
 EXIT_SYNTHESIS = 1

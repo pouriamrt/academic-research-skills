@@ -51,7 +51,7 @@ EXAMPLE = REPO / "examples/passport_with_experiment_provenance.yaml"
 # object, so both the in-process _validate() driver and the mutation tests share
 # the same module reference.
 sys.path.insert(0, str(REPO / "scripts"))
-import check_claim_audit_consistency as _lint
+import check_claim_audit_consistency as _lint  # noqa: E402
 
 PROVENANCE_SCHEMA = PASSPORT / "experiment_provenance_entry.schema.json"
 ALIGNMENT_SCHEMA = PASSPORT / "experiment_alignment_result.schema.json"

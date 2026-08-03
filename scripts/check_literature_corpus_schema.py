@@ -31,7 +31,7 @@ from typing import Any
 try:
     import yaml
     from jsonschema import Draft202012Validator
-    from jsonschema.exceptions import ValidationError
+    from jsonschema.exceptions import ValidationError  # noqa: F401
 except ImportError as e:
     print(
         f"Missing dependency: {e}. Install with: pip install pyyaml jsonschema",

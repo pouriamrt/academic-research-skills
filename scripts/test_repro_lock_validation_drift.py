@@ -28,7 +28,7 @@ from pathlib import Path
 REPO = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(REPO / "scripts"))
 
-from repro_lock_validation import (
+from repro_lock_validation import (  # noqa: E402
     REQUIRED_CROSSMODEL,
     REQUIRED_EXTERNAL,
     REQUIRED_FIELDS,

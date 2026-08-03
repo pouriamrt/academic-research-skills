@@ -51,8 +51,8 @@ if str(REPO_ROOT / "scripts") not in sys.path:
 
 # Late imports are deliberate: they resolve via the scripts/ sys.path entry
 # inserted immediately above, not via package-relative import.
-from _skill_lint import check_section_literals, h2_section_body
-from ars_apply_revision_patch import DEFAULT_TOUCHED_RATIO_THRESHOLD
+from _skill_lint import check_section_literals, h2_section_body  # noqa: E402
+from ars_apply_revision_patch import DEFAULT_TOUCHED_RATIO_THRESHOLD  # noqa: E402
 
 WRITER = REPO_ROOT / "academic-paper/agents/draft_writer_agent.md"
 ORCHESTRATOR = REPO_ROOT / "academic-pipeline/agents/pipeline_orchestrator_agent.md"

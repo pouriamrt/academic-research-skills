@@ -31,7 +31,7 @@ _REPO_ROOT = _THIS.parents[2]
 if str(_REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(_REPO_ROOT))
 
-from scripts.adapters._common import (
+from scripts.adapters._common import (  # noqa: E402
     make_citation_key,
     now_iso,
     path_to_file_uri,

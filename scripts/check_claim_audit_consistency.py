@@ -50,7 +50,7 @@ from jsonschema import Draft202012Validator
 # the shared constants module. The CLI path puts scripts/ on sys.path, the
 # unittest path puts repo root on sys.path — the insert below covers the gap.
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from _claim_audit_constants import (
+from _claim_audit_constants import (  # noqa: E402
     INV6_RATIONALE_PREFIX,
     INV14_FAULT_CLASS_TAGS,
     RE_CLAIM_ID,

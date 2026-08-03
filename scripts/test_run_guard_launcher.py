@@ -39,7 +39,7 @@ from pathlib import Path
 # inserts this same directory onto sys.path before importing it — mirrored here so this
 # module's import doesn't depend on collection order.
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-import ars_write_scope_guard as guard
+import ars_write_scope_guard as guard  # noqa: E402
 
 REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 LAUNCHER = os.path.join(REPO_ROOT, "hooks", "run_guard.sh")

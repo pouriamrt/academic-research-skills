@@ -22,7 +22,7 @@ import yaml
 # experiment_provenance_entry.schema.json (#260) cannot silently drift from
 # this standalone validator. The drift test asserts the two stay in sync.
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from repro_lock_validation import (
+from repro_lock_validation import (  # noqa: E402
     REQUIRED_FIELDS,  # re-exported for backward compat / external importers
     SUPPORTED_HASH_TIMINGS,
     SUPPORTED_SCHEMA_VERSIONS,

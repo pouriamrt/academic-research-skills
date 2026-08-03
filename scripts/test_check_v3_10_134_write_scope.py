@@ -14,7 +14,7 @@ from pathlib import Path
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-import check_v3_10_134_write_scope as lint
+import check_v3_10_134_write_scope as lint  # noqa: E402
 
 
 class CleanRepoTest(unittest.TestCase):

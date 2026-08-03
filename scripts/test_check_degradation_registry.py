@@ -18,7 +18,7 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 if str(REPO_ROOT / "scripts") not in sys.path:
     sys.path.insert(0, str(REPO_ROOT / "scripts"))
 
-from check_degradation_registry import DEFAULT_REGISTRY, run
+from check_degradation_registry import DEFAULT_REGISTRY, run  # noqa: E402
 
 
 def _shipped() -> dict:

@@ -18,7 +18,7 @@ import unittest
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-import _text_similarity as ts
+import _text_similarity as ts  # noqa: E402
 
 
 class NormalizeTitleTest(unittest.TestCase):

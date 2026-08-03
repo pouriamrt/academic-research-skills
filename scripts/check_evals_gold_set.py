@@ -25,7 +25,7 @@ from jsonschema import Draft202012Validator
 _HERE = Path(__file__).resolve().parent
 if str(_HERE) not in sys.path:
     sys.path.insert(0, str(_HERE))
-from citation_verification_summary import (
+from citation_verification_summary import (  # noqa: E402
     reduce_lookup_verified as _reduce_lookup_verified,
 )
 

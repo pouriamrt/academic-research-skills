@@ -27,7 +27,7 @@ from unittest import mock
 from tests.test_helpers import build_schema_validator, load_json_schema
 
 try:
-    from scripts.claim_audit_pipeline import run_audit_pipeline
+    from scripts.claim_audit_pipeline import run_audit_pipeline  # noqa: F401
 
     _MODULE_IMPORT_ERR: Exception | None = None
 except Exception as exc:  # pragma: no cover — import-time error pathway is exercised in RED state

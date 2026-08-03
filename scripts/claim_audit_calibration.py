@@ -28,7 +28,7 @@ from typing import Any, Callable
 # call sites use; ensure scripts/ is importable when this module is loaded as
 # `scripts.claim_audit_calibration` (test path) as well as bare.
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from _claim_audit_constants import is_true_partial_breakdown
+from _claim_audit_constants import is_true_partial_breakdown  # noqa: E402
 
 # Constraint id shape per spec §3.2 canonical parse rule (RE_NC_CONSTRAINT
 # + RE_MNC_CONSTRAINT in scripts/_claim_audit_constants.py).

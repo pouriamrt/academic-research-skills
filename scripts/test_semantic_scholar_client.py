@@ -21,8 +21,8 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 if str(REPO_ROOT / "scripts") not in sys.path:
     sys.path.insert(0, str(REPO_ROOT / "scripts"))
 
-import semantic_scholar_client as ssc
-from contamination_signals import SemanticScholarUnavailable
+import semantic_scholar_client as ssc  # noqa: E402
+from contamination_signals import SemanticScholarUnavailable  # noqa: E402
 
 
 def _mock_response(payload: dict) -> MagicMock:

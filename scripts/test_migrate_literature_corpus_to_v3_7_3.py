@@ -20,7 +20,7 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 if str(REPO_ROOT / "scripts") not in sys.path:
     sys.path.insert(0, str(REPO_ROOT / "scripts"))
 
-import migrate_literature_corpus_to_v3_7_3 as mig
+import migrate_literature_corpus_to_v3_7_3 as mig  # noqa: E402
 
 SAMPLE_PASSPORT_YAML = """\
 # Material Passport for the SLR run

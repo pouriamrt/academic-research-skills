@@ -132,7 +132,7 @@ def _extract_finalizer_high_warn_constants(source: str) -> dict[str, str]:
     sys.path.insert(0, str(REPO_ROOT))
     try:
         from scripts import (
-            claim_audit_finalizer,
+            claim_audit_finalizer,  # noqa: F401  (import for side effect: load constants)
         )
 
         for name in dir(claim_audit_finalizer):

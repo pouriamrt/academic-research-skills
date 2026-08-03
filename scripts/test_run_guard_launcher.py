@@ -35,6 +35,12 @@ import tempfile
 import unittest
 from pathlib import Path
 
+# ars_write_scope_guard is a script (no package); scripts/test_ars_write_scope_guard.py
+# inserts this same directory onto sys.path before importing it — mirrored here so this
+# module's import doesn't depend on collection order.
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import ars_write_scope_guard as guard  # noqa: E402
+
 REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 LAUNCHER = os.path.join(REPO_ROOT, "hooks", "run_guard.sh")
 GUARD = os.path.join(REPO_ROOT, "scripts", "ars_write_scope_guard.py")
@@ -549,6 +555,32 @@ class LauncherFastPathTest(unittest.TestCase):
                            "CLAUDE_PLUGIN_ROOT": str(REPO_ROOT)})
             self.assertEqual(
                 json.loads(out)["hookSpecificOutput"]["permissionDecision"], "deny")
+
+
+class GuardConstantsMirrorTest(unittest.TestCase):
+    """Pins the two guard constants the shell fast path hand-mirrors (hooks/run_guard.sh,
+    the `case $PAYLOAD in ... esac` block right after `PAYLOAD=$(cat)`). Nothing else
+    cross-checks them: the guard's own comment flags NotebookEdit as a deliberate future
+    candidate, and if a later change widened either constant, the shell fast path would
+    keep matching only the OLD tool names — silently skipping Python (and any new deny)
+    for the newly-inspected tool while the rest of the suite stayed green. This converts
+    that latent fail-open into a red test instead of a comment."""
+
+    def test_structured_write_tools_unchanged(self):
+        self.assertEqual(
+            guard.STRUCTURED_WRITE_TOOLS, {"Write", "Edit", "MultiEdit"},
+            "scripts/ars_write_scope_guard.py: STRUCTURED_WRITE_TOOLS changed — update the "
+            "`*'\"Write\"'* | *'\"Edit\"'* | *'\"MultiEdit\"'*` arm of the fast-path "
+            "`case $PAYLOAD in` block in hooks/run_guard.sh to match, or the launcher will "
+            "silently skip Python for the added/removed tool.")
+
+    def test_inspected_tools_is_structured_write_tools_plus_bash(self):
+        self.assertEqual(
+            guard.INSPECTED_TOOLS, guard.STRUCTURED_WRITE_TOOLS | {"Bash"},
+            "scripts/ars_write_scope_guard.py: INSPECTED_TOOLS no longer equals "
+            "STRUCTURED_WRITE_TOOLS | {'Bash'} — the fast path's safety argument in "
+            "hooks/run_guard.sh (the `case $PAYLOAD in` block after `PAYLOAD=$(cat)`) "
+            "depends on exactly this relationship; update both its arms to match.")
 
 
 if __name__ == "__main__":

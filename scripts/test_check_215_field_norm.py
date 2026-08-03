@@ -13,7 +13,6 @@ import unittest
 
 from scripts import check_215_field_norm as cfn
 
-
 DOMAIN = "academic-paper-reviewer/agents/domain_reviewer_agent.md"
 DA = "academic-paper-reviewer/agents/devils_advocate_reviewer_agent.md"
 CAL = "academic-paper-reviewer/references/calibration_mode_protocol.md"

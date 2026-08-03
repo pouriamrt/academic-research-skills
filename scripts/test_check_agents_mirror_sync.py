@@ -13,7 +13,6 @@ from __future__ import annotations
 from pathlib import Path
 
 import pytest
-
 from check_agents_mirror_sync import MIRRORS, REPO_ROOT, check
 
 

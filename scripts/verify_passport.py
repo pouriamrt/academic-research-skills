@@ -41,14 +41,14 @@ def _real_clients() -> dict:
     Dual-path import: under `python -m scripts.verify_passport` the repo root is
     on sys.path (not scripts/), so the bare imports fall back to scripts.*."""
     try:
+        from arxiv_client import ArxivClient
         from crossref_client import CrossrefClient
         from openalex_client import OpenAlexClient
-        from arxiv_client import ArxivClient
         from semantic_scholar_client import SemanticScholarClient
     except ImportError:  # pragma: no cover - exercised via `python -m`
+        from scripts.arxiv_client import ArxivClient
         from scripts.crossref_client import CrossrefClient
         from scripts.openalex_client import OpenAlexClient
-        from scripts.arxiv_client import ArxivClient
         from scripts.semantic_scholar_client import SemanticScholarClient
     return {
         "crossref": CrossrefClient(),

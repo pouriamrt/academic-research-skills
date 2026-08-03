@@ -23,7 +23,6 @@ import sys
 from pathlib import Path
 from typing import Any
 
-
 REPO_ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_GOLD_SET = REPO_ROOT / "evals/gold/field_norm_severity/gold_set.json"
 

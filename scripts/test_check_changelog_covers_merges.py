@@ -14,6 +14,7 @@ from tests.test_helpers import run_script
 SCRIPT = Path(__file__).resolve().parent / "check_changelog_covers_merges.py"
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from check_changelog_covers_merges import (  # noqa: E402
+    Uncovered,
     all_refs,
     audit,
     extract_coverage_text,
@@ -21,7 +22,6 @@ from check_changelog_covers_merges import (  # noqa: E402
     is_covered,
     is_exempt,
     pr_number,
-    Uncovered,
 )
 
 
@@ -228,8 +228,8 @@ class ExtractUnreleasedTest(unittest.TestCase):
 
 
 from check_changelog_covers_merges import (  # noqa: E402
-    previous_release_tag,
     merged_commit_subjects,
+    previous_release_tag,
 )
 
 _GIT_ENV = {

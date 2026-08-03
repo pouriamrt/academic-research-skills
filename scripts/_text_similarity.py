@@ -21,7 +21,6 @@ import re
 import string
 from difflib import SequenceMatcher
 
-
 _PUNCT_TRANSLATION = str.maketrans({c: " " for c in string.punctuation})
 
 # #431 §0.1: collapse a run of two-or-more `<letter>.` units at a word boundary

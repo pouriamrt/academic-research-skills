@@ -37,8 +37,8 @@ def normalize_compat_verdict(raw: str) -> dict:
 
 
 def _main() -> int:
-    import sys
     import json
+    import sys
 
     raw = sys.stdin.read()
     result = normalize_compat_verdict(raw)

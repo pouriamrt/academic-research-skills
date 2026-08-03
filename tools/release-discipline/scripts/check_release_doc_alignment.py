@@ -20,6 +20,7 @@ import re
 from typing import Any
 
 from scripts._release_doc_alignment_schema import (
+    _DEFAULT_CHANGELOG_PATTERN,
     ManifestError,
     PackageError,
     ResolutionError,
@@ -31,7 +32,6 @@ from scripts._release_doc_alignment_schema import (
     load_manifest,
     resolve_authoritative_version,
     scan_changelog_file,
-    _DEFAULT_CHANGELOG_PATTERN,
 )
 
 

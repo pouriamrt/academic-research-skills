@@ -1,7 +1,7 @@
 """Tests for scripts/adapters/folder_scan.py."""
 
-from pathlib import Path
 import subprocess
+from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
 ADAPTER = REPO_ROOT / "scripts/adapters/folder_scan.py"
@@ -216,8 +216,9 @@ def test_symlink_pointing_outside_input_does_not_crash(tmp_path):
     r = _run("--input", str(inside), "--passport", str(p_out), "--rejection-log", str(r_out))
     assert r.returncode == 0, r.stderr
     import json
-    import yaml
+
     import jsonschema
+    import yaml
 
     with p_out.open() as f:
         passport = yaml.safe_load(f)

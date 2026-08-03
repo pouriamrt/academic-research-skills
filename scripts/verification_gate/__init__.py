@@ -28,6 +28,7 @@ from datetime import datetime, timezone
 from typing import Any, Mapping
 
 try:
+    from arxiv_client import ArxivUnavailable
     from citation_verification_summary import (
         STATUS_MATCHED,
         STATUS_SKIPPED,
@@ -35,16 +36,16 @@ try:
         STATUS_UNREACHABLE,
         reduce_lookup_verified,
     )
-    from crossref_client import CrossrefUnavailable
-    from openalex_client import OpenAlexUnavailable
-    from arxiv_client import ArxivUnavailable
     from contamination_signals import (
         SemanticScholarUnavailable,
         _resolve_arxiv_id_then_title,
         _resolve_doi_then_title,
         queried_by_for,
     )
+    from crossref_client import CrossrefUnavailable
+    from openalex_client import OpenAlexUnavailable
 except ImportError:  # pragma: no cover - dual-path import
+    from scripts.arxiv_client import ArxivUnavailable
     from scripts.citation_verification_summary import (
         STATUS_MATCHED,
         STATUS_SKIPPED,
@@ -52,15 +53,14 @@ except ImportError:  # pragma: no cover - dual-path import
         STATUS_UNREACHABLE,
         reduce_lookup_verified,
     )
-    from scripts.crossref_client import CrossrefUnavailable
-    from scripts.openalex_client import OpenAlexUnavailable
-    from scripts.arxiv_client import ArxivUnavailable
     from scripts.contamination_signals import (
         SemanticScholarUnavailable,
         _resolve_arxiv_id_then_title,
         _resolve_doi_then_title,
         queried_by_for,
     )
+    from scripts.crossref_client import CrossrefUnavailable
+    from scripts.openalex_client import OpenAlexUnavailable
 
 _ANCHOR_PRESENT_KINDS = frozenset({"quote", "page", "section", "paragraph"})
 

@@ -27,7 +27,6 @@ import re
 import sys
 from pathlib import Path
 
-
 REPO_ROOT = Path(__file__).resolve().parent.parent
 PROSE_PATH = REPO_ROOT / "deep-research" / "agents" / "bibliography_agent.md"
 PYTHON_PATH = REPO_ROOT / "scripts" / "contamination_signals.py"

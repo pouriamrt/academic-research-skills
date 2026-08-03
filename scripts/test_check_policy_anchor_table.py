@@ -21,7 +21,6 @@ if str(REPO_ROOT / "scripts") not in sys.path:
 
 import check_policy_anchor_table as cpat  # noqa: E402
 
-
 _GOOD_TABLE = textwrap.dedent(
     """\
     # Policy Anchor Table

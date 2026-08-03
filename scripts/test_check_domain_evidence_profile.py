@@ -12,7 +12,6 @@ import subprocess
 import sys
 from pathlib import Path
 
-
 REPO_ROOT = Path(__file__).resolve().parent.parent
 LINT = REPO_ROOT / "scripts" / "check_domain_evidence_profile.py"
 

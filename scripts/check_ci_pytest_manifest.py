@@ -27,7 +27,6 @@ import sys
 import tomllib
 from pathlib import Path
 
-
 # Drift guard regex: catches direct pytest invocations on `scripts/test_*.py`
 # files outside the manifest runner. Built to tolerate the bypass paths
 # observed in dual-track review (gemini P1 + codex empirical probe):

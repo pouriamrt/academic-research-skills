@@ -1,7 +1,8 @@
 """Validates rejection_log.schema.json self-consistency and example round-trip."""
 
-from pathlib import Path
 import json
+from pathlib import Path
+
 import pytest
 from jsonschema import Draft202012Validator
 from jsonschema.exceptions import ValidationError

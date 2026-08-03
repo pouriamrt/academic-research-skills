@@ -25,7 +25,6 @@ import subprocess
 import sys
 from pathlib import Path
 
-
 REPO_ROOT = Path(__file__).resolve().parent.parent
 LINT = REPO_ROOT / "scripts" / "check_v3_6_8_pattern_protection.py"
 V3_6_7_MANIFEST = REPO_ROOT / "scripts" / "v3_6_7_inversion_manifest.json"
@@ -579,6 +578,7 @@ def test_strip_file_bom_only_at_byte_zero() -> None:
 
 def test_sha256_helper_matches_hashlib() -> None:
     import hashlib
+
     from scripts.check_v3_6_8_pattern_protection import _sha256
 
     assert _sha256(b"abc") == hashlib.sha256(b"abc").hexdigest()

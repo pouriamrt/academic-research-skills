@@ -1,22 +1,22 @@
 """Tests for the shared helpers used by every reference adapter."""
 
 from pathlib import Path
+
 import yaml
 
 from scripts.adapters._common import (
-    sanitize_citation_key,
-    make_citation_key,
+    ADAPTER_SPEC_VERSION,
+    dump_yaml_stable,
     ensure_unique_citekey,
+    make_citation_key,
+    now_iso,
     parse_csl_name,
     parse_semicolon_names,
-    dump_yaml_stable,
-    now_iso,
     path_to_file_uri,
+    sanitize_citation_key,
     write_passport,
     write_rejection_log,
-    ADAPTER_SPEC_VERSION,
 )
-
 
 # --- sanitize_citation_key ---
 
@@ -253,6 +253,7 @@ def test_write_rejection_log_passes_validation(tmp_path: Path):
     """Output must validate against rejection_log.schema.json — i.e. the
     helper produces a doc that is contract-compliant by construction."""
     import json
+
     from jsonschema import Draft202012Validator
 
     schema_path = (

@@ -70,8 +70,8 @@ try:
     # stdlib fallback does not fetch external entities but is exposed to
     # entity-expansion DoS — acceptable only because the input is the
     # scholar's own package, and requirements-dev installs the hardened path.
-    from defusedxml.ElementTree import fromstring as _xml_fromstring
     from defusedxml.common import DefusedXmlException as _DefusedXmlException
+    from defusedxml.ElementTree import fromstring as _xml_fromstring
 except ImportError:
     _xml_fromstring = ET.fromstring
 

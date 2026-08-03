@@ -28,7 +28,6 @@ from scripts.check_v3_8_annotation_literal_sync import (
     _extract_refuse_block,
 )
 
-
 REPO_ROOT = Path(__file__).resolve().parent.parent
 LINT_SCRIPT = REPO_ROOT / "scripts" / "check_v3_8_annotation_literal_sync.py"
 
@@ -137,8 +136,8 @@ class LintScriptTest(unittest.TestCase):
         # prose, not raw substring match. A rename that appends text
         # (`[HIGH-WARN-NEGATIVE-CONSTRAINT-VIOLATION-RENAMED`) would have
         # passed the R1/R2 lint via prefix-substring containment.
-        import tempfile
         import shutil
+        import tempfile
 
         with tempfile.TemporaryDirectory() as td:
             tmp_root = Path(td) / "repo"
@@ -184,8 +183,8 @@ class LintScriptTest(unittest.TestCase):
         # formatter REFUSE list was edited to `[HIGH-WARN-FABRICATED-
         # REFERENCE-RENAMED]`). The closing bracket is the contract
         # terminator for closed literals.
-        import tempfile
         import shutil
+        import tempfile
 
         with tempfile.TemporaryDirectory() as td:
             tmp_root = Path(td) / "repo"
@@ -233,8 +232,8 @@ class LintScriptTest(unittest.TestCase):
         # Renaming (not adding) keeps the count at 5 so the constant-count
         # gate doesn't fire first — the real failure mode is the literal-
         # match gate, which is what we want this test to pin.
-        import tempfile
         import shutil
+        import tempfile
 
         with tempfile.TemporaryDirectory() as td:
             tmp_root = Path(td) / "repo"

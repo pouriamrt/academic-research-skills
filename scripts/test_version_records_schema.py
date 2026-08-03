@@ -9,7 +9,6 @@ import pytest
 
 from tests.test_helpers import load_json_schema
 
-
 REPO_ROOT = Path(__file__).resolve().parents[1]
 SCHEMAS = REPO_ROOT / "shared/contracts/passport"
 

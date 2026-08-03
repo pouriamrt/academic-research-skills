@@ -65,6 +65,7 @@ def test_cli_fixture_is_schema_valid():
     production shape (the #332 masking bug was a fixture carrying a forbidden
     ref_slug field)."""
     import json
+
     from jsonschema import Draft202012Validator
 
     schema = json.loads(

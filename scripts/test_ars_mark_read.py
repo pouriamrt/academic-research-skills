@@ -23,7 +23,6 @@ import yaml
 
 from tests.test_helpers import run_script
 
-
 SCRIPT = Path(__file__).parent / "ars_mark_read.py"
 
 

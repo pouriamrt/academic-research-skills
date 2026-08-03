@@ -41,8 +41,8 @@ import unittest
 from typing import Any, Callable
 
 try:
-    from scripts.claim_audit_pipeline import run_audit_pipeline
     from scripts._claim_audit_constants import SENTINEL_MANIFEST_ID
+    from scripts.claim_audit_pipeline import run_audit_pipeline
 
     _MODULE_IMPORT_ERR: Exception | None = None
 except Exception as exc:  # pragma: no cover — RED-phase import pathway

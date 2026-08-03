@@ -96,8 +96,8 @@ def migrate_passport(
     accept injected clients for testability (no subprocess, no env-var mock).
     """
     import contamination_signals as cs
-    from openalex_client import OpenAlexUnavailable
     from crossref_client import CrossrefUnavailable
+    from openalex_client import OpenAlexUnavailable
 
     doc = load_passport(path)
     corpus = doc.get("literature_corpus") if doc else None

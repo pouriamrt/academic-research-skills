@@ -15,7 +15,6 @@ from __future__ import annotations
 import sys
 from pathlib import Path
 
-
 REQUIRED_COMMANDS = ("ars-mark-read.md", "ars-unmark-read.md")
 
 # Tokens each command body MUST carry to preserve the user-visible contract.

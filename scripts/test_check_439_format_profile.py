@@ -11,8 +11,6 @@ import copy
 import json
 
 import pytest
-from jsonschema import Draft202012Validator
-
 from check_439_format_profile import (
     FORMATTER,
     INTAKE,
@@ -27,6 +25,7 @@ from check_439_format_profile import (
     check_positioning_boundary,
     check_schema_valid,
 )
+from jsonschema import Draft202012Validator
 
 
 @pytest.fixture(scope="module")

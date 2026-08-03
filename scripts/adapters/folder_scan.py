@@ -18,6 +18,7 @@ Usage:
 """
 
 from __future__ import annotations
+
 import argparse
 import re
 import sys
@@ -32,10 +33,10 @@ if str(_REPO_ROOT) not in sys.path:
 
 from scripts.adapters._common import (  # noqa: E402
     make_citation_key,
+    now_iso,
     path_to_file_uri,
     write_passport,
     write_rejection_log,
-    now_iso,
 )
 
 ADAPTER_NAME = "folder_scan.py"

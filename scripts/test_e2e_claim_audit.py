@@ -46,6 +46,14 @@ from __future__ import annotations
 import unittest
 from typing import Any, Callable
 
+from scripts.claim_audit_finalizer import (
+    ANNOTATION_CLAIM_AUDIT_AMBIGUOUS,
+    ANNOTATION_HIGH_WARN_CLAIM_NOT_SUPPORTED,
+    ANNOTATION_LOW_WARN_UNVERIFIED,
+    ANNOTATION_UNCITED_ASSERTION,
+    apply_finalizer,
+)
+
 # Step 9 RED → GREEN transition is complete: all three modules below now
 # exist. Per R3 codex P2 closure, removing the prior try/except-skip wrapper
 # means an import-time failure (transitive dependency, renamed symbol,
@@ -55,15 +63,7 @@ from typing import Any, Callable
 # pipeline module existed; this e2e file landed in the same commit that
 # completed the chain, so the skip wrapper was always transitional.
 from scripts.claim_audit_pipeline import run_audit_pipeline
-from scripts.claim_audit_finalizer import (
-    ANNOTATION_CLAIM_AUDIT_AMBIGUOUS,
-    ANNOTATION_HIGH_WARN_CLAIM_NOT_SUPPORTED,
-    ANNOTATION_LOW_WARN_UNVERIFIED,
-    ANNOTATION_UNCITED_ASSERTION,
-    apply_finalizer,
-)
 from scripts.uncited_assertion_detector import detect_uncited_assertions
-
 
 MANIFEST_ID = "M-2026-05-16T09:00:00Z-e2e1"
 AUDIT_RUN_ID = "2026-05-16T09:10:00Z-e2e1"

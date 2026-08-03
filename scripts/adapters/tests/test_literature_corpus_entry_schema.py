@@ -1,8 +1,9 @@
 """Validates literature_corpus_entry.schema.json self-consistency and
 round-trips a known-good example entry against it."""
 
-from pathlib import Path
 import json
+from pathlib import Path
+
 import pytest
 from jsonschema import Draft202012Validator
 

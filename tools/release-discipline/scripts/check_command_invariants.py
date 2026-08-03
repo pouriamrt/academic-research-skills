@@ -29,6 +29,8 @@ import re
 from typing import Any
 
 from scripts._release_doc_alignment_schema import (
+    _DEFAULT_CHANGELOG,
+    _DEFAULT_CHANGELOG_PATTERN,
     ManifestError,
     PackageError,
     ScannerError,
@@ -38,12 +40,9 @@ from scripts._release_doc_alignment_schema import (
     _load_manifest_toml,
     _normalize,
     _require_str,
-    _DEFAULT_CHANGELOG,
-    _DEFAULT_CHANGELOG_PATTERN,
     extract_package_version,
     scan_changelog_file,
 )
-
 
 # Tokens are matched at a word-ish boundary: start of line or preceded by
 # whitespace, then a slash, then the command name. The possessive quantifier

@@ -14,7 +14,6 @@ from tempfile import TemporaryDirectory
 
 from tests.test_helpers import run_script
 
-
 LINT = Path(__file__).parent / "check_v3_6_8_mark_read_commands.py"
 REPO_ROOT = Path(__file__).parent.parent
 

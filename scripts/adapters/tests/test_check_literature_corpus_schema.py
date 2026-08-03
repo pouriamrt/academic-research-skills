@@ -1,9 +1,10 @@
 """Tests for the CI lint that validates passport/rejection-log examples
 against their schemas and enforces citation_key uniqueness."""
 
-from pathlib import Path
 import subprocess
 import sys
+from pathlib import Path
+
 import yaml
 
 REPO_ROOT = Path(__file__).resolve().parents[3]

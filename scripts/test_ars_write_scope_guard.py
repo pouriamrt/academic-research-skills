@@ -36,7 +36,6 @@ REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))  # scrip
 
 import ars_write_scope_guard as guard  # noqa: E402
 
-
 # A minimal in-test manifest mirroring the real shape (keys = frontmatter name).
 TEST_MANIFEST = {
     "version": 1,

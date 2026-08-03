@@ -32,7 +32,6 @@ import re
 import sys
 from pathlib import Path
 
-
 RUBRICS_REL = Path("academic-paper-reviewer/references/quality_rubrics.md")
 FRAMEWORK_REL = Path("academic-paper-reviewer/references/review_criteria_framework.md")
 PAPER_SKILL_REL = Path("academic-paper/SKILL.md")

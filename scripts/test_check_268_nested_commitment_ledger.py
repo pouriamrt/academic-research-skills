@@ -13,7 +13,6 @@ import unittest
 
 import scripts.check_268_nested_commitment_ledger as lint
 
-
 CLEAN_SEED = {
     "cases": [
         {

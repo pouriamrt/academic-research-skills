@@ -13,10 +13,9 @@ from __future__ import annotations
 import json
 
 import pytest
-
 from check_390_revision_patch_discipline import (
-    FORMATTER,
     APPLY_SCRIPT,
+    FORMATTER,
     ORCHESTRATOR,
     PAPER_SKILL,
     PATCH_SCHEMA,

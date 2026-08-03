@@ -16,7 +16,6 @@ from __future__ import annotations
 
 from pathlib import Path
 
-
 from scripts.audit_snapshot import render_prompt
 
 REPO_ROOT = Path(__file__).resolve().parent.parent

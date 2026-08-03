@@ -372,8 +372,10 @@ class TestSchemaValidation(unittest.TestCase):
         loaded schema in-test to add a hypothetical non-reviewer mode and
         re-validate. We DO NOT modify the on-disk schema."""
         import copy
-        from scripts.check_sprint_contract import load_schema
+
         import jsonschema
+
+        from scripts.check_sprint_contract import load_schema
 
         schema = copy.deepcopy(load_schema())
         # Add a non-reviewer-prefixed mode to the enum.
@@ -398,7 +400,7 @@ class TestSchemaValidation(unittest.TestCase):
         )
 
     def test_shipped_template_full_passes_schema_and_invariants(self):
-        from scripts.check_sprint_contract import validate, check_structural_invariants
+        from scripts.check_sprint_contract import check_structural_invariants, validate
 
         contract = _load_template(TEMPLATE_FULL)
         self.assertEqual(validate(contract), [])
@@ -411,7 +413,7 @@ class TestSchemaValidation(unittest.TestCase):
         self.assertEqual(warn_suspicious(contract, "v3.6.2"), [])
 
     def test_shipped_template_methodology_focus_passes_schema_and_invariants(self):
-        from scripts.check_sprint_contract import validate, check_structural_invariants
+        from scripts.check_sprint_contract import check_structural_invariants, validate
 
         contract = _load_template(TEMPLATE_METHOD)
         self.assertEqual(validate(contract), [])
@@ -557,7 +559,7 @@ class TestSoftWarnings(unittest.TestCase):
         fire on a schema-valid contract because additionalProperties=false on
         agent_amendments blocks the only condition it checks. Assert that
         warn_suspicious does not emit SC-6 on any schema-valid input."""
-        from scripts.check_sprint_contract import warn_suspicious, validate
+        from scripts.check_sprint_contract import validate, warn_suspicious
 
         c = _valid_reviewer_full_contract()
         self.assertEqual(validate(c), [])  # schema-valid precondition
@@ -701,7 +703,7 @@ class TestSchema131WriterEvaluatorPositive(unittest.TestCase):
     must validate cleanly under Schema 13.1 + produce zero soft warnings."""
 
     def test_shipped_writer_full_passes_schema_and_invariants(self):
-        from scripts.check_sprint_contract import validate, check_structural_invariants
+        from scripts.check_sprint_contract import check_structural_invariants, validate
 
         c = _valid_writer_full_contract()
         self.assertEqual(validate(c), [])
@@ -714,7 +716,7 @@ class TestSchema131WriterEvaluatorPositive(unittest.TestCase):
         self.assertEqual(warn_suspicious(c, "v3.6.6"), [])
 
     def test_shipped_evaluator_full_passes_schema_and_invariants(self):
-        from scripts.check_sprint_contract import validate, check_structural_invariants
+        from scripts.check_sprint_contract import check_structural_invariants, validate
 
         c = _valid_evaluator_full_contract()
         self.assertEqual(validate(c), [])
@@ -798,7 +800,7 @@ class TestSchema131ReviewerZeroTouch(unittest.TestCase):
     def test_existing_reviewer_contracts_still_valid_under_13_1(self):
         """Loads both shipped reviewer templates against Schema 13.1 and asserts
         validation success without modification. §3.6 zero-touch verification."""
-        from scripts.check_sprint_contract import validate, check_structural_invariants
+        from scripts.check_sprint_contract import check_structural_invariants, validate
 
         for path in (TEMPLATE_FULL, TEMPLATE_METHOD):
             with self.subTest(template=path.name):

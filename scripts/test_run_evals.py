@@ -9,8 +9,8 @@ import pytest
 import yaml
 from jsonschema import Draft202012Validator
 
-from scripts import run_evals
 from scripts import _eval_threshold_gate as gate
+from scripts import run_evals
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 SCHEMA_PATH = REPO_ROOT / "shared" / "evals_lift_report.schema.json"

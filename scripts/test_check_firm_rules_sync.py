@@ -16,8 +16,8 @@ from pathlib import Path
 
 import pytest
 
-from tests.test_helpers import run_script
 from scripts.check_firm_rules_sync import CIM_SECTION_HEADER, _extract_section
+from tests.test_helpers import run_script
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 LINT = REPO_ROOT / "scripts" / "check_firm_rules_sync.py"

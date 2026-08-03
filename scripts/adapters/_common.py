@@ -5,6 +5,7 @@ They are also what a user-written adapter would copy and adapt.
 """
 
 from __future__ import annotations
+
 import datetime
 import io
 import re

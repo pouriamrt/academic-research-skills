@@ -15,6 +15,7 @@ Usage:
 """
 
 from __future__ import annotations
+
 import argparse
 import re
 import sys
@@ -32,11 +33,11 @@ if str(_REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(_REPO_ROOT))
 
 from scripts.adapters._common import (  # noqa: E402
-    write_passport,
-    write_rejection_log,
-    parse_semicolon_names,
     ensure_unique_citekey,
     now_iso,
+    parse_semicolon_names,
+    write_passport,
+    write_rejection_log,
 )
 
 ADAPTER_NAME = "obsidian.py"

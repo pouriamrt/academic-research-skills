@@ -15,20 +15,19 @@ import json
 import pytest
 
 from scripts.check_v3_10_policy import (
-    parse_ref_marker,
-    marker_triggers_refusal,
+    DEFAULT_ENTRY_SCHEMA,
+    DEFAULT_FORMATTER,
+    DEFAULT_ORCHESTRATOR,
+    DEFAULT_TP_SCHEMA,
     any_marker_triggers_refusal,
     assert_venue_type_source_clean,
     check_entry_schema,
-    check_terminal_policies_schema,
     check_finalizer_prompt,
     check_formatter_prompt,
-    DEFAULT_ENTRY_SCHEMA,
-    DEFAULT_TP_SCHEMA,
-    DEFAULT_FORMATTER,
-    DEFAULT_ORCHESTRATOR,
+    check_terminal_policies_schema,
+    marker_triggers_refusal,
+    parse_ref_marker,
 )
-
 
 # ===========================================================================
 # A. Marker-grammar parser fixtures (spec §3 PR-B item 6)

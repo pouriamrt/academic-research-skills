@@ -8,7 +8,6 @@ import json
 import shutil
 from pathlib import Path
 
-
 from scripts import check_evals_gold_set
 
 FIXTURE_ROOT = Path(__file__).parent / "fixtures" / "check_evals_gold_set"

@@ -6,11 +6,9 @@ External motivation: Zhao et al. arXiv:2605.07723 (2026-05).
 
 from __future__ import annotations
 
-from pathlib import Path
-
-
 import importlib.util
 import sys
+from pathlib import Path
 
 SCRIPT_PATH = Path(__file__).resolve().parent / "check_v3_7_3_three_layer_citation.py"
 spec = importlib.util.spec_from_file_location("lint_module", SCRIPT_PATH)

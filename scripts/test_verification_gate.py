@@ -102,8 +102,8 @@ def test_title_only_unmatched_yields_unresolvable():
 
 
 def test_resolver_outage_is_unreachable():
-    from verification_gate import verify_citation
     from crossref_client import CrossrefUnavailable
+    from verification_gate import verify_citation
 
     cr = MagicMock()
     cr.doi_lookup_with_title_check.side_effect = CrossrefUnavailable("down")
@@ -115,11 +115,11 @@ def test_resolver_outage_is_unreachable():
 
 
 def test_all_unreachable_is_unresolvable():
-    from verification_gate import verify_citation
-    from crossref_client import CrossrefUnavailable
-    from openalex_client import OpenAlexUnavailable
     from arxiv_client import ArxivUnavailable
     from contamination_signals import SemanticScholarUnavailable
+    from crossref_client import CrossrefUnavailable
+    from openalex_client import OpenAlexUnavailable
+    from verification_gate import verify_citation
 
     cr = MagicMock()
     cr.doi_lookup_with_title_check.side_effect = CrossrefUnavailable("x")
@@ -215,6 +215,7 @@ def test_outcome_validates_against_summary_schema():
     an illegal ref_slug into the entry; with a production-shaped entry it now
     actually exercises the contract (ref_slug must be a non-null string)."""
     import json
+
     from jsonschema import Draft202012Validator
     from verification_gate import verify_citation
 
@@ -252,6 +253,7 @@ def test_corpus_fixture_is_schema_valid():
     that carried a field the corpus schema forbids). If this fails, the schema
     tests above are testing a shape production never sees."""
     import json
+
     from jsonschema import Draft202012Validator
 
     schema = json.loads(
@@ -331,6 +333,7 @@ def test_verify_passport_outputs_are_schema_valid():
     that ALL validate against citation_verification_summary.schema (the #332 P1
     was that the normal passport path produced schema-invalid ref_slug: None)."""
     import json
+
     from jsonschema import Draft202012Validator
     from verification_gate import verify_passport
 

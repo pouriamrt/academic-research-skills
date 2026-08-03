@@ -7,7 +7,6 @@ import subprocess
 import sys
 from pathlib import Path
 
-
 SCRIPT = Path(__file__).parent / "check_v3_9_0_triangulation.py"
 REPO_ROOT = Path(__file__).resolve().parents[1]
 

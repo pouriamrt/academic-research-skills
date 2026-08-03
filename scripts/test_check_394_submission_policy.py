@@ -12,7 +12,6 @@ import json
 import re
 
 import pytest
-
 from check_394_submission_policy import (
     FORMATTER,
     ORCHESTRATOR,

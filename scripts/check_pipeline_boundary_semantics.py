@@ -42,10 +42,9 @@ Exit codes: 0 on pass, 1 on any failure.
 
 from __future__ import annotations
 
+import hashlib
 import sys
 from pathlib import Path
-
-import hashlib
 
 from _skill_lint import check_section_literals
 

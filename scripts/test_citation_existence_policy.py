@@ -39,18 +39,17 @@ import pytest
 from jsonschema import Draft202012Validator
 
 from scripts.check_v3_10_policy import (
-    parse_ref_marker,
-    any_marker_triggers_refusal,
-    check_terminal_policies_schema,
-    check_finalizer_prompt,
-    _extract_section,
-    V3_10_FINALIZER_HEADER,
-    DEFAULT_TP_SCHEMA,
-    DEFAULT_ORCHESTRATOR,
     DEFAULT_FORMATTER,
+    DEFAULT_ORCHESTRATOR,
+    DEFAULT_TP_SCHEMA,
+    V3_10_FINALIZER_HEADER,
+    _extract_section,
+    any_marker_triggers_refusal,
+    check_finalizer_prompt,
+    check_terminal_policies_schema,
+    parse_ref_marker,
 )
 from scripts.citation_verification_summary import reduce_lookup_verified
-
 
 # ===========================================================================
 # Resolver-outcome builders (production shape: status + queried_by)

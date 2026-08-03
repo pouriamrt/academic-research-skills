@@ -21,9 +21,7 @@ if str(REPO_ROOT / "scripts") not in sys.path:
     sys.path.insert(0, str(REPO_ROOT / "scripts"))
 
 import migrate_literature_corpus_to_v3_9_0 as mig  # noqa: E402
-
 from openalex_client import OpenAlexUnavailable  # noqa: E402
-
 
 # ---------------------------------------------------------------------------
 # Mock client helpers

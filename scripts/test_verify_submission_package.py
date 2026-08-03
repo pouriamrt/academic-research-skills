@@ -16,7 +16,6 @@ from pathlib import Path
 import jsonschema
 import pytest
 import yaml
-
 from verify_submission_package import run
 
 REPO_ROOT = Path(__file__).resolve().parent.parent

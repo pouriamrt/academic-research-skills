@@ -17,7 +17,6 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
-
 REPO_ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_GOLD_SET = REPO_ROOT / "evals/gold/rq_framing_patterns/gold_set.json"
 POSITIVE_LABEL = "wording_cliche"

@@ -1,10 +1,10 @@
 """Unit tests for check_repro_lock.py."""
 
 import subprocess
+import textwrap
 import unittest
 from pathlib import Path
 from tempfile import TemporaryDirectory
-import textwrap
 
 from tests.test_helpers import run_script
 

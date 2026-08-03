@@ -57,7 +57,6 @@ import sys
 from pathlib import Path
 from typing import Any
 
-
 REPO_ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_ENTRY_SCHEMA = REPO_ROOT / "shared/contracts/passport/literature_corpus_entry.schema.json"
 DEFAULT_TP_SCHEMA = REPO_ROOT / "shared/contracts/passport/terminal_policies.schema.json"

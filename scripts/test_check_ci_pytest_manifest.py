@@ -25,7 +25,6 @@ from pathlib import Path
 
 import pytest
 
-
 SCRIPT = Path(__file__).resolve().parent / "check_ci_pytest_manifest.py"
 
 

@@ -59,7 +59,7 @@ def test_put_overwrites_same_key(cache):
 
 def test_expired_entry_returns_none(tmp_path, monkeypatch):
     """An entry older than the TTL (90 days) is a miss."""
-    from verification_cache import VerificationCache, _TTL_DAYS
+    from verification_cache import _TTL_DAYS, VerificationCache
 
     db = tmp_path / "verification.db"
     monkeypatch.setenv("ARS_VERIFICATION_CACHE_PATH", str(db))
@@ -81,7 +81,7 @@ def test_expired_entry_returns_none(tmp_path, monkeypatch):
 
 
 def test_fresh_entry_within_ttl_returns_value(tmp_path, monkeypatch):
-    from verification_cache import VerificationCache, _TTL_DAYS
+    from verification_cache import _TTL_DAYS, VerificationCache
 
     db = tmp_path / "verification.db"
     monkeypatch.setenv("ARS_VERIFICATION_CACHE_PATH", str(db))

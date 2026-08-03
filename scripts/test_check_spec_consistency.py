@@ -15,7 +15,6 @@ from tempfile import TemporaryDirectory
 
 from scripts import check_spec_consistency as csc
 
-
 ARCHITECTURE_TEMPLATE = """\
 # Architecture
 

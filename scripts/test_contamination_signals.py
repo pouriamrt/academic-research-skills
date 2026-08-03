@@ -620,8 +620,8 @@ class ResolveArxivUnmatchedTest(unittest.TestCase):
 
     def test_api_down_raises(self):
         """API degraded → re-raise ArxivUnavailable for caller to omit field."""
-        from contamination_signals import resolve_arxiv_unmatched
         from arxiv_client import ArxivUnavailable
+        from contamination_signals import resolve_arxiv_unmatched
 
         mock_client = MagicMock()
         mock_client.arxiv_id_lookup.side_effect = ArxivUnavailable("down")

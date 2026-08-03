@@ -22,7 +22,6 @@ if str(REPO_ROOT / "scripts") not in sys.path:
 
 import migrate_literature_corpus_to_v3_7_3 as mig  # noqa: E402
 
-
 SAMPLE_PASSPORT_YAML = """\
 # Material Passport for the SLR run
 origin_skill: deep-research

@@ -7,9 +7,10 @@ file; it does not write to stdout on success).
 """
 
 import subprocess
-import yaml
-import pytest
 from pathlib import Path
+
+import pytest
+import yaml
 
 
 @pytest.fixture

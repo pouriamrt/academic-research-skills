@@ -53,8 +53,7 @@ from collections import Counter
 from datetime import date
 from pathlib import Path
 
-from _skill_lint import parse_frontmatter, FrontmatterError
-
+from _skill_lint import FrontmatterError, parse_frontmatter
 
 # Broad token captures: anything that looks like an identifier inside the
 # expected position. The strict validator below then decides whether the raw

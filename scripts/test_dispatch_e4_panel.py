@@ -801,6 +801,23 @@ def test_repo_relative_still_removes_the_two_disclosure_roots():
     assert str(Path.home()) not in harness.repo_relative(f"{Path.home()}/work is not empty")
 
 
+@pytest.mark.skipif(os.name != "nt", reason="POSIX paths are case-sensitive by design")
+@pytest.mark.parametrize("spell", [str.upper, str.lower, lambda s: s])
+def test_repo_relative_scrubs_case_variant_spellings_of_a_root(spell):
+    """Windows paths are case-insensitive; the scrubber must be too.
+
+    The same home directory reaches a diagnostic as `C:\\Users\\me`,
+    `c:\\users\\me` or `C:\\USERS\\ME` depending on who spelled it. The
+    original guard above asserts only the ONE spelling `str(Path.home())`
+    returns, so a variant walked past it and into a field stamped `verbatim`.
+    Asserting on the account name catches every spelling at once.
+    """
+    home = str(Path.home())
+    account = Path.home().name
+    cleaned = harness.repo_relative(f"{spell(home)}{os.sep}work is not empty")
+    assert account.lower() not in cleaned.lower()
+
+
 def test_repeating_a_panel_identity_never_overwrites_its_record(tmp_path, capsys):
     """The demonstrated evidence-destruction path: the same command twice.
 

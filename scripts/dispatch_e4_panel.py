@@ -670,10 +670,16 @@ def run_checker(argv: list[str], *, cwd: Path) -> tuple[int, str, str]:
     Relative paths plus this cwd keep the output free of an absolute prefix,
     which is what lets every stored diagnostic be recorded as `verbatim`.
     """
+    # Explicit codec: text=True decodes with the LOCALE encoding, which is
+    # cp1252 on Windows. This repo's checkers emit arrows and em-dashes, so
+    # the default either raises or silently mojibakes -- and a mojibaked
+    # diagnostic persisted under `verbatim` is a false attestation, the same
+    # defect class `repo_relative` exists to prevent.
     completed = subprocess.run(
         [sys.executable, *argv],
         capture_output=True,
         text=True,
+        encoding="utf-8",
         cwd=cwd,
         check=False,
     )
@@ -1900,12 +1906,21 @@ def repo_relative(text: str) -> str:
         if _escaped != _root:
             _spellings.setdefault(_escaped, os.sep.replace("\\", "\\\\"))
     roots = sorted(_spellings, key=len, reverse=True)
+    # Windows paths are case-INSENSITIVE, so one home directory reaches a
+    # diagnostic as `C:\Users\me`, `c:\users\me` or `C:\USERS\ME` depending on
+    # who spelled it -- an env var, a user-typed argument, an 8.3 expansion.
+    # A literal match catches none of the variants, so the operator's home
+    # directory rode into a record stamped `verbatim`: the same defect class as
+    # the repr-escaped spelling above, reached by a different door. POSIX paths
+    # ARE case-sensitive, where folding would strip a genuinely different
+    # directory, so the flag is nt-only and this is a no-op there.
+    _fold = re.IGNORECASE if os.name == "nt" else 0
     for root in roots:
         # Guarded at the point of USE, so a caller that sets RUN_ROOTS
         # directly is safe too: a filesystem root would reduce to "/" and
         # delete every slash in every diagnostic, including a DOI URL.
         if root and Path(root).parent != Path(root):
-            text = text.replace(root + _spellings[root], "")
+            text = re.sub(re.escape(root + _spellings[root]), "", text, flags=_fold)
             # os.altsep is "/" on Windows, None on POSIX. The harness joins its
             # own paths with "/", so on Windows the separator pass above alone
             # misses them and the bare-root pass below leaves a stray leading
@@ -1913,10 +1928,10 @@ def repo_relative(text: str) -> str:
             # lets an absolute local path into a record destined for a public
             # repo. No-op on POSIX.
             if os.altsep:
-                text = text.replace(root + os.altsep, "")
+                text = re.sub(re.escape(root + os.altsep), "", text, flags=_fold)
             # The bare-root pass needs a boundary: `/tmp` registered must
             # not eat the `/tmp` inside a sibling `/tmp2/file`.
-            text = re.sub(re.escape(root) + r"(?![\w-])", "", text)
+            text = re.sub(re.escape(root) + r"(?![\w-])", "", text, flags=_fold)
     return text
 
 

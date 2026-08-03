@@ -928,9 +928,13 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--audit-run-id", required=True)
     args = parser.parse_args(argv)
 
-    draft = args.draft.read_text()
-    timeline = yaml.safe_load(args.timeline.read_text())
-    citation_provenance = yaml.safe_load(args.citation_provenance.read_text())
+    # Same explicit codec as the writes below, for the same reason: read_text
+    # defaults to the LOCALE encoding, and the draft this audits is a
+    # manuscript full of em-dashes that cp1252 cannot decode. Fixing only the
+    # write side left the round trip broken at its first step (Windows-only).
+    draft = args.draft.read_text(encoding="utf-8")
+    timeline = yaml.safe_load(args.timeline.read_text(encoding="utf-8"))
+    citation_provenance = yaml.safe_load(args.citation_provenance.read_text(encoding="utf-8"))
 
     result = audit(
         draft, timeline, citation_provenance, args.report_reference_date, args.audit_run_id

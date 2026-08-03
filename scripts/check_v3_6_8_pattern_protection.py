@@ -72,11 +72,15 @@ _BOM = b"\xef\xbb\xbf"
 
 def _run_git(args: list[str], cwd: Path = REPO_ROOT) -> tuple[int, str, str]:
     """Run git and return (returncode, stdout, stderr) as decoded strings."""
+    # text=True alone decodes with the LOCALE codec (cp1252 on Windows). This
+    # helper carries commit messages and paths, and this repo's own commit
+    # messages contain em-dashes, so the decode is a real failure mode here.
     result = subprocess.run(
         ["git", *args],
         cwd=cwd,
         capture_output=True,
         text=True,
+        encoding="utf-8",
         check=False,
     )
     return result.returncode, result.stdout.strip(), result.stderr.strip()

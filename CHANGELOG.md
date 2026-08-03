@@ -6,6 +6,44 @@ All notable changes to this project will be documented in this file.
 >
 > **Bilingual / Traditional Chinese support removed in v3.17.0 (2026-05-15); upstream bilingual additions never merged.** Historical entries below that describe `abstract_bilingual_agent`, `apa7_chinese_citation_guide.md`, `bilingual_abstract_template.md`, `chinese_paper_example.md`, `README.zh-TW.md`, `docs/SETUP.zh-TW.md`, `docs/PERFORMANCE.zh-TW.md`, or any "繁體中文" / "zh-TW" trigger keywords describe state that no longer exists in the codebase. Entries carried over from the upstream sync that describe `README.zh-CN.md` (#181/#185) or `README.ja-JP.md` (#161/#162) describe **upstream** features that were deliberately NOT merged — this fork is English-only and ships none of those files. All such entries are preserved as-is for upstream traceability.
 
+## [3.20.1] - 2026-08-03 — Hot-path and quality hardening (PreToolUse latency, session context, first lint gate)
+
+### Performance
+- `hooks/run_guard.sh`: four Python cold starts per tool call reduced to **zero** for Bash and
+  three for structured writes. The launcher probed `py -3`, probed `python3`, ran the guard, then
+  spawned Python again to JSON-validate its own output. Adds a shell fast path keyed on the
+  guard's own `INSPECTED_TOOLS` set, and replaces the validation respawn with an anchored prefix
+  match. Every deny decision is byte-identical; measured with a PATH shim.
+- `scripts/announce-ars-loaded.sh`: startup banner 2,238 → ~500 chars (~560 → ~110 tokens injected
+  into every session, in every project). All 16 `/ars-*` tokens and the `Slash commands (16)`
+  literal are retained so `check_command_invariants` still passes.
+
+### Documentation
+- `.claude/CLAUDE.md`: removed 19,733 chars of embedded release history already in this file
+  (32,107 → 13,343 chars, ~4.9k tokens per in-repo session). Adds a Command model routing section
+  carrying the `inherit` vs `sonnet` split relocated out of the banner.
+- `.claude-plugin/plugin.json`: description trimmed 1,224 → 362 chars.
+
+### Quality
+- First linting gate: ruff (`E4,E7,E9,F` then `I`, `RUF100`, `UP`) plus `ruff format`, enforced in
+  CI. Markdown is excluded — ruff formats Python inside `.md` code fences, which would rewrite
+  SHA-pinned agent prompt files. `[tool.ruff.format] line-ending = "lf"` pinned.
+- mypy scoped to `scripts/ars_write_scope_guard.py`, the security-critical path.
+- CI `pytest` workflow now triggers on `hooks/**`; a PR touching only the guard launcher
+  previously ran no tests.
+- `scripts/test_run_guard_launcher.py`: pins `STRUCTURED_WRITE_TOOLS` / `INSPECTED_TOOLS` so
+  widening the guard trips red instead of silently widening the shell fast path.
+
+### Fixed
+- `scripts/semantic_scholar_client.py`: `_normalize_title` re-export restored with `noqa: F401`.
+  The ruff auto-fix removed it as unused; it is consumed as `ssc._normalize_title` by tests.
+- `shared/contracts/degradation_registry.json`: D3 authority anchor shortened after formatting
+  moved a closing paren onto its own line.
+
+### Known
+- Install payload carries dev material (129 test files, docs, example PDFs); the directory
+  marketplace loader has no ignore mechanism.
+
 ## [3.20.0] - 2026-07-16 — Upstream sync: v3.13.0 → v3.17.0 (boundary semantics, cross-model envelope, model tiering, panel checker, degradation registry)
 
 Merges 54 upstream commits from Imbad0202 v3.13.0 (`c22c17e`) → v3.17.0 (`039d94f`) onto the fork's v3.19.0 baseline, via a true git merge (3-way re-merged against the v3.19.0 content base). Bilingual upstream additions (README.zh-CN/ja-JP/ko-KR, Korean trigger keywords #452/#509 and Korean routing fixtures) are NOT merged — fork remains English-only. Fork priorities preserved: experiment pipeline (Schemas 10–18), auto-by-default v3.17.0 pipeline, fork version line.

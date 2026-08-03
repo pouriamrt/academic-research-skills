@@ -78,7 +78,7 @@ def check_claude_md() -> None:
     rel_path = ".claude/CLAUDE.md"
     expect_contains(rel_path, "integrity check (Stage 2.5)")
     expect_contains(rel_path, "final integrity check (Stage 4.5)")
-    expect_contains(rel_path, "**Version**: 3.20.0")
+    expect_contains(rel_path, "**Version**: 3.20.1")
     expect_contains(rel_path, "Output language: English only")
     for forbidden in (
         "6th independent reviewer",

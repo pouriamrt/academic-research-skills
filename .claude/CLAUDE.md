@@ -13,12 +13,12 @@ A suite of Claude Code skills for rigorous academic research, experimentation, s
 | `lab-notebook` v1.0.1 | Experiment research record | full, log-entry, deviation, snapshot, export, audit |
 | `academic-paper` v3.2.0 | 11-agent academic paper writing (English-only) | full, plan, outline-only, revision, revision-coach, abstract-only, lit-review, format-convert, citation-check, disclosure, rebuttal-audit |
 | `academic-paper-reviewer` v1.9.1 | Multi-perspective paper review (5 reviewers + optional cross-model DA critique) | full, re-review, quick, methodology-focus, guided, calibration |
-| `academic-pipeline` v3.20.0 | Full pipeline orchestrator (suite-version-pinned, auto-by-default) | (coordinates all above) |
+| `academic-pipeline` v3.20.1 | Full pipeline orchestrator (suite-version-pinned, auto-by-default) | (coordinates all above) |
 
 
 ## Version history
 
-See `CHANGELOG.md` for the full release history. Current: v3.20.0.
+See `CHANGELOG.md` for the full release history. Current: v3.20.1.
 
 ## Command model routing
 
@@ -156,9 +156,9 @@ Materials: Sprint Contract (Schema 20, v3.6.2+ for reviewers; Schema 20.1, v3.6.
 Run `python tools/self_test.py` to validate plugin structural integrity (200+ checks). See `tools/` for schema validation, dependency graph generation, pipeline dashboard, and reproducibility replay. CI workflows under `.github/workflows/`: `pytest.yml`, `spec-consistency.yml`, `freshness-check.yml`.
 
 ## Version Info
-- **Version**: 3.20.0
-- **Suite version**: 3.20.0
-- **Last Updated**: 2026-07-16
+- **Version**: 3.20.1
+- **Suite version**: 3.20.1
+- **Last Updated**: 2026-08-03
 - **Author**: Pouria Mortezaagha
 - **Upstream**: Imbad0202 (merged through v3.17.0 / commit 039d94f)
 - **License**: CC-BY-NC 4.0

@@ -37,6 +37,7 @@ gating, the resolver→reducer `unresolvable` chain) is in
 Run:
     PYTHONPATH=. python -m pytest scripts/test_title_fuzzy_false_positive.py -v
 """
+
 from __future__ import annotations
 
 import json
@@ -108,4 +109,5 @@ def test_negated_title_is_rejected_as_distinct_work():
 
 if __name__ == "__main__":
     import pytest
+
     sys.exit(pytest.main([__file__, "-v"]))

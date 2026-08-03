@@ -14,6 +14,7 @@ retrieval/judge clients in their own dispatch layer.
 The full spec is in
 docs/design/2026-05-15-issue-103-claim-alignment-audit-spec.md §4-§5.
 """
+
 from __future__ import annotations
 
 import hashlib
@@ -146,7 +147,9 @@ def _active_constraints_for_claim(
     """
     constraints: list[dict[str, Any]] = []
     for mnc in mncs_by_manifest_id.get(scoped_manifest_id, []):
-        constraints.append({"constraint_id": mnc["constraint_id"], "rule": mnc["rule"], "scope": "MNC"})
+        constraints.append(
+            {"constraint_id": mnc["constraint_id"], "rule": mnc["rule"], "scope": "MNC"}
+        )
     claim = claim_by_mc_id.get((scoped_manifest_id, claim_id))
     if claim is not None:
         for nc in claim.get("negative_constraints", []) or []:
@@ -175,7 +178,12 @@ def _cache_key(
         "anchor_value_hash": _hash_text(anchor_value),
         "retrieved_excerpt_hash": _hash_text(retrieved_excerpt),
         "active_constraints_hash": _hash_text(
-            _stable_json([{"constraint_id": c["constraint_id"], "rule": c["rule"]} for c in active_constraints])
+            _stable_json(
+                [
+                    {"constraint_id": c["constraint_id"], "rule": c["rule"]}
+                    for c in active_constraints
+                ]
+            )
         ),
         "judge_model": judge_model,
         # #361: a judge-prompt revision partitions the keyspace — a verdict
@@ -362,7 +370,9 @@ def _invoke_judge(
     except TimeoutError as exc:
         raise JudgeInvocationError("judge_timeout", str(exc) or "judge timed out") from exc
     except (json.JSONDecodeError, ValueError) as exc:
-        raise JudgeInvocationError("judge_parse_error", str(exc) or "judge returned malformed payload") from exc
+        raise JudgeInvocationError(
+            "judge_parse_error", str(exc) or "judge returned malformed payload"
+        ) from exc
     except Exception as exc:  # noqa: BLE001 — translation boundary; the source class is captured
         raise JudgeInvocationError("judge_api_error", f"{type(exc).__name__}: {exc}") from exc
 
@@ -397,7 +407,9 @@ def _invoke_retrieve(
     try:
         result = retrieve_fn(citation)
     except TimeoutError as exc:
-        raise RetrievalInvocationError("retrieval_timeout", str(exc) or "retrieve_fn timed out") from exc
+        raise RetrievalInvocationError(
+            "retrieval_timeout", str(exc) or "retrieve_fn timed out"
+        ) from exc
     except (ConnectionError, OSError) as exc:
         raise RetrievalInvocationError(
             "retrieval_network_error",
@@ -409,7 +421,9 @@ def _invoke_retrieve(
             str(exc) or "retrieve_fn returned malformed payload",
         ) from exc
     except Exception as exc:  # noqa: BLE001 — translation boundary
-        raise RetrievalInvocationError("retrieval_api_error", f"{type(exc).__name__}: {exc}") from exc
+        raise RetrievalInvocationError(
+            "retrieval_api_error", f"{type(exc).__name__}: {exc}"
+        ) from exc
 
     if not isinstance(result, dict):
         raise RetrievalInvocationError(
@@ -457,7 +471,9 @@ def _invoke_retrieve(
 # ---------------------------------------------------------------------------
 
 
-def _anchorless_entry(citation: dict[str, Any], *, audit_run_id: str, now_iso: str, judge_model: str) -> dict[str, Any]:
+def _anchorless_entry(
+    citation: dict[str, Any], *, audit_run_id: str, now_iso: str, judge_model: str
+) -> dict[str, Any]:
     """§4 Step 1: anchor=none short-circuits to RETRIEVAL_FAILED+inconclusive+not_applicable+not_attempted.
 
     INV-6 sentinel: anchor_kind=none MUST carry anchor_value="" (empty sentinel
@@ -1286,9 +1302,7 @@ def run_audit_pipeline(
                 for claim in manifest.get("claims", []) or []:
                     cid_in_manifest = claim.get("claim_id")
                     if cid_in_manifest:
-                        constraint_absorbed_claim_ids.add(
-                            (scoped_manifest_id, cid_in_manifest)
-                        )
+                        constraint_absorbed_claim_ids.add((scoped_manifest_id, cid_in_manifest))
             # Also absorb the emitted citation's own (manifest, claim) pair
             # so a drifted-yet-violated citation does not produce a
             # companion EMITTED_NOT_INTENDED row.
@@ -1365,7 +1379,11 @@ def run_audit_pipeline(
         # Decide which manifests this sentence is constraint-judged against.
         # Caller-pinned scope → that one manifest. Otherwise every manifest.
         if scoped_manifest_id_for_sentence:
-            target_manifest_ids = [scoped_manifest_id_for_sentence] if scoped_manifest_id_for_sentence in manifest_mncs_by_id else []
+            target_manifest_ids = (
+                [scoped_manifest_id_for_sentence]
+                if scoped_manifest_id_for_sentence in manifest_mncs_by_id
+                else []
+            )
         else:
             target_manifest_ids = list(manifest_mncs_by_id.keys())
 

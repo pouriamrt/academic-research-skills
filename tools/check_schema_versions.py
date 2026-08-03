@@ -109,7 +109,9 @@ class CheckResult:
 
 
 def check_schemas_documented() -> CheckResult:
-    result = CheckResult(f"Check 1: All {EXPECTED_SCHEMA_COUNT} schemas documented in handoff_schemas.md")
+    result = CheckResult(
+        f"Check 1: All {EXPECTED_SCHEMA_COUNT} schemas documented in handoff_schemas.md"
+    )
 
     if not HANDOFF_SCHEMAS_PATH.exists():
         result.fail(f"File not found: {HANDOFF_SCHEMAS_PATH}")
@@ -182,8 +184,7 @@ def check_agent_schema_guidance() -> CheckResult:
             )
         elif not has_schema_ref:
             result.warn(
-                f"{agent_rel}: expected to produce {schemas_str} "
-                f"but no schema references found"
+                f"{agent_rel}: expected to produce {schemas_str} but no schema references found"
             )
 
     return result

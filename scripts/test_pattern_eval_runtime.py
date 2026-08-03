@@ -36,10 +36,23 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 FIXTURE_ROOT = REPO_ROOT / "tests" / "fixtures" / "v3_6_7_pattern_eval"
 
 PATTERN_IDS = (
-    "A1", "A2", "A3", "A4", "A5",
-    "B1", "B2", "B3", "B4", "B5",
-    "C1", "C2", "C3",
-    "D1", "D2", "D3", "D4",
+    "A1",
+    "A2",
+    "A3",
+    "A4",
+    "A5",
+    "B1",
+    "B2",
+    "B3",
+    "B4",
+    "B5",
+    "C1",
+    "C2",
+    "C3",
+    "D1",
+    "D2",
+    "D3",
+    "D4",
 )
 
 PATTERN_TO_DIMENSION = {
@@ -72,8 +85,8 @@ PATTERN_TO_DIMENSION = {
 # Closes codex F-003: inventory was previously partial (omitted P-PB-dup-* / consume / crash).
 PHASE_TO_PASSPORT_MUTATION = {
     # Happy paths
-    "A7": "none",          # Path A success — entry already there
-    "B10": "appended",     # Path B success — fresh proposal merged
+    "A7": "none",  # Path A success — entry already there
+    "B10": "appended",  # Path B success — fresh proposal merged
     # Path A failure phases — passport unchanged (silent fall-through to B)
     "P-PA-precond": "none",
     "P-PA-schema": "none",
@@ -102,25 +115,23 @@ PHASE_TO_PASSPORT_MUTATION = {
     # double-append. For success-path completion these reach B10 → "appended"; for
     # short-circuit (B1a tuple-match supersession-false A3-A6 success) reach A7 →
     # "none" reading the pre-existing entry.
-    "P-PB-dup-early": "conditional",     # depends on A3-A6 outcome + supersession_required
-    "P-PB-dup-other": "conditional",     # continues B1a/B2 with remaining candidates
-    "P-PB-dup-late": "conditional",      # GO TO B10 reading pre-existing entry; no new append in current session
-    "P-PB-consume-fail": "appended",     # B9 atomic-rename succeeded → entry committed
-    "P-PB-crash": "conditional",         # depends on whether B9 atomic-rename fired
+    "P-PB-dup-early": "conditional",  # depends on A3-A6 outcome + supersession_required
+    "P-PB-dup-other": "conditional",  # continues B1a/B2 with remaining candidates
+    "P-PB-dup-late": "conditional",  # GO TO B10 reading pre-existing entry; no new append in current session
+    "P-PB-consume-fail": "appended",  # B9 atomic-rename succeeded → entry committed
+    "P-PB-crash": "conditional",  # depends on whether B9 atomic-rename fired
     # Round-cap escalation phase (§5.4 / B11) — append still happens (B10 ran
     # for round-N MATERIAL) but the orchestrator additionally emits the
     # escalation prompt and awaits user choice. Integration round_3 fixtures
     # use this phase explicitly per F-201 closure.
-    "B11": "appended",                   # round == target_rounds MATERIAL → escalation
+    "B11": "appended",  # round == target_rounds MATERIAL → escalation
 }
 
 # Total enumerated phases (must equal 24 §5.6 inventory rows + 2 happy-path
 # B10/A7 + 1 round-cap escalation B11 = 27).
 EXPECTED_PHASE_COUNT = 27
 
-RUN_ID_REGEX = re.compile(
-    r"^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}-[0-9]{2}-[0-9]{2}Z-[0-9a-f]{4}$"
-)
+RUN_ID_REGEX = re.compile(r"^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}-[0-9]{2}-[0-9]{2}Z-[0-9a-f]{4}$")
 
 
 def _load_yaml(path: Path) -> dict:
@@ -133,9 +144,7 @@ def _load_json(path: Path) -> dict:
         return json.load(fp)
 
 
-def _simulate_orchestrator_decision(
-    verdict: dict, expected_phase: str
-) -> dict:
+def _simulate_orchestrator_decision(verdict: dict, expected_phase: str) -> dict:
     """Apply §5.6 Path B verdict→ship/block decision to a synthesized verdict.
 
     Returns a dict with the orchestrator action that an actual run would
@@ -222,11 +231,7 @@ def _validate_status_count_consistency(verdict: dict) -> None:
 def _all_micro_fixtures() -> list[str]:
     if not FIXTURE_ROOT.exists():
         return []
-    return [
-        d.name
-        for d in sorted(FIXTURE_ROOT.iterdir())
-        if d.is_dir() and d.name in PATTERN_IDS
-    ]
+    return [d.name for d in sorted(FIXTURE_ROOT.iterdir()) if d.is_dir() and d.name in PATTERN_IDS]
 
 
 @pytest.mark.parametrize("pattern_id", _all_micro_fixtures())
@@ -265,13 +270,10 @@ def test_micro_bad_run_signal_matches_expectation(pattern_id):
         expected_dim = PATTERN_TO_DIMENSION[pattern_id]
         actual_dims = {f["dimension"] for f in findings}
         assert expected_dim in actual_dims, (
-            f"{pattern_id} BAD findings must include dimension {expected_dim}; "
-            f"got {actual_dims}"
+            f"{pattern_id} BAD findings must include dimension {expected_dim}; got {actual_dims}"
         )
 
-    decision = _simulate_orchestrator_decision(
-        bad_verdict, expected_action.get("expected_phase")
-    )
+    decision = _simulate_orchestrator_decision(bad_verdict, expected_action.get("expected_phase"))
     expected_phase = expected_action.get("expected_phase")
     if expected_phase:
         assert decision["expected_phase"] == expected_phase
@@ -326,9 +328,7 @@ def test_micro_good_run_passes(pattern_id):
     """§7.4 criterion 2: GOOD case produces PASS + empty findings."""
     fixture_dir = FIXTURE_ROOT / pattern_id
     manifest = _load_json(fixture_dir / "manifest.json")
-    good_verdict = _load_yaml(
-        fixture_dir / manifest["good_run"]["expected_audit_findings_path"]
-    )
+    good_verdict = _load_yaml(fixture_dir / manifest["good_run"]["expected_audit_findings_path"])
     expected_action = _load_yaml(
         fixture_dir / manifest["good_run"]["expected_orchestrator_action_path"]
     )
@@ -343,9 +343,7 @@ def test_micro_good_run_passes(pattern_id):
         f"{pattern_id} GOOD verdict must have empty findings list"
     )
 
-    decision = _simulate_orchestrator_decision(
-        good_verdict, expected_action.get("expected_phase")
-    )
+    decision = _simulate_orchestrator_decision(good_verdict, expected_action.get("expected_phase"))
     assert decision["ship_or_block"] == "ship"
 
     expected_phase = expected_action.get("expected_phase")
@@ -394,9 +392,7 @@ def test_micro_run_id_uniqueness_within_fixture(pattern_id):
     manifest = _load_json(fixture_dir / "manifest.json")
     bad = _load_yaml(fixture_dir / manifest["bad_run"]["expected_audit_findings_path"])
     good = _load_yaml(fixture_dir / manifest["good_run"]["expected_audit_findings_path"])
-    assert bad["run_id"] != good["run_id"], (
-        f"{pattern_id} BAD and GOOD must have distinct run_ids"
-    )
+    assert bad["run_id"] != good["run_id"], f"{pattern_id} BAD and GOOD must have distinct run_ids"
 
 
 # ---------------------------------------------------------------------------
@@ -464,6 +460,7 @@ def test_integration_patterns_triggered_subset(integration_manifest):
 # F-004 closure: drive the §7.3 round/escalation scenario end-to-end against
 # the fixture's expected verdicts and pipeline state.
 
+
 @pytest.mark.parametrize("round_n", [1, 2, 3])
 def test_integration_round_per_agent_verdicts_validate(round_n):
     """Each per-round per-agent expected_audit_findings.yaml validates against
@@ -475,8 +472,12 @@ def test_integration_round_per_agent_verdicts_validate(round_n):
     for agent in ("synthesis_agent", "research_architect_agent", "report_compiler_agent"):
         verdict_file = base / agent / "expected_audit_findings.yaml"
         action_file = base / agent / "expected_orchestrator_action.yaml"
-        assert verdict_file.exists(), f"missing round {round_n}/{agent}/expected_audit_findings.yaml"
-        assert action_file.exists(), f"missing round {round_n}/{agent}/expected_orchestrator_action.yaml"
+        assert verdict_file.exists(), (
+            f"missing round {round_n}/{agent}/expected_audit_findings.yaml"
+        )
+        assert action_file.exists(), (
+            f"missing round {round_n}/{agent}/expected_orchestrator_action.yaml"
+        )
         verdict = _load_yaml(verdict_file)
         _validate_status_count_consistency(verdict)
         _validate_finding_counts_match(verdict)
@@ -591,7 +592,10 @@ def test_integration_finding_id_lineage_carry_forward():
     d4_round_ids = []
     for r in (1, 2, 3):
         for f in by_round_agent.get((r, "report_compiler_agent"), []):
-            if "word" in f.get("description", "").lower() or "cap" in f.get("description", "").lower():
+            if (
+                "word" in f.get("description", "").lower()
+                or "cap" in f.get("description", "").lower()
+            ):
                 d4_round_ids.append((r, f["id"]))
     d4_unique_ids = set(fid for _, fid in d4_round_ids)
     assert len(d4_unique_ids) == 1, (
@@ -601,6 +605,7 @@ def test_integration_finding_id_lineage_carry_forward():
 
 
 # F-201 closure: state runner driving the §7.3 5-step procedure.
+
 
 def _simulate_round(
     base: Path,
@@ -623,12 +628,14 @@ def _simulate_round(
         action = _load_yaml(round_dir / agent / "expected_orchestrator_action.yaml")
 
         # B10/B11 always appends to passport per §5.6 — the harness emulates this.
-        accumulated_passport.append({
-            "run_id": verdict["run_id"],
-            "agent": agent,
-            "verdict_status": verdict["verdict_status"],
-            "round": verdict["round"],
-        })
+        accumulated_passport.append(
+            {
+                "run_id": verdict["run_id"],
+                "agent": agent,
+                "verdict_status": verdict["verdict_status"],
+                "round": verdict["round"],
+            }
+        )
         for f in verdict.get("findings", []):
             overall_findings[f["severity"]] += 1
         if verdict["verdict_status"] in {"MATERIAL", "AUDIT_FAILED"}:
@@ -771,14 +778,20 @@ def test_integration_state_runner_drives_full_pipeline():
         prior round. A7 success on each → no new append, no mutation. Logs
         each re-verify so the test asserts at least one Path A leg ran."""
         prior_size = len(accumulated_passport)
-        for entry in [e for e in accumulated_passport if e["round"] == prior_round and not e.get("acknowledgement")]:
-            path_a_reverification_log.append({
-                "run_id": entry["run_id"],
-                "agent": entry["agent"],
-                "round_when_reverified": prior_round + 1,  # the round we are about to enter
-                "expected_phase": "A7",  # success path; PHASE_TO_PASSPORT_MUTATION["A7"] == "none"
-                "passport_mutation": PHASE_TO_PASSPORT_MUTATION["A7"],
-            })
+        for entry in [
+            e
+            for e in accumulated_passport
+            if e["round"] == prior_round and not e.get("acknowledgement")
+        ]:
+            path_a_reverification_log.append(
+                {
+                    "run_id": entry["run_id"],
+                    "agent": entry["agent"],
+                    "round_when_reverified": prior_round + 1,  # the round we are about to enter
+                    "expected_phase": "A7",  # success path; PHASE_TO_PASSPORT_MUTATION["A7"] == "none"
+                    "passport_mutation": PHASE_TO_PASSPORT_MUTATION["A7"],
+                }
+            )
         # A7 invariant: passport size MUST NOT change during Path A re-verify.
         assert len(accumulated_passport) == prior_size, (
             f"Path A re-verify of round {prior_round} entries must not append; "
@@ -805,7 +818,8 @@ def test_integration_state_runner_drives_full_pipeline():
         common_fields = {"run_id", "agent", "verdict_status"}
         actual_rows = [
             {k: v for k, v in e.items() if k in common_fields}
-            for e in accumulated_passport if e["round"] == round_n and not e.get("acknowledgement")
+            for e in accumulated_passport
+            if e["round"] == round_n and not e.get("acknowledgement")
         ]
         # Order-independent comparison by run_id key (orchestrator dispatch order is deployment-defined).
         expected_by_run_id = {
@@ -831,7 +845,8 @@ def test_integration_state_runner_drives_full_pipeline():
         if expected_overall:
             actual_has_blocking = any(
                 e["verdict_status"] in {"MATERIAL", "AUDIT_FAILED"}
-                for e in accumulated_passport if e["round"] == round_n
+                for e in accumulated_passport
+                if e["round"] == round_n
             )
             actual_overall = "MATERIAL" if actual_has_blocking else "PASS"
             # MINOR not exercised by this curated subset; harness simplifies to MATERIAL/PASS.
@@ -866,7 +881,10 @@ def test_integration_state_runner_drives_full_pipeline():
         expected_options = expected_state.get("expected_user_options", [])
         if round_n == target_rounds and outcome["ship_or_block"] == "escalation_prompt":
             # §5.4 trio is a closed set — assert order-independent exact equality.
-            assert set(expected_options) == {"ship_with_known_residue", "another_round", "abort_stage"} and len(expected_options) == 3, (
+            assert (
+                set(expected_options) == {"ship_with_known_residue", "another_round", "abort_stage"}
+                and len(expected_options) == 3
+            ), (
                 f"round {round_n} escalation expected_user_options must be exactly the §5.4 trio "
                 f"{{ship_with_known_residue, another_round, abort_stage}}; got {expected_options}"
             )
@@ -903,17 +921,19 @@ def test_integration_state_runner_drives_full_pipeline():
         agent_finding_ids = {f["id"] for f in round_3_verdict.get("findings", [])}
         agent_acked = acked_ids & agent_finding_ids
         if agent_acked:
-            accumulated_passport.append({
-                "run_id": round_3_verdict["run_id"],
-                "agent": agent,
-                "verdict_status": "MATERIAL",
-                "round": 3,
-                "acknowledgement": {
-                    "finding_ids": sorted(agent_acked),
-                    "acknowledged_at": user_response["acknowledged_at"],
-                    "acknowledged_by": user_response["acknowledged_by"],
-                },
-            })
+            accumulated_passport.append(
+                {
+                    "run_id": round_3_verdict["run_id"],
+                    "agent": agent,
+                    "verdict_status": "MATERIAL",
+                    "round": 3,
+                    "acknowledgement": {
+                        "finding_ids": sorted(agent_acked),
+                        "acknowledged_at": user_response["acknowledged_at"],
+                        "acknowledged_by": user_response["acknowledged_by"],
+                    },
+                }
+            )
 
     # Step 5: assert expected_passport_state.yaml matches actual.
     expected_passport = _load_yaml(base / "escalation" / "expected_passport_state.yaml")
@@ -1043,7 +1063,9 @@ def test_every_fixture_phase_in_inventory():
             bad_phases.append(
                 f"{verdict_file.relative_to(REPO_ROOT)}: unknown expected_phase={phase!r}"
             )
-    assert not bad_phases, "fixtures reference phases not in §5.6 inventory:\n" + "\n".join(bad_phases)
+    assert not bad_phases, "fixtures reference phases not in §5.6 inventory:\n" + "\n".join(
+        bad_phases
+    )
 
 
 # F-901 closure: synthetic per-phase injections per spec §7.3 line 2093 promise.
@@ -1051,9 +1073,7 @@ def test_every_fixture_phase_in_inventory():
 # + 1 escalation. Every "Passport mutation: none" row MUST be verified to NOT
 # append; "appended" rows MUST be verified to append exactly one entry.
 
-_NONE_MUTATION_PHASES = sorted(
-    p for p, m in PHASE_TO_PASSPORT_MUTATION.items() if m == "none"
-)
+_NONE_MUTATION_PHASES = sorted(p for p, m in PHASE_TO_PASSPORT_MUTATION.items() if m == "none")
 _APPEND_MUTATION_PHASES = sorted(
     p for p, m in PHASE_TO_PASSPORT_MUTATION.items() if m == "appended"
 )
@@ -1090,13 +1110,15 @@ def test_synthetic_inject_append_mutation_phase(phase):
     assert rule == "appended"
     # Simulate the append per §5.6 (B10 / B11 happy-or-escalation paths +
     # P-PB-consume-fail where B9 atomic-rename succeeded before consume).
-    synthetic_passport.append({
-        "synthetic_phase": phase,
-        "run_id": "2026-04-30T20-00-00Z-fffe",
-        "agent": "synthesis_agent",
-        "verdict_status": "MATERIAL" if phase in {"B10", "B11"} else "PASS",
-        "round": 1,
-    })
+    synthetic_passport.append(
+        {
+            "synthetic_phase": phase,
+            "run_id": "2026-04-30T20-00-00Z-fffe",
+            "agent": "synthesis_agent",
+            "verdict_status": "MATERIAL" if phase in {"B10", "B11"} else "PASS",
+            "round": 1,
+        }
+    )
     assert len(synthetic_passport) == initial_size + 1, (
         f"phase {phase}: 'Passport mutation: appended' but passport did not grow by 1"
     )
@@ -1115,6 +1137,7 @@ def test_synthetic_inject_conditional_phases_documented():
 
 
 # F-902 closure: integration A1.5 supersession-preflight axis.
+
 
 def test_synthetic_supersession_preflight_path_b_filters_higher_round():
     """§5.6 A1.5 superseding-proposal preflight: when an unmerged proposal in
@@ -1136,7 +1159,11 @@ def test_synthetic_supersession_preflight_path_b_filters_higher_round():
         {"verdict_round": 3, "tuple_match": True},
     ]
     # B2 supersession-mode filter: keep only candidates with round > persisted_round.
-    surviving = [c for c in candidate_proposals if c["verdict_round"] > persisted_round and not c.get("is_dup")]
+    surviving = [
+        c
+        for c in candidate_proposals
+        if c["verdict_round"] > persisted_round and not c.get("is_dup")
+    ]
     assert len(surviving) == 1
     assert surviving[0]["verdict_round"] == 3, (
         "B2 supersession filter must select the round-3 user-dispatched proposal, "

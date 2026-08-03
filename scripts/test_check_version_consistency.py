@@ -1,4 +1,5 @@
 """Unit tests for check_version_consistency.py."""
+
 from __future__ import annotations
 
 import subprocess
@@ -53,9 +54,7 @@ def _write_claude_md(
     pass an explicit token (e.g. "v3.4") to drift it, or None to omit."""
     claude_dir = root / ".claude"
     claude_dir.mkdir(parents=True, exist_ok=True)
-    rows = "\n".join(
-        f"| `{name}` v{ver} | purpose | modes |" for name, ver in table_rows
-    )
+    rows = "\n".join(f"| `{name}` v{ver} | purpose | modes |" for name, ver in table_rows)
     if key_additions == "derive":
         parts = suite_version.split(".")
         if len(parts) >= 2 and all(p.isdigit() for p in parts[:2]):
@@ -67,9 +66,7 @@ def _write_claude_md(
         if key_additions is not None
         else ""
     )
-    last_updated_line = (
-        f"- **Last Updated**: {last_updated}\n" if last_updated is not None else ""
-    )
+    last_updated_line = f"- **Last Updated**: {last_updated}\n" if last_updated is not None else ""
     text = (
         "# Academic Research Skills\n"
         "\n"
@@ -114,21 +111,18 @@ def _write_changelog(
     )
 
 
-def _write_plugin_manifests(
-    root: Path, version: str, description: str | None = None
-) -> None:
+def _write_plugin_manifests(root: Path, version: str, description: str | None = None) -> None:
     """Fixture .claude-plugin/{plugin,marketplace}.json at `version` (invariant 4).
     `description` (when given) lands in plugin.json for the invariant-8
     "N-agent" claim tests."""
     import json
+
     plugin_dir = root / ".claude-plugin"
     plugin_dir.mkdir(parents=True, exist_ok=True)
     plugin_obj: dict[str, str] = {"name": "fixture", "version": version}
     if description is not None:
         plugin_obj["description"] = description
-    (plugin_dir / "plugin.json").write_text(
-        json.dumps(plugin_obj), encoding="utf-8"
-    )
+    (plugin_dir / "plugin.json").write_text(json.dumps(plugin_obj), encoding="utf-8")
     (plugin_dir / "marketplace.json").write_text(
         json.dumps({"name": "fixture", "plugins": [{"name": "fixture", "version": version}]}),
         encoding="utf-8",
@@ -244,7 +238,8 @@ class TestVersionConsistency(unittest.TestCase):
             _write_aligned_fixture(root)
             result = _run(root)
             self.assertEqual(
-                result.returncode, 0,
+                result.returncode,
+                0,
                 msg=f"stdout={result.stdout!r} stderr={result.stderr!r}",
             )
 
@@ -255,7 +250,8 @@ class TestVersionConsistency(unittest.TestCase):
             _write_aligned_fixture_v351(root)
             result = _run(root)
             self.assertEqual(
-                result.returncode, 0,
+                result.returncode,
+                0,
                 msg=f"stdout={result.stdout!r} stderr={result.stderr!r}",
             )
 
@@ -301,13 +297,15 @@ class TestVersionConsistency(unittest.TestCase):
         """Invariant 4: marketplace.json plugins[].version != suite — must fail.
         (Regression for marketplace.json silently sitting at 3.7.0 for releases.)"""
         import json
+
         with TemporaryDirectory() as tmp:
             root = Path(tmp)
             _write_aligned_fixture(root)  # suite 3.5.0; plugin.json aligned at 3.5.0
             # Drift ONLY marketplace, leaving plugin.json correct, to isolate it.
             (root / ".claude-plugin" / "marketplace.json").write_text(
-                json.dumps({"name": "fixture",
-                            "plugins": [{"name": "fixture", "version": "3.7.0"}]}),
+                json.dumps(
+                    {"name": "fixture", "plugins": [{"name": "fixture", "version": "3.7.0"}]}
+                ),
                 encoding="utf-8",
             )
             result = _run(root)
@@ -355,6 +353,7 @@ class TestVersionConsistency(unittest.TestCase):
             root = Path(tmp)
             _write_aligned_fixture(root)
             import shutil
+
             shutil.rmtree(root / "academic-paper-reviewer")
             result = _run(root)
             self.assertEqual(result.returncode, 1)
@@ -409,11 +408,14 @@ class TestVersionConsistency(unittest.TestCase):
             # Include the 3-segment ancestor so the pre-fix regex would still find
             # *something* and silently report a passing 3.9.4 == 3.9.4 comparison.
             _write_changelog(
-                root, latest_version="3.9.4.1", prior_versions=["3.9.4"],
+                root,
+                latest_version="3.9.4.1",
+                prior_versions=["3.9.4"],
             )
             result = _run(root)
             self.assertEqual(
-                result.returncode, 1,
+                result.returncode,
+                1,
                 msg=f"stdout={result.stdout!r} stderr={result.stderr!r}",
             )
             self.assertIn("3.9.4.2", result.stdout)
@@ -440,11 +442,14 @@ class TestVersionConsistency(unittest.TestCase):
                 _write_skill(root, name, ver)
             _write_claude_md(root, suite_version="3.9.4.2", table_rows=skills)
             _write_changelog(
-                root, latest_version="3.9.4.2.1", prior_versions=["3.9.4.2"],
+                root,
+                latest_version="3.9.4.2.1",
+                prior_versions=["3.9.4.2"],
             )
             result = _run(root)
             self.assertEqual(
-                result.returncode, 1,
+                result.returncode,
+                1,
                 msg=f"stdout={result.stdout!r} stderr={result.stderr!r}",
             )
             self.assertIn("3.9.4.2.1", result.stdout)
@@ -479,15 +484,16 @@ class TestVersionConsistency(unittest.TestCase):
                 ("academic-paper-reviewer", "1.9.1"),
                 ("academic-pipeline", "3.9.4.2-alpha"),  # invalid token
             ]
-            _write_claude_md(
-                root, suite_version="3.9.4.2", table_rows=table_rows_with_junk
-            )
+            _write_claude_md(root, suite_version="3.9.4.2", table_rows=table_rows_with_junk)
             _write_changelog(
-                root, latest_version="3.9.4.2", prior_versions=["3.9.4"],
+                root,
+                latest_version="3.9.4.2",
+                prior_versions=["3.9.4"],
             )
             result = _run(root)
             self.assertEqual(
-                result.returncode, 1,
+                result.returncode,
+                1,
                 msg=f"stdout={result.stdout!r} stderr={result.stderr!r}",
             )
             self.assertIn("academic-pipeline", result.stdout)
@@ -508,15 +514,16 @@ class TestVersionConsistency(unittest.TestCase):
             ]
             for name, ver in skills:
                 _write_skill(root, name, ver)
-            _write_claude_md(
-                root, suite_version="3.9.4.2-alpha", table_rows=skills
-            )
+            _write_claude_md(root, suite_version="3.9.4.2-alpha", table_rows=skills)
             _write_changelog(
-                root, latest_version="3.9.4.2", prior_versions=["3.9.4"],
+                root,
+                latest_version="3.9.4.2",
+                prior_versions=["3.9.4"],
             )
             result = _run(root)
             self.assertEqual(
-                result.returncode, 1,
+                result.returncode,
+                1,
                 msg=f"stdout={result.stdout!r} stderr={result.stderr!r}",
             )
             self.assertIn("3.9.4.2-alpha", result.stdout)
@@ -543,15 +550,16 @@ class TestVersionConsistency(unittest.TestCase):
                 ("academic-paper-reviewer", "1.9.1"),
                 ("academic-pipeline", "3.9.4.1"),  # drift inside the 4th segment
             ]
-            _write_claude_md(
-                root, suite_version="3.9.4.2", table_rows=table_rows_drifted
-            )
+            _write_claude_md(root, suite_version="3.9.4.2", table_rows=table_rows_drifted)
             _write_changelog(
-                root, latest_version="3.9.4.2", prior_versions=["3.9.4"],
+                root,
+                latest_version="3.9.4.2",
+                prior_versions=["3.9.4"],
             )
             result = _run(root)
             self.assertEqual(
-                result.returncode, 1,
+                result.returncode,
+                1,
                 msg=f"stdout={result.stdout!r} stderr={result.stderr!r}",
             )
             self.assertIn("academic-pipeline", result.stdout)
@@ -583,15 +591,16 @@ class TestVersionConsistency(unittest.TestCase):
             ]
             for name, ver in skills_5seg:
                 _write_skill(root, name, ver)
-            _write_claude_md(
-                root, suite_version="3.9.4.2.1", table_rows=skills_5seg
-            )
+            _write_claude_md(root, suite_version="3.9.4.2.1", table_rows=skills_5seg)
             _write_changelog(
-                root, latest_version="3.9.4.2.1", prior_versions=["3.9.4.2"],
+                root,
+                latest_version="3.9.4.2.1",
+                prior_versions=["3.9.4.2"],
             )
             result = _run(root)
             self.assertEqual(
-                result.returncode, 1,
+                result.returncode,
+                1,
                 msg=f"stdout={result.stdout!r} stderr={result.stderr!r}",
             )
             self.assertIn("3.9.4.2.1", result.stdout)
@@ -663,7 +672,8 @@ class TestVersionConsistency(unittest.TestCase):
             )
             result = _run(root)
             self.assertEqual(
-                result.returncode, 0,
+                result.returncode,
+                0,
                 msg=f"superpowers/ future ref should be exempt; stdout={result.stdout!r}",
             )
             # control: same future token under a published doc path still fails
@@ -727,8 +737,7 @@ class TestVersionConsistency(unittest.TestCase):
                 encoding="utf-8",
             )
             (docs / "PERFORMANCE.zh-TW.md").write_text(
-                "# 效能\n\n## Token 用量\n\n看 v9.9 里程碑。\n"
-                "## 語料庫導入 (v3.4.0+)\n\n內文\n",
+                "# 效能\n\n## Token 用量\n\n看 v9.9 里程碑。\n## 語料庫導入 (v3.4.0+)\n\n內文\n",
                 encoding="utf-8",
             )
             result = _run(root)
@@ -773,8 +782,7 @@ class TestVersionConsistency(unittest.TestCase):
             root = Path(tmp)
             _write_aligned_fixture(root)
             (root / "docs" / "PERFORMANCE.md").write_text(
-                "# Performance\n\n## Feature A (v3.4.0+)\n\nbody\n"
-                "## Feature B (v3.4.0+)\n\nbody\n",
+                "# Performance\n\n## Feature A (v3.4.0+)\n\nbody\n## Feature B (v3.4.0+)\n\nbody\n",
                 encoding="utf-8",
             )
             (root / "docs" / "PERFORMANCE.zh-TW.md").write_text(
@@ -795,17 +803,13 @@ class TestAgentCountClaim(unittest.TestCase):
         agents_dir = root / "deep-research" / "agents"
         agents_dir.mkdir(parents=True, exist_ok=True)
         for name in names:
-            (agents_dir / f"{name}_agent.md").write_text(
-                f"# {name}\n", encoding="utf-8"
-            )
+            (agents_dir / f"{name}_agent.md").write_text(f"# {name}\n", encoding="utf-8")
 
     def test_agent_claim_drift_fails(self) -> None:
         with TemporaryDirectory() as tmp:
             root = Path(tmp)
             _write_aligned_fixture(root)
-            _write_plugin_manifests(
-                root, "3.5.0", description="fixture, 3-agent ensemble, more"
-            )
+            _write_plugin_manifests(root, "3.5.0", description="fixture, 3-agent ensemble, more")
             self._write_agents(root, ["alpha", "beta"])
             result = _run(root)
             self.assertEqual(result.returncode, 1, msg=f"stdout={result.stdout!r}")
@@ -816,13 +820,12 @@ class TestAgentCountClaim(unittest.TestCase):
         with TemporaryDirectory() as tmp:
             root = Path(tmp)
             _write_aligned_fixture(root)
-            _write_plugin_manifests(
-                root, "3.5.0", description="fixture, 2-agent ensemble, more"
-            )
+            _write_plugin_manifests(root, "3.5.0", description="fixture, 2-agent ensemble, more")
             self._write_agents(root, ["alpha", "beta"])
             result = _run(root)
             self.assertEqual(
-                result.returncode, 0,
+                result.returncode,
+                0,
                 msg=f"stdout={result.stdout!r} stderr={result.stderr!r}",
             )
 
@@ -833,9 +836,7 @@ class TestAgentCountClaim(unittest.TestCase):
         with TemporaryDirectory() as tmp:
             root = Path(tmp)
             _write_aligned_fixture(root)
-            _write_plugin_manifests(
-                root, "3.5.0", description="fixture, 2-agent ensemble, more"
-            )
+            _write_plugin_manifests(root, "3.5.0", description="fixture, 2-agent ensemble, more")
             self._write_agents(root, ["alpha", "beta"])
             link_dir = root / "agents"
             link_dir.mkdir()
@@ -844,7 +845,8 @@ class TestAgentCountClaim(unittest.TestCase):
             )
             result = _run(root)
             self.assertEqual(
-                result.returncode, 0,
+                result.returncode,
+                0,
                 msg=f"stdout={result.stdout!r} stderr={result.stderr!r}",
             )
 
@@ -858,9 +860,7 @@ class TestAgentCountClaim(unittest.TestCase):
         with TemporaryDirectory() as tmp:
             root = Path(tmp)
             _write_aligned_fixture(root)
-            _write_plugin_manifests(
-                root, "3.5.0", description="fixture, 2-agent ensemble, more"
-            )
+            _write_plugin_manifests(root, "3.5.0", description="fixture, 2-agent ensemble, more")
             self._write_agents(root, ["alpha", "beta"])
             mirror_dir = root / "agents"
             mirror_dir.mkdir()
@@ -868,7 +868,8 @@ class TestAgentCountClaim(unittest.TestCase):
             (mirror_dir / "alpha_agent.md").write_bytes(src.read_bytes())
             result = _run(root)
             self.assertEqual(
-                result.returncode, 0,
+                result.returncode,
+                0,
                 msg=f"stdout={result.stdout!r} stderr={result.stderr!r}",
             )
 
@@ -878,13 +879,12 @@ class TestAgentCountClaim(unittest.TestCase):
         with TemporaryDirectory() as tmp:
             root = Path(tmp)
             _write_aligned_fixture(root)
-            _write_plugin_manifests(
-                root, "3.5.0", description="fixture without a count claim"
-            )
+            _write_plugin_manifests(root, "3.5.0", description="fixture without a count claim")
             self._write_agents(root, ["alpha", "beta"])
             result = _run(root)
             self.assertEqual(
-                result.returncode, 0,
+                result.returncode,
+                0,
                 msg=f"stdout={result.stdout!r} stderr={result.stderr!r}",
             )
 
@@ -920,7 +920,8 @@ class TestChangelogBodyLength(unittest.TestCase):
             _write_changelog(root, latest_version="3.5.0", prior_versions=["3.4.0"])
             result = _run(root)
             self.assertEqual(
-                result.returncode, 0,
+                result.returncode,
+                0,
                 msg=f"stdout={result.stdout!r} stderr={result.stderr!r}",
             )
 
@@ -942,12 +943,15 @@ class TestChangelogBodyLength(unittest.TestCase):
                 "the full body, not the truncated fence prefix.\n"
             )
             _write_changelog(
-                root, latest_version="3.5.0", latest_body=body,
+                root,
+                latest_version="3.5.0",
+                latest_body=body,
                 prior_versions=["3.4.0"],
             )
             result = _run(root)
             self.assertEqual(
-                result.returncode, 0,
+                result.returncode,
+                0,
                 msg=f"stdout={result.stdout!r} stderr={result.stderr!r}",
             )
 
@@ -968,12 +972,15 @@ class TestChangelogBodyLength(unittest.TestCase):
                 "the full body, not the truncated fence prefix.\n"
             )
             _write_changelog(
-                root, latest_version="3.5.0", latest_body=body,
+                root,
+                latest_version="3.5.0",
+                latest_body=body,
                 prior_versions=["3.4.0"],
             )
             result = _run(root)
             self.assertEqual(
-                result.returncode, 0,
+                result.returncode,
+                0,
                 msg=f"stdout={result.stdout!r} stderr={result.stderr!r}",
             )
 
@@ -998,7 +1005,8 @@ class TestLastUpdatedFreshness(unittest.TestCase):
             _write_aligned_fixture(root, last_updated="2026-04-29")
             result = _run(root)
             self.assertEqual(
-                result.returncode, 0,
+                result.returncode,
+                0,
                 msg=f"stdout={result.stdout!r} stderr={result.stderr!r}",
             )
 
@@ -1091,7 +1099,8 @@ class TestKeyAdditionsAlignment(unittest.TestCase):
             _write_aligned_fixture(root, key_additions="v3.5.0")
             result = _run(root)
             self.assertEqual(
-                result.returncode, 0,
+                result.returncode,
+                0,
                 msg=f"stdout={result.stdout!r} stderr={result.stderr!r}",
             )
 
@@ -1110,7 +1119,8 @@ class TestKeyAdditionsAlignment(unittest.TestCase):
             claude_md.write_text(text, encoding="utf-8")
             result = _run(root)
             self.assertEqual(
-                result.returncode, 0,
+                result.returncode,
+                0,
                 msg=f"stdout={result.stdout!r} stderr={result.stderr!r}",
             )
 
@@ -1125,7 +1135,8 @@ class TestTagMatch(unittest.TestCase):
             _write_aligned_fixture(root)
             result = run_script(SCRIPT, "--path", str(root), "--tag", "v3.5.0")
             self.assertEqual(
-                result.returncode, 0,
+                result.returncode,
+                0,
                 msg=f"stdout={result.stdout!r} stderr={result.stderr!r}",
             )
 
@@ -1145,7 +1156,8 @@ class TestTagMatch(unittest.TestCase):
             _write_aligned_fixture(root)
             result = run_script(SCRIPT, "--path", str(root), "--tag", "3.5.0")
             self.assertEqual(
-                result.returncode, 0,
+                result.returncode,
+                0,
                 msg=f"stdout={result.stdout!r} stderr={result.stderr!r}",
             )
 
@@ -1160,9 +1172,7 @@ class TestTagMatch(unittest.TestCase):
             _write_aligned_fixture(root)
             claude_md = root / ".claude" / "CLAUDE.md"
             text = claude_md.read_text(encoding="utf-8")
-            text = text.replace(
-                "- **Suite version**: 3.5.0 (per CHANGELOG.md)\n", ""
-            )
+            text = text.replace("- **Suite version**: 3.5.0 (per CHANGELOG.md)\n", "")
             claude_md.write_text(text, encoding="utf-8")
             result = run_script(SCRIPT, "--path", str(root), "--tag", "v9.9.9")
             self.assertEqual(result.returncode, 1, msg=f"stdout={result.stdout!r}")

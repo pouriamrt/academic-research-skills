@@ -12,6 +12,7 @@ helper, this module's `SemanticScholarClient` class should satisfy the
 contamination_signals.SemanticScholarClient Protocol so the migration
 tool can switch over without code changes.
 """
+
 from __future__ import annotations
 
 import os
@@ -94,8 +95,7 @@ class SemanticScholarClient:
         if min_interval_seconds is None:
             # Auto-pick tier from API key presence (#115 R5-2).
             self._min_interval = (
-                _AUTHENTICATED_MIN_INTERVAL if self._api_key
-                else _UNAUTHENTICATED_MIN_INTERVAL
+                _AUTHENTICATED_MIN_INTERVAL if self._api_key else _UNAUTHENTICATED_MIN_INTERVAL
             )
         else:
             self._min_interval = min_interval_seconds
@@ -192,6 +192,7 @@ class SemanticScholarClient:
                 # URL is fixed-host HTTPS after _require_api_url().
                 with urllib.request.urlopen(req, timeout=30) as resp:  # nosec B310
                     import json
+
                     return json.loads(resp.read().decode("utf-8"))
             except urllib.error.HTTPError as e:
                 if e.code == 404:
@@ -207,9 +208,7 @@ class SemanticScholarClient:
                     self._last_request_at = self._clock()
                     continue
                 if 500 <= e.code < 600:
-                    raise SemanticScholarUnavailable(
-                        f"S2 API HTTP {e.code}"
-                    ) from e
+                    raise SemanticScholarUnavailable(f"S2 API HTTP {e.code}") from e
                 raise SemanticScholarUnavailable(
                     f"S2 API HTTP {e.code} after {_MAX_RETRIES} retries"
                 ) from e
@@ -242,9 +241,7 @@ class SemanticScholarClient:
         raise SemanticScholarUnavailable(f"S2 API exhausted {_MAX_RETRIES} retries")
 
     def _lookup_by_doi(self, doi: str, expected_title: str) -> dict[str, Any]:
-        data = self._request(
-            f"/paper/DOI:{urllib.parse.quote(doi, safe='')}?fields={_FIELDS}"
-        )
+        data = self._request(f"/paper/DOI:{urllib.parse.quote(doi, safe='')}?fields={_FIELDS}")
         if not data or not data.get("paperId"):
             return {"matched": False, "paperId": None}
         # Per protocol: cross-check title; DOI_MISMATCH counts as no-match
@@ -267,10 +264,7 @@ class SemanticScholarClient:
         miss to `unresolvable` (never a false `matched`)."""
         if generic_title(title):
             return {"matched": False, "paperId": None}
-        path = (
-            f"/paper/search?query={urllib.parse.quote(title)}"
-            f"&limit=5&fields={_FIELDS}"
-        )
+        path = f"/paper/search?query={urllib.parse.quote(title)}&limit=5&fields={_FIELDS}"
         data = self._request(path)
         candidates = data.get("data") or []
         best: tuple[float, dict[str, Any]] | None = None

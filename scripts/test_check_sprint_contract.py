@@ -1,4 +1,5 @@
 """Unit tests for check_sprint_contract.py (Schema 13.1 validator)."""
+
 from __future__ import annotations
 
 import json
@@ -14,7 +15,11 @@ TEMPLATE_FULL = (
     Path(__file__).resolve().parent.parent / "shared" / "contracts" / "reviewer" / "full.json"
 )
 TEMPLATE_METHOD = (
-    Path(__file__).resolve().parent.parent / "shared" / "contracts" / "reviewer" / "methodology_focus.json"
+    Path(__file__).resolve().parent.parent
+    / "shared"
+    / "contracts"
+    / "reviewer"
+    / "methodology_focus.json"
 )
 TEMPLATE_WRITER_FULL = (
     Path(__file__).resolve().parent.parent / "shared" / "contracts" / "writer" / "full.json"
@@ -40,8 +45,18 @@ def _valid_reviewer_full_contract() -> dict:
         "acceptance_dimensions": [
             {"id": "D1", "name": "methodology_rigor", "description": "x", "priority": "mandatory"},
             {"id": "D2", "name": "domain_accuracy", "description": "x", "priority": "mandatory"},
-            {"id": "D3", "name": "argumentative_coherence", "description": "x", "priority": "mandatory"},
-            {"id": "D4", "name": "cross_disciplinary_relevance", "description": "x", "priority": "high"},
+            {
+                "id": "D3",
+                "name": "argumentative_coherence",
+                "description": "x",
+                "priority": "mandatory",
+            },
+            {
+                "id": "D4",
+                "name": "cross_disciplinary_relevance",
+                "description": "x",
+                "priority": "high",
+            },
             {"id": "D5", "name": "writing_and_structure", "description": "x", "priority": "normal"},
         ],
         "measurement_procedure": {
@@ -98,6 +113,7 @@ class TestSchemaValidation(unittest.TestCase):
 
     def test_missing_top_level_required_fails(self):
         from scripts.check_sprint_contract import validate
+
         c = _valid_reviewer_full_contract()
         del c["acceptance_dimensions"]
         errors = validate(c)
@@ -105,6 +121,7 @@ class TestSchemaValidation(unittest.TestCase):
 
     def test_bad_contract_id_pattern_fails(self):
         from scripts.check_sprint_contract import validate
+
         c = _valid_reviewer_full_contract()
         c["contract_id"] = "BAD"
         errors = validate(c)
@@ -112,6 +129,7 @@ class TestSchemaValidation(unittest.TestCase):
 
     def test_mode_enum_rejects_quick(self):
         from scripts.check_sprint_contract import validate
+
         c = _valid_reviewer_full_contract()
         c["mode"] = "reviewer_quick"
         errors = validate(c)
@@ -119,6 +137,7 @@ class TestSchemaValidation(unittest.TestCase):
 
     def test_additional_top_level_property_fails(self):
         from scripts.check_sprint_contract import validate
+
         c = _valid_reviewer_full_contract()
         c["foo"] = "bar"
         errors = validate(c)
@@ -126,6 +145,7 @@ class TestSchemaValidation(unittest.TestCase):
 
     def test_agent_amendments_extra_key_fails(self):
         from scripts.check_sprint_contract import validate
+
         c = _valid_reviewer_full_contract()
         c["agent_amendments"] = {"extra_field": "x"}
         errors = validate(c)
@@ -133,6 +153,7 @@ class TestSchemaValidation(unittest.TestCase):
 
     def test_override_ladder_when_present_must_be_exactly_3(self):
         from scripts.check_sprint_contract import validate
+
         c = _valid_reviewer_full_contract()
         c["override_ladder"] = [
             {"round": 1, "trigger": "x", "required": ["rationale"]},
@@ -143,6 +164,7 @@ class TestSchemaValidation(unittest.TestCase):
 
     def test_override_ladder_optional_absence_passes(self):
         from scripts.check_sprint_contract import validate
+
         c = _valid_reviewer_full_contract()
         if "override_ladder" in c:
             del c["override_ladder"]
@@ -150,6 +172,7 @@ class TestSchemaValidation(unittest.TestCase):
 
     def test_override_ladder_positional_order_enforced(self):
         from scripts.check_sprint_contract import validate
+
         c = _valid_reviewer_full_contract()
         c["override_ladder"] = [
             {"round": 1, "trigger": "x", "required": ["rationale"]},
@@ -161,6 +184,7 @@ class TestSchemaValidation(unittest.TestCase):
 
     def test_priority_enum(self):
         from scripts.check_sprint_contract import validate
+
         c = _valid_reviewer_full_contract()
         c["acceptance_dimensions"][0]["priority"] = "critical"
         errors = validate(c)
@@ -168,6 +192,7 @@ class TestSchemaValidation(unittest.TestCase):
 
     def test_dimension_no_scoring_scale_field(self):
         from scripts.check_sprint_contract import validate
+
         c = _valid_reviewer_full_contract()
         c["acceptance_dimensions"][0]["scoring_scale"] = "block|warn|pass"
         errors = validate(c)
@@ -175,6 +200,7 @@ class TestSchemaValidation(unittest.TestCase):
 
     def test_acceptance_dimension_id_pattern(self):
         from scripts.check_sprint_contract import validate
+
         c = _valid_reviewer_full_contract()
         c["acceptance_dimensions"][0]["id"] = "d1"
         errors = validate(c)
@@ -182,6 +208,7 @@ class TestSchemaValidation(unittest.TestCase):
 
     def test_failure_condition_id_pattern(self):
         from scripts.check_sprint_contract import validate
+
         c = _valid_reviewer_full_contract()
         c["failure_conditions"][0]["condition_id"] = "Fail1"
         errors = validate(c)
@@ -193,6 +220,7 @@ class TestSchemaValidation(unittest.TestCase):
         "no condition fired" state where there is no editorial_decision to
         emit, aborting the review round at runtime instead of at CI."""
         from scripts.check_sprint_contract import validate
+
         c = _valid_reviewer_full_contract()
         c["failure_conditions"] = [
             fc for fc in c["failure_conditions"] if fc["condition_id"] != "F0"
@@ -209,6 +237,7 @@ class TestSchemaValidation(unittest.TestCase):
         action to editorial_decision=accept at schema level prevents future
         templates from misusing the reserved id."""
         from scripts.check_sprint_contract import validate
+
         c = _valid_reviewer_full_contract()
         for fc in c["failure_conditions"]:
             if fc["condition_id"] == "F0":
@@ -224,11 +253,15 @@ class TestSchemaValidation(unittest.TestCase):
         Phase-1 canonical fields. Empty list or partial list lets a contract
         clear CI while making the Phase 1 hard gate vacuous."""
         from scripts.check_sprint_contract import validate
+
         c = _valid_reviewer_full_contract()
         c["measurement_procedure"]["scoring_plan_schema"]["required"] = []
         errors = validate(c)
         self.assertTrue(
-            any("required" in e.lower() or "minItems" in e.lower() or "scoring_plan" in e for e in errors),
+            any(
+                "required" in e.lower() or "minItems" in e.lower() or "scoring_plan" in e
+                for e in errors
+            ),
             f"expected required/minItems/scoring_plan in errors, got: {errors}",
         )
 
@@ -237,6 +270,7 @@ class TestSchemaValidation(unittest.TestCase):
         of what_triggers_block) must fail schema validation. Otherwise every
         reviewer fails Phase 1 lint at runtime on nonexistent field names."""
         from scripts.check_sprint_contract import validate
+
         c = _valid_reviewer_full_contract()
         c["measurement_procedure"]["scoring_plan_schema"]["required"] = [
             "dimension_id",
@@ -255,6 +289,7 @@ class TestSchemaValidation(unittest.TestCase):
         F01, F02... must be rejected to keep ordinal tie-break (§3.2 severity
         precedence) unambiguous. Schema pattern is ^F(0|[1-9][0-9]?)$."""
         from scripts.check_sprint_contract import validate
+
         c = _valid_reviewer_full_contract()
         c["failure_conditions"][0]["condition_id"] = "F01"
         errors = validate(c)
@@ -265,6 +300,7 @@ class TestSchemaValidation(unittest.TestCase):
 
     def test_failure_condition_requires_severity(self):
         from scripts.check_sprint_contract import validate
+
         c = _valid_reviewer_full_contract()
         del c["failure_conditions"][0]["severity"]
         errors = validate(c)
@@ -272,6 +308,7 @@ class TestSchemaValidation(unittest.TestCase):
 
     def test_reviewer_mode_failure_condition_requires_quantifier(self):
         from scripts.check_sprint_contract import validate
+
         c = _valid_reviewer_full_contract()
         del c["failure_conditions"][0]["cross_reviewer_quantifier"]
         errors = validate(c)
@@ -279,6 +316,7 @@ class TestSchemaValidation(unittest.TestCase):
 
     def test_severity_range(self):
         from scripts.check_sprint_contract import validate
+
         c = _valid_reviewer_full_contract()
         c["failure_conditions"][0]["severity"] = -1
         errors = validate(c)
@@ -289,6 +327,7 @@ class TestSchemaValidation(unittest.TestCase):
 
     def test_cross_reviewer_quantifier_enum(self):
         from scripts.check_sprint_contract import validate
+
         c = _valid_reviewer_full_contract()
         c["failure_conditions"][0]["cross_reviewer_quantifier"] = "plurality"
         errors = validate(c)
@@ -296,6 +335,7 @@ class TestSchemaValidation(unittest.TestCase):
 
     def test_panel_size_required(self):
         from scripts.check_sprint_contract import validate
+
         c = _valid_reviewer_full_contract()
         del c["panel_size"]
         errors = validate(c)
@@ -303,6 +343,7 @@ class TestSchemaValidation(unittest.TestCase):
 
     def test_panel_size_minimum_1(self):
         from scripts.check_sprint_contract import validate
+
         c = _valid_reviewer_full_contract()
         c["panel_size"] = 0
         errors = validate(c)
@@ -310,6 +351,7 @@ class TestSchemaValidation(unittest.TestCase):
 
     def test_paraphrase_minimum_dimensions_accepts_all_and_integer(self):
         from scripts.check_sprint_contract import validate
+
         c = _valid_reviewer_full_contract()
         c["measurement_procedure"]["paraphrase_minimum_dimensions"] = "all"
         self.assertEqual(validate(c), [])
@@ -332,6 +374,7 @@ class TestSchemaValidation(unittest.TestCase):
         import copy
         from scripts.check_sprint_contract import load_schema
         import jsonschema
+
         schema = copy.deepcopy(load_schema())
         # Add a non-reviewer-prefixed mode to the enum.
         schema["properties"]["mode"]["enum"].append("writer_full")
@@ -356,23 +399,27 @@ class TestSchemaValidation(unittest.TestCase):
 
     def test_shipped_template_full_passes_schema_and_invariants(self):
         from scripts.check_sprint_contract import validate, check_structural_invariants
+
         contract = _load_template(TEMPLATE_FULL)
         self.assertEqual(validate(contract), [])
         self.assertEqual(check_structural_invariants(contract), [])
 
     def test_shipped_template_full_produces_zero_soft_warnings(self):
         from scripts.check_sprint_contract import warn_suspicious
+
         contract = _load_template(TEMPLATE_FULL)
         self.assertEqual(warn_suspicious(contract, "v3.6.2"), [])
 
     def test_shipped_template_methodology_focus_passes_schema_and_invariants(self):
         from scripts.check_sprint_contract import validate, check_structural_invariants
+
         contract = _load_template(TEMPLATE_METHOD)
         self.assertEqual(validate(contract), [])
         self.assertEqual(check_structural_invariants(contract), [])
 
     def test_shipped_template_methodology_focus_produces_zero_soft_warnings(self):
         from scripts.check_sprint_contract import warn_suspicious
+
         contract = _load_template(TEMPLATE_METHOD)
         self.assertEqual(warn_suspicious(contract, "v3.6.2"), [])
 
@@ -380,6 +427,7 @@ class TestSchemaValidation(unittest.TestCase):
 class TestStructuralInvariants(unittest.TestCase):
     def test_structural_invariant_duplicate_dimension_id(self):
         from scripts.check_sprint_contract import check_structural_invariants
+
         c = _valid_reviewer_full_contract()
         # force duplicate id
         c["acceptance_dimensions"][1] = dict(c["acceptance_dimensions"][1], id="D1")
@@ -388,26 +436,34 @@ class TestStructuralInvariants(unittest.TestCase):
 
     def test_structural_invariant_duplicate_dimension_name(self):
         from scripts.check_sprint_contract import check_structural_invariants
+
         c = _valid_reviewer_full_contract()
-        c["acceptance_dimensions"][1] = dict(c["acceptance_dimensions"][1], name="methodology_rigor")
+        c["acceptance_dimensions"][1] = dict(
+            c["acceptance_dimensions"][1], name="methodology_rigor"
+        )
         errors = check_structural_invariants(c)
         self.assertTrue(any("duplicate" in e.lower() and "name" in e.lower() for e in errors))
 
     def test_structural_invariant_duplicate_condition_id(self):
         from scripts.check_sprint_contract import check_structural_invariants
+
         c = _valid_reviewer_full_contract()
         c["failure_conditions"][1] = dict(c["failure_conditions"][1], condition_id="F1")
         errors = check_structural_invariants(c)
-        self.assertTrue(any("duplicate" in e.lower() and "condition_id" in e.lower() for e in errors))
+        self.assertTrue(
+            any("duplicate" in e.lower() and "condition_id" in e.lower() for e in errors)
+        )
 
     def test_structural_invariant_clean_contract_passes(self):
         from scripts.check_sprint_contract import check_structural_invariants
+
         self.assertEqual(check_structural_invariants(_valid_reviewer_full_contract()), [])
 
 
 class TestSoftWarnings(unittest.TestCase):
     def test_sc1_baseline_lag_warns(self):
         from scripts.check_sprint_contract import warn_suspicious
+
         c = _valid_reviewer_full_contract()
         c["baseline_version"] = "v3.3.0"
         warnings = warn_suspicious(c, "v3.6.2")
@@ -415,6 +471,7 @@ class TestSoftWarnings(unittest.TestCase):
 
     def test_sc1_no_ars_version_skips(self):
         from scripts.check_sprint_contract import warn_suspicious
+
         c = _valid_reviewer_full_contract()
         c["baseline_version"] = "v3.3.0"
         warnings = warn_suspicious(c, None)
@@ -424,6 +481,7 @@ class TestSoftWarnings(unittest.TestCase):
         """Boundary: spec §4.3 line 340 says SC-1 fires when baseline 'lags
         current ARS by more than 2 minor versions'. lag == 2 must NOT warn."""
         from scripts.check_sprint_contract import warn_suspicious
+
         c = _valid_reviewer_full_contract()
         c["baseline_version"] = "v3.4.0"  # lag = 2 vs v3.6.2
         warnings = warn_suspicious(c, "v3.6.2")
@@ -431,6 +489,7 @@ class TestSoftWarnings(unittest.TestCase):
 
     def test_sc2_single_dimension_warns(self):
         from scripts.check_sprint_contract import warn_suspicious
+
         c = _valid_reviewer_full_contract()
         c["acceptance_dimensions"] = c["acceptance_dimensions"][:1]
         # Remove failure_conditions referencing D2-D5 so we don't trigger SC-4
@@ -448,6 +507,7 @@ class TestSoftWarnings(unittest.TestCase):
 
     def test_sc3_no_mandatory_warns(self):
         from scripts.check_sprint_contract import warn_suspicious
+
         c = _valid_reviewer_full_contract()
         for d in c["acceptance_dimensions"]:
             d["priority"] = "normal"
@@ -457,30 +517,36 @@ class TestSoftWarnings(unittest.TestCase):
     def test_sc2_multi_dimension_does_not_warn(self):
         """Negative case: 5-dim default fixture must not trigger SC-2."""
         from scripts.check_sprint_contract import warn_suspicious
+
         warnings = warn_suspicious(_valid_reviewer_full_contract(), None)
         self.assertFalse(any("SC-2" in w for w in warnings))
 
     def test_sc3_with_mandatory_does_not_warn(self):
         """Negative case: default fixture has 3 mandatory dims, SC-3 must skip."""
         from scripts.check_sprint_contract import warn_suspicious
+
         warnings = warn_suspicious(_valid_reviewer_full_contract(), None)
         self.assertFalse(any("SC-3" in w for w in warnings))
 
     def test_sc4_orphan_dimension_reference_warns(self):
         from scripts.check_sprint_contract import warn_suspicious
+
         c = _valid_reviewer_full_contract()
-        c["failure_conditions"].append({
-            "condition_id": "F9",
-            "severity": 50,
-            "cross_reviewer_quantifier": "any",
-            "expression": "D9 scores 'block'",  # D9 not in acceptance_dimensions
-            "action": "editorial_decision=major_revision",
-        })
+        c["failure_conditions"].append(
+            {
+                "condition_id": "F9",
+                "severity": 50,
+                "cross_reviewer_quantifier": "any",
+                "expression": "D9 scores 'block'",  # D9 not in acceptance_dimensions
+                "action": "editorial_decision=major_revision",
+            }
+        )
         warnings = warn_suspicious(c, None)
         self.assertTrue(any("SC-4" in w and "D9" in w for w in warnings))
 
     def test_sc5_measurement_procedure_missing_required_outputs_warns(self):
         from scripts.check_sprint_contract import warn_suspicious
+
         c = _valid_reviewer_full_contract()
         c["measurement_procedure"]["reviewer_must_output_before_paper"] = ["contract_paraphrase"]
         warnings = warn_suspicious(c, None)
@@ -492,6 +558,7 @@ class TestSoftWarnings(unittest.TestCase):
         agent_amendments blocks the only condition it checks. Assert that
         warn_suspicious does not emit SC-6 on any schema-valid input."""
         from scripts.check_sprint_contract import warn_suspicious, validate
+
         c = _valid_reviewer_full_contract()
         self.assertEqual(validate(c), [])  # schema-valid precondition
         warnings = warn_suspicious(c, None)
@@ -499,6 +566,7 @@ class TestSoftWarnings(unittest.TestCase):
 
     def test_sc7_conflicting_failure_condition_actions_warns(self):
         from scripts.check_sprint_contract import warn_suspicious
+
         c = _valid_reviewer_full_contract()
         c["failure_conditions"][0]["severity"] = 80
         c["failure_conditions"][0]["action"] = "editorial_decision=reject"
@@ -509,11 +577,13 @@ class TestSoftWarnings(unittest.TestCase):
 
     def test_sc9_impossible_paraphrase_minimum_warns(self):
         from scripts.check_sprint_contract import warn_suspicious
+
         c = _valid_reviewer_full_contract()
         c["acceptance_dimensions"] = c["acceptance_dimensions"][:3]  # 3 dims
         # Keep failure_conditions referencing D1..D3 only; drop D4/D5 refs
         c["failure_conditions"] = [
-            fc for fc in c["failure_conditions"]
+            fc
+            for fc in c["failure_conditions"]
             if "D4" not in fc["expression"] and "D5" not in fc["expression"]
         ]
         c["measurement_procedure"]["paraphrase_minimum_dimensions"] = 5
@@ -525,6 +595,7 @@ class TestSoftWarnings(unittest.TestCase):
         from the fixture so neither direct id reference nor priority-scope
         expression covers D6. SC-10 should fire."""
         from scripts.check_sprint_contract import warn_suspicious
+
         c = _valid_reviewer_full_contract()
         # Drop F3 ("any high-priority dimension scores 'block'") from fixture
         # so the high-priority class has zero priority-scoped coverage.
@@ -546,9 +617,9 @@ class TestSoftWarnings(unittest.TestCase):
             f"expected SC-10 to fire on orphan high-priority D6, got: {warnings}",
         )
 
-
     def test_sc11_panel_size_1_warns(self):
         from scripts.check_sprint_contract import warn_suspicious
+
         c = _valid_reviewer_full_contract()
         c["panel_size"] = 1
         warnings = warn_suspicious(c, None)
@@ -556,6 +627,7 @@ class TestSoftWarnings(unittest.TestCase):
 
     def test_sc11_mode_panel_mismatch_full(self):
         from scripts.check_sprint_contract import warn_suspicious
+
         c = _valid_reviewer_full_contract()
         c["panel_size"] = 3
         warnings = warn_suspicious(c, None)
@@ -563,6 +635,7 @@ class TestSoftWarnings(unittest.TestCase):
 
     def test_sc11_mode_panel_mismatch_methodology(self):
         from scripts.check_sprint_contract import warn_suspicious
+
         c = _valid_reviewer_full_contract()
         c["mode"] = "reviewer_methodology_focus"
         c["contract_id"] = "reviewer/reviewer_methodology_focus/v1"
@@ -629,23 +702,27 @@ class TestSchema131WriterEvaluatorPositive(unittest.TestCase):
 
     def test_shipped_writer_full_passes_schema_and_invariants(self):
         from scripts.check_sprint_contract import validate, check_structural_invariants
+
         c = _valid_writer_full_contract()
         self.assertEqual(validate(c), [])
         self.assertEqual(check_structural_invariants(c), [])
 
     def test_shipped_writer_full_produces_zero_soft_warnings(self):
         from scripts.check_sprint_contract import warn_suspicious
+
         c = _valid_writer_full_contract()
         self.assertEqual(warn_suspicious(c, "v3.6.6"), [])
 
     def test_shipped_evaluator_full_passes_schema_and_invariants(self):
         from scripts.check_sprint_contract import validate, check_structural_invariants
+
         c = _valid_evaluator_full_contract()
         self.assertEqual(validate(c), [])
         self.assertEqual(check_structural_invariants(c), [])
 
     def test_shipped_evaluator_full_produces_zero_soft_warnings(self):
         from scripts.check_sprint_contract import warn_suspicious
+
         c = _valid_evaluator_full_contract()
         self.assertEqual(warn_suspicious(c, "v3.6.6"), [])
 
@@ -659,6 +736,7 @@ class TestSchema131NegativeBranches(unittest.TestCase):
 
     def test_branch_11_writer_full_missing_pre_commitment_artifacts_fails(self):
         from scripts.check_sprint_contract import validate
+
         c = _valid_writer_full_contract()
         del c["pre_commitment_artifacts"]
         errors = validate(c)
@@ -666,6 +744,7 @@ class TestSchema131NegativeBranches(unittest.TestCase):
 
     def test_branch_12_evaluator_full_missing_disagreement_handling_fails(self):
         from scripts.check_sprint_contract import validate
+
         c = _valid_evaluator_full_contract()
         del c["disagreement_handling"]
         errors = validate(c)
@@ -675,6 +754,7 @@ class TestSchema131NegativeBranches(unittest.TestCase):
         """writer_full pinning failure_conditions[].action to an editorial_decision=*
         value (the reviewer enum) must fail under allOf branch 5 + branch 8 (F0)."""
         from scripts.check_sprint_contract import validate
+
         c = _valid_writer_full_contract()
         for fc in c["failure_conditions"]:
             if fc["condition_id"] == "F1":
@@ -687,6 +767,7 @@ class TestSchema131NegativeBranches(unittest.TestCase):
         """evaluator_full pinning failure_conditions[].action to a writer_decision=*
         value must fail under allOf branch 6 + branch 9 (F0)."""
         from scripts.check_sprint_contract import validate
+
         c = _valid_evaluator_full_contract()
         for fc in c["failure_conditions"]:
             if fc["condition_id"] == "F1":
@@ -700,6 +781,7 @@ class TestSchema131NegativeBranches(unittest.TestCase):
         evaluator_decision=* value must fail under allOf branch 4. Completes the
         cross-mode action-enum triplet coverage."""
         from scripts.check_sprint_contract import validate
+
         c = _valid_reviewer_full_contract()
         for fc in c["failure_conditions"]:
             if fc["condition_id"] == "F1":
@@ -717,6 +799,7 @@ class TestSchema131ReviewerZeroTouch(unittest.TestCase):
         """Loads both shipped reviewer templates against Schema 13.1 and asserts
         validation success without modification. §3.6 zero-touch verification."""
         from scripts.check_sprint_contract import validate, check_structural_invariants
+
         for path in (TEMPLATE_FULL, TEMPLATE_METHOD):
             with self.subTest(template=path.name):
                 c = _load_template(path)
@@ -729,6 +812,7 @@ class TestSchema131ReviewerZeroTouch(unittest.TestCase):
         diffing against the (now-superseded) Schema 13 result, which was also
         empty for these templates. §3.6 promised this regression test."""
         from scripts.check_sprint_contract import validate, warn_suspicious
+
         for path in (TEMPLATE_FULL, TEMPLATE_METHOD):
             with self.subTest(template=path.name):
                 c = _load_template(path)
@@ -746,21 +830,25 @@ class TestSC5SC9SC11ModeGating(unittest.TestCase):
 
     def test_sc5_does_not_fire_on_writer_full(self):
         from scripts.check_sprint_contract import warn_suspicious
+
         c = _valid_writer_full_contract()
         self.assertFalse(any("SC-5" in w for w in warn_suspicious(c, "v3.6.6")))
 
     def test_sc5_does_not_fire_on_evaluator_full(self):
         from scripts.check_sprint_contract import warn_suspicious
+
         c = _valid_evaluator_full_contract()
         self.assertFalse(any("SC-5" in w for w in warn_suspicious(c, "v3.6.6")))
 
     def test_sc11_does_not_fire_on_writer_full(self):
         from scripts.check_sprint_contract import warn_suspicious
+
         c = _valid_writer_full_contract()
         self.assertFalse(any("SC-11" in w for w in warn_suspicious(c, "v3.6.6")))
 
     def test_sc11_does_not_fire_on_evaluator_full(self):
         from scripts.check_sprint_contract import warn_suspicious
+
         c = _valid_evaluator_full_contract()
         self.assertFalse(any("SC-11" in w for w in warn_suspicious(c, "v3.6.6")))
 
@@ -769,6 +857,7 @@ class TestSC5SC9SC11ModeGating(unittest.TestCase):
         and fire when that integer exceeds dim count; not read measurement_procedure
         (which writer_full does not carry)."""
         from scripts.check_sprint_contract import warn_suspicious
+
         c = _valid_writer_full_contract()
         # 7 writer dimensions D1-D7 in shipped template; set minimum_dimensions to 99
         c["pre_commitment_artifacts"]["acceptance_criteria_paraphrase"]["minimum_dimensions"] = 99
@@ -778,6 +867,7 @@ class TestSC5SC9SC11ModeGating(unittest.TestCase):
     def test_sc9_evaluator_full_reads_disagreement_handling_path(self):
         """SC-9 for evaluator_full should read disagreement_handling.paraphrase_minimum_dimensions."""
         from scripts.check_sprint_contract import warn_suspicious
+
         c = _valid_evaluator_full_contract()
         c["disagreement_handling"]["paraphrase_minimum_dimensions"] = 99
         warnings = warn_suspicious(c, "v3.6.6")

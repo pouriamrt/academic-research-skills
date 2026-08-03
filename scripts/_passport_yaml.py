@@ -24,6 +24,7 @@ Thread-safety: single-threaded use only. The module-level `_yaml` is a shared
 mutable singleton; instantiate per-thread (or per-call) if future tools
 parallelize passport migration.
 """
+
 from __future__ import annotations
 
 from pathlib import Path

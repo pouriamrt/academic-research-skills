@@ -34,6 +34,7 @@ Exit codes:
     1 — one or more checks failed
     2 — invocation error (a required file is missing)
 """
+
 from __future__ import annotations
 
 import argparse
@@ -86,9 +87,7 @@ BACKPOINT_RE = re.compile(
 # exactly one such H2 heading and that the canonical block sits inside it (between
 # this heading and the next H2), so the agents' backpoint to "§ 2A" never targets a
 # renamed/moved/absent section.
-AUTH_SECTION_HEADING_RE = re.compile(
-    r"^##\s+§\s*2A\b.*$", re.MULTILINE
-)
+AUTH_SECTION_HEADING_RE = re.compile(r"^##\s+§\s*2A\b.*$", re.MULTILINE)
 
 CANONICAL_BLOCK_RE = re.compile(
     r"<!--\s*canonical:" + re.escape(MARKER) + r"\s*-->\n"
@@ -121,14 +120,14 @@ def _strip_fences(text: str) -> str:
     return "\n".join(out)
 
 
-def check_canonical_blocks(text: str, rel: str, *, require_exactly_one: bool,
-                           violations: list[str]) -> None:
+def check_canonical_blocks(
+    text: str, rel: str, *, require_exactly_one: bool, violations: list[str]
+) -> None:
     """A file must carry the canonical block exactly once, body matching verbatim."""
     matches = CANONICAL_BLOCK_RE.findall(text)
     if not matches:
         violations.append(
-            f"{rel}: canonical block '{MARKER}' not found "
-            f"(principle missing or anchor renamed)"
+            f"{rel}: canonical block '{MARKER}' not found (principle missing or anchor renamed)"
         )
         return
     if require_exactly_one and len(matches) > 1:
@@ -208,8 +207,9 @@ def main() -> int:
         print(f"ERROR: authoritative file not found: {auth_path}", file=sys.stderr)
         return 2
     auth_text = auth_path.read_text(encoding="utf-8")
-    check_canonical_blocks(auth_text, AUTHORITATIVE_REL, require_exactly_one=True,
-                           violations=violations)
+    check_canonical_blocks(
+        auth_text, AUTHORITATIVE_REL, require_exactly_one=True, violations=violations
+    )
     check_auth_section(auth_text, AUTHORITATIVE_REL, violations)
 
     for rel in HOTSPOT_AGENTS:
@@ -218,8 +218,7 @@ def main() -> int:
             print(f"ERROR: hot-spot agent not found: {path}", file=sys.stderr)
             return 2
         text = path.read_text(encoding="utf-8")
-        check_canonical_blocks(text, rel, require_exactly_one=False,
-                               violations=violations)
+        check_canonical_blocks(text, rel, require_exactly_one=False, violations=violations)
         check_backpoint(text, rel, violations)
 
     if violations:

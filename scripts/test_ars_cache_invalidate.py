@@ -3,6 +3,7 @@
 
 Spec: docs/design/2026-05-21-v3.10-182-promote-citation-gate-spec.md §2 Delta 2.
 """
+
 from __future__ import annotations
 
 import pytest

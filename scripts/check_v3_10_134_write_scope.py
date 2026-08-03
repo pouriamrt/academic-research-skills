@@ -38,6 +38,7 @@ Three invariants:
 
 Exit codes: 0 on pass, 1 on any failure.
 """
+
 from __future__ import annotations
 
 import json
@@ -126,7 +127,7 @@ def read_frontmatter_name(rel_path: str) -> str | None:
         # than scanning the body — a `name:` in prose must NOT masquerade as the binding
         # (review finding). A missing/broken frontmatter is itself a drift the lint reports.
         return None
-    block = text[fences[0].end():fences[1].start()]
+    block = text[fences[0].end() : fences[1].start()]
     m = _NAME_RE.search(block)
     return m.group(1).strip().strip('"').strip("'") if m else None
 
@@ -190,7 +191,12 @@ def run_checks() -> list[str]:
         # Experiment-skill agents (data-analyst / experiment-designer / lab-notebook /
         # simulation-runner) are a separate fork subsystem, NOT phase-bounded academic
         # pipeline agents — outside this write-scope guard's domain (fork v3.19.0).
-        if rel.split('/', 1)[0] in {'data-analyst', 'experiment-designer', 'lab-notebook', 'simulation-runner'}:
+        if rel.split("/", 1)[0] in {
+            "data-analyst",
+            "experiment-designer",
+            "lab-notebook",
+            "simulation-runner",
+        }:
             continue
         if rel in declared:
             continue  # directly rostered — skip the alias mapping (the common case)
@@ -267,7 +273,9 @@ def run_checks() -> list[str]:
     manifest = load_manifest()
     for key, entry in manifest.get("agents", {}).items():
         if entry.get("bucket") != "A":
-            errors.append(f"I4: manifest entry {key!r} has bucket={entry.get('bucket')!r}, expected 'A'.")
+            errors.append(
+                f"I4: manifest entry {key!r} has bucket={entry.get('bucket')!r}, expected 'A'."
+            )
         globs = entry.get("allowed_write_globs")
         if not isinstance(globs, list) or not globs:
             errors.append(f"I4: manifest entry {key!r} has empty/invalid allowed_write_globs.")

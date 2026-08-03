@@ -1,6 +1,7 @@
 """The SessionStart announce is injected into EVERY session's context, in every
 project. Its per-command description table duplicates the harness's own command
 listing, so it is pure resident-context cost. Cap it."""
+
 import pathlib
 import re
 import subprocess
@@ -40,10 +41,17 @@ def test_count_literal_present_and_accurate() -> None:
 
 
 def test_still_emits_valid_hook_json() -> None:
-    p = subprocess.run(["bash", "scripts/announce-ars-loaded.sh"], input="{}",
-                       capture_output=True, text=True, cwd=REPO, timeout=60)
+    p = subprocess.run(
+        ["bash", "scripts/announce-ars-loaded.sh"],
+        input="{}",
+        capture_output=True,
+        text=True,
+        cwd=REPO,
+        timeout=60,
+    )
     assert p.returncode == 0, p.stderr
     import json
+
     d = json.loads(p.stdout)
     assert d["hookSpecificOutput"]["hookEventName"] == "SessionStart"
     assert d["hookSpecificOutput"]["additionalContext"]

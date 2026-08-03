@@ -92,9 +92,7 @@ def parse_schemas(schemas_path: Path) -> dict[int, SchemaDefinition]:
 
     # Split on Schema headers: "## Schema N: <Name>" or "## Schema N — <Name>"
     # (Schemas 19/20 use the em-dash form from the fork v3.16.0 renumbering.)
-    header_pattern = re.compile(
-        r"^## Schema (\d+)\s*[:—]\s*(.+?)(?:\s*\(.*\))?\s*$", re.MULTILINE
-    )
+    header_pattern = re.compile(r"^## Schema (\d+)\s*[:—]\s*(.+?)(?:\s*\(.*\))?\s*$", re.MULTILINE)
     matches = list(header_pattern.finditer(text))
 
     for idx, m in enumerate(matches):
@@ -114,18 +112,14 @@ def parse_schemas(schemas_path: Path) -> dict[int, SchemaDefinition]:
         if prod_match:
             raw = prod_match.group(1)
             schema.producer_agents = [
-                _normalise_agent_path(p)
-                for p in re.split(r"\s*\|\s*", raw)
-                if p.strip()
+                _normalise_agent_path(p) for p in re.split(r"\s*\|\s*", raw) if p.strip()
             ]
 
         cons_match = re.search(r"\*\*Consumer\*\*:\s*(.+?)$", block, re.MULTILINE)
         if cons_match:
             raw = cons_match.group(1)
             schema.consumer_agents = [
-                _normalise_agent_path(c)
-                for c in re.split(r"\s*\|\s*", raw)
-                if c.strip()
+                _normalise_agent_path(c) for c in re.split(r"\s*\|\s*", raw) if c.strip()
             ]
 
         # --- Required Fields ---
@@ -136,9 +130,7 @@ def parse_schemas(schemas_path: Path) -> dict[int, SchemaDefinition]:
             re.DOTALL,
         )
         if req_section:
-            for row in re.finditer(
-                r"^\|\s*`([^`]+)`\s*\|", req_section.group(1), re.MULTILINE
-            ):
+            for row in re.finditer(r"^\|\s*`([^`]+)`\s*\|", req_section.group(1), re.MULTILINE):
                 schema.required_fields.append(row.group(1))
 
         # --- Optional Fields ---
@@ -148,9 +140,7 @@ def parse_schemas(schemas_path: Path) -> dict[int, SchemaDefinition]:
             re.DOTALL,
         )
         if opt_section:
-            for row in re.finditer(
-                r"^\|\s*`([^`]+)`\s*\|", opt_section.group(1), re.MULTILINE
-            ):
+            for row in re.finditer(r"^\|\s*`([^`]+)`\s*\|", opt_section.group(1), re.MULTILINE):
                 schema.optional_fields.append(row.group(1))
 
         schemas[num] = schema
@@ -166,9 +156,7 @@ def scan_agent_files(root: Path) -> list[AgentRef]:
 
     for md_file in sorted(root.glob("*/agents/*.md")):
         rel = md_file.relative_to(root).as_posix()
-        for line_no, line in enumerate(
-            md_file.read_text(encoding="utf-8").splitlines(), start=1
-        ):
+        for line_no, line in enumerate(md_file.read_text(encoding="utf-8").splitlines(), start=1):
             for m in pattern.finditer(line):
                 refs.append(AgentRef(rel, int(m.group(1)), line_no, line.strip()))
 
@@ -183,9 +171,7 @@ def scan_skill_files(root: Path) -> list[AgentRef]:
 
     for md_file in sorted(root.glob("*/SKILL.md")):
         rel = md_file.relative_to(root).as_posix()
-        for line_no, line in enumerate(
-            md_file.read_text(encoding="utf-8").splitlines(), start=1
-        ):
+        for line_no, line in enumerate(md_file.read_text(encoding="utf-8").splitlines(), start=1):
             for m in pattern.finditer(line):
                 refs.append(AgentRef(rel, int(m.group(1)), line_no, line.strip()))
 
@@ -217,9 +203,7 @@ def check_orphaned_schemas(
 ) -> CheckResult:
     """Schemas defined in handoff_schemas.md but never referenced elsewhere."""
 
-    referenced_nums = {r.schema_number for r in agent_refs} | {
-        r.schema_number for r in skill_refs
-    }
+    referenced_nums = {r.schema_number for r in agent_refs} | {r.schema_number for r in skill_refs}
     orphaned = sorted(n for n in schemas if n not in referenced_nums)
     if orphaned:
         details = [
@@ -381,9 +365,7 @@ def check_required_field_coverage(
         if ref.file_path not in file_contents:
             full_path = REPO_ROOT / ref.file_path
             if full_path.exists():
-                file_contents[ref.file_path] = full_path.read_text(
-                    encoding="utf-8"
-                ).lower()
+                file_contents[ref.file_path] = full_path.read_text(encoding="utf-8").lower()
 
     # Build reverse map: agent_id -> file_path
     agent_to_file: dict[str, str] = {}
@@ -506,9 +488,7 @@ def print_report(
         print("-" * 64)
         print("  Per-File Schema References")
         print("-" * 64)
-        all_refs = sorted(
-            agent_refs + skill_refs, key=lambda r: (r.file_path, r.line_number)
-        )
+        all_refs = sorted(agent_refs + skill_refs, key=lambda r: (r.file_path, r.line_number))
         current_file = ""
         for ref in all_refs:
             if ref.file_path != current_file:

@@ -9,6 +9,7 @@ Usage:
 
 Default path: shared/prisma_trAIce_protocol.md (relative to repo root).
 """
+
 from __future__ import annotations
 
 import argparse

@@ -7,6 +7,7 @@ the validator catches each documented bad case in
 docs/design/2026-05-14-ai-disclosure-impl-spec.md §4.1 (policy_anchor_table
 lint scope) and §4.4 #11 (G1 scope-narrowing).
 """
+
 from __future__ import annotations
 
 import sys
@@ -139,9 +140,7 @@ class CheckPolicyAnchorTableMutationTests(unittest.TestCase):
         # Remove field #5 from PRISMA-trAIce. textwrap.dedent strips leading
         # indent so rows start at column 0; match the row prefix exactly.
         lines = _GOOD_TABLE.split("\n")
-        bad_lines = [
-            line for line in lines if not line.lstrip().startswith("| 5 | Specific task")
-        ]
+        bad_lines = [line for line in lines if not line.lstrip().startswith("| 5 | Specific task")]
         bad = "\n".join(bad_lines)
         violations = cpat.lint_text(bad)
         self.assertTrue(
@@ -198,9 +197,7 @@ class CheckPolicyAnchorTableMutationTests(unittest.TestCase):
         )
         # If we just delete a row, the field-count test catches it. To test order
         # we keep all 16 but rename one with a wrong number.
-        bad = _GOOD_TABLE.replace(
-            "| 14 | Disclosure location", "| 99 | Disclosure location"
-        )
+        bad = _GOOD_TABLE.replace("| 14 | Disclosure location", "| 99 | Disclosure location")
         violations = cpat.lint_text(bad)
         self.assertTrue(
             any("order" in v.lower() or "field" in v.lower() or "99" in v for v in violations),
@@ -253,6 +250,7 @@ class CheckPolicyAnchorTableNatureSourceOfTruthTest(unittest.TestCase):
         # file should fail the main lint command (not just the unit test).
         import shutil
         import tempfile
+
         with tempfile.TemporaryDirectory() as td:
             tdir = Path(td)
             anchor = REPO_ROOT / "academic-paper/references/policy_anchor_table.md"

@@ -57,6 +57,7 @@ jobs:
       - name: Lint (ruff)
         run: |
           pipx run ruff check .
+          pipx run ruff format --check .
 
       - name: Run test suite
         env:

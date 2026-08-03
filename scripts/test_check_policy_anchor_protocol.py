@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Mutation tests for scripts/check_policy_anchor_protocol.py."""
+
 from __future__ import annotations
 
 import sys

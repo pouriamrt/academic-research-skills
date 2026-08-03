@@ -52,6 +52,7 @@ Usage:
         --output base.rev2.md [--report-out R.json] \
         [--acknowledge-structural] [--touched-ratio-threshold 0.6]
 """
+
 from __future__ import annotations
 
 import argparse
@@ -96,6 +97,7 @@ def _ratio_threshold(raw: str) -> float:
     except ValueError:
         raise argparse.ArgumentTypeError(f"{raw!r} is not a number")
     import math
+
     if not math.isfinite(value) or not (0.0 <= value <= 1.0):
         raise argparse.ArgumentTypeError(
             f"{raw!r} must be a finite ratio in [0.0, 1.0] "
@@ -251,9 +253,7 @@ def validate_patch(
 
     blocks_total = len(base.blocks)
     touched_ratio = (touched / blocks_total) if blocks_total else 0.0
-    ratio_exceeded = (
-        touched_ratio_threshold is not None and touched_ratio > touched_ratio_threshold
-    )
+    ratio_exceeded = touched_ratio_threshold is not None and touched_ratio > touched_ratio_threshold
     structural_flags = {
         "heading_op_indexes": heading_op_indexes,
         "section_count_delta": headings_delta,
@@ -353,11 +353,7 @@ def apply_patch(base_text: str, base: ParsedDocument, analysis: dict) -> tuple[s
     # gap must be RECOMPUTED instead of copied only where its boundary
     # disappears (everything after it deleted) or never existed (an
     # insertion lands where the base had zero inter-block bytes).
-    deleted = {
-        a["op"]["block_id"]
-        for a in analysis["analyses"]
-        if a["op"]["op"] == "delete_block"
-    }
+    deleted = {a["op"]["block_id"] for a in analysis["analyses"] if a["op"]["op"] == "delete_block"}
     # Highest index that survives the patch; `i >= last_kept` ⇔ every
     # block after i is deleted (O(1) per block instead of a tail scan).
     last_kept = max(
@@ -532,7 +528,10 @@ def run(
     exists = [
         {"op_index": None, "kind": "artifact_already_exists", "message": msg}
         for p, msg in (
-            (output_path, "--output already exists; the revised draft must be a new versioned artifact"),
+            (
+                output_path,
+                "--output already exists; the revised draft must be a new versioned artifact",
+            ),
             (report_path, "--report-out already exists; each apply emits its own report"),
         )
         if p.exists()
@@ -605,8 +604,9 @@ def run(
         # is range-validated upstream, so this is belt-and-suspenders.
         atomic_write_bytes(
             report_path,
-            (json.dumps(report, ensure_ascii=False, indent=2, allow_nan=False)
-             + "\n").encode("utf-8"),
+            (json.dumps(report, ensure_ascii=False, indent=2, allow_nan=False) + "\n").encode(
+                "utf-8"
+            ),
         )
     except BaseException:
         # The output and its apply report land as a pair: a report-write

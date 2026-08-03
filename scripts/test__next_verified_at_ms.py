@@ -21,6 +21,7 @@ Cases per §10:
 
 Plus property-based monotonic test and RFC 3339 ms shape test.
 """
+
 from __future__ import annotations
 
 import re
@@ -74,24 +75,32 @@ class TestNextVerifiedAtMs(unittest.TestCase):
 
     # Case (a)
     def test_empty_ledger_returns_now(self) -> None:
-        with patch("scripts._next_verified_at_ms.utc_now_ms", return_value="2026-04-30T15:30:00.000Z"):
+        with patch(
+            "scripts._next_verified_at_ms.utc_now_ms", return_value="2026-04-30T15:30:00.000Z"
+        ):
             self.assertEqual(next_verified_at_ms([]), "2026-04-30T15:30:00.000Z")
 
     # Case (b)
     def test_clock_fresh_returns_now(self) -> None:
         prior = [_persisted_entry("2026-04-30T15:22:04.123Z")]
-        with patch("scripts._next_verified_at_ms.utc_now_ms", return_value="2026-04-30T15:30:00.000Z"):
+        with patch(
+            "scripts._next_verified_at_ms.utc_now_ms", return_value="2026-04-30T15:30:00.000Z"
+        ):
             self.assertEqual(next_verified_at_ms(prior), "2026-04-30T15:30:00.000Z")
 
     # Case (c)
     def test_clock_stale_bumps_latest_by_one_ms(self) -> None:
         prior = [_persisted_entry("2026-04-30T15:30:00.000Z")]
-        with patch("scripts._next_verified_at_ms.utc_now_ms", return_value="2026-04-30T15:30:00.000Z"):
+        with patch(
+            "scripts._next_verified_at_ms.utc_now_ms", return_value="2026-04-30T15:30:00.000Z"
+        ):
             self.assertEqual(next_verified_at_ms(prior), "2026-04-30T15:30:00.001Z")
 
     def test_clock_behind_bumps_latest_by_one_ms(self) -> None:
         prior = [_persisted_entry("2026-04-30T15:30:00.000Z")]
-        with patch("scripts._next_verified_at_ms.utc_now_ms", return_value="2026-04-30T15:29:59.500Z"):
+        with patch(
+            "scripts._next_verified_at_ms.utc_now_ms", return_value="2026-04-30T15:29:59.500Z"
+        ):
             self.assertEqual(next_verified_at_ms(prior), "2026-04-30T15:30:00.001Z")
 
     # Case (d)
@@ -101,16 +110,22 @@ class TestNextVerifiedAtMs(unittest.TestCase):
             _persisted_entry("2026-04-30T15:50:00.999Z"),
             _persisted_entry("2026-04-30T15:30:00.000Z"),
         ]
-        with patch("scripts._next_verified_at_ms.utc_now_ms", return_value="2026-04-30T15:30:00.000Z"):
+        with patch(
+            "scripts._next_verified_at_ms.utc_now_ms", return_value="2026-04-30T15:30:00.000Z"
+        ):
             self.assertEqual(next_verified_at_ms(prior), "2026-04-30T15:50:01.000Z")
 
     def test_ms_overflow_carries_to_seconds(self) -> None:
         prior = [_persisted_entry("2026-04-30T15:22:04.999Z")]
-        with patch("scripts._next_verified_at_ms.utc_now_ms", return_value="2026-04-30T15:22:04.000Z"):
+        with patch(
+            "scripts._next_verified_at_ms.utc_now_ms", return_value="2026-04-30T15:22:04.000Z"
+        ):
             self.assertEqual(next_verified_at_ms(prior), "2026-04-30T15:22:05.000Z")
 
     def test_returns_rfc3339_ms_shape(self) -> None:
-        with patch("scripts._next_verified_at_ms.utc_now_ms", return_value="2026-04-30T15:30:00.000Z"):
+        with patch(
+            "scripts._next_verified_at_ms.utc_now_ms", return_value="2026-04-30T15:30:00.000Z"
+        ):
             result = next_verified_at_ms([])
         self.assertRegex(result, RFC3339_MS_RE)
 
@@ -125,7 +140,11 @@ class TestStrictMonotonicProperty(unittest.TestCase):
             (["2026-04-30T15:30:00.500Z"], "2026-04-30T15:30:00.000Z"),
             (["2026-04-30T15:30:00.000Z"], "2026-04-30T16:00:00.000Z"),
             (
-                ["2026-04-30T15:22:04.123Z", "2026-04-30T15:50:00.999Z", "2026-04-30T15:30:00.000Z"],
+                [
+                    "2026-04-30T15:22:04.123Z",
+                    "2026-04-30T15:50:00.999Z",
+                    "2026-04-30T15:30:00.000Z",
+                ],
                 "2026-04-30T15:30:00.000Z",
             ),
             (["2026-04-30T15:22:04.999Z"], "2026-04-30T15:22:04.000Z"),
@@ -220,9 +239,7 @@ class TestCli(unittest.TestCase):
         with TemporaryDirectory() as td:
             passport = Path(td) / "passport.yaml"
             passport.write_text(
-                "audit_artifact:\n"
-                "  - verdict:\n"
-                "      verified_at: 2099-12-31T23:59:58.000Z\n",
+                "audit_artifact:\n  - verdict:\n      verified_at: 2099-12-31T23:59:58.000Z\n",
                 encoding="utf-8",
             )
             result = run_script(SCRIPT, "--passport", str(passport))

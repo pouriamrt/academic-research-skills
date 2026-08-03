@@ -129,8 +129,10 @@ def _extract_template_sections(template_str: str, section_numbers: list[int]) ->
             r"^([ \t]*)(```|~~~)[^\n]*\n.*?^\1\2[ \t]*$",
             _re.DOTALL | _re.MULTILINE,
         )
+
         def _repl(m: _re.Match[str]) -> str:
             return "".join(" " if ch != "\n" else "\n" for ch in m.group(0))
+
         return fence_re.sub(_repl, s)
 
     masked = _mask_fences(template_str)
@@ -164,11 +166,7 @@ def _extract_template_sections(template_str: str, section_numbers: list[int]) ->
         start = matches[match_idx].start()
         # End at the next `## ` heading of any kind (Section or appendix),
         # not just the next Section. This catches the post-Section-7 appendix.
-        end = (
-            matches[match_idx + 1].start()
-            if match_idx + 1 < len(matches)
-            else len(template_str)
-        )
+        end = matches[match_idx + 1].start() if match_idx + 1 < len(matches) else len(template_str)
         parts.append(template_str[start:end].rstrip() + "\n\n")
     return "".join(parts)
 
@@ -534,16 +532,27 @@ def build_parser() -> argparse.ArgumentParser:
     sub = p.add_subparsers(dest="mode", required=True)
 
     snap = sub.add_parser("snapshot", help="Snapshot bundle, write manifest + prompt")
-    snap.add_argument("--primary", action="append", required=True, help="Primary deliverable path (repeatable)")
-    snap.add_argument("--supporting", action="append", default=[], help="Supporting context path (repeatable)")
-    snap.add_argument("--previous-findings", help="Optional --previous-findings path (auto-injected into supporting with dedup)")
+    snap.add_argument(
+        "--primary", action="append", required=True, help="Primary deliverable path (repeatable)"
+    )
+    snap.add_argument(
+        "--supporting", action="append", default=[], help="Supporting context path (repeatable)"
+    )
+    snap.add_argument(
+        "--previous-findings",
+        help="Optional --previous-findings path (auto-injected into supporting with dedup)",
+    )
     snap.add_argument("--audit-template", required=True, help="Audit template path (single)")
-    snap.add_argument("--output-dir", required=True, help="Where to write manifest.txt and prompt.txt")
+    snap.add_argument(
+        "--output-dir", required=True, help="Where to write manifest.txt and prompt.txt"
+    )
     snap.add_argument("--run-id", required=True, help="Audit run identifier")
     snap.add_argument("--round", type=int, required=True, help="Current audit round")
     snap.add_argument("--target-rounds", type=int, required=True, help="Total target rounds")
     snap.add_argument("--git-sha", help="Repo HEAD short SHA (informational, embedded in prompt)")
-    snap.add_argument("--stage", type=int, required=True, help="Stage transition (1-6) the audit gates")
+    snap.add_argument(
+        "--stage", type=int, required=True, help="Stage transition (1-6) the audit gates"
+    )
     snap.add_argument(
         "--agent",
         required=True,

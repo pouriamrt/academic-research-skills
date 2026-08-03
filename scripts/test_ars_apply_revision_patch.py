@@ -11,6 +11,7 @@ claim tested directly over seeded randomized patches.
 Run standalone:
     python -m unittest scripts/test_ars_apply_revision_patch.py -v
 """
+
 from __future__ import annotations
 
 import json
@@ -535,9 +536,7 @@ class TestPhase1Rejections(ApplyHarness):
         with self.assertRaises(ApplyRejection) as ctx:
             self._run()
         self.assertEqual(ctx.exception.failures[0]["kind"], "artifact_already_exists")
-        self.assertEqual(
-            self.output_path.read_text(), "pre-existing artifact, not ours to replace"
-        )
+        self.assertEqual(self.output_path.read_text(), "pre-existing artifact, not ours to replace")
 
     def test_report_naming_output_is_rejected(self):
         anchored = self.anchored_fixture()
@@ -1016,9 +1015,7 @@ class TestByteIdentityProperty(ApplyHarness):
             base_doc = parse_document(anchored)
             out_doc = parse_document(out_text)
             named = {op["block_id"] for op in patch["ops"]}
-            inserted_after = {
-                op["block_id"] for op in patch["ops"] if op["op"] == "insert_after"
-            }
+            inserted_after = {op["block_id"] for op in patch["ops"] if op["op"] == "insert_after"}
             out_by_id = out_doc.block_by_id()
 
             base_blocks = base_doc.blocks
@@ -1036,10 +1033,7 @@ class TestByteIdentityProperty(ApplyHarness):
                 # untouched too and nothing was inserted between them.
                 if i + 1 < len(base_blocks):
                     nxt = base_blocks[i + 1]
-                    if (
-                        nxt.block_id not in named
-                        and block.block_id not in inserted_after
-                    ):
+                    if nxt.block_id not in named and block.block_id not in inserted_after:
                         base_sep = anchored[block.span[1] : nxt.full_start]
                         out_nxt = out_by_id[nxt.block_id]
                         out_sep = out_text[out_block.span[1] : out_nxt.full_start]

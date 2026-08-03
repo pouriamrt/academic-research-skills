@@ -6,6 +6,7 @@ Usage: python scripts/check_compliance_report.py path/to/report.json
 Exit 0 on pass (warnings may still be printed to stderr).
 Exit 1 on validation failure.
 """
+
 from __future__ import annotations
 
 import argparse
@@ -41,8 +42,7 @@ def warn_suspicious(report: dict) -> list[str]:
     if isinstance(pt, dict):
         by_tier = pt.get("by_tier", {})
         all_pass = all(
-            isinstance(t, dict) and t.get("total") == t.get("pass")
-            for t in by_tier.values()
+            isinstance(t, dict) and t.get("total") == t.get("pass") for t in by_tier.values()
         )
         if all_pass and by_tier and not report.get("evidence"):
             warnings.append(

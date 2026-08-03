@@ -1,4 +1,5 @@
 """Tests for Kong #258 version_records sidecar schema."""
+
 from __future__ import annotations
 
 from pathlib import Path
@@ -202,7 +203,9 @@ def test_kong_258_agent_and_formatter_markers_present():
 
 
 def test_kong_258_design_doc_documents_127_boundary_and_example_exists():
-    design = (REPO_ROOT / "docs/design/2026-05-28-kong-258-version-family-reconciliation.md").read_text()
+    design = (
+        REPO_ROOT / "docs/design/2026-05-28-kong-258-version-family-reconciliation.md"
+    ).read_text()
     example = REPO_ROOT / "academic-paper/examples/version_family_reconciliation_example.md"
     assert "#127 Boundary" in design
     assert "literature_corpus_entry.schema.json" in design

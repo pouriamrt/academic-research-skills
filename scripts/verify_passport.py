@@ -19,6 +19,7 @@ pipeline / formatter batch, not by this standalone tool.
 
 Spec: docs/design/2026-05-21-v3.10-182-promote-citation-gate-spec.md §2 Delta 5.
 """
+
 from __future__ import annotations
 
 import argparse
@@ -64,22 +65,23 @@ def run(argv: list[str] | None = None, *, clients_factory=_real_clients) -> int:
     )
     parser.add_argument("passport", help="Path to the passport YAML file.")
     parser.add_argument(
-        "--synthetic-ref-slug", choices=["citation_key"], default=None,
+        "--synthetic-ref-slug",
+        choices=["citation_key"],
+        default=None,
         help="Synthesize ref_slug from each entry's citation_key for DIAGNOSTIC "
-             "output (the tool refuses by default; this is not a real prose "
-             "join, #332).")
+        "output (the tool refuses by default; this is not a real prose "
+        "join, #332).",
+    )
     args = parser.parse_args(argv)
 
     path = Path(args.passport)
     if not path.is_file():
-        print(f"[verify_passport ERROR] passport not found: {path}",
-              file=sys.stderr)
+        print(f"[verify_passport ERROR] passport not found: {path}", file=sys.stderr)
         return 1
     try:
         passport = yaml.safe_load(path.read_text(encoding="utf-8")) or {}
     except yaml.YAMLError as e:
-        print(f"[verify_passport ERROR] could not parse YAML: {e}",
-              file=sys.stderr)
+        print(f"[verify_passport ERROR] could not parse YAML: {e}", file=sys.stderr)
         return 1
 
     # Refuse by default — a passport alone carries no prose <!--ref:slug--> join,
@@ -92,21 +94,20 @@ def run(argv: list[str] | None = None, *, clients_factory=_real_clients) -> int:
             "(<!--ref:slug--> markers) that a passport does not carry. Run the "
             "Stage 4->5 pipeline (which supplies the prose join), or pass "
             "--synthetic-ref-slug citation_key for diagnostic output.",
-            file=sys.stderr)
+            file=sys.stderr,
+        )
         return 2
 
     # synthetic mode: ref_slug := citation_key. Diagnostic only.
-    ref_slug_by_key = {
-        e.get("citation_key"): e.get("citation_key") for e in corpus
-    }
+    ref_slug_by_key = {e.get("citation_key"): e.get("citation_key") for e in corpus}
     print(
         "[verify_passport WARNING] --synthetic-ref-slug citation_key: ref_slug "
         "synthesized from citation_key. Output is DIAGNOSTIC, not a real prose "
         "join — do NOT feed it to a consumer that expects prose-joined ref_slugs.",
-        file=sys.stderr)
+        file=sys.stderr,
+    )
 
-    outcomes = verify_passport(
-        passport, clients=clients_factory(), ref_slug_by_key=ref_slug_by_key)
+    outcomes = verify_passport(passport, clients=clients_factory(), ref_slug_by_key=ref_slug_by_key)
     print(json.dumps(outcomes, indent=2))
     return 0
 

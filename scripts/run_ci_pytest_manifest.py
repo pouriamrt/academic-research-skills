@@ -20,6 +20,7 @@ The drift guard at scripts/check_ci_pytest_manifest.py validates the manifest
 shape; this runner trusts the lint and does the minimum schema checks needed
 to fail safely if the manifest is malformed.
 """
+
 from __future__ import annotations
 
 import argparse
@@ -103,8 +104,7 @@ def main() -> int:
 
     if failed:
         print(
-            f"\nCI pytest manifest run FAILED on {len(failed)} entr(y/ies): "
-            + ", ".join(failed),
+            f"\nCI pytest manifest run FAILED on {len(failed)} entr(y/ies): " + ", ".join(failed),
             file=sys.stderr,
         )
         return 1

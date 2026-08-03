@@ -3,6 +3,7 @@
 Spec: docs/design/2026-05-12-ars-v3.7.3-claim-faithfulness-and-contaminated-source-spec.md §3.1
 External motivation: Zhao et al. arXiv:2605.07723 (2026-05).
 """
+
 from __future__ import annotations
 
 from pathlib import Path
@@ -26,6 +27,7 @@ def write(tmp_path: Path, content: str) -> Path:
 
 
 # --- Positive cases ----------------------------------------------------
+
 
 def test_quote_anchor_passes(tmp_path: Path):
     p = write(tmp_path, "Smith (2024) <!--ref:smith2024--><!--anchor:quote:An%20excerpt-->")
@@ -84,6 +86,7 @@ def test_quote_exactly_25_words_passes(tmp_path: Path):
 
 
 # --- Negative cases ----------------------------------------------------
+
 
 def test_bare_ref_without_anchor_fails(tmp_path: Path):
     """v3.7.1 Two-Layer-only citation now violates v3.7.3."""
@@ -145,6 +148,7 @@ def test_missing_file_reports_violation(tmp_path: Path):
 
 # --- v3.7.3 gemini review F1 closure: hyphen encoding ------------------
 
+
 def test_quote_with_raw_double_hyphen_fails(tmp_path: Path):
     """v3.7.3 F1: `--` in URL-encoded quote value can prematurely close
     the HTML comment. Must percent-encode `-` as `%2D`."""
@@ -179,6 +183,7 @@ def test_quote_with_single_raw_hyphen_passes(tmp_path: Path):
 
 
 # --- v3.7.3 gemini review F2 closure: whitespace between ref + anchor ---
+
 
 def test_ref_anchor_separated_by_single_space_passes(tmp_path: Path):
     p = write(
@@ -216,17 +221,14 @@ def test_ref_anchor_separated_by_newline_and_tab_passes(tmp_path: Path):
 
 # --- v3.7.3 gemini review F7 closure: fenced code block isolation ------
 
+
 def test_ref_inside_fenced_code_block_is_ignored(tmp_path: Path):
     """v3.7.3 F7: ref/anchor markers inside ``` fenced code blocks are
     documentation examples (in spec docs, README, agent prompts) and
     must NOT trigger violations."""
     p = write(
         tmp_path,
-        "Some prose.\n\n"
-        "```\n"
-        "Example: Smith (2024) <!--ref:smith2024-->\n"
-        "```\n\n"
-        "After fence.",
+        "Some prose.\n\n```\nExample: Smith (2024) <!--ref:smith2024-->\n```\n\nAfter fence.",
     )
     assert lint_file(p) == []
 
@@ -250,10 +252,7 @@ def test_tilde_fenced_code_block_also_ignored(tmp_path: Path):
     """v3.7.3 F7: ~~~ fences (CommonMark alternative) also skip linting."""
     p = write(
         tmp_path,
-        "Prose.\n\n"
-        "~~~\n"
-        "Example: <!--ref:smith2024-->\n"
-        "~~~\n",
+        "Prose.\n\n~~~\nExample: <!--ref:smith2024-->\n~~~\n",
     )
     assert lint_file(p) == []
 
@@ -273,6 +272,7 @@ def test_nested_html_comment_marker_in_quote_value_handled(tmp_path: Path):
 
 
 # --- v3.7.3 codex round-2 F8 closure: 2-token ref suffix (contamination) ---
+
 
 def test_contamination_2_token_suffix_with_valid_anchor_passes(tmp_path: Path):
     """v3.7.3 F8: ref carrying `ok CONTAMINATED-PREPRINT` is the
@@ -307,6 +307,7 @@ def test_contamination_2_token_ref_without_anchor_caught(tmp_path: Path):
 
 
 # --- v3.7.3 codex round-2 F9 closure: empty non-none anchor values -----
+
 
 def test_empty_page_anchor_fails(tmp_path: Path):
     """v3.7.3 F9: `<!--anchor:page:-->` carries no locator payload but
@@ -365,6 +366,7 @@ def test_empty_none_anchor_still_passes_lint(tmp_path: Path):
 
 # --- v3.7.3 codex round-3 F10 closure: premature comment terminator ----
 
+
 def test_quote_with_raw_arrow_close_caught(tmp_path: Path):
     """v3.7.3 F10: `<!--anchor:quote:foo-->bar-->` looks like a valid
     anchor to the main regex (which stops at the first `-->`), but the
@@ -410,6 +412,7 @@ def test_quote_with_single_arrow_ambiguous_passes(tmp_path: Path):
 
 # --- v3.7.3 codex round-4 F12 closure: orphan after non-ref comment ----
 
+
 def test_anchor_after_arbitrary_html_comment_caught(tmp_path: Path):
     """v3.7.3 F12: an anchor preceded by a non-ref HTML comment is an
     orphan — the `<!--note-->` is not a ref marker. The earlier
@@ -449,6 +452,7 @@ def test_anchor_after_well_formed_ref_still_passes(tmp_path: Path):
 
 # --- v3.7.3 codex round-5 F14 closure: malformed ref without anchor ----
 
+
 def test_malformed_ref_3_tokens_no_anchor_caught(tmp_path: Path):
     """v3.7.3 F14: ref with 3 status tokens exceeds the {0,2} cap.
     Without trailing anchor, both the main ref_anchor_pattern AND the
@@ -458,8 +462,7 @@ def test_malformed_ref_3_tokens_no_anchor_caught(tmp_path: Path):
         "Smith (2024) <!--ref:smith2024 ok CONTAMINATED-PREPRINT EXTRA-->.",
     )
     violations = lint_file(p)
-    assert any("malformed ref" in v and "F14" in v for v in violations), \
-        f"violations={violations}"
+    assert any("malformed ref" in v and "F14" in v for v in violations), f"violations={violations}"
 
 
 def test_malformed_ref_with_invalid_slug_caught(tmp_path: Path):
@@ -470,8 +473,7 @@ def test_malformed_ref_with_invalid_slug_caught(tmp_path: Path):
         "(2024) <!--ref:2024smith ok-->.",
     )
     violations = lint_file(p)
-    assert any("malformed ref" in v for v in violations), \
-        f"violations={violations}"
+    assert any("malformed ref" in v for v in violations), f"violations={violations}"
 
 
 def test_malformed_ref_4_tokens_with_anchor_caught(tmp_path: Path):
@@ -485,8 +487,7 @@ def test_malformed_ref_4_tokens_with_anchor_caught(tmp_path: Path):
     violations = lint_file(p)
     # Both F14 (malformed ref) and F12 (orphan anchor — because the
     # malformed ref is not a well-formed preceding ref) fire here.
-    assert any("malformed ref" in v for v in violations), \
-        f"violations={violations}"
+    assert any("malformed ref" in v for v in violations), f"violations={violations}"
 
 
 def test_well_formed_ref_with_2_tokens_does_not_trigger_malformed(tmp_path: Path):
@@ -501,6 +502,7 @@ def test_well_formed_ref_with_2_tokens_does_not_trigger_malformed(tmp_path: Path
 
 
 # --- v3.7.3 codex round-6 F15 closure: prompt-vs-lint alignment --------
+
 
 def test_quote_with_single_hyphen_explicitly_allowed(tmp_path: Path):
     """v3.7.3 F15: prompts and lint align on "encode consecutive `--`,
@@ -529,6 +531,7 @@ def test_quote_with_triple_hyphen_must_encode_first_double(tmp_path: Path):
 
 # --- v3.7.3 codex round-8 F19 closure: decode before empty check -------
 
+
 def test_url_encoded_whitespace_page_anchor_caught(tmp_path: Path):
     """v3.7.3 F19: `<!--anchor:page:%20%20-->` looks non-empty as raw
     bytes but decodes to two spaces — functionally no locator. F9
@@ -539,8 +542,7 @@ def test_url_encoded_whitespace_page_anchor_caught(tmp_path: Path):
         "Smith (2024) <!--ref:smith2024--><!--anchor:page:%20%20-->",
     )
     violations = lint_file(p)
-    assert any("empty anchor value" in v for v in violations), \
-        f"violations={violations}"
+    assert any("empty anchor value" in v for v in violations), f"violations={violations}"
 
 
 def test_url_encoded_single_space_quote_anchor_caught(tmp_path: Path):
@@ -551,8 +553,7 @@ def test_url_encoded_single_space_quote_anchor_caught(tmp_path: Path):
         "Smith (2024) <!--ref:smith2024--><!--anchor:quote:%20-->",
     )
     violations = lint_file(p)
-    assert any("empty anchor value" in v for v in violations), \
-        f"violations={violations}"
+    assert any("empty anchor value" in v for v in violations), f"violations={violations}"
 
 
 def test_url_encoded_real_content_passes(tmp_path: Path):

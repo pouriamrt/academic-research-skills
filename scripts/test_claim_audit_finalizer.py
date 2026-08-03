@@ -38,6 +38,7 @@ convention places tests under `scripts/test_*.py` (CI uses
 Run:
     python -m unittest scripts.test_claim_audit_finalizer -v
 """
+
 from __future__ import annotations
 
 import unittest
@@ -432,7 +433,7 @@ class TF5Stage6Histogram(_FinalizerTestBase):
                 judgment="UNSUPPORTED",
                 defect_stage="citation_anchor",
                 ref_retrieval_method="api",
-                claim_id=f"C-{i+3:03d}",
+                claim_id=f"C-{i + 3:03d}",
             )
             for i in range(2)
         ]

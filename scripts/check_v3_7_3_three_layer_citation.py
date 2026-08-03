@@ -30,6 +30,7 @@ It only verifies the anchor channel exists and is well-formed.
 Usage:
   python scripts/check_v3_7_3_three_layer_citation.py <path-to-draft.md> [...]
 """
+
 from __future__ import annotations
 
 import argparse
@@ -39,9 +40,7 @@ from pathlib import Path
 from urllib.parse import unquote
 
 REF_PATTERN = re.compile(r"<!--ref:([A-Za-z][A-Za-z0-9_:-]*)\s*([^-]*?)-->")
-ANCHOR_PATTERN = re.compile(
-    r"<!--anchor:(quote|page|section|paragraph|none):([^>]*?)-->"
-)
+ANCHOR_PATTERN = re.compile(r"<!--anchor:(quote|page|section|paragraph|none):([^>]*?)-->")
 ANY_ANCHOR_PATTERN = re.compile(r"<!--anchor:")
 VALID_KINDS = {"quote", "page", "section", "paragraph", "none"}
 QUOTE_WORD_CAP = 25
@@ -266,9 +265,7 @@ def lint_file(path: Path) -> list[str]:
     # remove the lookbehind, scan EVERY anchor in the file, and inside
     # the loop verify that the preceding text ends with a well-formed
     # ref marker per the same regex used by the main ref_anchor_pattern.
-    orphan_pattern = re.compile(
-        r"<!--anchor:([^:>]*):([^>]*?)-->"
-    )
+    orphan_pattern = re.compile(r"<!--anchor:([^:>]*):([^>]*?)-->")
     for m in orphan_pattern.finditer(text):
         preceding = text[: m.start()]
         if not re.search(
@@ -301,16 +298,12 @@ def main() -> int:
     if total_violations:
         print("\n".join(total_violations), file=sys.stderr)
         print(
-            f"\n[v3.7.3 three-layer-citation lint] FAILED "
-            f"({len(total_violations)} violation(s))",
+            f"\n[v3.7.3 three-layer-citation lint] FAILED ({len(total_violations)} violation(s))",
             file=sys.stderr,
         )
         return 1
 
-    print(
-        f"[v3.7.3 three-layer-citation lint] PASSED "
-        f"({len(args.paths)} file(s) scanned)"
-    )
+    print(f"[v3.7.3 three-layer-citation lint] PASSED ({len(args.paths)} file(s) scanned)")
     return 0
 
 

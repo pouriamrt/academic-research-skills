@@ -39,6 +39,7 @@ Usage
 -----
   python scripts/check_policy_anchor_table.py academic-paper/references/policy_anchor_table.md
 """
+
 from __future__ import annotations
 
 import argparse
@@ -73,9 +74,7 @@ NATURE_VENUE_SECTION = re.compile(
     r"^##\s+Venue:\s+Nature[^\n]*$(.*?)(?=^##\s+Venue:|\Z)",
     flags=re.MULTILINE | re.DOTALL,
 )
-SNAPSHOT_LINE = re.compile(
-    r"\*\*Snapshot:\*\*\s+`([A-Za-z0-9-]+):wayback=([0-9]+)`"
-)
+SNAPSHOT_LINE = re.compile(r"\*\*Snapshot:\*\*\s+`([A-Za-z0-9-]+):wayback=([0-9]+)`")
 ROW_LINE = re.compile(
     r"^\|\s*(\d+)\s*\|\s*([^|]+?)\s*\|\s*([A-Za-z-]+)\s*\|\s*(.+?)\s*\|\s*([^|]+?)\s*\|\s*([^|]+?)\s*\|"
 )
@@ -241,8 +240,7 @@ def verify_nature_dedup_with_venue(
         violations.append("venue policies missing `## Venue: Nature ...` section")
     elif NATURE_POLICY_POINTER not in nature_venue_section.group(1):
         violations.append(
-            f"venue policies Nature section missing dedup pointer to "
-            f"{NATURE_POLICY_POINTER}"
+            f"venue policies Nature section missing dedup pointer to {NATURE_POLICY_POINTER}"
         )
     return violations
 

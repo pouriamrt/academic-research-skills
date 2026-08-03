@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Tests for Crossref client per deep-research/references/crossref_api_protocol.md."""
+
 from __future__ import annotations
 
 import json
@@ -14,14 +15,18 @@ def test_title_search_match_at_threshold(monkeypatch):
     from crossref_client import CrossrefClient
 
     mock_response = MagicMock()
-    mock_response.read.return_value = json.dumps({
-        "message": {
-            "items": [{
-                "title": ["Attention Is All You Need"],
-                "DOI": "10.5555/3295222.3295349",
-            }]
+    mock_response.read.return_value = json.dumps(
+        {
+            "message": {
+                "items": [
+                    {
+                        "title": ["Attention Is All You Need"],
+                        "DOI": "10.5555/3295222.3295349",
+                    }
+                ]
+            }
         }
-    }).encode("utf-8")
+    ).encode("utf-8")
     mock_response.__enter__ = MagicMock(return_value=mock_response)
     mock_response.__exit__ = MagicMock(return_value=None)
 
@@ -39,11 +44,9 @@ def test_title_search_no_match_below_threshold(monkeypatch):
     from crossref_client import CrossrefClient
 
     mock_response = MagicMock()
-    mock_response.read.return_value = json.dumps({
-        "message": {
-            "items": [{"title": ["Completely Unrelated Paper Title"]}]
-        }
-    }).encode("utf-8")
+    mock_response.read.return_value = json.dumps(
+        {"message": {"items": [{"title": ["Completely Unrelated Paper Title"]}]}}
+    ).encode("utf-8")
     mock_response.__enter__ = MagicMock(return_value=mock_response)
     mock_response.__exit__ = MagicMock(return_value=None)
 
@@ -59,12 +62,14 @@ def test_doi_lookup_with_title_cross_check(monkeypatch):
     from crossref_client import CrossrefClient
 
     mock_response = MagicMock()
-    mock_response.read.return_value = json.dumps({
-        "message": {
-            "title": ["Some Other Paper"],
-            "DOI": "10.5555/3295222.3295349",
+    mock_response.read.return_value = json.dumps(
+        {
+            "message": {
+                "title": ["Some Other Paper"],
+                "DOI": "10.5555/3295222.3295349",
+            }
         }
-    }).encode("utf-8")
+    ).encode("utf-8")
     mock_response.__enter__ = MagicMock(return_value=mock_response)
     mock_response.__exit__ = MagicMock(return_value=None)
 
@@ -83,12 +88,14 @@ def test_doi_lookup_with_matching_title(monkeypatch):
     from crossref_client import CrossrefClient
 
     mock_response = MagicMock()
-    mock_response.read.return_value = json.dumps({
-        "message": {
-            "title": ["Attention Is All You Need"],
-            "DOI": "10.5555/3295222.3295349",
+    mock_response.read.return_value = json.dumps(
+        {
+            "message": {
+                "title": ["Attention Is All You Need"],
+                "DOI": "10.5555/3295222.3295349",
+            }
         }
-    }).encode("utf-8")
+    ).encode("utf-8")
     mock_response.__enter__ = MagicMock(return_value=mock_response)
     mock_response.__exit__ = MagicMock(return_value=None)
 
@@ -113,7 +120,10 @@ def test_429_triggers_2s_backoff_3_retries(monkeypatch):
         call_count[0] += 1
         raise urllib.error.HTTPError(
             url="https://api.crossref.org/works",
-            code=429, msg="Too Many Requests", hdrs={}, fp=None,
+            code=429,
+            msg="Too Many Requests",
+            hdrs={},
+            fp=None,
         )
 
     sleeps = []
@@ -137,7 +147,11 @@ def test_5xx_skips_immediately(monkeypatch):
     def mock_urlopen(*args, **kwargs):
         call_count[0] += 1
         raise urllib.error.HTTPError(
-            url="https://api.crossref.org/works", code=503, msg="SU", hdrs={}, fp=None,
+            url="https://api.crossref.org/works",
+            code=503,
+            msg="SU",
+            hdrs={},
+            fp=None,
         )
 
     with patch("urllib.request.urlopen", side_effect=mock_urlopen):
@@ -155,7 +169,10 @@ def test_doi_404_treated_as_miss_not_unavailable(monkeypatch):
     def mock_urlopen(*args, **kwargs):
         raise urllib.error.HTTPError(
             url="https://api.crossref.org/works/10.5555/nope",
-            code=404, msg="Not Found", hdrs={}, fp=None,
+            code=404,
+            msg="Not Found",
+            hdrs={},
+            fp=None,
         )
 
     with patch("urllib.request.urlopen", side_effect=mock_urlopen):
@@ -175,20 +192,22 @@ def test_title_search_prefers_matching_year(monkeypatch):
     mock_response = MagicMock()
     # Crossref year is nested: typically under `published-print` or `issued`.
     # Use `issued.date-parts[0][0]` for the year value (standard Crossref shape).
-    mock_response.read.return_value = json.dumps({
-        "message": {
-            "items": [
-                {
-                    "title": ["Attention Is All You Need"],
-                    "issued": {"date-parts": [[1999]]},
-                },
-                {
-                    "title": ["Attention Is All You Need"],
-                    "issued": {"date-parts": [[2017]]},
-                },
-            ]
+    mock_response.read.return_value = json.dumps(
+        {
+            "message": {
+                "items": [
+                    {
+                        "title": ["Attention Is All You Need"],
+                        "issued": {"date-parts": [[1999]]},
+                    },
+                    {
+                        "title": ["Attention Is All You Need"],
+                        "issued": {"date-parts": [[2017]]},
+                    },
+                ]
+            }
         }
-    }).encode("utf-8")
+    ).encode("utf-8")
     mock_response.__enter__ = MagicMock(return_value=mock_response)
     mock_response.__exit__ = MagicMock(return_value=None)
 
@@ -340,12 +359,14 @@ def test_doi_lookup_quotes_doi_path_segment(monkeypatch):
     def mock_urlopen(req, *args, **kwargs):
         captured_urls.append(req.full_url)
         mock_response = MagicMock()
-        mock_response.read.return_value = json.dumps({
-            "message": {
-                "title": ["Attention Is All You Need"],
-                "DOI": "10.1000/foo?bar=baz",
+        mock_response.read.return_value = json.dumps(
+            {
+                "message": {
+                    "title": ["Attention Is All You Need"],
+                    "DOI": "10.1000/foo?bar=baz",
+                }
             }
-        }).encode("utf-8")
+        ).encode("utf-8")
         mock_response.__enter__ = MagicMock(return_value=mock_response)
         mock_response.__exit__ = MagicMock(return_value=None)
         return mock_response
@@ -358,9 +379,7 @@ def test_doi_lookup_quotes_doi_path_segment(monkeypatch):
         )
 
     assert result is not None
-    assert captured_urls == [
-        "https://api.crossref.org/works/10.1000%2Ffoo%3Fbar%3Dbaz"
-    ]
+    assert captured_urls == ["https://api.crossref.org/works/10.1000%2Ffoo%3Fbar%3Dbaz"]
 
 
 def test_rejects_non_crossref_api_url_before_urlopen(monkeypatch):

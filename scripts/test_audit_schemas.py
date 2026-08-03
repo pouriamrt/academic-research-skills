@@ -14,6 +14,7 @@ scripts/test_check_audit_artifact_consistency.py at Phase 6.3.
 Run:
     python -m unittest scripts.test_audit_schemas -v
 """
+
 from __future__ import annotations
 
 import unittest
@@ -244,9 +245,7 @@ NEG_ENTRY_PERSISTED_BAD_STATUS: dict[str, Any] = {
 NEG_ENTRY_PROPOSAL_AUDIT_FAILED_NO_REASON = {
     **{k: v for k, v in ENTRY_PROPOSAL_AUDIT_FAILED.items() if k != "verdict"},
     "verdict": {
-        k: v
-        for k, v in ENTRY_PROPOSAL_AUDIT_FAILED["verdict"].items()
-        if k != "failure_reason"
+        k: v for k, v in ENTRY_PROPOSAL_AUDIT_FAILED["verdict"].items() if k != "failure_reason"
     },
 }
 # §3.7 A2 inverse — non-AUDIT_FAILED proposal carrying failure_reason must reject.

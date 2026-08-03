@@ -10,6 +10,7 @@ disclosure renderer reads it back as `RendererInput.slr_lineage`.
 Design: docs/design/2026-05-15-issue-111-slr-lineage-emission-design.md
 Contract: policy_anchor_disclosure_protocol.md §3.1 (G2 invariant)
 """
+
 from __future__ import annotations
 
 from typing import Mapping
@@ -37,8 +38,7 @@ def resolve_from_stages(stages: Mapping[str, Mapping]) -> bool:
     trigger SLR lineage — only the documented producer counts.
     """
     return any(
-        (stage.get("skill") == "deep-research")
-        and (stage.get("mode") in SLR_MODES)
+        (stage.get("skill") == "deep-research") and (stage.get("mode") in SLR_MODES)
         for stage in stages.values()
     )
 

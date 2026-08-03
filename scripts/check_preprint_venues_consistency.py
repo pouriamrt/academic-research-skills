@@ -20,6 +20,7 @@ Exit codes:
   1 = mismatch (prints both sets + the diff)
   2 = could not parse either file (file move / heading rename / regex break)
 """
+
 from __future__ import annotations
 
 import re
@@ -77,9 +78,7 @@ def _extract_python_venues(text: str) -> set[str]:
         flags=re.DOTALL,
     )
     if not m:
-        raise RuntimeError(
-            "could not locate PREPRINT_VENUES literal in contamination_signals.py"
-        )
+        raise RuntimeError("could not locate PREPRINT_VENUES literal in contamination_signals.py")
     body = m.group(1)
     venues = {
         _normalize(s.strip().strip('"').strip("'"))

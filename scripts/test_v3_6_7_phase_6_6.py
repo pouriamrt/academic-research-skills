@@ -27,15 +27,14 @@ the Phase 6.6 prep work, which did not touch the orchestrator prompt).
 Tests use `unittest` and read pipeline_orchestrator_agent.md directly from
 the working tree. No mutation; no temp dir. Each test is self-contained.
 """
+
 from __future__ import annotations
 
 import unittest
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
-ORCHESTRATOR_PROMPT = (
-    REPO_ROOT / "academic-pipeline" / "agents" / "pipeline_orchestrator_agent.md"
-)
+ORCHESTRATOR_PROMPT = REPO_ROOT / "academic-pipeline" / "agents" / "pipeline_orchestrator_agent.md"
 
 # Pre-Step-6 baseline line count of pipeline_orchestrator_agent.md.
 # Upstream (Imbad0202) main commit 02b87ae: 579 lines.
@@ -243,8 +242,10 @@ class Phase66HardRulesTest(unittest.TestCase):
     def test_hard_rule_no_skip(self) -> None:
         text = _read_prompt()
         self.assertTrue(
-            "cannot be skipped" in text or "no skip-audit" in text or
-            "no \"skip audit\"" in text or 'no "skip audit"' in text,
+            "cannot be skipped" in text
+            or "no skip-audit" in text
+            or 'no "skip audit"' in text
+            or 'no "skip audit"' in text,
             "Phase 6.6 hard rule missing: audit gate cannot be skipped. "
             "Spec §5.6 declares this as the first hard rule.",
         )
@@ -289,9 +290,8 @@ def _measure_finalizer_block_lines(text: str) -> int:
     budget test (`V371Step3bLineBudgetTest`) below.
     """
     import re as _re
-    anchor = _re.compile(
-        r"(?m)^[ \t]*##[ \t]+Cite-Time Provenance Finalizer \(v3\.7\.1\)[ \t]*$"
-    )
+
+    anchor = _re.compile(r"(?m)^[ \t]*##[ \t]+Cite-Time Provenance Finalizer \(v3\.7\.1\)[ \t]*$")
     m = anchor.search(text)
     if m is None:
         return 0
@@ -300,7 +300,7 @@ def _measure_finalizer_block_lines(text: str) -> int:
     search_start = (head_eol + 1) if head_eol >= 0 else len(text)
     nm = next_h.search(text, search_start)
     end = nm.start() if nm else len(text)
-    return len(text[m.start():end].splitlines())
+    return len(text[m.start() : end].splitlines())
 
 
 def _measure_v3_8_audit_gate_block_lines(text: str) -> int:
@@ -322,6 +322,7 @@ def _measure_v3_8_audit_gate_block_lines(text: str) -> int:
     their scope. §3.6 is itself an H3, so the next H3 closes it.
     """
     import re as _re
+
     anchor = _re.compile(
         r"(?m)^[ \t]*###[ \t]+3\.6[ \t]+Claim-Faithfulness Audit Gate[ \t]+\(v3\.8\)[^\n]*$"
     )
@@ -333,7 +334,7 @@ def _measure_v3_8_audit_gate_block_lines(text: str) -> int:
     search_start = (head_eol + 1) if head_eol >= 0 else len(text)
     nm = next_h.search(text, search_start)
     end = nm.start() if nm else len(text)
-    return len(text[m.start():end].splitlines())
+    return len(text[m.start() : end].splitlines())
 
 
 def _measure_v3_7_3_extension_block_lines(text: str) -> int:
@@ -355,6 +356,7 @@ def _measure_v3_7_3_extension_block_lines(text: str) -> int:
     `#{1,3}` because the v3.7.1 Step 3b block has no internal H3.
     """
     import re as _re
+
     anchor = _re.compile(
         r"(?m)^[ \t]*##[ \t]+Cite-Time Provenance Finalizer "
         r"[—-]+[ \t]*v3\.7\.3 extension[^\n]*$"
@@ -367,7 +369,7 @@ def _measure_v3_7_3_extension_block_lines(text: str) -> int:
     search_start = (head_eol + 1) if head_eol >= 0 else len(text)
     nm = next_h.search(text, search_start)
     end = nm.start() if nm else len(text)
-    return len(text[m.start():end].splitlines())
+    return len(text[m.start() : end].splitlines())
 
 
 def _measure_v3_9_0_extension_block_lines(text: str) -> int:
@@ -386,6 +388,7 @@ def _measure_v3_9_0_extension_block_lines(text: str) -> int:
     NOT H3 — to avoid prematurely closing on internal subheadings.
     """
     import re as _re
+
     anchor = _re.compile(
         r"(?m)^[ \t]*##[ \t]+Cite-Time Provenance Finalizer "
         r"[—-]+[ \t]*v3\.9\.0 extension[^\n]*$"
@@ -398,7 +401,7 @@ def _measure_v3_9_0_extension_block_lines(text: str) -> int:
     search_start = (head_eol + 1) if head_eol >= 0 else len(text)
     nm = next_h.search(text, search_start)
     end = nm.start() if nm else len(text)
-    return len(text[m.start():end].splitlines())
+    return len(text[m.start() : end].splitlines())
 
 
 def _measure_v3_10_extension_block_lines(text: str) -> int:
@@ -417,6 +420,7 @@ def _measure_v3_10_extension_block_lines(text: str) -> int:
     only — NOT H3.
     """
     import re as _re
+
     anchor = _re.compile(
         r"(?m)^[ \t]*##[ \t]+Cite-Time Provenance Finalizer "
         r"[—-]+[ \t]*v3\.10 extension[^\n]*$"
@@ -429,7 +433,7 @@ def _measure_v3_10_extension_block_lines(text: str) -> int:
     search_start = (head_eol + 1) if head_eol >= 0 else len(text)
     nm = next_h.search(text, search_start)
     end = nm.start() if nm else len(text)
-    return len(text[m.start():end].splitlines())
+    return len(text[m.start() : end].splitlines())
 
 
 def _measure_390_sequencing_block_lines(text: str) -> int:
@@ -451,9 +455,8 @@ def _measure_390_sequencing_block_lines(text: str) -> int:
     measure spans the whole block.
     """
     import re as _re
-    anchor = _re.compile(
-        r"(?m)^[ \t]*##[ \t]+Revision-Round Patch Sequencing[^\n]*$"
-    )
+
+    anchor = _re.compile(r"(?m)^[ \t]*##[ \t]+Revision-Round Patch Sequencing[^\n]*$")
     m = anchor.search(text)
     if m is None:
         return 0
@@ -462,7 +465,7 @@ def _measure_390_sequencing_block_lines(text: str) -> int:
     search_start = (head_eol + 1) if head_eol >= 0 else len(text)
     nm = next_h.search(text, search_start)
     end = nm.start() if nm else len(text)
-    return len(text[m.start():end].splitlines())
+    return len(text[m.start() : end].splitlines())
 
 
 def _measure_394_gate_block_lines(text: str) -> int:
@@ -481,9 +484,8 @@ def _measure_394_gate_block_lines(text: str) -> int:
     NOT H3.
     """
     import re as _re
-    anchor = _re.compile(
-        r"(?m)^[ \t]*##[ \t]+Submission-Package Terminal Gate[^\n]*$"
-    )
+
+    anchor = _re.compile(r"(?m)^[ \t]*##[ \t]+Submission-Package Terminal Gate[^\n]*$")
     m = anchor.search(text)
     if m is None:
         return 0
@@ -492,7 +494,7 @@ def _measure_394_gate_block_lines(text: str) -> int:
     search_start = (head_eol + 1) if head_eol >= 0 else len(text)
     nm = next_h.search(text, search_start)
     end = nm.start() if nm else len(text)
-    return len(text[m.start():end].splitlines())
+    return len(text[m.start() : end].splitlines())
 
 
 class Phase66LineBudgetTest(unittest.TestCase):
@@ -529,8 +531,14 @@ class Phase66LineBudgetTest(unittest.TestCase):
         # submission-package gate, AND the #390 Slice B revision-patch
         # sequencing subsections (each has its own dedicated budget test).
         v367_line_count = (
-            total_lines - step_3b_lines - v3_7_3_lines - v3_8_lines
-            - v3_9_0_lines - v3_10_lines - gate_394_lines - seq_390_lines
+            total_lines
+            - step_3b_lines
+            - v3_7_3_lines
+            - v3_8_lines
+            - v3_9_0_lines
+            - v3_10_lines
+            - gate_394_lines
+            - seq_390_lines
         )
         ceiling = BASELINE_LINE_COUNT + LINE_BUDGET_OVER_BASELINE
         self.assertLessEqual(

@@ -16,6 +16,7 @@ CLI::
 
 prints the comment markdown to stdout.
 """
+
 from __future__ import annotations
 
 import json
@@ -116,8 +117,7 @@ def render_comment(report: dict[str, Any], raw_json: str) -> str:
 def main(argv: list[str] | None = None) -> int:
     args = sys.argv[1:] if argv is None else argv
     if len(args) != 1:
-        print("usage: python -m scripts.render_eval_comment <report.json>",
-              file=sys.stderr)
+        print("usage: python -m scripts.render_eval_comment <report.json>", file=sys.stderr)
         return 2
     with open(args[0], encoding="utf-8") as fh:
         raw_json = fh.read()

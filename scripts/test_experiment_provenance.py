@@ -28,6 +28,7 @@ Run:
     python -m unittest scripts.test_experiment_provenance -v
     pytest scripts/test_experiment_provenance.py
 """
+
 from __future__ import annotations
 
 import sys
@@ -202,9 +203,7 @@ def build_passport(
         "constraint_violations": [],
         "audit_sampling_summaries": [],
         "uncited_audit_failures": [],
-        "experiment_provenance": provenance
-        if provenance is not None
-        else [provenance_entry()],
+        "experiment_provenance": provenance if provenance is not None else [provenance_entry()],
         "experiment_alignment_results": alignment or [],
     }
     if intake_declaration is _MISSING:
@@ -358,9 +357,7 @@ class CrossArrayInvariantTests(_LintBase):
 
     # --- EP-INV-1: experiment_id unique within the passport ---
     def test_ep_inv_1_duplicate_experiment_id(self) -> None:
-        body = build_passport(
-            provenance=[provenance_entry("exp-x"), provenance_entry("exp-x")]
-        )
+        body = build_passport(provenance=[provenance_entry("exp-x"), provenance_entry("exp-x")])
         self.assertFinds(body, "EP-INV-1")
 
     # --- EP-INV-2: planned_experiment_ids resolve ---
@@ -375,9 +372,7 @@ class CrossArrayInvariantTests(_LintBase):
     def test_ep_inv_3_non_empirical_with_experiment_id(self) -> None:
         body = build_passport(
             manifests=[
-                manifest(
-                    [claim(kind="theoretical", planned_experiment_ids=["exp-pruning"])]
-                )
+                manifest([claim(kind="theoretical", planned_experiment_ids=["exp-pruning"])])
             ]
         )
         self.assertFinds(body, "EP-INV-3")
@@ -416,9 +411,7 @@ class CrossArrayInvariantTests(_LintBase):
 
     def test_ep_inv_4_symmetry_clean_both_directions(self) -> None:
         # experiments_declared + non-empty provenance: clean.
-        self.assertClean(
-            build_passport(intake_declaration=declaration("experiments_declared"))
-        )
+        self.assertClean(build_passport(intake_declaration=declaration("experiments_declared")))
         # no_experiments_declared + empty provenance: clean.
         self.assertClean(
             build_passport(
@@ -660,13 +653,13 @@ class MutationTests(unittest.TestCase):
     def _findings(self, body: dict[str, Any]) -> list[str]:
         return [f.render() for f in _lint.validate_passport(body)]
 
-    def _assert_load_bearing(
-        self, body: dict[str, Any], *, tag: str, fn_attr: str
-    ) -> None:
+    def _assert_load_bearing(self, body: dict[str, Any], *, tag: str, fn_attr: str) -> None:
         """Fire `tag` on `body`, then neutralise `_lint.<fn_attr>` and assert the
         fixture is FULLY clean (0 findings) — load-bearing AND single-invariant."""
         before = self._findings(body)
-        self.assertIn(tag, _invariant_tags(before), msg=f"{tag} did not fire:\n" + "\n".join(before))
+        self.assertIn(
+            tag, _invariant_tags(before), msg=f"{tag} did not fire:\n" + "\n".join(before)
+        )
         original = getattr(_lint, fn_attr)
         try:
             setattr(_lint, fn_attr, lambda *a, **k: [])
@@ -675,8 +668,7 @@ class MutationTests(unittest.TestCase):
                 after,
                 [],
                 msg=f"neutralising {fn_attr} should leave the {tag} fixture fully "
-                f"clean (proving it is single-invariant + load-bearing); got:\n"
-                + "\n".join(after),
+                f"clean (proving it is single-invariant + load-bearing); got:\n" + "\n".join(after),
             )
         finally:
             setattr(_lint, fn_attr, original)
@@ -685,9 +677,7 @@ class MutationTests(unittest.TestCase):
     _EA = "_check_experiment_alignment_invariants"
 
     def test_mutation_ep_inv_1(self) -> None:
-        body = build_passport(
-            provenance=[provenance_entry("exp-x"), provenance_entry("exp-x")]
-        )
+        body = build_passport(provenance=[provenance_entry("exp-x"), provenance_entry("exp-x")])
         self._assert_load_bearing(body, tag="EP-INV-1", fn_attr=self._EP)
 
     def test_mutation_ep_inv_2(self) -> None:
@@ -699,9 +689,7 @@ class MutationTests(unittest.TestCase):
 
     def test_mutation_ep_inv_3(self) -> None:
         body = build_passport(
-            manifests=[
-                manifest([claim(kind="normative", planned_experiment_ids=["exp-pruning"])])
-            ]
+            manifests=[manifest([claim(kind="normative", planned_experiment_ids=["exp-pruning"])])]
         )
         self._assert_load_bearing(body, tag="EP-INV-3", fn_attr=self._EP)
 
@@ -792,9 +780,7 @@ class RegressionTests(_LintBase):
         the most common pipeline (no provenance needed, just the declaration)."""
         body = {
             "claim_intent_manifests": [
-                manifest(
-                    [claim(claim_id="C-001", kind="empirical", planned_refs=["smith2024"])]
-                )
+                manifest([claim(claim_id="C-001", kind="empirical", planned_refs=["smith2024"])])
             ],
             "claim_audit_results": [],
             "uncited_assertions": [],
@@ -905,9 +891,9 @@ class D4cCarveoutBoundaryTests(unittest.TestCase):
         """The carve-out instruction lives in the audit agent prompt (the
         production caller), reconciled with the orthogonal 'manifest membership
         does NOT exempt' rule."""
-        agent = (
-            REPO / "academic-pipeline/agents/claim_ref_alignment_audit_agent.md"
-        ).read_text(encoding="utf-8")
+        agent = (REPO / "academic-pipeline/agents/claim_ref_alignment_audit_agent.md").read_text(
+            encoding="utf-8"
+        )
         self.assertIn("planned_experiment_ids", agent)
 
 

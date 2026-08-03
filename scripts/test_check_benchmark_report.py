@@ -1,4 +1,5 @@
 """Unit tests for check_benchmark_report.py."""
+
 import json
 import subprocess
 import unittest

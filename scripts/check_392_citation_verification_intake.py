@@ -25,6 +25,7 @@ Invariants:
 Exit codes: 0 = pass, 1 = invariant violated, 2 = parse failure (file/heading
 moved) — fail loud, never skip silently.
 """
+
 from __future__ import annotations
 
 import argparse

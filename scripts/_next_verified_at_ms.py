@@ -28,6 +28,7 @@ Importable API:
     from scripts._next_verified_at_ms import next_verified_at_ms
     next_verified_at_ms(passport["audit_artifact"])  # -> "2026-...Z"
 """
+
 from __future__ import annotations
 
 import argparse
@@ -95,9 +96,7 @@ def next_verified_at_ms(passport_audit_artifacts: list[dict[str, Any]] | None) -
     if not passport_audit_artifacts:
         return rfc3339_ms(now)
 
-    latest_str = max(
-        entry["verdict"]["verified_at"] for entry in passport_audit_artifacts
-    )
+    latest_str = max(entry["verdict"]["verified_at"] for entry in passport_audit_artifacts)
     latest = parse_rfc3339_ms(latest_str)
     bumped = bump_ms(latest, 1)
     return rfc3339_ms(max(now, bumped))

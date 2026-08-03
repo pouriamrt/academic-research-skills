@@ -17,6 +17,7 @@ The lint runs git operations against the actual repo, so each mutation
 test backs up the file under test, mutates, runs the lint as a subprocess,
 and restores the file in `finally` to keep the working tree clean.
 """
+
 from __future__ import annotations
 
 import json
@@ -53,6 +54,7 @@ def _run_lint() -> subprocess.CompletedProcess[str]:
 
 class _Snapshot:
     """Backs up a file's bytes; restores on context exit."""
+
     def __init__(self, path: Path):
         self.path = path
         self._bytes: bytes | None = None
@@ -163,9 +165,7 @@ def test_inserting_blank_line_between_v367_and_step3a_blocks_fails() -> None:
         text = TARGET_AGENT.read_text(encoding="utf-8")
         marker_step3a = "## Two-Layer Citation Emission (v3.7.1)"
         idx = text.find(marker_step3a)
-        assert idx != -1, (
-            "fixture missing Step 3a block; cannot test boundary contract"
-        )
+        assert idx != -1, "fixture missing Step 3a block; cannot test boundary contract"
         # Insert a single blank line right before the Step 3a heading.
         # Pre-mutation: ...state.\n## Two-Layer...
         # Post-mutation: ...state.\n\n## Two-Layer...
@@ -238,9 +238,8 @@ def test_v3_6_7_manifest_deletion_hard_fails() -> None:
         assert result.returncode == 1
         # Either the guard catches it ("missing at PR HEAD") or the inner
         # loader catches it ("v3.6.7 manifest missing"); both are correct.
-        assert (
-            "v3.6.7 manifest" in result.stdout
-            and ("missing" in result.stdout or "guard" in result.stdout)
+        assert "v3.6.7 manifest" in result.stdout and (
+            "missing" in result.stdout or "guard" in result.stdout
         ), f"Expected manifest-missing error; got: {result.stdout}"
 
 
@@ -280,8 +279,7 @@ def test_heading_prefix_mutation_is_caught() -> None:
         TARGET_AGENT.write_text(mutated, encoding="utf-8")
         result = _run_lint()
         assert result.returncode == 1, (
-            "Heading-prefix mutation must be caught by the SHA gate "
-            "(round-3 codex P2 closure)."
+            "Heading-prefix mutation must be caught by the SHA gate (round-3 codex P2 closure)."
         )
         assert "BYTE-EQUIVALENCE FAIL" in result.stdout
 
@@ -291,6 +289,7 @@ def test_extractor_includes_heading_prefix_bytes() -> None:
     backtracking so heading prefix bytes are in the hashed range.
     """
     from scripts.check_v3_6_8_pattern_protection import _extract_block_bytes
+
     h2_bytes_in = "prelude\n\n## PATTERN PROTECTION (v3.6.7)\n\nbody1\n".encode("utf-8")
     h3_bytes_in = "prelude\n\n### PATTERN PROTECTION (v3.6.7)\n\nbody1\n".encode("utf-8")
     h2_bytes = _extract_block_bytes(h2_bytes_in)
@@ -298,8 +297,7 @@ def test_extractor_includes_heading_prefix_bytes() -> None:
     assert h2_bytes is not None and h3_bytes is not None
     # The extractor must distinguish H2 vs H3 in its returned bytes.
     assert h2_bytes != h3_bytes, (
-        "heading prefix must be inside the byte range; H2 vs H3 "
-        "should produce different SHAs"
+        "heading prefix must be inside the byte range; H2 vs H3 should produce different SHAs"
     )
     # And the prefix bytes must literally be present.
     assert h2_bytes.startswith(b"## PATTERN")
@@ -326,6 +324,7 @@ def test_prose_mention_does_not_truncate_block_range() -> None:
     appear earlier in the file.
     """
     from scripts.check_v3_6_8_pattern_protection import _extract_block_bytes
+
     text = (
         "## Two-Layer Citation Emission (v3.7.1)\n"
         "\n"
@@ -366,6 +365,7 @@ def test_prose_mention_of_marker_does_not_misanchor_extractor() -> None:
     the heading-anchored block.
     """
     from scripts.check_v3_6_8_pattern_protection import _extract_block_bytes
+
     text = (
         "## Two-Layer Citation Emission (v3.7.1)\n"
         "\n"
@@ -398,6 +398,7 @@ def test_extractor_strips_only_file_level_bom_not_block_level() -> None:
     content mutation and MUST stay in the hashed range so the gate detects it.
     """
     from scripts.check_v3_6_8_pattern_protection import _extract_block_bytes
+
     BOM = b"\xef\xbb\xbf"
     base = "prelude\n\n## PATTERN PROTECTION (v3.6.7)\n\nbody\n".encode("utf-8")
     # Variant A: BOM at file start. This is a file-level BOM; spec says strip.
@@ -448,12 +449,10 @@ def test_bom_before_heading_attack_caught_by_lint() -> None:
         TARGET_AGENT.write_bytes(mutated)
         result = _run_lint()
         assert result.returncode == 1, (
-            "BOM-before-heading mutation must be caught by the SHA gate "
-            "(round-8 codex P2 closure)."
+            "BOM-before-heading mutation must be caught by the SHA gate (round-8 codex P2 closure)."
         )
         assert (
-            "BYTE-EQUIVALENCE FAIL" in result.stdout
-            or "marker missing at PR HEAD" in result.stdout
+            "BYTE-EQUIVALENCE FAIL" in result.stdout or "marker missing at PR HEAD" in result.stdout
         ), f"Expected gate rejection; got: {result.stdout}"
 
 
@@ -495,10 +494,9 @@ def test_anti_self_baseline_guard_rejects_manifest_mutation_in_pr(monkeypatch) -
         )
         assert "anti-self-baseline guard" in result.stdout
         # Worktree-mutation triggers the byte-mismatch backstop branch.
-        assert (
-            "manifest bytes differ" in result.stdout
-            or "manifest touched by" in result.stdout
-        ), f"Expected guard rejection; got: {result.stdout}"
+        assert "manifest bytes differ" in result.stdout or "manifest touched by" in result.stdout, (
+            f"Expected guard rejection; got: {result.stdout}"
+        )
 
 
 def test_anti_self_baseline_guard_history_scan_called(monkeypatch) -> None:
@@ -570,6 +568,7 @@ def test_strip_file_bom_only_at_byte_zero() -> None:
     explicit (the old name was ambiguous about what it normalized).
     """
     from scripts.check_v3_6_8_pattern_protection import _strip_file_bom
+
     assert _strip_file_bom(b"\xef\xbb\xbfhello") == b"hello"
     assert _strip_file_bom(b"hello") == b"hello"
     # Multi-byte payloads with no BOM are passed through unchanged.
@@ -581,6 +580,7 @@ def test_strip_file_bom_only_at_byte_zero() -> None:
 def test_sha256_helper_matches_hashlib() -> None:
     import hashlib
     from scripts.check_v3_6_8_pattern_protection import _sha256
+
     assert _sha256(b"abc") == hashlib.sha256(b"abc").hexdigest()
 
 
@@ -650,9 +650,7 @@ def test_step3a_v3_6_8_manifest_lists_three_agents() -> None:
     assert data["scope"] == "v3.6.8-only"
     files = data["files"]
     for rel in STEP3A_AGENT_PATHS:
-        assert rel in files, (
-            f"v3.6.8 manifest 'files' must contain {rel} after Step 3a populates"
-        )
+        assert rel in files, f"v3.6.8 manifest 'files' must contain {rel} after Step 3a populates"
 
 
 def test_step3a_invariant_i_two_layer_form_required() -> None:
@@ -672,6 +670,7 @@ def test_step3a_invariant_i_two_layer_form_required() -> None:
         assert block_pos != -1, "fixture missing two-layer block (test vacuous)"
         # Block ends at next H1/H2/H3 or EOF.
         import re as _re
+
         next_h_re = _re.compile(r"(?m)^[ \t]*#{1,3}[ \t]+")
         next_h = next_h_re.search(text, block_pos + len(TWO_LAYER_BLOCK_MARKER))
         block_end = next_h.start() if next_h else len(text)
@@ -703,11 +702,9 @@ def _inject_into_block_body(target: Path, injection: str) -> None:
     """
     text = target.read_text(encoding="utf-8")
     block_pos = text.find(TWO_LAYER_BLOCK_MARKER)
-    assert block_pos != -1, (
-        f"fixture missing two-layer block in {target.name}"
-    )
+    assert block_pos != -1, f"fixture missing two-layer block in {target.name}"
     eol = text.index("\n", block_pos)
-    target.write_text(text[: eol + 1] + injection + text[eol + 1:], encoding="utf-8")
+    target.write_text(text[: eol + 1] + injection + text[eol + 1 :], encoding="utf-8")
 
 
 def test_step3a_invariant_ii_finalizer_mention_forbidden() -> None:
@@ -741,7 +738,9 @@ def test_step3a_invariant_ii_orchestrator_mention_forbidden() -> None:
         )
         result = _run_lint()
         assert result.returncode == 1
-        assert "orchestrator" in result.stdout.lower() or "partial-inversion" in result.stdout.lower()
+        assert (
+            "orchestrator" in result.stdout.lower() or "partial-inversion" in result.stdout.lower()
+        )
 
 
 def test_step3a_invariant_ii_stage_gate_mention_forbidden() -> None:
@@ -767,7 +766,7 @@ def test_step3a_invariant_iii_frontmatter_read_instruction_forbidden() -> None:
         nl = text.index("\n", block_pos)
         # Insert a frontmatter-read instruction.
         mutated = (
-            text[: nl]
+            text[:nl]
             + "\n\nBefore emitting, read the entry frontmatter to look up the slug.\n"
             + text[nl:]
         )
@@ -802,7 +801,10 @@ def test_step3a_block_missing_from_manifest_agent_fails() -> None:
             "Block absence from manifest agent must hard-fail; "
             f"got rc={result.returncode}\nstdout:\n{result.stdout}"
         )
-        assert "Two-Layer Citation Emission" in result.stdout or "block missing" in result.stdout.lower()
+        assert (
+            "Two-Layer Citation Emission" in result.stdout
+            or "block missing" in result.stdout.lower()
+        )
 
 
 def test_step3a_invariant_iii_unrelated_negation_does_not_bless_read_instruction() -> None:
@@ -823,11 +825,8 @@ def test_step3a_invariant_iii_unrelated_negation_does_not_bless_read_instruction
         nl = text.index("\n", block_pos)
         # The "Never" applies to "guess", not to "read frontmatter". Pre-R1
         # this slipped past; post-R1 it must FAIL invariant (iii).
-        injection = (
-            "\n\nNever guess. Always read the entry frontmatter "
-            "to find the slug.\n"
-        )
-        mutated = text[: nl] + injection + text[nl:]
+        injection = "\n\nNever guess. Always read the entry frontmatter to find the slug.\n"
+        mutated = text[:nl] + injection + text[nl:]
         target.write_text(mutated, encoding="utf-8")
         result = _run_lint()
         assert result.returncode == 1, (
@@ -847,12 +846,10 @@ def test_step3a_invariant_iii_front_matter_two_word_variant_caught() -> None:
         assert block_pos != -1
         nl = text.index("\n", block_pos)
         injection = "\n\nIf needed, read the entry's front matter for the slug.\n"
-        mutated = text[: nl] + injection + text[nl:]
+        mutated = text[:nl] + injection + text[nl:]
         target.write_text(mutated, encoding="utf-8")
         result = _run_lint()
-        assert result.returncode == 1, (
-            "R1 P1-3: `front matter` (two-word) variant must be caught"
-        )
+        assert result.returncode == 1, "R1 P1-3: `front matter` (two-word) variant must be caught"
         assert "front" in result.stdout.lower()
 
 
@@ -865,12 +862,10 @@ def test_step3a_invariant_iii_front_dash_matter_variant_caught() -> None:
         assert block_pos != -1
         nl = text.index("\n", block_pos)
         injection = "\n\nIf needed, read the entry's front-matter for the slug.\n"
-        mutated = text[: nl] + injection + text[nl:]
+        mutated = text[:nl] + injection + text[nl:]
         target.write_text(mutated, encoding="utf-8")
         result = _run_lint()
-        assert result.returncode == 1, (
-            "R1 P1-3: `front-matter` (hyphenated) variant must be caught"
-        )
+        assert result.returncode == 1, "R1 P1-3: `front-matter` (hyphenated) variant must be caught"
 
 
 def test_step3a_invariant_iii_wrapped_read_instruction_caught() -> None:
@@ -883,7 +878,7 @@ def test_step3a_invariant_iii_wrapped_read_instruction_caught() -> None:
         nl = text.index("\n", block_pos)
         # A bullet that wraps the read verb away from the target.
         injection = "\n\n- read the entry's full\n  frontmatter to find the slug\n"
-        mutated = text[: nl] + injection + text[nl:]
+        mutated = text[:nl] + injection + text[nl:]
         target.write_text(mutated, encoding="utf-8")
         result = _run_lint()
         assert result.returncode == 1, (
@@ -914,16 +909,18 @@ def test_step3a_duplicate_block_rejected() -> None:
         text = target.read_text(encoding="utf-8")
         # Append a second canonical heading at EOF.
         duplicate = (
-            "\n## Two-Layer Citation Emission (v3.7.1)\n\n"
-            "duplicate body — this should be caught\n"
+            "\n## Two-Layer Citation Emission (v3.7.1)\n\nduplicate body — this should be caught\n"
         )
         target.write_text(text + duplicate, encoding="utf-8")
         result = _run_lint()
         assert result.returncode == 1, (
-            "R1 P2: duplicate canonical Two-Layer Citation Emission heading "
-            "must be rejected"
+            "R1 P2: duplicate canonical Two-Layer Citation Emission heading must be rejected"
         )
-        assert "exactly one" in result.stdout.lower() or "duplicate" in result.stdout.lower() or "headings found" in result.stdout.lower()
+        assert (
+            "exactly one" in result.stdout.lower()
+            or "duplicate" in result.stdout.lower()
+            or "headings found" in result.stdout.lower()
+        )
 
 
 def test_step3a_invariant_iii_bullet_boundary_is_clause_terminator() -> None:
@@ -943,11 +940,8 @@ def test_step3a_invariant_iii_bullet_boundary_is_clause_terminator() -> None:
         nl = text.index("\n", block_pos)
         # Two adjacent bullets, no period, `NEVER` in bullet 1 leaks into
         # bullet 2's left window pre-R2 (≤30 chars from `read`).
-        injection = (
-            "\n\n- NEVER skip\n"
-            "- read the entry frontmatter to find the slug\n"
-        )
-        mutated = text[: nl] + injection + text[nl:]
+        injection = "\n\n- NEVER skip\n- read the entry frontmatter to find the slug\n"
+        mutated = text[:nl] + injection + text[nl:]
         target.write_text(mutated, encoding="utf-8")
         result = _run_lint()
         assert result.returncode == 1, (
@@ -970,11 +964,8 @@ def test_step3a_invariant_ii_finalizer_agent_substring_caught() -> None:
         block_pos = text.find(TWO_LAYER_BLOCK_MARKER)
         assert block_pos != -1
         nl = text.index("\n", block_pos)
-        injection = (
-            "\n\nThe markers are consumed by cite_provenance_finalizer_agent "
-            "downstream.\n"
-        )
-        mutated = text[: nl] + injection + text[nl:]
+        injection = "\n\nThe markers are consumed by cite_provenance_finalizer_agent downstream.\n"
+        mutated = text[:nl] + injection + text[nl:]
         target.write_text(mutated, encoding="utf-8")
         result = _run_lint()
         assert result.returncode == 1, (
@@ -996,7 +987,7 @@ def test_step3a_invariant_ii_terminal_gate_agent_substring_caught() -> None:
             "\n\nThe `cite_provenance_terminal_gate_agent` will inspect "
             "this output before publication.\n"
         )
-        mutated = text[: nl] + injection + text[nl:]
+        mutated = text[:nl] + injection + text[nl:]
         target.write_text(mutated, encoding="utf-8")
         result = _run_lint()
         assert result.returncode == 1, (
@@ -1015,18 +1006,14 @@ def test_step3a_h3_same_title_duplicate_rejected() -> None:
         text = target.read_text(encoding="utf-8")
         # Append an H3 same-title heading at EOF.
         duplicate_h3 = (
-            "\n### Two-Layer Citation Emission (v3.7.1)\n\n"
-            "duplicate body — H3 typo or attack\n"
+            "\n### Two-Layer Citation Emission (v3.7.1)\n\nduplicate body — H3 typo or attack\n"
         )
         target.write_text(text + duplicate_h3, encoding="utf-8")
         result = _run_lint()
         assert result.returncode == 1, (
             "R2 P2: H3 same-title heading must be rejected as a duplicate"
         )
-        assert (
-            "headings found" in result.stdout.lower()
-            or "exactly one" in result.stdout.lower()
-        )
+        assert "headings found" in result.stdout.lower() or "exactly one" in result.stdout.lower()
 
 
 def test_step3a_invariant_ii_plural_finalizers_caught() -> None:

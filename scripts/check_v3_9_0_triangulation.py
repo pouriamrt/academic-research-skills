@@ -29,6 +29,7 @@ Exit codes:
     1 — one or more checks failed
     2 — invocation error (e.g., file missing)
 """
+
 from __future__ import annotations
 
 import argparse
@@ -81,6 +82,7 @@ EXPECTED_ALLOWLIST_TOKENS = {
 # ---------------------------------------------------------------------------
 # Orchestrator helpers (rules 1-4)
 # ---------------------------------------------------------------------------
+
 
 def extract_v3_9_0_finalizer_subsection(orchestrator_text: str) -> str:
     """Return the v3.9.0 finalizer extension subsection (## header until next ## or EOF)."""
@@ -141,9 +143,7 @@ def check_marker_syntax(subsection_text: str) -> list[str]:
     # is strictly stronger than presence (a token on the wrong tier, or absent
     # entirely, fails here), and EXPECTED_DELTA1_ROWS is their single source of truth.
     for token, cell in EXPECTED_DELTA1_ROWS.items():
-        on_correct_row = any(
-            f"`{token}`" in ln and cell in ln for ln in table_rows
-        )
+        on_correct_row = any(f"`{token}`" in ln and cell in ln for ln in table_rows)
         if not on_correct_row:
             failures.append(
                 f"rule 1 (matrix row): `{token}` is not on a suffix-table row "
@@ -158,7 +158,7 @@ def check_preprint_composition_order(subsection_text: str) -> list[str]:
     failures = []
     for tok in tokens:
         # Strip CONTAMINATED- prefix, then check composition ordering.
-        body = tok[len("CONTAMINATED-"):]
+        body = tok[len("CONTAMINATED-") :]
         if "PREPRINT" in body and "+" in body:
             parts = body.split("+")
             if parts[0] != "PREPRINT":
@@ -249,6 +249,7 @@ def check_no_high_block(subsection_text: str) -> list[str]:
 # Formatter helpers (rules 5-6)
 # ---------------------------------------------------------------------------
 
+
 def extract_allowlist_tokens(formatter_text: str) -> set[str]:
     """Parse the pass-through allowlist sentence (anchored at 'DO NOT trigger refusal').
 
@@ -300,6 +301,7 @@ def extract_refusal_rule_tokens(formatter_text: str) -> set[str]:
 # ---------------------------------------------------------------------------
 # Main
 # ---------------------------------------------------------------------------
+
 
 def main() -> int:
     parser = argparse.ArgumentParser(description="v3.9.0 triangulation spec lint")

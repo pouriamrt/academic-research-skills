@@ -20,6 +20,7 @@ Design constraints inherited from #523/#518:
 - Anything malformed (envelope or result) fails safely to `unavailable` —
   the dispatcher never fabricates a judgment.
 """
+
 from __future__ import annotations
 
 import json
@@ -125,9 +126,7 @@ def _is_blank(text: str) -> bool:
     """Blank = nothing left after stripping whitespace AND Unicode format
     (Cf) characters — an invisible-only payload or response must not count
     as substance (codex #527 round-11 P1)."""
-    return not "".join(
-        c for c in text if unicodedata.category(c) != "Cf"
-    ).strip()
+    return not "".join(c for c in text if unicodedata.category(c) != "Cf").strip()
 
 
 def _fold_for_detection(line: str) -> str:
@@ -158,8 +157,7 @@ def extract_handoff_block(text: str) -> str | None:
     # re-versioned fence is malformed, never transported (codex #527
     # round-5 P1: indented fences).
     opens = [
-        i for i, line in enumerate(lines)
-        if _ANY_OPEN_FENCE_RE.match(_fold_for_detection(line))
+        i for i, line in enumerate(lines) if _ANY_OPEN_FENCE_RE.match(_fold_for_detection(line))
     ]
     closes = [i for i, line in enumerate(lines) if _fold_for_detection(line) == CLOSE_FENCE]
     if not opens and not closes:
@@ -273,12 +271,16 @@ def parse_handoff(block: str) -> Handoff:
         except (json.JSONDecodeError, RecursionError, ValueError) as exc:
             # RecursionError: pathologically nested JSON must fail closed
             # like any other malformed input (codex #527 round-7 P1).
-            raise HandoffError(f"malformed_handoff: owner_decision is not JSON ({type(exc).__name__})") from exc
+            raise HandoffError(
+                f"malformed_handoff: owner_decision is not JSON ({type(exc).__name__})"
+            ) from exc
         try:
             _validate_structured_decision(owner_decision, enum, who="owner_decision")
         except HandoffError as exc:
             # Owner-side problems are envelope problems, not result problems.
-            raise HandoffError(str(exc).replace("malformed_result", "malformed_handoff", 1)) from exc
+            raise HandoffError(
+                str(exc).replace("malformed_result", "malformed_handoff", 1)
+            ) from exc
 
     return Handoff(
         checkpoint_kind=kind,

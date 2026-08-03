@@ -3,6 +3,7 @@
 
 Legal values: raw | redacted | verified_only.
 """
+
 from __future__ import annotations
 
 import sys

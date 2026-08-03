@@ -522,18 +522,14 @@ def main() -> None:
 
     # Normal mode: require a state file
     if args.state_file is None:
-        parser.error(
-            "A state_file is required (or use --init to generate a blank template)."
-        )
+        parser.error("A state_file is required (or use --init to generate a blank template).")
 
     state = load_state(args.state_file)
 
     # Update last_updated timestamp
     if "meta" not in state:
         state["meta"] = {}
-    state["meta"]["last_updated"] = datetime.now(timezone.utc).isoformat(
-        timespec="seconds"
-    )
+    state["meta"]["last_updated"] = datetime.now(timezone.utc).isoformat(timespec="seconds")
 
     # Read the template
     template_path = args.template

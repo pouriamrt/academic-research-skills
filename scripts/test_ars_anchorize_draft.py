@@ -10,6 +10,7 @@ rejection path.
 Run standalone:
     python -m unittest scripts/test_ars_anchorize_draft.py -v
 """
+
 from __future__ import annotations
 
 import json
@@ -49,11 +50,7 @@ Final paragraph.
 
 
 def _strip_marker_lines(text: str) -> str:
-    kept = [
-        line
-        for line in text.split("\n")
-        if not MARKER_RE.match(line.rstrip("\r"))
-    ]
+    kept = [line for line in text.split("\n") if not MARKER_RE.match(line.rstrip("\r"))]
     return "\n".join(kept)
 
 

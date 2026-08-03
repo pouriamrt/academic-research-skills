@@ -3,6 +3,7 @@
 T7-T9 will use clean_timestamps and load_yaml extensively, so verify
 their behavior here before downstream tests depend on them.
 """
+
 from pathlib import Path
 
 
@@ -24,6 +25,7 @@ def test_examples_dir_resolves(examples_dir, repo_root):
 
 
 # --- clean_timestamps ---
+
 
 def test_clean_timestamps_blanks_top_level_field(clean_timestamps):
     doc = {"generated_at": "2026-04-25T10:00:00Z", "x": 1}
@@ -89,6 +91,7 @@ def test_clean_timestamps_extra_blank_widens_set(clean_timestamps):
 
 
 # --- load_yaml ---
+
 
 def test_load_yaml_round_trips(load_yaml, tmp_path: Path):
     p = tmp_path / "x.yaml"

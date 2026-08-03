@@ -24,6 +24,7 @@ Invariants:
 
 Exit codes: 0 on pass, 1 on any failure.
 """
+
 from __future__ import annotations
 
 import sys
@@ -162,8 +163,7 @@ def check(shared: str, orch: str, owners: dict[str, str]) -> list[str]:
     for fragment in SHARED_REQUIRED:
         if fragment not in shared:
             errors.append(
-                f"invariant 1 ({SHARED}): canonical contract lost the pinned "
-                f"fragment {fragment!r}"
+                f"invariant 1 ({SHARED}): canonical contract lost the pinned fragment {fragment!r}"
             )
 
     # Invariant 2 — owner emission pins
@@ -176,10 +176,7 @@ def check(shared: str, orch: str, owners: dict[str, str]) -> list[str]:
             )
         for fragment in fragments:
             if fragment not in text:
-                errors.append(
-                    f"invariant 2 ({path}): owner lost its {fragment!r} "
-                    f"declaration"
-                )
+                errors.append(f"invariant 2 ({path}): owner lost its {fragment!r} declaration")
 
     # Invariant 3 — Mode-A dispatcher consumer contract
     if ORCH_HEADING_LINE not in orch:
@@ -187,8 +184,7 @@ def check(shared: str, orch: str, owners: dict[str, str]) -> list[str]:
     for fragment in ORCH_REQUIRED:
         if fragment not in orch:
             errors.append(
-                f"invariant 3 ({ORCH}): consumer contract lost the pinned "
-                f"fragment {fragment!r}"
+                f"invariant 3 ({ORCH}): consumer contract lost the pinned fragment {fragment!r}"
             )
 
     # Invariant 4 — prose enums AND kind/owner/result triples match the

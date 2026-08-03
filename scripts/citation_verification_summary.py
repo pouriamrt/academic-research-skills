@@ -29,6 +29,7 @@ canary remains unfilled (issue #250).
 Spec: docs/design/2026-05-21-v3.10-182-promote-citation-gate-spec.md
 §2 Delta 4 + §0(4a) + INVARIANT C-V6(a).
 """
+
 from __future__ import annotations
 
 from typing import Any, Mapping

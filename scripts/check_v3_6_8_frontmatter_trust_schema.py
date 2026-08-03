@@ -213,8 +213,10 @@ def _scan_examples() -> int:
         rel = path.relative_to(REPO_ROOT)
         failures.extend(check_payload(payload, str(rel)))
     if fixture_count == 0:
-        print("[ARS-V3.7.1 LINT WARN: no expected_passport.yaml fixtures found under "
-              f"{EXAMPLES_ROOT.relative_to(REPO_ROOT)}]")
+        print(
+            "[ARS-V3.7.1 LINT WARN: no expected_passport.yaml fixtures found under "
+            f"{EXAMPLES_ROOT.relative_to(REPO_ROOT)}]"
+        )
     if failures:
         print("\n".join(failures))
         return 1

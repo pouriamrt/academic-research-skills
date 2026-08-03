@@ -20,6 +20,7 @@ Exemptions:
 Exit code: 0 clean, 1 on any violation (list of offending files printed to
 stderr). CLI: `--root <path>` (default `.`).
 """
+
 from __future__ import annotations
 
 import argparse

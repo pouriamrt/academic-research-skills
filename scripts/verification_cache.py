@@ -19,6 +19,7 @@ is single-process; multi-user shared cache is out of scope (spec Delta 2).
 
 Spec: docs/design/2026-05-21-v3.10-182-promote-citation-gate-spec.md §2 Delta 2.
 """
+
 from __future__ import annotations
 
 import json
@@ -82,7 +83,10 @@ class VerificationCache:
         return conn
 
     def get(
-        self, citation_key: str, resolver_name: str, query_form: str,
+        self,
+        citation_key: str,
+        resolver_name: str,
+        query_form: str,
     ) -> dict[str, Any] | None:
         """Return the cached response, or None on miss / expired entry.
 

@@ -17,6 +17,7 @@ at the top level AND inside each sub-block, so the two declarations cannot drift
 Run:
     python -m unittest scripts.test_repro_lock_validation_drift -v
 """
+
 from __future__ import annotations
 
 import json

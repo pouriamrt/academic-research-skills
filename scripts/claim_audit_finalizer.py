@@ -21,6 +21,7 @@ matching the passport aggregate schemas. The orchestrator handles passport
 assembly; the formatter handles refusal surfacing. Single-responsibility
 keeps the matrix logic unit-testable.
 """
+
 from __future__ import annotations
 
 import re
@@ -59,9 +60,7 @@ ANNOTATION_HIGH_WARN_FABRICATED_REFERENCE = "[HIGH-WARN-FABRICATED-REFERENCE]"
 ANNOTATION_HIGH_WARN_ANCHORLESS = (
     "[HIGH-WARN-CLAIM-AUDIT-ANCHORLESS — v3.7.3 R-L3-1-A VIOLATION REACHED AUDIT]"
 )
-ANNOTATION_LOW_WARN_UNVERIFIED = (
-    "[CLAIM-AUDIT-UNVERIFIED — REFERENCE FULL-TEXT NOT RETRIEVABLE]"
-)
+ANNOTATION_LOW_WARN_UNVERIFIED = "[CLAIM-AUDIT-UNVERIFIED — REFERENCE FULL-TEXT NOT RETRIEVABLE]"
 ANNOTATION_MED_WARN_TOOL_FAILURE = "[CLAIM-AUDIT-TOOL-FAILURE — {fault_class}]"
 # v3.8.2 / #118 — UAF aggregate annotation. Same fault-class enum as the
 # cited-path INV-14 row but routed through `uncited_audit_failures[]`
@@ -73,9 +72,7 @@ ANNOTATION_HIGH_WARN_CONSTRAINT_VIOLATION_UNCITED = (
     "[HIGH-WARN-CONSTRAINT-VIOLATION-UNCITED ({violated_constraint_id})]"
 )
 ANNOTATION_LOW_WARN_CLAIM_DRIFT = "[LOW-WARN-CLAIM-DRIFT — kind={drift_kind}]"
-ANNOTATION_SAMPLING = (
-    "[CLAIM-AUDIT-SAMPLED — {audited_count}/{total_citation_count} audited]"
-)
+ANNOTATION_SAMPLING = "[CLAIM-AUDIT-SAMPLED — {audited_count}/{total_citation_count} audited]"
 
 ANNOTATION_MANIFEST_MISSING = (
     "[CLAIM-AUDIT-MANIFEST-MISSING — audit ran without pre-commitment baseline]"

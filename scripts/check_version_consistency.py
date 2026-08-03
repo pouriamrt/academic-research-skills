@@ -42,6 +42,7 @@ nothing else performs at tag time. Wired via tag-version-match.yml.
 
 Runs from repo root by default; `--path` lets tests point at a fake tree.
 """
+
 from __future__ import annotations
 
 import argparse
@@ -60,12 +61,8 @@ from _skill_lint import parse_frontmatter, FrontmatterError
 # token is a canonical semver. Using the regex as a filter (the pre-#169
 # pattern) silently dropped invalid tokens and hid the very drift this lint
 # is meant to surface; see dual-track review on PR for that class of bug.
-TABLE_TOKEN_RE = re.compile(
-    r"^\|\s*`([a-z0-9-]+)`\s+v([A-Za-z0-9.\-_+]+)\s*\|", re.MULTILINE
-)
-SUITE_TOKEN_RE = re.compile(
-    r"^\s*-\s*\*\*Suite version\*\*:\s*([A-Za-z0-9.\-_+]+)", re.MULTILINE
-)
+TABLE_TOKEN_RE = re.compile(r"^\|\s*`([a-z0-9-]+)`\s+v([A-Za-z0-9.\-_+]+)\s*\|", re.MULTILINE)
+SUITE_TOKEN_RE = re.compile(r"^\s*-\s*\*\*Suite version\*\*:\s*([A-Za-z0-9.\-_+]+)", re.MULTILINE)
 CHANGELOG_TOKEN_RE = re.compile(r"^##\s*\[([A-Za-z0-9.\-_+]+)\]", re.MULTILINE)
 SEMVER_STRICT_RE = re.compile(r"^\d+(?:\.\d+){2,3}$")  # exactly 3 or 4 segments (N.N.N or N.N.N.N)
 
@@ -105,15 +102,11 @@ CHANGELOG_BODY_MIN_CHARS = 100
 # as `2026-04-22`, codex re-review P3); the day field then fails the strict
 # ISO gate downstream.
 CHANGELOG_DATE_RE = re.compile(r"\]\s*-\s*(\d{4}-\d{2}-\d{2})(?!\d)")
-LAST_UPDATED_RE = re.compile(
-    r"^\s*-\s*\*\*Last Updated\*\*:\s*(\S+)", re.MULTILINE
-)
+LAST_UPDATED_RE = re.compile(r"^\s*-\s*\*\*Last Updated\*\*:\s*(\S+)", re.MULTILINE)
 LAST_UPDATED_MAX_DAYS = 7
 # Invariant 11: a version-tagged Key Additions H2, e.g. `## v3.14 Key
 # Additions (...)`. 2-4 segments — headings cite major.minor or a full patch.
-KEY_ADDITIONS_RE = re.compile(
-    r"^##\s+v(\d+(?:\.\d+){1,3})\s+Key Additions", re.MULTILINE
-)
+KEY_ADDITIONS_RE = re.compile(r"^##\s+v(\d+(?:\.\d+){1,3})\s+Key Additions", re.MULTILINE)
 # A release-entry heading (`## [X.Y.Z]`). Applied per-line by _next_entry_offset
 # (fence-aware), so no MULTILINE — the latest entry's body ends at the next
 # such heading OUTSIDE a code fence, never at a `## ` inside one (codex P2-1).
@@ -215,7 +208,7 @@ def _parse_changelog_latest(
         line_end = changelog_text.find("\n", m.end())
         if line_end == -1:
             line_end = len(changelog_text)
-        heading_line = changelog_text[m.start():line_end]
+        heading_line = changelog_text[m.start() : line_end]
         date_m = CHANGELOG_DATE_RE.search(heading_line)
         body = changelog_text[line_end : _next_entry_offset(changelog_text, line_end)]
         return raw, None, date_m.group(1) if date_m else None, body
@@ -256,10 +249,7 @@ def check(root: Path, tag: str | None = None) -> list[str]:
 
     table_versions, invalid_table_rows = _parse_table_versions(claude_text)
     if not table_versions and not invalid_table_rows:
-        errors.append(
-            f"{claude_md}: Skills Overview table has no parseable "
-            "`<skill>` vX.Y.Z rows"
-        )
+        errors.append(f"{claude_md}: Skills Overview table has no parseable `<skill>` vX.Y.Z rows")
     for skill, raw in invalid_table_rows:
         errors.append(
             f"{claude_md}: table row {skill!r} has invalid version "
@@ -268,9 +258,7 @@ def check(root: Path, tag: str | None = None) -> list[str]:
 
     suite_version, invalid_suite_token = _parse_suite_version(claude_text)
     if suite_version is None and invalid_suite_token is None:
-        errors.append(
-            f"{claude_md}: missing '**Suite version**: X.Y.Z' line"
-        )
+        errors.append(f"{claude_md}: missing '**Suite version**: X.Y.Z' line")
     elif invalid_suite_token is not None:
         errors.append(
             f"{claude_md}: Suite version token {invalid_suite_token!r} is "
@@ -283,8 +271,8 @@ def check(root: Path, tag: str | None = None) -> list[str]:
     if not changelog.is_file():
         errors.append(f"{changelog}: not found")
     else:
-        latest, invalid_latest, latest_date, latest_body = (
-            _parse_changelog_latest(changelog.read_text(encoding="utf-8"))
+        latest, invalid_latest, latest_date, latest_body = _parse_changelog_latest(
+            changelog.read_text(encoding="utf-8")
         )
         if latest is None and invalid_latest is None:
             errors.append(f"{changelog}: no '## [X.Y.Z]' entry found")
@@ -312,11 +300,7 @@ def check(root: Path, tag: str | None = None) -> list[str]:
     # latest CHANGELOG entry's date. Skipped while the CHANGELOG itself is
     # missing/malformed — those already errored above.
     if latest is not None:
-        errors.extend(
-            _check_last_updated_freshness(
-                claude_md, claude_text, changelog, latest_date
-            )
-        )
+        errors.extend(_check_last_updated_freshness(claude_md, claude_text, changelog, latest_date))
 
     for skill_name, table_version in sorted(table_versions.items()):
         skill_md = root / skill_name / "SKILL.md"
@@ -439,9 +423,7 @@ def _check_plugin_manifests(root: Path, suite_version: str) -> list[str]:
                 for i, entry in enumerate(plugins):
                     v = (entry or {}).get("version") if isinstance(entry, dict) else None
                     if v is None:
-                        errors.append(
-                            f"{marketplace}: plugins[{i}] missing 'version' key"
-                        )
+                        errors.append(f"{marketplace}: plugins[{i}] missing 'version' key")
                     elif str(v) != suite_version:
                         errors.append(
                             f"{marketplace}: plugins[{i}] version {str(v)!r} does "
@@ -470,8 +452,7 @@ def _check_readme_badge(root: Path, suite_version: str) -> list[str]:
     for raw in matches:
         if raw != suite_version:
             errors.append(
-                f"{readme}: version badge v{raw} does not match suite "
-                f"version {suite_version!r}"
+                f"{readme}: version badge v{raw} does not match suite version {suite_version!r}"
             )
     return errors
 
@@ -545,8 +526,7 @@ def _check_zhtw_heading_parity(root: Path) -> list[str]:
         # mismatch shows as a residual count of 1.
         for v, n in sorted((en_vers - zh_vers).items()):
             errors.append(
-                f"{zh.name}: missing {n} version-bearing heading(s) for v{v} "
-                f"present in {en.name}"
+                f"{zh.name}: missing {n} version-bearing heading(s) for v{v} present in {en.name}"
             )
         for v, n in sorted((zh_vers - en_vers).items()):
             errors.append(
@@ -568,15 +548,11 @@ def _check_last_updated_freshness(
     the lint re-runs."""
     m = LAST_UPDATED_RE.search(claude_text)
     if m is None:
-        return [
-            f"{claude_md}: missing '- **Last Updated**: YYYY-MM-DD' line"
-        ]
+        return [f"{claude_md}: missing '- **Last Updated**: YYYY-MM-DD' line"]
     raw = m.group(1)
     last_updated = _parse_iso_date(raw)
     if last_updated is None:
-        return [
-            f"{claude_md}: Last Updated {raw!r} is not a valid YYYY-MM-DD date"
-        ]
+        return [f"{claude_md}: Last Updated {raw!r} is not a valid YYYY-MM-DD date"]
     if latest_date is None:
         return [
             f"{changelog}: latest entry has no '- YYYY-MM-DD' date — cannot "
@@ -584,10 +560,7 @@ def _check_last_updated_freshness(
         ]
     changelog_date = _parse_iso_date(latest_date)
     if changelog_date is None:
-        return [
-            f"{changelog}: latest entry date {latest_date!r} is not a valid "
-            "YYYY-MM-DD date"
-        ]
+        return [f"{changelog}: latest entry date {latest_date!r} is not a valid YYYY-MM-DD date"]
     delta = abs((last_updated - changelog_date).days)
     if delta > LAST_UPDATED_MAX_DAYS:
         return [
@@ -598,9 +571,7 @@ def _check_last_updated_freshness(
     return []
 
 
-def _check_key_additions(
-    claude_md: Path, claude_text: str, suite_version: str
-) -> list[str]:
+def _check_key_additions(claude_md: Path, claude_text: str, suite_version: str) -> list[str]:
     """Invariant 11: the newest version-tagged "Key Additions" H2 in
     .claude/CLAUDE.md matches the suite version. Newest = max by version
     tuple (the sections are not guaranteed document-ordered). Comparison is
@@ -648,12 +619,14 @@ def _check_agent_count_claim(root: Path) -> list[str]:
     if m is None:
         return []
     claimed = int(m.group(1))
-    actual = len({
-        p.resolve()
-        for p in root.rglob("*_agent.md")
-        if ".git" not in p.parts
-        and p.relative_to(root).parts[0] != "agents"  # plugin-root mirror = aliases (#413)
-    })
+    actual = len(
+        {
+            p.resolve()
+            for p in root.rglob("*_agent.md")
+            if ".git" not in p.parts
+            and p.relative_to(root).parts[0] != "agents"  # plugin-root mirror = aliases (#413)
+        }
+    )
     if claimed != actual:
         return [
             f"{plugin_json}: description claims {claimed}-agent but the tree "

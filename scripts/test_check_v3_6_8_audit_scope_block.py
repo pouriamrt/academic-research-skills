@@ -28,6 +28,7 @@ snapshots the template, mutates a single attribute of that baseline,
 runs the lint as a subprocess, and restores the file in `finally`
 (mirrors test_check_v3_6_8_pattern_protection.py snapshot pattern).
 """
+
 from __future__ import annotations
 
 import re
@@ -46,7 +47,9 @@ TEMPLATE = REPO_ROOT / "shared" / "templates" / "codex_audit_multifile_template.
 SECTION_0_H2_ANCHOR = "## Section 0 — Scope Report"
 SCOPE_REPORT_HEADER = "## Codex Audit Round N — Scope Report"
 SECTION_1_HEADING = "## Section 1 — Round metadata"
-UNAUDITED_SPLIT_LINE = "  - `unaudited-due-to-missing-source: <count>` (always reported, never hidden)\n"
+UNAUDITED_SPLIT_LINE = (
+    "  - `unaudited-due-to-missing-source: <count>` (always reported, never hidden)\n"
+)
 
 REQUIRED_FIELDS = [
     "**Total entries audited:**",
@@ -190,9 +193,7 @@ def test_t6_pass_fail_summary_before_section_0_fails() -> None:
     with _Snapshot(TEMPLATE):
         text = _baseline_text()
         # Inject a fake pass/fail summary heading + verdict row BEFORE Section 0.
-        injection = (
-            "\n## Audit Summary\n\nverified-against-source: PASS\n\n---\n\n"
-        )
+        injection = "\n## Audit Summary\n\nverified-against-source: PASS\n\n---\n\n"
         mutated = text.replace(
             SECTION_0_H2_ANCHOR,
             injection + SECTION_0_H2_ANCHOR,
@@ -285,12 +286,7 @@ def test_t9_required_field_check_scoped_to_section_0(missing_field: str) -> None
             f"For historical context, the Scope Report contract requires "
             f"{missing_field} to appear in every audit round.\n"
         )
-        mutated = (
-            text[:section_0_pos]
-            + section_0_mutated
-            + text[section_1_pos:]
-            + appendix_decoy
-        )
+        mutated = text[:section_0_pos] + section_0_mutated + text[section_1_pos:] + appendix_decoy
         TEMPLATE.write_text(mutated, encoding="utf-8")
         result = _run_lint()
         assert result.returncode == 1, (
@@ -300,11 +296,14 @@ def test_t9_required_field_check_scoped_to_section_0(missing_field: str) -> None
         )
 
 
-@pytest.mark.parametrize("missing_split", [
-    "verified-against-source",
-    "description-internally-consistent",
-    "unaudited-due-to-missing-source",
-])
+@pytest.mark.parametrize(
+    "missing_split",
+    [
+        "verified-against-source",
+        "description-internally-consistent",
+        "unaudited-due-to-missing-source",
+    ],
+)
 def test_t10_required_split_check_scoped_to_section_0(missing_split: str) -> None:
     """T10 (codex round-2 P2-1, applies to R3 too): aggregate-status split
     scan must be scoped to Section 0. Decoy in appendix must not falsely PASS.
@@ -320,12 +319,7 @@ def test_t10_required_split_check_scoped_to_section_0(missing_split: str) -> Non
             f"\n\n## Appendix — split nomenclature\n\n"
             f"Note: the {missing_split} verdict is computed by the orchestrator.\n"
         )
-        mutated = (
-            text[:section_0_pos]
-            + section_0_mutated
-            + text[section_1_pos:]
-            + appendix_decoy
-        )
+        mutated = text[:section_0_pos] + section_0_mutated + text[section_1_pos:] + appendix_decoy
         TEMPLATE.write_text(mutated, encoding="utf-8")
         result = _run_lint()
         assert result.returncode == 1, (
@@ -430,7 +424,7 @@ def test_t28_quoted_passed_self_explanation_allowed(self_explanation: str) -> No
         result = _run_lint()
         assert result.returncode == 0, (
             f"Expected lint to ACCEPT quoted PASSED self-explanation "
-            f"({self_explanation!r}). Cap rule must allow `\"PASSED\"` and "
+            f'({self_explanation!r}). Cap rule must allow `"PASSED"` and '
             f"backtick `PASSED` forms used in spec documentation prose.\n"
             f"stdout:\n{result.stdout}\nstderr:\n{result.stderr}"
         )
@@ -526,18 +520,11 @@ def test_t24_verdict_inside_fenced_block_before_canonical_header_fails(
         # Find the opening fence right after the Section 0 H2.
         # In the canonical template this is `\n```\n## Codex Audit Round N — Scope Report`.
         fence_open_match = re.search(r"^```\s*\n", text, re.MULTILINE)
-        assert fence_open_match is not None, (
-            "fixture assumption violated: opening fence not found"
-        )
+        assert fence_open_match is not None, "fixture assumption violated: opening fence not found"
         fence_open_end = fence_open_match.end()
         # Inject the verdict line right after the opening fence, BEFORE
         # the canonical Scope Report header line.
-        mutated = (
-            text[:fence_open_end]
-            + verdict_line
-            + "\n\n"
-            + text[fence_open_end:]
-        )
+        mutated = text[:fence_open_end] + verdict_line + "\n\n" + text[fence_open_end:]
         TEMPLATE.write_text(mutated, encoding="utf-8")
         result = _run_lint()
         assert result.returncode == 1, (
@@ -566,14 +553,8 @@ def test_t22_affected_refcodes_field_required() -> None:
         )
         # Drop the line carrying the field marker (within Section 0).
         section_0_lines = section_0_block.splitlines(keepends=True)
-        section_0_mutated = "".join(
-            ln for ln in section_0_lines if field not in ln
-        )
-        mutated = (
-            text[:section_0_pos]
-            + section_0_mutated
-            + text[section_1_pos:]
-        )
+        section_0_mutated = "".join(ln for ln in section_0_lines if field not in ln)
+        mutated = text[:section_0_pos] + section_0_mutated + text[section_1_pos:]
         TEMPLATE.write_text(mutated, encoding="utf-8")
         result = _run_lint()
         assert result.returncode == 1, (
@@ -609,12 +590,7 @@ def test_t23_verdict_between_section_0_h2_and_canonical_header_fails(
         # Inject verdict line right after the Section 0 H2, before any
         # other Section-0 content (and before the canonical fenced header).
         insert_at = section_0_pos + len(section_0_h2)
-        mutated = (
-            text[:insert_at]
-            + "\n"
-            + verdict_line
-            + text[insert_at:]
-        )
+        mutated = text[:insert_at] + "\n" + verdict_line + text[insert_at:]
         TEMPLATE.write_text(mutated, encoding="utf-8")
         result = _run_lint()
         assert result.returncode == 1, (
@@ -718,18 +694,14 @@ def test_t18_scope_report_header_prose_mention_does_not_satisfy_r1() -> None:
         )
         prose_mention = (
             "\n\nNote: the required header line is "
-            '`## Codex Audit Round N — Scope Report` (do not literally embed in prose).\n\n'
+            "`## Codex Audit Round N — Scope Report` (do not literally embed in prose).\n\n"
         )
         section_0_mutated = section_0_mutated.replace(
             "## Section 0 — Scope Report",
             "## Section 0 — Scope Report" + prose_mention,
             1,
         )
-        mutated = (
-            text[:section_0_pos]
-            + section_0_mutated
-            + text[section_1_pos:]
-        )
+        mutated = text[:section_0_pos] + section_0_mutated + text[section_1_pos:]
         TEMPLATE.write_text(mutated, encoding="utf-8")
         result = _run_lint()
         assert result.returncode == 1, (
@@ -828,11 +800,7 @@ def test_t17_bare_verdict_before_section_0_fails(bare_verdict_line: str) -> None
         section_0_pos = text.find("## Section 0 — Scope Report")
         assert section_0_pos != -1
         # Inject bare verdict line BEFORE Section 0 (no heading framing).
-        mutated = (
-            text[:section_0_pos]
-            + bare_verdict_line
-            + text[section_0_pos:]
-        )
+        mutated = text[:section_0_pos] + bare_verdict_line + text[section_0_pos:]
         TEMPLATE.write_text(mutated, encoding="utf-8")
         result = _run_lint()
         assert result.returncode == 1, (
@@ -864,11 +832,7 @@ def test_t15_forbidden_passed_verb_inside_fenced_block_fails() -> None:
         injection_pos = text.find(injection_target, fence_start)
         assert injection_pos != -1
         insert_at = injection_pos + len(injection_target)
-        mutated = (
-            text[:insert_at]
-            + "verdict: PASSED\n\n"
-            + text[insert_at:]
-        )
+        mutated = text[:insert_at] + "verdict: PASSED\n\n" + text[insert_at:]
         TEMPLATE.write_text(mutated, encoding="utf-8")
         result = _run_lint()
         assert result.returncode == 1, (
@@ -940,18 +904,10 @@ def test_t14_scope_report_header_decoy_in_preamble_does_not_satisfy_r1() -> None
             "## Codex Audit Round N — REDACTED",
             1,
         )
-        mutated = (
-            text[:section_0_pos]
-            + section_0_mutated
-            + text[section_1_pos:]
-        )
+        mutated = text[:section_0_pos] + section_0_mutated + text[section_1_pos:]
         # Insert preamble decoy before Section 0.
         section_0_pos_after = mutated.find("## Section 0 — Scope Report")
-        mutated = (
-            mutated[:section_0_pos_after]
-            + preamble_decoy
-            + mutated[section_0_pos_after:]
-        )
+        mutated = mutated[:section_0_pos_after] + preamble_decoy + mutated[section_0_pos_after:]
         TEMPLATE.write_text(mutated, encoding="utf-8")
         result = _run_lint()
         assert result.returncode == 1, (
@@ -995,6 +951,4 @@ def test_t12_target_outside_repo_does_not_crash(tmp_path) -> None:
         f"Expected --target outside the repo to be handled gracefully; "
         f"got Python traceback in stderr:\n{result.stderr}"
     )
-    assert result.returncode in (0, 1), (
-        f"Expected deterministic exit code; got {result.returncode}"
-    )
+    assert result.returncode in (0, 1), f"Expected deterministic exit code; got {result.returncode}"

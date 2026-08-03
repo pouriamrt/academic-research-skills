@@ -156,7 +156,9 @@ def _latest_changelog_date() -> str | None:
     dateless `## [Unreleased]` header — so the FIRST date-bearing
     `## [X.Y.Z] - YYYY-MM-DD` header is the latest release. `## [Unreleased]` carries no
     `- YYYY-MM-DD` suffix and so never matches this date-bearing pattern."""
-    match = re.search(rf"^## \[{_VERSION}\] - (\d{{4}}-\d{{2}}-\d{{2}})", read("CHANGELOG.md"), re.M)
+    match = re.search(
+        rf"^## \[{_VERSION}\] - (\d{{4}}-\d{{2}}-\d{{2}})", read("CHANGELOG.md"), re.M
+    )
     return match.group(1) if match else None
 
 
@@ -251,9 +253,7 @@ def check_architecture_component_version() -> None:
     text = read(rel_path)
 
     # 1. Mermaid orchestrator node: `academic-pipeline<br/>orchestrator<br/>vX.Y.Z`.
-    node_versions = re.findall(
-        rf"academic-pipeline<br/>orchestrator<br/>v({_VERSION})", text
-    )
+    node_versions = re.findall(rf"academic-pipeline<br/>orchestrator<br/>v({_VERSION})", text)
     if not node_versions:
         fail(f"{rel_path}: no mermaid `academic-pipeline<br/>orchestrator<br/>vX.Y.Z` node found")
     for found in node_versions:
@@ -269,9 +269,7 @@ def check_architecture_component_version() -> None:
     #    which is feature-history provenance and must NOT be policed against the suite version.
     #    The timeline `vX.Y.Z :` form never carries the `academic-pipeline` token, so it is already
     #    out of scope; the table-row anchor additionally excludes any narrative mention.
-    row_versions = re.findall(
-        rf"(?m)^\s*\|.*?`?academic-pipeline`?\s+v({_VERSION})", text
-    )
+    row_versions = re.findall(rf"(?m)^\s*\|.*?`?academic-pipeline`?\s+v({_VERSION})", text)
     if not row_versions:
         fail(f"{rel_path}: no `academic-pipeline vX.Y.Z` component/stage row found")
     for found in row_versions:

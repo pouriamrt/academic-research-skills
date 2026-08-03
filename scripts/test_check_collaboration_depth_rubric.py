@@ -1,4 +1,5 @@
 """Unit tests for check_collaboration_depth_rubric.py (ARS v3.5)."""
+
 from __future__ import annotations
 
 import textwrap
@@ -131,7 +132,9 @@ class TestCollaborationDepthRubric(unittest.TestCase):
             root = Path(tmp)
             _make_repo(root)
             path = root / "shared" / "collaboration_depth_rubric.md"
-            path.write_text(_valid_rubric_text().replace("## Cognitive Vigilance", "## Something Else"))
+            path.write_text(
+                _valid_rubric_text().replace("## Cognitive Vigilance", "## Something Else")
+            )
             r = _run(root)
             self.assertEqual(r.returncode, 1)
             self.assertIn("Cognitive Vigilance", r.stdout)
@@ -141,7 +144,9 @@ class TestCollaborationDepthRubric(unittest.TestCase):
             root = Path(tmp)
             _make_repo(root)
             agent = root / "academic-pipeline" / "agents" / "collaboration_depth_agent.md"
-            agent.write_text(_valid_agent_text().replace("shared/collaboration_depth_rubric.md", "nope.md"))
+            agent.write_text(
+                _valid_agent_text().replace("shared/collaboration_depth_rubric.md", "nope.md")
+            )
             r = _run(root)
             self.assertEqual(r.returncode, 1)
             self.assertIn("rubric_ref", r.stdout)
@@ -193,9 +198,7 @@ class TestCollaborationDepthRubric(unittest.TestCase):
             root = Path(tmp)
             _make_repo(root)
             orch = root / "academic-pipeline" / "agents" / "pipeline_orchestrator_agent.md"
-            orch.write_text(
-                "At FULL checkpoint, dispatch collaboration_depth_agent.\n"
-            )
+            orch.write_text("At FULL checkpoint, dispatch collaboration_depth_agent.\n")
             r = _run(root)
             self.assertEqual(r.returncode, 1)
             self.assertIn("pipeline-completion", r.stdout)

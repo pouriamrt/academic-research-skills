@@ -1,5 +1,6 @@
 """`.claude/CLAUDE.md` is always loaded when working in this repo. Release
 history is derivable from CHANGELOG.md and git log, so it must not live here."""
+
 import pathlib
 import re
 
@@ -24,10 +25,16 @@ def test_no_embedded_version_history() -> None:
 
 def test_behavioural_sections_survive() -> None:
     text = DOC.read_text(encoding="utf-8")
-    for required in ("## Routing Rules", "## Key Rules", "## Handoff Protocol",
-                     "## Full Academic Pipeline", "## Validation Tools",
-                     "## Optional MCP Capabilities", "## Skills Overview",
-                     "## Command model routing"):
+    for required in (
+        "## Routing Rules",
+        "## Key Rules",
+        "## Handoff Protocol",
+        "## Full Academic Pipeline",
+        "## Validation Tools",
+        "## Optional MCP Capabilities",
+        "## Skills Overview",
+        "## Command model routing",
+    ):
         assert required in text, f"deleted a behavioural section: {required}"
 
 

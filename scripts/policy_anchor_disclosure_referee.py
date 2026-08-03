@@ -20,6 +20,7 @@ References:
 - `academic-paper/references/policy_anchor_disclosure_protocol.md` §§2-7.
 - Implementation spec §3 (resolved-paths table).
 """
+
 from __future__ import annotations
 
 from dataclasses import dataclass, field
@@ -227,9 +228,7 @@ def _check_policy_anchor_enum(ri: RendererInput) -> None:
 
 
 def _check_category_states(ri: RendererInput) -> None:
-    invalid = {
-        k: v for k, v in ri.categories.items() if v not in VALID_CATEGORY_STATES
-    }
+    invalid = {k: v for k, v in ri.categories.items() if v not in VALID_CATEGORY_STATES}
     if invalid:
         raise InvalidCategoryState(
             f"category states must be in {sorted(VALID_CATEGORY_STATES)}; "
@@ -291,9 +290,7 @@ def render_facet_as_used(category_state: str) -> str:
 # ---------------------------------------------------------------------------
 # G5 invariant — three-gate prompt disclosure predicate
 # ---------------------------------------------------------------------------
-def prompt_disclosure_required(
-    track: str, tool_type: str, methodological_in_slr: bool
-) -> bool:
+def prompt_disclosure_required(track: str, tool_type: str, methodological_in_slr: bool) -> bool:
     """True iff all three G5 gates hold."""
     if track != "prisma-trAIce":
         return False
@@ -340,7 +337,10 @@ def nature_image_outputs(images: Iterable[dict]) -> dict[str, list[dict]]:
         if not img.get("ai_generated"):
             continue
         annotation_block.append(
-            {"image_id": img["id"], "label": "AI-generated (Nature default-deny carve-out evaluation required)"}
+            {
+                "image_id": img["id"],
+                "label": "AI-generated (Nature default-deny carve-out evaluation required)",
+            }
         )
         suggested_patch.append(
             {

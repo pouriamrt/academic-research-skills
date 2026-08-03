@@ -14,6 +14,7 @@ adds a dotted-acronym pre-pass that can only *raise* `_similarity` (taken via
 exact-title-or-bust gate (§0.12) reads. See `test_text_similarity.py` for the
 similarity contract and `test_431_exact_or_bust.py` for the gate behavior.
 """
+
 from __future__ import annotations
 
 import re
@@ -95,10 +96,9 @@ def exact_normalized_title(a: str, b: str) -> bool:
     variants all match here; a distinct related work (different subtitle, Part I
     vs Part II, a correction-notice prefix) matches under neither and stays
     `unresolvable` rather than a false `matched`."""
-    return (
-        _normalize_title(a) == _normalize_title(b)
-        or _normalize_title_acronym(a) == _normalize_title_acronym(b)
-    )
+    return _normalize_title(a) == _normalize_title(b) or _normalize_title_acronym(
+        a
+    ) == _normalize_title_acronym(b)
 
 
 # #431 §0.12.2: the closed generic/section/type/notice set. `generic_title` is
@@ -112,22 +112,74 @@ def exact_normalized_title(a: str, b: str) -> bool:
 _GENERIC_TITLES = frozenset(
     _normalize_title(t)
     for t in (
-        "editorial", "guest editorial", "editorial comment", "introduction",
-        "preface", "foreword", "letter", "letters", "letter to the editor",
-        "letters to the editor", "reply", "comment", "commentary", "response",
-        "correspondence", "book review", "book reviews", "review", "news",
-        "obituary", "in memoriam", "acknowledgements", "front matter",
-        "back matter", "table of contents", "abstracts", "abstract",
-        "proceedings", "keynote", "panel discussion", "workshop summary",
-        "special issue", "untitled", "note", "notes", "highlights", "errata",
-        "erratum", "corrigendum", "addendum", "author correction",
-        "publisher correction", "retraction", "expression of concern",
-        "short communication", "rapid communication", "brief communication",
-        "short report", "brief report", "technical report", "meeting report",
-        "conference report", "case report", "case study", "research article",
-        "original article", "original research", "short paper", "perspective",
-        "perspectives", "viewpoint", "opinion", "discussion", "summary",
-        "conclusion", "conclusions", "abstract only", "supplementary material",
+        "editorial",
+        "guest editorial",
+        "editorial comment",
+        "introduction",
+        "preface",
+        "foreword",
+        "letter",
+        "letters",
+        "letter to the editor",
+        "letters to the editor",
+        "reply",
+        "comment",
+        "commentary",
+        "response",
+        "correspondence",
+        "book review",
+        "book reviews",
+        "review",
+        "news",
+        "obituary",
+        "in memoriam",
+        "acknowledgements",
+        "front matter",
+        "back matter",
+        "table of contents",
+        "abstracts",
+        "abstract",
+        "proceedings",
+        "keynote",
+        "panel discussion",
+        "workshop summary",
+        "special issue",
+        "untitled",
+        "note",
+        "notes",
+        "highlights",
+        "errata",
+        "erratum",
+        "corrigendum",
+        "addendum",
+        "author correction",
+        "publisher correction",
+        "retraction",
+        "expression of concern",
+        "short communication",
+        "rapid communication",
+        "brief communication",
+        "short report",
+        "brief report",
+        "technical report",
+        "meeting report",
+        "conference report",
+        "case report",
+        "case study",
+        "research article",
+        "original article",
+        "original research",
+        "short paper",
+        "perspective",
+        "perspectives",
+        "viewpoint",
+        "opinion",
+        "discussion",
+        "summary",
+        "conclusion",
+        "conclusions",
+        "abstract only",
+        "supplementary material",
     )
 )
 

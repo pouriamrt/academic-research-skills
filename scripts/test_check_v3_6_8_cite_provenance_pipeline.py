@@ -15,6 +15,7 @@ The lint runs grep-class checks against the actual repo file. Each
 mutation test backs up `pipeline_orchestrator_agent.md`, mutates,
 runs the lint as a subprocess, and restores the file in `finally`.
 """
+
 from __future__ import annotations
 
 import subprocess
@@ -100,7 +101,10 @@ def test_finalizer_subsection_missing_fails() -> None:
             "Removing the finalizer subsection must hard-fail; "
             f"got rc={result.returncode}\nstdout:\n{result.stdout}"
         )
-        assert "Cite-Time Provenance Finalizer" in result.stdout or "finalizer" in result.stdout.lower()
+        assert (
+            "Cite-Time Provenance Finalizer" in result.stdout
+            or "finalizer" in result.stdout.lower()
+        )
 
 
 # =========================================================================
@@ -129,7 +133,11 @@ def test_high_warn_row_missing_fails() -> None:
         TARGET.write_text(mutated, encoding="utf-8")
         result = _run_lint()
         assert result.returncode == 1
-        assert "HIGH" in result.stdout or "row 1" in result.stdout.lower() or "NO ORIGINAL" in result.stdout
+        assert (
+            "HIGH" in result.stdout
+            or "row 1" in result.stdout.lower()
+            or "NO ORIGINAL" in result.stdout
+        )
 
 
 def test_med_warn_row_missing_fails() -> None:
@@ -146,7 +154,11 @@ def test_med_warn_row_missing_fails() -> None:
         TARGET.write_text(mutated, encoding="utf-8")
         result = _run_lint()
         assert result.returncode == 1
-        assert "MED" in result.stdout or "CROSS-CHECKED" in result.stdout or "row 2" in result.stdout.lower()
+        assert (
+            "MED" in result.stdout
+            or "CROSS-CHECKED" in result.stdout
+            or "row 2" in result.stdout.lower()
+        )
 
 
 def test_low_warn_row_missing_fails() -> None:
@@ -170,7 +182,11 @@ def test_low_warn_row_missing_fails() -> None:
         TARGET.write_text(mutated, encoding="utf-8")
         result = _run_lint()
         assert result.returncode == 1
-        assert "LOW" in result.stdout or "row 3" in result.stdout.lower() or "LOW-WARN" in result.stdout
+        assert (
+            "LOW" in result.stdout
+            or "row 3" in result.stdout.lower()
+            or "LOW-WARN" in result.stdout
+        )
 
 
 def test_ok_row_missing_fails() -> None:
@@ -190,7 +206,11 @@ def test_ok_row_missing_fails() -> None:
         TARGET.write_text(mutated, encoding="utf-8")
         result = _run_lint()
         assert result.returncode == 1
-        assert "ok" in result.stdout.lower() or "row 4" in result.stdout.lower() or "<!--ref:slug ok-->" in result.stdout
+        assert (
+            "ok" in result.stdout.lower()
+            or "row 4" in result.stdout.lower()
+            or "<!--ref:slug ok-->" in result.stdout
+        )
 
 
 # =========================================================================
@@ -344,9 +364,7 @@ def test_rescind_affordance_clause_missing_fails() -> None:
         mutated = text.replace(marker, "/ars-rescind")
         TARGET.write_text(mutated, encoding="utf-8")
         result = _run_lint()
-        assert result.returncode == 1, (
-            "R3 P2-2: removing /ars-unmark-read must fail the lint"
-        )
+        assert result.returncode == 1, "R3 P2-2: removing /ars-unmark-read must fail the lint"
 
 
 def test_demote_language_clause_missing_fails() -> None:
@@ -450,4 +468,8 @@ def test_peer_file_join_clause_missing_fails() -> None:
         TARGET.write_text(mutated, encoding="utf-8")
         result = _run_lint()
         assert result.returncode == 1
-        assert "human_read" in result.stdout.lower() or "peer" in result.stdout.lower() or "human_read_log" in result.stdout
+        assert (
+            "human_read" in result.stdout.lower()
+            or "peer" in result.stdout.lower()
+            or "human_read_log" in result.stdout
+        )

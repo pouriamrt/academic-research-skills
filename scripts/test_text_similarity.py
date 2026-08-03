@@ -9,6 +9,7 @@ extraction lands; their existing tests continue to verify the *integration*
 (client uses similarity correctly) while these tests verify the *behavior*
 (normalization + threshold semantics) of the shared module itself.
 """
+
 from __future__ import annotations
 
 import os
@@ -40,7 +41,9 @@ class NormalizeTitleTest(unittest.TestCase):
         self.assertEqual(ts._normalize_title("   \t\n  "), "")
 
     def test_already_normalized_unchanged(self) -> None:
-        self.assertEqual(ts._normalize_title("attention is all you need"), "attention is all you need")
+        self.assertEqual(
+            ts._normalize_title("attention is all you need"), "attention is all you need"
+        )
 
 
 class SimilarityTest(unittest.TestCase):

@@ -1,6 +1,7 @@
 """CI must run pytest when hooks/ changes — scripts/test_run_guard_launcher.py
 tests hooks/run_guard.sh, so an uncovered hooks/ path means the guard's own
 tests never gate its changes."""
+
 import pathlib
 import re
 

@@ -20,6 +20,7 @@ shared/contracts/passport/literature_corpus_entry.schema.json; registry row
 `contamination_signal_api_degradation` in
 shared/contracts/degradation_registry.json.
 """
+
 from __future__ import annotations
 
 from typing import Any, Mapping, MutableMapping, Protocol
@@ -49,18 +50,20 @@ RESOLVER_DECISION_VERSION = "431-v5"
 # 10-venue closed list per v3.7.3 spec §3.2 + schema description.
 # This list is intentionally redundant with the bibliography_agent's
 # in-prose list — adapters and migration tools both need the literal set.
-PREPRINT_VENUES = frozenset({
-    "arXiv",
-    "bioRxiv",
-    "medRxiv",
-    "SSRN",
-    "Research Square",
-    "Preprints.org",
-    "ChemRxiv",
-    "EarthArXiv",
-    "OSF Preprints",
-    "TechRxiv",
-})
+PREPRINT_VENUES = frozenset(
+    {
+        "arXiv",
+        "bioRxiv",
+        "medRxiv",
+        "SSRN",
+        "Research Square",
+        "Preprints.org",
+        "ChemRxiv",
+        "EarthArXiv",
+        "OSF Preprints",
+        "TechRxiv",
+    }
+)
 
 
 # source_pointer → venue inference table. Per v3.7.3 spec §3.2 + schema
@@ -269,15 +272,19 @@ def _cached_verdict(
         citation_key,
         resolver_name,
         query_form,
-        {"matched": not unmatched, "matched_by": matched_by,
-         "queried_by": queried_by,
-         "decision_version": RESOLVER_DECISION_VERSION},
+        {
+            "matched": not unmatched,
+            "matched_by": matched_by,
+            "queried_by": queried_by,
+            "decision_version": RESOLVER_DECISION_VERSION,
+        },
     )
     return unmatched
 
 
 def _resolve_doi_then_title(
-    entry: Mapping[str, Any], client,
+    entry: Mapping[str, Any],
+    client,
 ) -> tuple[bool, str | None, str]:
     """Run the DOI-then-title resolver flow, returning
     (unmatched, matched_by, queried_by).
@@ -308,7 +315,11 @@ def _resolve_doi_then_title(
 
 
 def _resolve_by_doi_then_title(
-    entry: Mapping[str, Any], client, *, resolver_name: str, cache=None,
+    entry: Mapping[str, Any],
+    client,
+    *,
+    resolver_name: str,
+    cache=None,
 ) -> bool | None:
     """Shared body for resolve_openalex_unmatched / resolve_crossref_unmatched.
     See those wrappers for the spec contract."""
@@ -319,15 +330,16 @@ def _resolve_by_doi_then_title(
         cache=cache,
         citation_key=entry.get("citation_key"),
         resolver_name=resolver_name,
-        query_form=_query_form(
-            id_label="doi", id_value=entry.get("doi"), title=title
-        ),
+        query_form=_query_form(id_label="doi", id_value=entry.get("doi"), title=title),
         compute=lambda: _resolve_doi_then_title(entry, client),
     )
 
 
 def resolve_openalex_unmatched(
-    entry: Mapping[str, Any], client, *, cache=None,
+    entry: Mapping[str, Any],
+    client,
+    *,
+    cache=None,
 ) -> bool | None:
     """Compute openalex_unmatched per spec v3.9.0 §3.4.
 
@@ -350,13 +362,14 @@ def resolve_openalex_unmatched(
     cache: optional VerificationCache (spec §2 Delta 2). cache=None is
         byte-equivalent to no caching.
     """
-    return _resolve_by_doi_then_title(
-        entry, client, resolver_name="openalex", cache=cache
-    )
+    return _resolve_by_doi_then_title(entry, client, resolver_name="openalex", cache=cache)
 
 
 def resolve_crossref_unmatched(
-    entry: Mapping[str, Any], client, *, cache=None,
+    entry: Mapping[str, Any],
+    client,
+    *,
+    cache=None,
 ) -> bool | None:
     """Compute crossref_unmatched per spec v3.9.0 §3.5.
 
@@ -372,13 +385,12 @@ def resolve_crossref_unmatched(
     cache: optional VerificationCache (spec §2 Delta 2). cache=None is
         byte-equivalent to no caching.
     """
-    return _resolve_by_doi_then_title(
-        entry, client, resolver_name="crossref", cache=cache
-    )
+    return _resolve_by_doi_then_title(entry, client, resolver_name="crossref", cache=cache)
 
 
 def _resolve_arxiv_id_then_title(
-    entry: Mapping[str, Any], client,
+    entry: Mapping[str, Any],
+    client,
 ) -> tuple[bool, str | None, str]:
     """arXiv-specific resolver flow (ID-keyed, not DOI-keyed), returning
     (unmatched, matched_by, queried_by). matched_by ∈ {'arxiv', 'title', None};
@@ -403,7 +415,10 @@ def _resolve_arxiv_id_then_title(
 
 
 def resolve_arxiv_unmatched(
-    entry: Mapping[str, Any], client, *, cache=None,
+    entry: Mapping[str, Any],
+    client,
+    *,
+    cache=None,
 ) -> bool | None:
     """Compute arxiv_unmatched per spec v3.11 #182 Delta 1.
 
@@ -471,8 +486,7 @@ def build_signals_object(
     cache: optional VerificationCache (spec §2 Delta 2), threaded into both the
     S2 and arXiv resolvers. cache=None is byte-equivalent to no caching.
     """
-    return build_signals_with_omissions(
-        entry, client, arxiv_client, cache=cache)[0]
+    return build_signals_with_omissions(entry, client, arxiv_client, cache=cache)[0]
 
 
 # ---------------------------------------------------------------------------

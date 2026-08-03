@@ -1,5 +1,6 @@
 """Tests for the CI lint that validates passport/rejection-log examples
 against their schemas and enforces citation_key uniqueness."""
+
 from pathlib import Path
 import subprocess
 import sys
@@ -113,6 +114,7 @@ def test_default_mode_scans_repo_examples():
 # --- T4 reminder (codex T3-review P2): FORMAT_CHECKER must be wired ---
 # Otherwise format=date-time is silently ignored on generated_at and obtained_at.
 
+
 def test_passport_with_invalid_obtained_at_format_fails(tmp_path):
     passport = {
         "literature_corpus": [
@@ -152,6 +154,7 @@ def test_rejection_log_with_invalid_generated_at_format_fails(tmp_path):
 
 
 # --- additional integration coverage ---
+
 
 def test_help_flag_runs_clean():
     r = _run(["--help"])
@@ -194,6 +197,7 @@ def test_rejection_log_other_reason_with_empty_detail_fails(tmp_path):
 
 
 # --- T4-T6 patch (codex 2026-04-25) ---
+
 
 def test_passport_missing_literature_corpus_key_fails(tmp_path):
     """[P1] A passport YAML without literature_corpus must fail lint.
@@ -284,6 +288,7 @@ def test_default_mode_catches_bad_examples_fixture(tmp_path):
 
 # --- v3.9.0 contamination_signals (openalex_unmatched + crossref_unmatched) ---
 
+
 def test_v3_9_0_passes_on_non_manual_with_openalex_and_crossref(tmp_path):
     """v3.9.0 — lint accepts a non-manual entry with all three lookup fields."""
     passport = {
@@ -361,7 +366,10 @@ def test_v3_10_rejects_laundered_venue_type_source(tmp_path):
         f"Expected validation failure for laundered venue_type_source=OpenAlex. "
         f"stdout={r.stdout}\nstderr={r.stderr}"
     )
-    assert "launder" in (r.stdout + r.stderr).lower() or "lookup index" in (r.stdout + r.stderr).lower()
+    assert (
+        "launder" in (r.stdout + r.stderr).lower()
+        or "lookup index" in (r.stdout + r.stderr).lower()
+    )
 
 
 def test_v3_10_accepts_legitimate_declared_venue_type_source(tmp_path):

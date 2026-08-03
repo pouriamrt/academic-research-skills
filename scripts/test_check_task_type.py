@@ -1,5 +1,6 @@
 # scripts/test_check_task_type.py
 """Unit tests for check_task_type.py lint script."""
+
 import subprocess
 import textwrap
 import unittest
@@ -29,7 +30,8 @@ class TestTaskTypeLint(unittest.TestCase):
         with TemporaryDirectory() as tmp:
             root = Path(tmp)
             _write_skill(
-                root, "example",
+                root,
+                "example",
                 textwrap.dedent("""\
                     name: example
                     description: "test"
@@ -46,7 +48,8 @@ class TestTaskTypeLint(unittest.TestCase):
         with TemporaryDirectory() as tmp:
             root = Path(tmp)
             _write_skill(
-                root, "example",
+                root,
+                "example",
                 textwrap.dedent("""\
                     name: example
                     description: "test"
@@ -65,7 +68,8 @@ class TestTaskTypeLint(unittest.TestCase):
             root = Path(tmp)
             for name, value in [("a", "open-ended"), ("b", "outcome-gradable")]:
                 _write_skill(
-                    root, name,
+                    root,
+                    name,
                     textwrap.dedent(f"""\
                         name: {name}
                         description: "test"
@@ -84,7 +88,7 @@ class TestTaskTypeLint(unittest.TestCase):
             skill_dir = root / "broken"
             skill_dir.mkdir()
             (skill_dir / "SKILL.md").write_text(
-                "---\nname: broken\nmetadata:\n\tversion: \"1.0\"\n---\n",
+                '---\nname: broken\nmetadata:\n\tversion: "1.0"\n---\n',
                 encoding="utf-8",
             )
             result = _run(root)

@@ -1,4 +1,5 @@
 """Unit tests for check_data_access_level.py lint script."""
+
 import subprocess
 import textwrap
 import unittest

@@ -1,4 +1,5 @@
 """Unit tests for validate_compliance_fixtures.py."""
+
 import unittest
 from pathlib import Path
 from tempfile import TemporaryDirectory

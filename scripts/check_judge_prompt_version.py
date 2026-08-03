@@ -30,6 +30,7 @@ Exit codes:
     1 — hash drift (prompt changed without re-pinning) — bump version + hash
     2 — invocation error (markers missing, file missing, constant unreadable)
 """
+
 from __future__ import annotations
 
 import argparse
@@ -85,7 +86,7 @@ def check(root: Path) -> int:
     pinned = _pinned_hash(constants_path.read_text(encoding="utf-8"))
     if pinned is None:
         print(
-            f"ERROR: JUDGE_PROMPT_SHA256 = \"<64-hex>\" not found in {constants_path}.",
+            f'ERROR: JUDGE_PROMPT_SHA256 = "<64-hex>" not found in {constants_path}.',
             file=sys.stderr,
         )
         return 2

@@ -32,6 +32,7 @@ Lint exit codes:
   0 = pass (all five HIGH-WARN annotation prefixes present in formatter).
   1 = at least one annotation prefix missing from formatter REFUSE list.
 """
+
 from __future__ import annotations
 
 import re
@@ -200,10 +201,7 @@ def main() -> int:
             # indicates a rename attack — e.g. `…VIOLATION-RENAMED]`
             # should NOT satisfy `…VIOLATION` because the boundary is a
             # hyphen-letter run that extends the identifier.
-            present = any(
-                f"{token}{boundary}" in refuse_block
-                for boundary in (" ", "]", "`")
-            )
+            present = any(f"{token}{boundary}" in refuse_block for boundary in (" ", "]", "`"))
         if not present:
             missing.append((name, token))
 

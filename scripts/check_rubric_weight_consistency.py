@@ -24,6 +24,7 @@ Exit codes:
   2 = could not parse an expected anchor (file move / heading rename /
       regex break) — fail loud, never skip silently
 """
+
 from __future__ import annotations
 
 import argparse
@@ -51,9 +52,7 @@ HEADER_RE = re.compile(
     re.MULTILINE,
 )
 FORMULA_TERM_RE = re.compile(r"\(\s*(?P<name>[A-Za-z ]+?)\s*x\s*0\.(?P<frac>\d+)\s*\)")
-SKILL_RULE_RE = re.compile(
-    r"\*\*Five dimensions\*\*\s*—\s*(?P<body>[^\n]+)", re.MULTILINE
-)
+SKILL_RULE_RE = re.compile(r"\*\*Five dimensions\*\*\s*—\s*(?P<body>[^\n]+)", re.MULTILINE)
 SKILL_TERM_RE = re.compile(r"(?P<name>[A-Za-z][A-Za-z &]*?)\s*\((?P<pct>\d+)%\)")
 # Any weight restatement in the framework doc: a "Weight NN%" phrase or a bare
 # "(NN%)" aggregation-style term.
@@ -129,9 +128,7 @@ def main(argv: list[str] | None = None) -> int:
         if name not in headers:
             errors.append(f"formula dimension '{name}' has no (Weight: NN%) header")
         elif headers[name] != pct:
-            errors.append(
-                f"'{name}': header says {headers[name]}%, formula says {pct}%"
-            )
+            errors.append(f"'{name}': header says {headers[name]}%, formula says {pct}%")
     weighted_headers = {n: p for n, p in headers.items() if n in formula}
     for name in sorted(set(headers) - set(formula)):
         errors.append(f"header dimension '{name}' missing from the aggregation formula")
@@ -162,8 +159,7 @@ def main(argv: list[str] | None = None) -> int:
         return 1
 
     print(
-        "rubric weights consistent: "
-        + ", ".join(f"{n} {p}%" for n, p in sorted(formula.items()))
+        "rubric weights consistent: " + ", ".join(f"{n} {p}%" for n, p in sorted(formula.items()))
     )
     return 0
 

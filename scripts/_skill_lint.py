@@ -13,6 +13,7 @@ fence-aware variants (check_392, check_216, check_firm_rules_sync) are
 deliberately not interchangeable with this plain line-walk and are not
 consolidated here.
 """
+
 from __future__ import annotations
 
 import argparse
@@ -94,7 +95,7 @@ def split_frontmatter(text: str) -> tuple[dict | None, str]:
         return None, text
     if not isinstance(data, dict):
         return None, text
-    return data, text[match.end():]
+    return data, text[match.end() :]
 
 
 def check_metadata_field(
@@ -124,8 +125,7 @@ def check_metadata_field(
         value = metadata[field]
         if value not in legal_values:
             violations.append(
-                f"{path}: metadata.{field} = {value!r}, "
-                f"must be one of {sorted(legal_values)}"
+                f"{path}: metadata.{field} = {value!r}, must be one of {sorted(legal_values)}"
             )
     return violations
 
@@ -148,17 +148,16 @@ def h2_section_body(text: str, heading: str) -> str | None:
     return "\n".join(body) if in_section else None
 
 
-def check_section_literals(invariant: int, text: str, heading: str,
-                           label: str,
-                           literals: dict[str, str]) -> list[str]:
+def check_section_literals(
+    invariant: int, text: str, heading: str, label: str, literals: dict[str, str]
+) -> list[str]:
     """The named H2 section must exist and carry every load-bearing literal.
     Shared by the block-scoped string-check lints (check_394, check_390)."""
     section = h2_section_body(text, heading)
     if section is None:
         return [f"invariant {invariant}: {label} section '{heading}' missing"]
     return [
-        f"invariant {invariant}: {label} section lost the "
-        f"{name} literal ({literal!r})"
+        f"invariant {invariant}: {label} section lost the {name} literal ({literal!r})"
         for name, literal in literals.items()
         if literal not in section
     ]

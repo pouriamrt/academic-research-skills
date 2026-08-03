@@ -11,6 +11,7 @@ This test pins the render-side contract: render_prompt MUST emit a Section 0
 Scope Report block ahead of the Section 1 Round metadata block so the audit
 target sees the scope-disclosure framing before any pass/fail summary.
 """
+
 from __future__ import annotations
 
 from pathlib import Path
@@ -19,9 +20,7 @@ from pathlib import Path
 from scripts.audit_snapshot import render_prompt
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
-TEMPLATE_PATH = (
-    REPO_ROOT / "shared" / "templates" / "codex_audit_multifile_template.md"
-)
+TEMPLATE_PATH = REPO_ROOT / "shared" / "templates" / "codex_audit_multifile_template.md"
 
 
 def _render_minimal_prompt() -> bytes:
@@ -54,8 +53,7 @@ def test_render_prompt_emits_scope_report_codex_round_header() -> None:
     """The rendered prompt MUST contain the canonical Scope Report header."""
     rendered = _render_minimal_prompt()
     assert b"## Codex Audit Round N \xe2\x80\x94 Scope Report" in rendered, (
-        "render_prompt does not emit the canonical Scope Report header "
-        "literal (spec line 134)."
+        "render_prompt does not emit the canonical Scope Report header literal (spec line 134)."
     )
 
 
@@ -84,9 +82,7 @@ def test_render_prompt_emits_required_scope_report_fields() -> None:
         "**Audit scope warning:**",
     ]
     missing = [f for f in required_fields if f not in text]
-    assert not missing, (
-        f"render_prompt output missing required Scope Report fields: {missing}"
-    )
+    assert not missing, f"render_prompt output missing required Scope Report fields: {missing}"
 
 
 def test_render_prompt_emits_aggregate_status_splits() -> None:
@@ -99,6 +95,4 @@ def test_render_prompt_emits_aggregate_status_splits() -> None:
         "unaudited-due-to-missing-source",
     ]
     missing = [s for s in required_splits if s not in text]
-    assert not missing, (
-        f"render_prompt output missing aggregate-status splits: {missing}"
-    )
+    assert not missing, f"render_prompt output missing aggregate-status splits: {missing}"

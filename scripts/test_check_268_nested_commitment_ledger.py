@@ -5,6 +5,7 @@ Each invariant is exercised against a deliberately-mutated in-memory fixture to
 confirm it FAILs — guarding against a trivial accept-all regression
 (feedback_schema_mutation_test_for_constraints). The clean fixture must PASS.
 """
+
 from __future__ import annotations
 
 import copy
@@ -106,7 +107,9 @@ class TestN2ReintroducedParallelList(unittest.TestCase):
         seed = copy.deepcopy(CLEAN_SEED)
         seed["cases"][0]["expected_unfulfilled_rationale"] = [""]
         errs = lint.check_seed(seed)
-        self.assertTrue(any("N2" in e and "expected_unfulfilled_rationale" in e for e in errs), errs)
+        self.assertTrue(
+            any("N2" in e and "expected_unfulfilled_rationale" in e for e in errs), errs
+        )
 
 
 class TestN3LifecycleCoherence(unittest.TestCase):

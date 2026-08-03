@@ -47,6 +47,7 @@ Exit codes:
     1 — one or more checks failed
     2 — invocation error (e.g., file missing)
 """
+
 from __future__ import annotations
 
 import argparse
@@ -100,9 +101,21 @@ _KV_PREFIXES = ("severity=", "policy=", "reason=", "mode=", "policy_hash=")
 class ParsedMarker:
     """Structured parse of a single <!--ref:...--> marker."""
 
-    def __init__(self, *, slug, base_status, advisory_suffix, terminal,
-                 severity, policy, reason, mode, policy_hash, unknown_tokens=None,
-                 terminal_blocks=None):
+    def __init__(
+        self,
+        *,
+        slug,
+        base_status,
+        advisory_suffix,
+        terminal,
+        severity,
+        policy,
+        reason,
+        mode,
+        policy_hash,
+        unknown_tokens=None,
+        terminal_blocks=None,
+    ):
         self.slug = slug
         self.base_status = base_status
         self.advisory_suffix = advisory_suffix
@@ -208,9 +221,7 @@ def _parse_inner(inner: str) -> ParsedMarker | None:
     for tok in rest:
         if tok == "TERMINAL-BLOCK":
             terminal = True
-            terminal_blocks.append(
-                {"severity": None, "policy": None, "reason": None, "mode": None}
-            )
+            terminal_blocks.append({"severity": None, "policy": None, "reason": None, "mode": None})
         elif tok.startswith("severity="):
             severity = tok.split("=", 1)[1]
             if terminal_blocks:
@@ -233,9 +244,16 @@ def _parse_inner(inner: str) -> ParsedMarker | None:
             unknown_tokens.append(tok)
 
     return ParsedMarker(
-        slug=slug, base_status=base_status, advisory_suffix=advisory_suffix,
-        terminal=terminal, severity=severity, policy=policy, reason=reason,
-        mode=mode, policy_hash=policy_hash, unknown_tokens=unknown_tokens,
+        slug=slug,
+        base_status=base_status,
+        advisory_suffix=advisory_suffix,
+        terminal=terminal,
+        severity=severity,
+        policy=policy,
+        reason=reason,
+        mode=mode,
+        policy_hash=policy_hash,
+        unknown_tokens=unknown_tokens,
         terminal_blocks=terminal_blocks,
     )
 
@@ -271,6 +289,7 @@ def marker_triggers_refusal(text: str) -> bool:
 # Schema checks (rules 1-5, 9)
 # ---------------------------------------------------------------------------
 
+
 def check_entry_schema(entry_schema: dict[str, Any]) -> list[str]:
     fail: list[str] = []
     props = entry_schema.get("properties", {})
@@ -285,8 +304,16 @@ def check_entry_schema(entry_schema: dict[str, Any]) -> list[str]:
     if "unknown" not in vt_enum:
         fail.append("rule 1: venue_type enum missing explicit 'unknown' member")
     expected_vt = {
-        "journal-article", "conference-paper", "book", "chapter", "dissertation",
-        "preprint", "report", "dataset", "other", "unknown",
+        "journal-article",
+        "conference-paper",
+        "book",
+        "chapter",
+        "dissertation",
+        "preprint",
+        "report",
+        "dataset",
+        "other",
+        "unknown",
     }
     if set(vt_enum) != expected_vt:
         fail.append(f"rule 1: venue_type enum mismatch: {set(vt_enum) ^ expected_vt}")
@@ -298,7 +325,9 @@ def check_entry_schema(entry_schema: dict[str, Any]) -> list[str]:
             fail.append(f"rule 2: venue_type_provenance must NOT accept {forbidden} (R-L3-2-D)")
     expected_prov = {"adapter_declared", "user_declared", "trusted_source_declared", "unknown"}
     if set(prov_enum) != expected_prov:
-        fail.append(f"rule 2: venue_type_provenance enum mismatch: {set(prov_enum) ^ expected_prov}")
+        fail.append(
+            f"rule 2: venue_type_provenance enum mismatch: {set(prov_enum) ^ expected_prov}"
+        )
 
     # Rule 3: the four pair-dependency allOf branches are present (matched by a
     # distinctive phrase in each branch description).
@@ -309,8 +338,10 @@ def check_entry_schema(entry_schema: dict[str, Any]) -> list[str]:
         ("venue_type present ⟹ venue_type_provenance present", "type⟹provenance forward"),
         ("venue_type_provenance present ⟹ venue_type present", "provenance⟹type reverse"),
         ("venue_type == unknown ⟹ venue_type_provenance == unknown", "unknown one-way"),
-        ("venue_type_provenance == trusted_source_declared ⟹ venue_type_source REQUIRED",
-         "trusted_source required"),
+        (
+            "venue_type_provenance == trusted_source_declared ⟹ venue_type_source REQUIRED",
+            "trusted_source required",
+        ),
     ]
     for phrase, label in required_branch_markers:
         if phrase not in branch_descs:
@@ -334,7 +365,9 @@ def check_terminal_policies_schema(tp_schema: dict[str, Any]) -> list[str]:
     ct_enum = props.get("contamination_triangulation", {}).get("enum", [])
     expected_ct = {"advisory", "strict", "strict_articles_only"}
     if set(ct_enum) != expected_ct:
-        fail.append(f"rule 9: contamination_triangulation enum mismatch: {set(ct_enum) ^ expected_ct}")
+        fail.append(
+            f"rule 9: contamination_triangulation enum mismatch: {set(ct_enum) ^ expected_ct}"
+        )
 
     # Rule 9: temporal_integrity accepts ONLY advisory (Inv. 3).
     ti_enum = props.get("temporal_integrity", {}).get("enum", [])
@@ -370,6 +403,7 @@ def check_terminal_policies_schema(tp_schema: dict[str, Any]) -> list[str]:
 # ---------------------------------------------------------------------------
 # Prompt checks (rules 4, 6, 7, 8)
 # ---------------------------------------------------------------------------
+
 
 def _extract_section(text: str, header: str) -> str:
     """Return the section body from `header` (a ## line) to the next ## or EOF."""
@@ -420,7 +454,10 @@ def check_finalizer_prompt(orchestrator_text: str) -> list[str]:
         fail.append("rule 6: finalizer section missing severity=HIGH-BLOCK token")
 
     # Rule 4: finalizer must forbid deriving venue_type from index type fields.
-    if "MUST NOT infer venue_type" not in section and "MUST NOT infer venue_type from" not in section:
+    if (
+        "MUST NOT infer venue_type" not in section
+        and "MUST NOT infer venue_type from" not in section
+    ):
         fail.append(
             "rule 4: finalizer section must forbid inferring venue_type from free-form "
             "venue / index type fields (R-L3-2-D)"
@@ -464,8 +501,7 @@ def check_finalizer_prompt(orchestrator_text: str) -> list[str]:
                 "promotion rule in one sentence (`the finalizer appends the terminal "
                 "token ... policy=citation_existence`) per C-V6(c)"
             )
-        elif ("citation_existence == strict" not in promo
-              or "lookup_verified == false" not in promo):
+        elif "citation_existence == strict" not in promo or "lookup_verified == false" not in promo:
             fail.append(
                 "rule 9: the citation_existence strict promotion rule must state the "
                 "strict-only gate predicate verbatim IN THAT SAME RULE "
@@ -602,6 +638,7 @@ def assert_venue_type_source_clean(value: str, provenance: str) -> list[str]:
 # ---------------------------------------------------------------------------
 # Main
 # ---------------------------------------------------------------------------
+
 
 def _load_json(path: Path) -> dict[str, Any]:
     with path.open(encoding="utf-8") as f:

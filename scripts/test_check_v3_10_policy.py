@@ -7,6 +7,7 @@ Two halves:
   B. Lint mutation tests: each rule fails when the contract is violated, so the
      lint is not trivially-passing (feedback_schema_mutation_test_for_constraints).
 """
+
 from __future__ import annotations
 
 import json
@@ -33,13 +34,16 @@ from scripts.check_v3_10_policy import (
 # A. Marker-grammar parser fixtures (spec §3 PR-B item 6)
 # ===========================================================================
 
+
 def test_marker_terminal_co_emit_parses_and_refuses():
     """The canonical co-emitted form: advisory suffix in its slot AND a terminal
     block token, parseable and refusing."""
-    marker = ("<!--ref:smith2024 ok CONTAMINATED-PREPRINT+TRIANGULATION-UNMATCHED "
-              "TERMINAL-BLOCK severity=HIGH-BLOCK policy=contamination_triangulation "
-              "reason=k3_all_indexes_unmatched mode=strict "
-              "policy_hash=contamination_triangulation.strict-->")
+    marker = (
+        "<!--ref:smith2024 ok CONTAMINATED-PREPRINT+TRIANGULATION-UNMATCHED "
+        "TERMINAL-BLOCK severity=HIGH-BLOCK policy=contamination_triangulation "
+        "reason=k3_all_indexes_unmatched mode=strict "
+        "policy_hash=contamination_triangulation.strict-->"
+    )
     pm = parse_ref_marker(marker)
     assert pm is not None
     assert pm.slug == "smith2024"
@@ -57,9 +61,11 @@ def test_marker_terminal_co_emit_parses_and_refuses():
 
 def test_marker_terminal_without_advisory_suffix_parses():
     """A terminal marker need not carry an advisory suffix."""
-    marker = ("<!--ref:smith2024 ok TERMINAL-BLOCK severity=HIGH-BLOCK "
-              "policy=contamination_triangulation reason=k3_all_indexes_unmatched "
-              "mode=strict_articles_only policy_hash=contamination_triangulation.strict_articles_only-->")
+    marker = (
+        "<!--ref:smith2024 ok TERMINAL-BLOCK severity=HIGH-BLOCK "
+        "policy=contamination_triangulation reason=k3_all_indexes_unmatched "
+        "mode=strict_articles_only policy_hash=contamination_triangulation.strict_articles_only-->"
+    )
     pm = parse_ref_marker(marker)
     assert pm.advisory_suffix is None
     assert pm.terminal is True
@@ -74,9 +80,11 @@ def test_marker_citation_existence_terminal_parses_and_refuses():
     citation_existence (#333) — citation_existence is `mode=strict` only (no
     strict_articles_only), and unlike contamination it carries NO advisory suffix
     in the slot (the `false` "why" lives in reason= + the aggregate)."""
-    marker = ("<!--ref:bogus2024 ok TERMINAL-BLOCK severity=HIGH-BLOCK "
-              "policy=citation_existence reason=lookup_verified_false mode=strict "
-              "policy_hash=citation_existence.strict-->")
+    marker = (
+        "<!--ref:bogus2024 ok TERMINAL-BLOCK severity=HIGH-BLOCK "
+        "policy=citation_existence reason=lookup_verified_false mode=strict "
+        "policy_hash=citation_existence.strict-->"
+    )
     pm = parse_ref_marker(marker)
     assert pm is not None
     assert pm.base_status == "ok"
@@ -97,12 +105,14 @@ def test_marker_dual_policy_co_emit_parses_and_refuses():
     refusal must still fire (the formatter refuses on any unresolved HIGH-BLOCK,
     no per-policy enumeration). Pins that the multi-policy grammar at line 887 is
     consistent with the canonical shape (#333)."""
-    marker = ("<!--ref:both2024 LOW-WARN CONTAMINATED-TRIANGULATION-UNMATCHED "
-              "TERMINAL-BLOCK severity=HIGH-BLOCK policy=contamination_triangulation "
-              "reason=k3_all_indexes_unmatched mode=strict "
-              "TERMINAL-BLOCK severity=HIGH-BLOCK policy=citation_existence "
-              "reason=lookup_verified_false mode=strict "
-              "policy_hash=citation_existence.strict+contamination_triangulation.strict-->")
+    marker = (
+        "<!--ref:both2024 LOW-WARN CONTAMINATED-TRIANGULATION-UNMATCHED "
+        "TERMINAL-BLOCK severity=HIGH-BLOCK policy=contamination_triangulation "
+        "reason=k3_all_indexes_unmatched mode=strict "
+        "TERMINAL-BLOCK severity=HIGH-BLOCK policy=citation_existence "
+        "reason=lookup_verified_false mode=strict "
+        "policy_hash=citation_existence.strict+contamination_triangulation.strict-->"
+    )
     assert marker_triggers_refusal(marker) is True
 
 
@@ -110,8 +120,10 @@ def test_marker_non_terminal_advisory_parses_no_refuse():
     """A non-terminal advisory marker under a NON-advisory passport: advisory suffix
     + a non-advisory policy_hash slug, NO terminal token → does not refuse. (Under an
     all-advisory passport the marker would be stampless — see the legacy test.)"""
-    marker = ("<!--ref:smith2024 LOW-WARN CONTAMINATED-TRIANGULATION-UNMATCHED "
-              "policy_hash=contamination_triangulation.strict-->")
+    marker = (
+        "<!--ref:smith2024 LOW-WARN CONTAMINATED-TRIANGULATION-UNMATCHED "
+        "policy_hash=contamination_triangulation.strict-->"
+    )
     pm = parse_ref_marker(marker)
     assert pm.advisory_suffix == "CONTAMINATED-TRIANGULATION-UNMATCHED"
     assert pm.terminal is False
@@ -156,8 +168,10 @@ def test_stripped_stamp_but_high_block_still_refuses():
     """R4-P1 bypass guard: a marker whose policy_hash was stripped but that still
     carries a TERMINAL-BLOCK severity=HIGH-BLOCK token must still be detected as a
     refusal trigger (gate 2 applies regardless of gate-1 outcome)."""
-    marker = ("<!--ref:smith2024 ok TERMINAL-BLOCK severity=HIGH-BLOCK "
-              "policy=contamination_triangulation reason=k3_all_indexes_unmatched mode=strict-->")
+    marker = (
+        "<!--ref:smith2024 ok TERMINAL-BLOCK severity=HIGH-BLOCK "
+        "policy=contamination_triangulation reason=k3_all_indexes_unmatched mode=strict-->"
+    )
     pm = parse_ref_marker(marker)
     assert pm.policy_hash is None  # stamp stripped
     assert pm.is_high_block is True
@@ -165,6 +179,7 @@ def test_stripped_stamp_but_high_block_still_refuses():
 
 
 # --- marker well-formedness (codex P1: a marker with no base-status is malformed) ---
+
 
 def test_marker_without_base_status_is_malformed():
     """A marker lacking a base-status (ok / LOW-WARN) is malformed — the v3.7.3
@@ -228,8 +243,7 @@ def test_terminal_marker_missing_metadata_fields_is_malformed():
     # A blank token (`policy=`) parses to "" not None — present-but-empty must be
     # malformed too, same as missing (codex P2: the formatter gate needs the value).
     blank = parse_ref_marker(
-        "<!--ref:x ok TERMINAL-BLOCK severity=HIGH-BLOCK "
-        "policy= reason= mode= policy_hash=-->"
+        "<!--ref:x ok TERMINAL-BLOCK severity=HIGH-BLOCK policy= reason= mode= policy_hash=-->"
     )
     assert blank.terminal is True and blank.is_high_block is True
     assert blank.is_well_formed is False
@@ -269,14 +283,17 @@ def test_multi_terminal_block_per_block_validation(self_unused=None):
     )
     assert full_dual.terminal_block_count == 2
     assert full_dual.is_well_formed is True
-    assert marker_triggers_refusal(
-        "<!--ref:both LOW-WARN CONTAMINATED-TRIANGULATION-UNMATCHED "
-        "TERMINAL-BLOCK severity=HIGH-BLOCK policy=contamination_triangulation "
-        "reason=k3_all_indexes_unmatched mode=strict "
-        "TERMINAL-BLOCK severity=HIGH-BLOCK policy=citation_existence "
-        "reason=lookup_verified_false mode=strict "
-        "policy_hash=citation_existence.strict+contamination_triangulation.strict-->"
-    ) is True
+    assert (
+        marker_triggers_refusal(
+            "<!--ref:both LOW-WARN CONTAMINATED-TRIANGULATION-UNMATCHED "
+            "TERMINAL-BLOCK severity=HIGH-BLOCK policy=contamination_triangulation "
+            "reason=k3_all_indexes_unmatched mode=strict "
+            "TERMINAL-BLOCK severity=HIGH-BLOCK policy=citation_existence "
+            "reason=lookup_verified_false mode=strict "
+            "policy_hash=citation_existence.strict+contamination_triangulation.strict-->"
+        )
+        is True
+    )
 
     # A dual-block marker missing the marker-level policy_hash is malformed.
     no_hash = parse_ref_marker(
@@ -289,11 +306,14 @@ def test_multi_terminal_block_per_block_validation(self_unused=None):
 
 
 def test_well_formed_markers_pass():
-    assert parse_ref_marker("<!--ref:smith2024 ok policy_hash=contamination_triangulation.strict-->").is_well_formed
+    assert parse_ref_marker(
+        "<!--ref:smith2024 ok policy_hash=contamination_triangulation.strict-->"
+    ).is_well_formed
     assert parse_ref_marker("<!--ref:smith2024 LOW-WARN-->").is_well_formed  # legacy, no stamp
 
 
 # --- any_marker_triggers_refusal scans ALL markers (codex P1) ---
+
 
 def test_any_marker_refusal_catches_later_terminal_marker():
     """A clean first marker followed by a terminal marker still refuses — the
@@ -318,6 +338,7 @@ def test_any_marker_refusal_false_when_all_clean():
 # A'. Laundering guard semantic check (rule 4)
 # ===========================================================================
 
+
 def test_laundering_guard_rejects_lookup_index_source():
     for bad in ["OpenAlex", "crossref registry", "Semantic Scholar", "semantic_scholar"]:
         problems = assert_venue_type_source_clean(bad, "trusted_source_declared")
@@ -330,7 +351,9 @@ def test_laundering_guard_rejects_empty_source():
 
 
 def test_laundering_guard_accepts_legitimate_source():
-    assert assert_venue_type_source_clean("publisher metadata feed", "trusted_source_declared") == []
+    assert (
+        assert_venue_type_source_clean("publisher metadata feed", "trusted_source_declared") == []
+    )
 
 
 def test_laundering_guard_inert_for_non_trusted_provenance():
@@ -358,6 +381,7 @@ def test_laundering_guard_word_boundary_no_false_positive():
 # B. Lint passes on the real repo
 # ===========================================================================
 
+
 def test_lint_passes_on_real_files():
     entry_schema = json.loads(DEFAULT_ENTRY_SCHEMA.read_text())
     tp_schema = json.loads(DEFAULT_TP_SCHEMA.read_text())
@@ -372,6 +396,7 @@ def test_lint_passes_on_real_files():
 # ===========================================================================
 # B'. Lint mutation tests — each rule fails when violated (not trivially-passing)
 # ===========================================================================
+
 
 @pytest.fixture()
 def entry_schema():
@@ -404,7 +429,8 @@ def test_mutation_missing_unknown_member_fails(entry_schema):
 def test_mutation_dropping_pair_branch_fails(entry_schema):
     # Remove the trusted_source-required branch.
     entry_schema["allOf"] = [
-        b for b in entry_schema["allOf"]
+        b
+        for b in entry_schema["allOf"]
         if not (isinstance(b, dict) and "trusted_source_declared" in b.get("description", ""))
     ]
     fails = check_entry_schema(entry_schema)
@@ -453,9 +479,11 @@ def test_mutation_formatter_advisory_label_renamed_fails():
     start = formatter.index(header)
     end = formatter.index("\n## ", start + len(header))
     # Rename only the in-body plural label, leave the H2 header + provenance_summary.
-    section = formatter[start:end].replace(
-        "`Citation Existence Advisories` section", "`Some Other` section"
-    ).replace("Citation Existence Advisories", "Some Other Advisories")
+    section = (
+        formatter[start:end]
+        .replace("`Citation Existence Advisories` section", "`Some Other` section")
+        .replace("Citation Existence Advisories", "Some Other Advisories")
+    )
     mutated = formatter[:start] + section + formatter[end:]
     fails = check_formatter_prompt(mutated)
     assert any("Citation Existence Advisories" in f for f in fails)
@@ -477,11 +505,13 @@ def test_mutation_strict_articles_only_missing_by_design_fn_fails():
     """If the strict_articles_only by-design false-negative disclosure is dropped,
     the lint must fail (§4.4 recall-limit protection — a future edit cannot silently
     widen strict_articles_only into all-journal hard-block)."""
-    text = ("## Cite-Time Provenance Finalizer — v3.10 extension\n\n"
-            "TERMINAL-BLOCK severity=HIGH-BLOCK policy_hash, sole policy evaluator, "
-            "MUST NOT infer venue_type from index fields.\n\n"
-            "strict_articles_only requires DOI present AND venue_type in "
-            "{journal-article, conference-paper}.\n\n## Next")
+    text = (
+        "## Cite-Time Provenance Finalizer — v3.10 extension\n\n"
+        "TERMINAL-BLOCK severity=HIGH-BLOCK policy_hash, sole policy evaluator, "
+        "MUST NOT infer venue_type from index fields.\n\n"
+        "strict_articles_only requires DOI present AND venue_type in "
+        "{journal-article, conference-paper}.\n\n## Next"
+    )
     # by-design FN disclosure is absent → must fail rule 8.
     fails = check_finalizer_prompt(text)
     assert any("by-design false-negative" in f or "STAYS ADVISORY" in f for f in fails)
@@ -495,15 +525,18 @@ def test_mutation_finalizer_missing_terminal_block_fails():
 
 
 def test_mutation_formatter_missing_stamp_only_fails():
-    text = ("## Cite-Time Terminal Policy Gate (v3.10)\n\n"
-            "Gate 1 freshness, Gate 2 refusal, STALE-POLICY-EVALUATION, severity=HIGH-BLOCK, "
-            "in plain prose.\n\n## Next")
+    text = (
+        "## Cite-Time Terminal Policy Gate (v3.10)\n\n"
+        "Gate 1 freshness, Gate 2 refusal, STALE-POLICY-EVALUATION, severity=HIGH-BLOCK, "
+        "in plain prose.\n\n## Next"
+    )
     # Missing STAMP-ONLY + MUST NOT re-evaluate → should fail.
     fails = check_formatter_prompt(text)
     assert any("STAMP-ONLY" in f or "MUST NOT re-evaluate" in f for f in fails)
 
 
 # --- v3.11 / C-V6 citation_existence lint mutations ---
+
 
 def test_mutation_citation_existence_enum_drift_fails(tp_schema):
     """Rule 9 (C-V6): if citation_existence accepts strict_articles_only (or any
@@ -524,23 +557,28 @@ def test_mutation_citation_existence_json_schema_default_fails(tp_schema):
 def test_mutation_finalizer_missing_citation_existence_token_fails():
     """Rule 9 (C-V6): if the finalizer section drops the citation_existence terminal
     token grammar, the lint must fail (the writer/grammar pin)."""
-    text = ("## Cite-Time Provenance Finalizer — v3.10 extension\n\n"
-            "TERMINAL-BLOCK severity=HIGH-BLOCK policy_hash present, sole policy "
-            "evaluator, MUST NOT infer venue_type from index fields. Recompute each "
-            "pass.\n\n## Next")
+    text = (
+        "## Cite-Time Provenance Finalizer — v3.10 extension\n\n"
+        "TERMINAL-BLOCK severity=HIGH-BLOCK policy_hash present, sole policy "
+        "evaluator, MUST NOT infer venue_type from index fields. Recompute each "
+        "pass.\n\n## Next"
+    )
     # citation_existence terminal token + reason absent → must fail rule 9.
     fails = check_finalizer_prompt(text)
-    assert any("policy=citation_existence" in f or "reason=lookup_verified_false" in f
-               for f in fails)
+    assert any(
+        "policy=citation_existence" in f or "reason=lookup_verified_false" in f for f in fails
+    )
 
 
 def test_mutation_finalizer_citation_existence_without_recompute_fails():
     """Rule 9 (C-V6(h)): a finalizer that documents citation_existence but drops the
     recompute-each-pass / no-cache property must fail."""
-    text = ("## Cite-Time Provenance Finalizer — v3.10 extension\n\n"
-            "TERMINAL-BLOCK severity=HIGH-BLOCK policy=citation_existence "
-            "reason=lookup_verified_false policy_hash present, sole policy evaluator, "
-            "MUST NOT infer venue_type from index fields.\n\n## Next")
+    text = (
+        "## Cite-Time Provenance Finalizer — v3.10 extension\n\n"
+        "TERMINAL-BLOCK severity=HIGH-BLOCK policy=citation_existence "
+        "reason=lookup_verified_false policy_hash present, sole policy evaluator, "
+        "MUST NOT infer venue_type from index fields.\n\n## Next"
+    )
     # citation_existence present but no "Recompute each pass" → must fail rule 9(h).
     fails = check_finalizer_prompt(text)
     assert any("recompute-each-pass" in f for f in fails)

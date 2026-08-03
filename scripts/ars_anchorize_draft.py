@@ -30,6 +30,7 @@ Usage:
     python scripts/ars_anchorize_draft.py path/to/draft.md
     python scripts/ars_anchorize_draft.py draft.md --manifest-out m.json
 """
+
 from __future__ import annotations
 
 import argparse

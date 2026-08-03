@@ -24,6 +24,7 @@ Exit codes:
   1 — one or more checks failed
   2 — invocation error
 """
+
 from __future__ import annotations
 
 import argparse

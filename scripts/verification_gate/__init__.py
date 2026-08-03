@@ -21,6 +21,7 @@ shared/contracts/passport/citation_verification_summary.schema.json.
 
 Spec: docs/design/2026-05-21-v3.10-182-promote-citation-gate-spec.md §2 Delta 5.
 """
+
 from __future__ import annotations
 
 from datetime import datetime, timezone
@@ -73,10 +74,10 @@ def _is_valid_ref_slug(ref_slug: Any) -> bool:
     return isinstance(ref_slug, str) and bool(ref_slug)
 
 
-def _outcome(status: str, queried_by: str | None,
-             response_summary: str | None = None) -> dict[str, Any]:
-    return {"status": status, "queried_by": queried_by,
-            "response_summary": response_summary}
+def _outcome(
+    status: str, queried_by: str | None, response_summary: str | None = None
+) -> dict[str, Any]:
+    return {"status": status, "queried_by": queried_by, "response_summary": response_summary}
 
 
 def _ran_outcome(unmatched: bool, queried_by: str | None) -> dict[str, Any]:
@@ -191,12 +192,9 @@ def verify_citation(
         }
     else:
         resolver_outcomes = {
-            "crossref": _run_doi_then_title(
-                entry, clients["crossref"], CrossrefUnavailable),
-            "openalex": _run_doi_then_title(
-                entry, clients["openalex"], OpenAlexUnavailable),
-            "semantic_scholar": _run_semantic_scholar(
-                entry, clients["semantic_scholar"]),
+            "crossref": _run_doi_then_title(entry, clients["crossref"], CrossrefUnavailable),
+            "openalex": _run_doi_then_title(entry, clients["openalex"], OpenAlexUnavailable),
+            "semantic_scholar": _run_semantic_scholar(entry, clients["semantic_scholar"]),
             "arxiv": _run_arxiv(entry, clients["arxiv"]),
         }
     return {
@@ -254,7 +252,9 @@ def verify_passport(
                 "cover every corpus entry with a non-empty string "
                 "(corpus entries do not carry ref_slug; #332)"
             )
-        outcomes.append(verify_citation(
-            entry, clients, ref_slug=ref_slug,
-            anchor=anchors.get(ref_slug), cache=cache))
+        outcomes.append(
+            verify_citation(
+                entry, clients, ref_slug=ref_slug, anchor=anchors.get(ref_slug), cache=cache
+            )
+        )
     return outcomes

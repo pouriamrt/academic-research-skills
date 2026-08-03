@@ -15,6 +15,7 @@ spec §7.7 + §9 acceptance criteria — FNR < 0.15 AND FPR < 0.10.
 Spec: docs/design/2026-05-15-issue-103-claim-alignment-audit-spec.md
       §7.7 (test contract) + §1 deliverable 7 (protocol doc) + §13 step 10.
 """
+
 from __future__ import annotations
 
 import os
@@ -47,9 +48,7 @@ DEFAULT_FPR_THRESHOLD = 0.10
 # Closed enums from the schema (claim_audit_result.judgment + the
 # negative-constraint VIOLATED/NOT_VIOLATED split). Kept in sync with
 # `shared/contracts/passport/claim_audit_result.schema.json`.
-ALIGNMENT_JUDGMENTS = frozenset(
-    {"SUPPORTED", "UNSUPPORTED", "AMBIGUOUS", "RETRIEVAL_FAILED"}
-)
+ALIGNMENT_JUDGMENTS = frozenset({"SUPPORTED", "UNSUPPORTED", "AMBIGUOUS", "RETRIEVAL_FAILED"})
 CONSTRAINT_JUDGMENTS = frozenset({"VIOLATED", "NOT_VIOLATED"})
 TUPLE_KINDS = frozenset({"alignment", "constraint"})
 
@@ -113,7 +112,9 @@ def validate_gold_set(tuples: list[dict[str, Any]]) -> None:
             # Rule (e): a PARTIAL fixture must declare non-empty expected_sub_claims;
             # without them `_breakdown_covers_expected` early-returns True and the
             # #213 atomic-decomposition subset metric is silently bypassed.
-            if tup.get("expected_prompt_verdict") == "PARTIAL" and not tup.get("expected_sub_claims"):
+            if tup.get("expected_prompt_verdict") == "PARTIAL" and not tup.get(
+                "expected_sub_claims"
+            ):
                 raise GoldSetValidationError(
                     f"tuple {idx}: PARTIAL fixture must declare non-empty "
                     f"expected_sub_claims (rule (e); else the atomic-decomposition "
@@ -128,8 +129,7 @@ def validate_gold_set(tuples: list[dict[str, Any]]) -> None:
                 )
             if "constraint_under_test_id" not in tup:
                 raise GoldSetValidationError(
-                    f"tuple {idx}: constraint tuple missing "
-                    f"constraint_under_test_id (rule (c))"
+                    f"tuple {idx}: constraint tuple missing constraint_under_test_id (rule (c))"
                 )
             if not any(tup.get(field) for field in _CONSTRAINT_REQUIRED_EITHER):
                 raise GoldSetValidationError(
@@ -212,9 +212,7 @@ def _derive_constraint_scope(constraint_id: str) -> str:
     )
 
 
-def _breakdown_covers_expected(
-    breakdown: Any, expected_sub_claims: Any
-) -> bool:
+def _breakdown_covers_expected(breakdown: Any, expected_sub_claims: Any) -> bool:
     """True iff the judge's breakdown actually, atomically decomposes THIS claim.
 
     `is_true_partial_breakdown` only proves the verdict MIX — a judge can pass it
@@ -345,8 +343,7 @@ def run_calibration(
     # one-vs-rest binary, which is the standard reviewer-calibration
     # convention referenced in `calibration_mode_protocol.md`.
     per_class_stats: dict[str, dict[str, int]] = {
-        cls: {"FN": 0, "FP": 0, "n_positive": 0, "n_negative": 0}
-        for cls in PER_CLASS_KEYS
+        cls: {"FN": 0, "FP": 0, "n_positive": 0, "n_negative": 0} for cls in PER_CLASS_KEYS
     }
     aggregate_FN = 0
     aggregate_FP = 0

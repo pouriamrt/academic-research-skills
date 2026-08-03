@@ -37,6 +37,7 @@ Usage
 -----
   python scripts/check_policy_anchor_protocol.py academic-paper/references/policy_anchor_disclosure_protocol.md
 """
+
 from __future__ import annotations
 
 import argparse
@@ -68,9 +69,7 @@ AUTO_PROMOTION_REQUIRED_TOKENS = (
 
 CONCERN_PATTERN = re.compile(r"concern\s+#(\d+)\b")
 TABLE_ROW_PATTERN = re.compile(r"^\s*\|\s*(\d+)\s*\|", re.MULTILINE)
-ANCHOR_INVENTORY_PATTERN = re.compile(
-    r"^\*\*Anchor inventory\*\*:\s*`([^`]+)`", re.MULTILINE
-)
+ANCHOR_INVENTORY_PATTERN = re.compile(r"^\*\*Anchor inventory\*\*:\s*`([^`]+)`", re.MULTILINE)
 
 
 def lint_text(text: str) -> list[str]:
@@ -107,9 +106,7 @@ def lint_text(text: str) -> list[str]:
     if not inventory_line:
         violations.append("missing `**Anchor inventory**: ...` line in protocol doc")
     else:
-        inventory_slugs = {
-            s.strip() for s in inventory_line.group(1).split(",") if s.strip()
-        }
+        inventory_slugs = {s.strip() for s in inventory_line.group(1).split(",") if s.strip()}
         canonical = set(REQUIRED_ANCHOR_SLUGS)
         missing = canonical - inventory_slugs
         extra = inventory_slugs - canonical
@@ -126,9 +123,7 @@ def lint_text(text: str) -> list[str]:
             )
 
     if DEDUP_POINTER not in text:
-        violations.append(
-            f"missing Nature ↔ v3.2 venue dedup pointer: {DEDUP_POINTER}"
-        )
+        violations.append(f"missing Nature ↔ v3.2 venue dedup pointer: {DEDUP_POINTER}")
 
     return violations
 

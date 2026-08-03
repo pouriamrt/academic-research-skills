@@ -13,6 +13,7 @@ release's heading, and stale mentions below it never cover a new commit.
 
 Spec: docs/design/2026-06-13-changelog-covers-merges-release-gate-spec.md.
 """
+
 from __future__ import annotations
 
 import argparse
@@ -162,7 +163,9 @@ def _git_out(repo: Path, *args: str) -> str | None:
     try:
         proc = subprocess.run(
             ["git", "-C", str(repo), *args],
-            capture_output=True, text=True, check=True,
+            capture_output=True,
+            text=True,
+            check=True,
         )
     except (subprocess.CalledProcessError, FileNotFoundError):
         return None
@@ -264,11 +267,13 @@ def main(argv: list[str] | None = None) -> int:
     )
     parser.add_argument("--repo", default=".", help="Repo root (default: cwd).")
     parser.add_argument(
-        "--first-release", action="store_true",
+        "--first-release",
+        action="store_true",
         help="No previous release tag is expected (first release).",
     )
     parser.add_argument(
-        "--merges-ref", default="HEAD",
+        "--merges-ref",
+        default="HEAD",
         help="Audit merges in <prev_tag>..<this ref> (default HEAD). The "
         "release-prep-PR CI job passes origin/main.",
     )

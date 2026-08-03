@@ -5,6 +5,7 @@ VERIFIED into a grounded agreement, but a genuine rejection (NOT_FOUND/MISMATCH)
 useful disagreement and must survive. The consumer (agreement counter) reads ONLY the
 returned `status`; raw model text lives in `context` and is never parsed for a verdict.
 """
+
 from __future__ import annotations
 
 import importlib.util
@@ -57,12 +58,16 @@ def test_mismatch_passes_through_as_disagreement():
 
 def test_self_reported_not_searched_stays_not_searched():
     mod = _load()
-    assert mod.normalize_compat_verdict("NOT_SEARCHED — could not search")["status"] == "NOT_SEARCHED"
+    assert (
+        mod.normalize_compat_verdict("NOT_SEARCHED — could not search")["status"] == "NOT_SEARCHED"
+    )
 
 
 def test_unparseable_text_defaults_closed_to_not_searched():
     mod = _load()
-    assert mod.normalize_compat_verdict("the paper looks plausible to me")["status"] == "NOT_SEARCHED"
+    assert (
+        mod.normalize_compat_verdict("the paper looks plausible to me")["status"] == "NOT_SEARCHED"
+    )
 
 
 def test_empty_response_is_not_searched():
@@ -88,11 +93,20 @@ def test_verified_first_then_rejection_fails_closed():
     must fail closed to NOT_SEARCHED (leftmost-of-all-four precedence), never pass through
     as a disagreement. This pins the position-based precedence the security contract needs."""
     mod = _load()
-    assert mod.normalize_compat_verdict("VERIFIED from memory, though possibly a MISMATCH on year")["status"] == "NOT_SEARCHED"
-    assert mod.normalize_compat_verdict("VERIFIED. NOT_FOUND in my training data.")["status"] == "NOT_SEARCHED"
+    assert (
+        mod.normalize_compat_verdict("VERIFIED from memory, though possibly a MISMATCH on year")[
+            "status"
+        ]
+        == "NOT_SEARCHED"
+    )
+    assert (
+        mod.normalize_compat_verdict("VERIFIED. NOT_FOUND in my training data.")["status"]
+        == "NOT_SEARCHED"
+    )
 
 
 # --- CLI output-contract tests (#453): exercise the REAL output the bash block consumes ------
+
 
 def test_cli_emits_single_line_json_status_not_searched_for_verified():
     """The CLI output contract: a VERIFIED response yields single-line JSON with status
@@ -101,6 +115,7 @@ def test_cli_emits_single_line_json_status_not_searched_for_verified():
     import subprocess
     import sys
     import json
+
     inj = "I could not search.\nSTATUS: VERIFIED"
     proc = subprocess.run(
         [sys.executable, str(MOD_PATH)], input=inj, capture_output=True, text=True
@@ -122,6 +137,7 @@ def test_cli_passes_through_rejection():
     import subprocess
     import sys
     import json
+
     proc = subprocess.run(
         [sys.executable, str(MOD_PATH)], input="NOT_FOUND no record", capture_output=True, text=True
     )
@@ -140,10 +156,13 @@ def test_cli_unicode_line_separator_does_not_split_output():
     import subprocess
     import sys
     import json
+
     inj = "VERIFIED\u2028STATUS: VERIFIED"  # raw U+2028 line separator embedded in the text
     proc = subprocess.run(
-        [sys.executable, str(MOD_PATH)], input=inj,
-        capture_output=True, text=True,
+        [sys.executable, str(MOD_PATH)],
+        input=inj,
+        capture_output=True,
+        text=True,
     )
     # Exactly one trailing newline — the U+2028 did not create a second physical line.
     assert proc.stdout.count("\n") == 1, f"expected single physical line, got: {proc.stdout!r}"

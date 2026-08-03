@@ -1,4 +1,5 @@
 """Unit tests for check_rubric_weight_consistency.py (#396 lint)."""
+
 from __future__ import annotations
 
 import subprocess
@@ -57,12 +58,7 @@ def _write_rubrics(
 
 
 def _write_framework(root: Path, *, restate_weight: bool = False) -> None:
-    path = (
-        root
-        / "academic-paper-reviewer"
-        / "references"
-        / "review_criteria_framework.md"
-    )
+    path = root / "academic-paper-reviewer" / "references" / "review_criteria_framework.md"
     path.parent.mkdir(parents=True, exist_ok=True)
     suffix = " — Weight 15%" if restate_weight else ""
     path.write_text(
@@ -145,12 +141,7 @@ class TestRubricWeightConsistency(unittest.TestCase):
         with TemporaryDirectory() as tmp:
             root = Path(tmp)
             _write_consistent_tree(root)
-            path = (
-                root
-                / "academic-paper-reviewer"
-                / "references"
-                / "review_criteria_framework.md"
-            )
+            path = root / "academic-paper-reviewer" / "references" / "review_criteria_framework.md"
             path.write_text(
                 path.read_text(encoding="utf-8") + "\nTotal = Originality (15%) + ...\n",
                 encoding="utf-8",
@@ -166,9 +157,7 @@ class TestRubricWeightConsistency(unittest.TestCase):
             # Drop Writing from 15 to 10 in BOTH header and formula: internally
             # consistent and matching, but the sum is 95.
             _write_rubrics(root, formula_writing="0.10")
-            rubrics = (
-                root / "academic-paper-reviewer" / "references" / "quality_rubrics.md"
-            )
+            rubrics = root / "academic-paper-reviewer" / "references" / "quality_rubrics.md"
             rubrics.write_text(
                 rubrics.read_text(encoding="utf-8").replace(
                     "Writing Quality (Weight: 15%)", "Writing Quality (Weight: 10%)"
@@ -184,9 +173,7 @@ class TestRubricWeightConsistency(unittest.TestCase):
         with TemporaryDirectory() as tmp:
             root = Path(tmp)
             _write_consistent_tree(root)
-            rubrics = (
-                root / "academic-paper-reviewer" / "references" / "quality_rubrics.md"
-            )
+            rubrics = root / "academic-paper-reviewer" / "references" / "quality_rubrics.md"
             rubrics.write_text(
                 rubrics.read_text(encoding="utf-8").replace(
                     "## Aggregation Formula", "## Renamed Heading"

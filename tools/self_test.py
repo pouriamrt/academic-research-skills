@@ -135,9 +135,7 @@ def _extract_agent_names_from_skill_md(text: str) -> set[str]:
     # smart-quote ’ (U+2019), so SKILL.md files saved with either render
     # the cross-skill exclusion correctly.
     cross_skill_agents: set[str] = set()
-    for m in re.finditer(
-        r"`[a-z][a-z0-9-]+`(?:['’]s)\s+`([a-z][a-z0-9_]*_agent)`", text
-    ):
+    for m in re.finditer(r"`[a-z][a-z0-9-]+`(?:['’]s)\s+`([a-z][a-z0-9_]*_agent)`", text):
         cross_skill_agents.add(m.group(1))
     for m in re.finditer(r"[a-z][a-z0-9-]+/([a-z][a-z0-9_]*_agent)", text):
         cross_skill_agents.add(m.group(1))
@@ -172,9 +170,7 @@ def _extract_cross_agent_refs(text: str) -> set[tuple[str, str]]:
       - academic-paper/draft_writer_agent  (unquoted)
     """
     refs: set[tuple[str, str]] = set()
-    for m in re.finditer(
-        r"(?:`)?([a-z][a-z0-9-]*)/([a-z][a-z0-9_]*_agent)(?:`)?", text
-    ):
+    for m in re.finditer(r"(?:`)?([a-z][a-z0-9-]*)/([a-z][a-z0-9_]*_agent)(?:`)?", text):
         refs.add((m.group(1), m.group(2)))
     return refs
 
@@ -216,9 +212,7 @@ def check_plugin_structure(root: Path, verbose: bool) -> CategoryResult:
     declared_names = {Path(s).name for s in declared_skills}
     for expected in EXPECTED_SKILLS:
         if expected not in declared_names:
-            cat.add(
-                f"expected skill: {expected}", "FAIL", "Not declared in plugin.json"
-            )
+            cat.add(f"expected skill: {expected}", "FAIL", "Not declared in plugin.json")
 
     # Each skill has SKILL.md and agents/
     for skill_name in EXPECTED_SKILLS:
@@ -285,9 +279,7 @@ def check_agent_completeness(root: Path, verbose: bool) -> CategoryResult:
 
         skill_text = _read_text(skill_md_path)
         referenced = _extract_agent_names_from_skill_md(skill_text)
-        local_files = {
-            p.stem for p in agents_dir.iterdir() if p.suffix == ".md" and p.is_file()
-        }
+        local_files = {p.stem for p in agents_dir.iterdir() if p.suffix == ".md" and p.is_file()}
         # For missing-check: union with shared agents AND cross-skill agents.
         # A reference is satisfied if the agent exists anywhere in the suite
         # (own skill's agents/, shared/agents/, or another skill's agents/).
@@ -365,9 +357,7 @@ def check_shared_infrastructure(root: Path, verbose: bool) -> CategoryResult:
             if n in defined_schemas:
                 cat.add(f"Schema {n} defined", "PASS", "Present in handoff_schemas.md")
             else:
-                cat.add(
-                    f"Schema {n} defined", "FAIL", "Missing from handoff_schemas.md"
-                )
+                cat.add(f"Schema {n} defined", "FAIL", "Missing from handoff_schemas.md")
 
     return cat
 
@@ -462,9 +452,7 @@ def check_cross_reference_integrity(root: Path, verbose: bool) -> CategoryResult
                 continue
             text = _read_text(shared_file)
             # Match relative paths like ../skill/file.md or shared/file.md
-            for m in re.finditer(
-                r"(?:\.\.?/)?(?:[a-z][a-z0-9_-]*/)+[a-z][a-z0-9_-]*\.\w+", text
-            ):
+            for m in re.finditer(r"(?:\.\.?/)?(?:[a-z][a-z0-9_-]*/)+[a-z][a-z0-9_-]*\.\w+", text):
                 ref_path = m.group(0)
                 # Resolve relative to shared/ or root
                 candidate1 = (shared_dir / ref_path).resolve()
@@ -504,11 +492,7 @@ def check_template_reference_coverage(root: Path, verbose: bool) -> CategoryResu
                 # only check if the dir exists
                 continue
 
-            files = [
-                f
-                for f in subdir.iterdir()
-                if f.is_file() and not f.name.startswith(".")
-            ]
+            files = [f for f in subdir.iterdir() if f.is_file() and not f.name.startswith(".")]
             if files:
                 cat.add(
                     f"{skill_name}/{subdir_name}",
@@ -549,16 +533,12 @@ def check_version_consistency(root: Path, verbose: bool) -> CategoryResult:
             claude_md_version = m.group(1)
 
     if plugin_version is None:
-        cat.add(
-            "plugin.json version", "FAIL", "Could not read version from plugin.json"
-        )
+        cat.add("plugin.json version", "FAIL", "Could not read version from plugin.json")
     else:
         cat.add("plugin.json version", "PASS", f"v{plugin_version}")
 
     if claude_md_version is None:
-        cat.add(
-            "CLAUDE.md version", "FAIL", "Could not read version from .claude/CLAUDE.md"
-        )
+        cat.add("CLAUDE.md version", "FAIL", "Could not read version from .claude/CLAUDE.md")
     else:
         cat.add("CLAUDE.md version", "PASS", f"v{claude_md_version}")
 

@@ -15,6 +15,7 @@ Exit codes:
   1 — drift detected under --check
   2 — invocation error (schema or target missing)
 """
+
 from __future__ import annotations
 import argparse
 import json

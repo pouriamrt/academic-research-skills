@@ -150,9 +150,7 @@ def parse_agent_cross_references(
 # Schema handoff parsing
 # ---------------------------------------------------------------------------
 
-_SCHEMA_HEADER_RE = re.compile(
-    r"^##\s+Schema\s+(\d+):\s+(.+?)(?:\s+\(.*\))?\s*$", re.MULTILINE
-)
+_SCHEMA_HEADER_RE = re.compile(r"^##\s+Schema\s+(\d+):\s+(.+?)(?:\s+\(.*\))?\s*$", re.MULTILINE)
 
 _PRODUCER_RE = re.compile(r"\*\*Producer\*\*:\s*(.+)", re.MULTILINE)
 
@@ -368,9 +366,7 @@ def build_graph() -> str:
         color = SKILL_COLORS[skill]
         for agent in skill_agents.get(skill, []):
             nid = _node_id(skill, agent)
-            lines.append(
-                f"    style {nid} fill:{color},fill-opacity:0.3,stroke:{color},color:#000"
-            )
+            lines.append(f"    style {nid} fill:{color},fill-opacity:0.3,stroke:{color},color:#000")
 
     lines.append("")
 

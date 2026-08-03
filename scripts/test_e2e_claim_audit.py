@@ -40,6 +40,7 @@ maps to this file unchanged.
 Run:
     python -m unittest scripts.test_e2e_claim_audit -v
 """
+
 from __future__ import annotations
 
 import unittest
@@ -259,9 +260,7 @@ def _make_judge_fn(
                 "violated_constraint_id": "MNC-1",
                 "rationale": "Sentence asserts unqualified causation, violating MNC-1.",
             }
-        raise AssertionError(
-            f"unexpected claim_text dispatched to judge stub: {claim_text!r}"
-        )
+        raise AssertionError(f"unexpected claim_text dispatched to judge stub: {claim_text!r}")
 
     return fn
 
@@ -528,10 +527,7 @@ class E2EAdjacentClauseFilter(_E2ETestBase):
             self.assertNotEqual(row["sentence_text"], filtered_text)
         # Finalizer routes the row through classify_uncited_assertion with
         # aggregate="uncited_assertions" and annotation [UNCITED-ASSERTION].
-        uncited_anns = [
-            a for a in out["annotations"]
-            if a.get("aggregate") == "uncited_assertions"
-        ]
+        uncited_anns = [a for a in out["annotations"] if a.get("aggregate") == "uncited_assertions"]
         self.assertEqual(len(uncited_anns), 1)
         self.assertEqual(uncited_anns[0]["annotation"], ANNOTATION_UNCITED_ASSERTION)
 

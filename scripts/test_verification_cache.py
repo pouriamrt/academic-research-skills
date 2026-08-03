@@ -8,6 +8,7 @@ The cache is a local SQLite-backed store keyed by
 ARS_VERIFICATION_CACHE_PATH at a tmp file so no real ~/.cache/ars/ db is
 touched and runs are isolated.
 """
+
 from __future__ import annotations
 
 import sqlite3
@@ -47,9 +48,7 @@ def test_distinct_query_form_same_resolver_independent(cache):
     cache.put("smith2024", "crossref", "10.5555/abc", {"via": "doi"})
     cache.put("smith2024", "crossref", "smith attention 2024", {"via": "title"})
     assert cache.get("smith2024", "crossref", "10.5555/abc")["via"] == "doi"
-    assert cache.get(
-        "smith2024", "crossref", "smith attention 2024"
-    )["via"] == "title"
+    assert cache.get("smith2024", "crossref", "smith attention 2024")["via"] == "title"
 
 
 def test_put_overwrites_same_key(cache):
@@ -69,13 +68,10 @@ def test_expired_entry_returns_none(tmp_path, monkeypatch):
 
     # Backdate the stored verification_timestamp past the TTL by writing
     # directly to the underlying row.
-    stale = (
-        datetime.now(timezone.utc) - timedelta(days=_TTL_DAYS + 1)
-    ).isoformat()
+    stale = (datetime.now(timezone.utc) - timedelta(days=_TTL_DAYS + 1)).isoformat()
     conn = sqlite3.connect(str(db))
     conn.execute(
-        "UPDATE verification_cache SET verification_timestamp = ? "
-        "WHERE citation_key = ?",
+        "UPDATE verification_cache SET verification_timestamp = ? WHERE citation_key = ?",
         (stale, "old2020"),
     )
     conn.commit()
@@ -92,13 +88,10 @@ def test_fresh_entry_within_ttl_returns_value(tmp_path, monkeypatch):
     c = VerificationCache()
     c.put("recent2026", "arxiv", "2605.18661", {"matched": True})
 
-    fresh = (
-        datetime.now(timezone.utc) - timedelta(days=_TTL_DAYS - 1)
-    ).isoformat()
+    fresh = (datetime.now(timezone.utc) - timedelta(days=_TTL_DAYS - 1)).isoformat()
     conn = sqlite3.connect(str(db))
     conn.execute(
-        "UPDATE verification_cache SET verification_timestamp = ? "
-        "WHERE citation_key = ?",
+        "UPDATE verification_cache SET verification_timestamp = ? WHERE citation_key = ?",
         (fresh, "recent2026"),
     )
     conn.commit()

@@ -91,7 +91,7 @@
         },
         {
           "file": "scripts/verify_submission_package.py",
-          "anchor": "if c[\"strict_eligible\"] and c[\"status\"] == \"not_checked\")"
+          "anchor": "if c[\"strict_eligible\"] and c[\"status\"] == \"not_checked\""
         }
       ],
       "pinned_by": [

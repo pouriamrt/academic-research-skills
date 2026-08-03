@@ -6,6 +6,7 @@ Usage: python scripts/check_benchmark_report.py path/to/report.json
 Exit 0 on pass (warnings may still be printed to stderr).
 Exit 1 on validation failure.
 """
+
 from __future__ import annotations
 
 import argparse

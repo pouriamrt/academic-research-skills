@@ -4,6 +4,7 @@
 Enforces nine invariants L1–L9. Manifest-driven for L3–L6.
 Exit 0 on pass, exit 1 on fail. Prints aggregated failure list.
 """
+
 from __future__ import annotations
 
 import json
@@ -109,8 +110,7 @@ def manifest_entry_tuples() -> tuple[tuple[str, str], ...]:
     A list, not a set, so duplicates are visible to the caller.
     """
     return tuple(
-        (c["agent_basename"], c["agent_path"])
-        for c in load_manifest()["supported_consumers"]
+        (c["agent_basename"], c["agent_path"]) for c in load_manifest()["supported_consumers"]
     )
 
 
@@ -128,9 +128,7 @@ def find_consumer_blocks(ref_text: str) -> dict[str, str]:
 
 
 def _manifested_agent_paths() -> list[Path]:
-    return [
-        REPO_ROOT / c["agent_path"] for c in load_manifest()["supported_consumers"]
-    ]
+    return [REPO_ROOT / c["agent_path"] for c in load_manifest()["supported_consumers"]]
 
 
 def check_l1() -> list[str]:
@@ -166,9 +164,7 @@ def check_l2() -> list[str]:
                 )
         else:
             if basename not in manifest_set:
-                failures.append(
-                    f"L2: '{basename}' has full consumer block but is not in manifest"
-                )
+                failures.append(f"L2: '{basename}' has full consumer block but is not in manifest")
     return failures
 
 
@@ -176,7 +172,9 @@ def check_l3() -> list[str]:
     failures: list[str] = []
     for agent_path in _manifested_agent_paths():
         if not agent_path.exists():
-            failures.append(f"L3: manifest references missing file {agent_path.relative_to(REPO_ROOT)}")
+            failures.append(
+                f"L3: manifest references missing file {agent_path.relative_to(REPO_ROOT)}"
+            )
             continue
         if REF_DOC_BACKPOINTER not in agent_path.read_text(encoding="utf-8"):
             failures.append(
@@ -259,9 +257,7 @@ def check_l7() -> list[str]:
 
         block = _extract_pre_screened_block(text)
         if block is None:
-            failures.append(
-                f"L7: {rel} PRE-SCREENED template fenced block not found"
-            )
+            failures.append(f"L7: {rel} PRE-SCREENED template fenced block not found")
         else:
             for marker in PRE_SCREENED_LINE_MARKERS:
                 if marker not in block:
@@ -272,9 +268,7 @@ def check_l7() -> list[str]:
         # Truncation prose check stays scoped to the full file: the spec §5.2
         # L7 places this prose in surrounding text, not inside the template.
         if "truncation rule" not in text.lower():
-            failures.append(
-                f"L7: {rel} missing 'truncation rule' prose mention (spec §5.2 L7)"
-            )
+            failures.append(f"L7: {rel} missing 'truncation rule' prose mention (spec §5.2 L7)")
     return failures
 
 
@@ -295,8 +289,7 @@ def check_l8() -> list[str]:
             if seen[e] == 2:
                 dups.append(e)
         failures.append(
-            f"L8: manifest contains duplicate (agent_basename, agent_path) "
-            f"entries: {dups}"
+            f"L8: manifest contains duplicate (agent_basename, agent_path) entries: {dups}"
         )
 
     # Same-basename, different-path guard: the original codex-flagged
@@ -345,8 +338,7 @@ def check_l8() -> list[str]:
             )
         if REF_DOC_BACKPOINTER not in text:
             failures.append(
-                f"L8: PR-B release state requires backpointer "
-                f"'{REF_DOC_BACKPOINTER}' in {rel}"
+                f"L8: PR-B release state requires backpointer '{REF_DOC_BACKPOINTER}' in {rel}"
             )
     return failures
 

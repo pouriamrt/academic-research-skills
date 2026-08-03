@@ -34,6 +34,7 @@ cannot silently shrink.
 Usage: python3 scripts/check_degradation_registry.py [--registry PATH]
 Exit 0 = all invariants hold; exit 1 = violations (listed on stderr).
 """
+
 from __future__ import annotations
 
 import argparse
@@ -62,14 +63,16 @@ _PINNED_BY_RE = re.compile(r"^(?P<path>[^:]+)(?:::(?P<func>\w+))?$")
 
 # D5 lock: the shipped mechanism inventory. Deleting or renaming a registry
 # row must fail CI until this constant is updated in the same commit.
-_EXPECTED_MECHANISMS = frozenset({
-    "citation_resolver_outage",
-    "contamination_signal_api_degradation",
-    "vlm_unavailable",
-    "submission_package_incompleteness",
-    "cross_model_unavailable",
-    "compliance_non_sr_warn_cap",
-})
+_EXPECTED_MECHANISMS = frozenset(
+    {
+        "citation_resolver_outage",
+        "contamination_signal_api_degradation",
+        "vlm_unavailable",
+        "submission_package_incompleteness",
+        "cross_model_unavailable",
+        "compliance_non_sr_warn_cap",
+    }
+)
 
 
 def _reject_duplicate_keys(pairs):
@@ -104,9 +107,7 @@ def _load_registry(path: Path) -> tuple[dict | None, list[str]]:
 
 def _check_shape(data: dict) -> list[str]:
     errors: list[str] = []
-    if not isinstance(data.get("registry_version"), str) or not data.get(
-        "registry_version"
-    ):
+    if not isinstance(data.get("registry_version"), str) or not data.get("registry_version"):
         errors.append("D1: registry_version missing or not a non-empty string")
     mechanisms = data.get("mechanisms")
     if not isinstance(mechanisms, list) or not mechanisms:
@@ -125,14 +126,12 @@ def _check_shape(data: dict) -> list[str]:
             value = row[field]
             if field == "authority":
                 if not isinstance(value, list) or not value:
-                    errors.append(
-                        f"D1: {label}.authority must be a non-empty list")
+                    errors.append(f"D1: {label}.authority must be a non-empty list")
             elif field == "pinned_by":
                 if not isinstance(value, list):
                     errors.append(f"D1: {label}.pinned_by must be a list")
             elif not isinstance(value, str) or not value.strip():
-                errors.append(
-                    f"D1: {label}.{field} must be a non-empty string")
+                errors.append(f"D1: {label}.{field} must be a non-empty string")
     return errors
 
 
@@ -172,12 +171,14 @@ def _check_unique_ids(mechanisms: list) -> list[str]:
         errors.append(
             f"D5: mechanism(s) missing from the registry: {sorted(missing)} "
             "— a row was deleted or renamed; if intentional, update "
-            "_EXPECTED_MECHANISMS in this lint in the same commit")
+            "_EXPECTED_MECHANISMS in this lint in the same commit"
+        )
     if extra:
         errors.append(
             f"D5: mechanism(s) not in the pinned inventory: {sorted(extra)} "
             "— new rows must be added to _EXPECTED_MECHANISMS in this lint "
-            "in the same commit (lock semantics)")
+            "in the same commit (lock semantics)"
+        )
     return errors
 
 
@@ -201,12 +202,12 @@ def _check_authorities(mechanisms: list) -> list[str]:
                 errors.append(
                     f"{where}.file {file_ref!r} carries a ':' — line-number "
                     "references are forbidden; cite a content anchor instead "
-                    "(line numbers drift, anchors survive)")
+                    "(line numbers drift, anchors survive)"
+                )
                 continue
             target = _repo_relative(file_ref)
             if target is None:
-                errors.append(
-                    f"{where}.file escapes the repo root: {file_ref}")
+                errors.append(f"{where}.file escapes the repo root: {file_ref}")
                 continue
             if not target.is_file():
                 errors.append(f"{where}.file does not exist: {file_ref}")
@@ -214,13 +215,15 @@ def _check_authorities(mechanisms: list) -> list[str]:
             if not isinstance(anchor, str) or len(anchor) < _MIN_ANCHOR_LEN:
                 errors.append(
                     f"{where}.anchor must be a string of >= {_MIN_ANCHOR_LEN} "
-                    "chars (too-short anchors match vacuously)")
+                    "chars (too-short anchors match vacuously)"
+                )
                 continue
             if anchor not in _read(target):
                 errors.append(
                     f"{where}: anchor not found verbatim in {file_ref}: "
                     f"{anchor!r} — either the authority moved (update the "
-                    "anchor) or the mechanism changed (update the row)")
+                    "anchor) or the mechanism changed (update the row)"
+                )
     return errors
 
 
@@ -237,13 +240,11 @@ def _check_pinned_by(mechanisms: list) -> list[str]:
                 continue
             m = _PINNED_BY_RE.match(pin)
             if not m:
-                errors.append(
-                    f"{where} {pin!r} is not 'path' or 'path::function'")
+                errors.append(f"{where} {pin!r} is not 'path' or 'path::function'")
                 continue
             path = _repo_relative(m.group("path"))
             if path is None:
-                errors.append(
-                    f"{where}: pinned path escapes the repo root: {pin}")
+                errors.append(f"{where}: pinned path escapes the repo root: {pin}")
                 continue
             if not path.is_file():
                 errors.append(f"{where}: pinned file does not exist: {pin}")
@@ -251,17 +252,14 @@ def _check_pinned_by(mechanisms: list) -> list[str]:
             func = m.group("func")
             if func:
                 if path.suffix != ".py":
-                    errors.append(
-                        f"{where}: ::function form requires a .py path: {pin}")
+                    errors.append(f"{where}: ::function form requires a .py path: {pin}")
                     continue
                 if not re.search(
                     rf"^def {re.escape(func)}\(",
                     _read(path),
                     re.MULTILINE,
                 ):
-                    errors.append(
-                        f"{where}: function {func!r} not defined in "
-                        f"{m.group('path')}")
+                    errors.append(f"{where}: function {func!r} not defined in {m.group('path')}")
     return errors
 
 
@@ -283,8 +281,11 @@ def run(registry_path: Path) -> list[str]:
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
-        "--registry", type=Path, default=DEFAULT_REGISTRY,
-        help="registry path override (tests); default: %(default)s")
+        "--registry",
+        type=Path,
+        default=DEFAULT_REGISTRY,
+        help="registry path override (tests); default: %(default)s",
+    )
     args = parser.parse_args(argv)
     data, errors = _load_registry(args.registry)
     if data is not None:
@@ -292,11 +293,12 @@ def main(argv: list[str] | None = None) -> int:
     if errors:
         for e in errors:
             print(f"ERROR: {e}", file=sys.stderr)
-        print(f"\ncheck_degradation_registry: {len(errors)} violation(s)",
-              file=sys.stderr)
+        print(f"\ncheck_degradation_registry: {len(errors)} violation(s)", file=sys.stderr)
         return 1
-    print(f"Degradation registry lint ok ({len(data['mechanisms'])} "
-          "mechanisms, all anchors and pins resolve).")
+    print(
+        f"Degradation registry lint ok ({len(data['mechanisms'])} "
+        "mechanisms, all anchors and pins resolve)."
+    )
     return 0
 
 

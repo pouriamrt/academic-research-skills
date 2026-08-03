@@ -16,6 +16,7 @@ shared/artifact_reproducibility_pattern.md for the field-by-field rationale.
 
 This module is pure data + a stateless validate function — no I/O, no CLI.
 """
+
 from __future__ import annotations
 
 from typing import Any

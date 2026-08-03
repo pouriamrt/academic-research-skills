@@ -4,6 +4,7 @@ Per the iron law: positive + negative tests for every check. Each negative
 fixture mutates ONE artifact so exactly one check (C1-C7) fails, proving the
 linter cannot trivially accept-all. Fixtures use cwd-swap (REPO_ROOT = Path.cwd()).
 """
+
 from __future__ import annotations
 
 import shutil
@@ -33,8 +34,10 @@ DECISION_TREE_HEADING = "### Literature Screening Decision Tree"
 
 def run_lint(cwd: Path) -> subprocess.CompletedProcess:
     return subprocess.run(
-        [sys.executable, str(LINT)], cwd=str(cwd),
-        capture_output=True, text=True,
+        [sys.executable, str(LINT)],
+        cwd=str(cwd),
+        capture_output=True,
+        text=True,
     )
 
 
@@ -75,6 +78,7 @@ def _mutate(repo: Path, rel: str, old: str, new: str) -> None:
 def test_clone_passes_clean():
     """Sanity: an unmutated clone passes (so each negative isolates one break)."""
     import tempfile
+
     with tempfile.TemporaryDirectory() as d:
         repo = _clone_repo(Path(d))
         assert run_lint(repo).returncode == 0
@@ -262,7 +266,8 @@ def test_pos_historical_contrast_does_not_trip_c7(tmp_path):
     p = repo / CONSUMER
     # Append contrast prose far from the resolution heading range.
     p.write_text(
-        p.read_text() + "\n\n## History\nThe R1-R6 design used the Material Passport and Schema 13.\n",
+        p.read_text()
+        + "\n\n## History\nThe R1-R6 design used the Material Passport and Schema 13.\n",
         encoding="utf-8",
     )
     r = run_lint(repo)
@@ -278,6 +283,7 @@ def test_pos_historical_contrast_does_not_trip_c7(tmp_path):
 # fallback — the feature never activates on the most common path. C8 pins the
 # directive's upper bound so this cannot silently regress; the runtime fix is in
 # intake_agent.md line ~63.
+
 
 def test_neg_h_step12_bound_regression(tmp_path):
     """(h) revert the no-handoff flow directive to a Step-11 upper bound (drop the
@@ -318,7 +324,9 @@ def test_neg_h2_step12_mentioned_but_negated(tmp_path):
         "then Step 12 (Domain Evidence Profile) per its own gating in that step",
         "Do not run Step 12 in this flow",
     )
-    assert mutated != block, "fixture precondition: affirmative directive must be present to replace"
+    assert mutated != block, (
+        "fixture precondition: affirmative directive must be present to replace"
+    )
     p.write_text(text[:idx] + mutated + text[nxt:], encoding="utf-8")
     r = run_lint(repo)
     assert r.returncode != 0 and "C8" in r.stderr

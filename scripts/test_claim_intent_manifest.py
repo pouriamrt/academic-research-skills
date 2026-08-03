@@ -34,6 +34,7 @@ convention places tests under `scripts/test_*.py` (CI uses
 Run:
     python -m unittest scripts.test_claim_intent_manifest -v
 """
+
 from __future__ import annotations
 
 import unittest
@@ -314,9 +315,7 @@ class TM1ThreeSetDiff(_ManifestTestBase):
 
         # ---- Supported subset (judge=SUPPORTED post-pipeline) ----
         supported_texts = {
-            r["claim_text"]
-            for r in out["claim_audit_results"]
-            if r["judgment"] == "SUPPORTED"
+            r["claim_text"] for r in out["claim_audit_results"] if r["judgment"] == "SUPPORTED"
         }
         # Drifted "Median half-life..." judged SUPPORTED but is NOT in manifest,
         # so the supported∩intended is C-001 only.
@@ -346,9 +345,7 @@ class TM1ThreeSetDiff(_ManifestTestBase):
         # NOT a policy on how many drifts may emit. The set assertions
         # that follow pin the content invariant; exact counts only guard
         # against over-emission of duplicate rows.
-        intended_not_emitted = [
-            d for d in drifts if d["drift_kind"] == "INTENDED_NOT_EMITTED"
-        ]
+        intended_not_emitted = [d for d in drifts if d["drift_kind"] == "INTENDED_NOT_EMITTED"]
         self.assertEqual(len(intended_not_emitted), 1, "expected exactly C-003 dropped")
         self.assertEqual(intended_not_emitted[0]["manifest_claim_id"], "C-003")
         self.assertEqual(intended_not_emitted[0]["scoped_manifest_id"], MANIFEST_ID)
@@ -358,9 +355,7 @@ class TM1ThreeSetDiff(_ManifestTestBase):
         )
 
         # ---- EMITTED_NOT_INTENDED: 2 drifted texts ----
-        emitted_not_intended = [
-            d for d in drifts if d["drift_kind"] == "EMITTED_NOT_INTENDED"
-        ]
+        emitted_not_intended = [d for d in drifts if d["drift_kind"] == "EMITTED_NOT_INTENDED"]
         self.assertEqual(
             len(emitted_not_intended),
             2,

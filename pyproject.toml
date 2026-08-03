@@ -4,7 +4,16 @@ pythonpath = ["."]
 [tool.ruff]
 target-version = "py311"
 line-length = 100
-extend-exclude = ["examples", "docs"]
+extend-exclude = [
+    "examples",
+    "docs",
+    # Markdown is EXCLUDED deliberately. Ruff formats Python code blocks inside .md,
+    # and this repo SHA-pins agent prompt files (check_v3_6_8_pattern_protection,
+    # check_pipeline_boundary_semantics). Reformatting embedded snippets rewrites
+    # those bytes and breaks the enforcement gates. Agent prompts are documents, not
+    # source: format them by hand or not at all.
+    "*.md",
+]
 
 [tool.ruff.lint]
 # Phase 1 deliberately pins ruff's DEFAULT rule set. Wider families (I, UP, RUF,

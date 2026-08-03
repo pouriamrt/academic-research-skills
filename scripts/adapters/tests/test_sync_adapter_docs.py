@@ -1,4 +1,5 @@
 """Tests for sync_adapter_docs.py: schema → overview.md drift detector."""
+
 from pathlib import Path
 import subprocess
 
@@ -39,11 +40,7 @@ def test_check_detects_drift(tmp_path):
         i = original.index(marker_start)
         j = original.index(marker_end) + len(marker_end)
         corrupted = (
-            original[:i]
-            + marker_start
-            + "\nDELIBERATELY OUT-OF-DATE\n"
-            + marker_end
-            + original[j:]
+            original[:i] + marker_start + "\nDELIBERATELY OUT-OF-DATE\n" + marker_end + original[j:]
         )
         OVERVIEW.write_text(corrupted, encoding="utf-8")
         r = _run("--check")
@@ -73,9 +70,11 @@ def test_required_table_contains_all_required_fields():
     # in its REQUIRED table. This protects against a regex bug that
     # silently drops fields.
     import json
+
     schema = json.loads(
-        (REPO_ROOT / "shared/contracts/passport/literature_corpus_entry.schema.json")
-        .read_text(encoding="utf-8")
+        (REPO_ROOT / "shared/contracts/passport/literature_corpus_entry.schema.json").read_text(
+            encoding="utf-8"
+        )
     )
     _run()  # ensure overview is current
     content = OVERVIEW.read_text(encoding="utf-8")
@@ -83,6 +82,4 @@ def test_required_table_contains_all_required_fields():
     end = "<!-- GENERATED:LITERATURE_CORPUS_REQUIRED:END -->"
     section = content[content.index(start) + len(start) : content.index(end)]
     for field in schema["required"]:
-        assert f"`{field}`" in section, (
-            f"required field {field!r} missing from REQUIRED table"
-        )
+        assert f"`{field}`" in section, f"required field {field!r} missing from REQUIRED table"

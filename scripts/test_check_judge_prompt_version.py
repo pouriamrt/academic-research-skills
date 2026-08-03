@@ -5,6 +5,7 @@ The clean fixture must PASS; a prompt edit that does not re-pin the hash must
 FAIL (the core #361 backstop); a correct re-pin must PASS again; a removed
 marker must error out (so the guard cannot be silently disabled).
 """
+
 from __future__ import annotations
 
 import hashlib
@@ -30,10 +31,7 @@ def _agent_md(prompt_body: str, *, with_markers: bool = True) -> str:
 
 
 def _constants_src(pinned_hash: str) -> str:
-    return (
-        'JUDGE_PROMPT_VERSION = "step0-decomp-v1"\n'
-        f'JUDGE_PROMPT_SHA256 = "{pinned_hash}"\n'
-    )
+    return f'JUDGE_PROMPT_VERSION = "step0-decomp-v1"\nJUDGE_PROMPT_SHA256 = "{pinned_hash}"\n'
 
 
 def _hash_of(prompt_body: str) -> str:

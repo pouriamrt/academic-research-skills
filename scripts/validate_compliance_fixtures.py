@@ -10,6 +10,7 @@ Usage:
 
 Default fixture_dir: examples/compliance (relative to repo root).
 """
+
 from __future__ import annotations
 
 import argparse

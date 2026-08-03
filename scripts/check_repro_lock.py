@@ -8,6 +8,7 @@ Usage: python scripts/check_repro_lock.py path/to/passport.yaml
 - Populated block with all required sub-fields: OK, exit 0.
 - Populated block with missing sub-field or unknown schema_version: ERROR, exit 1.
 """
+
 from __future__ import annotations
 
 import argparse
@@ -58,8 +59,12 @@ def main() -> int:
 
     lock = doc["repro_lock"]
     if lock is None:
-        print("WARN: repro_lock is null — honest opt-out. Reproducibility reduced.", file=sys.stderr)
-        print("OK (with WARN): passport valid; repro_lock explicitly null — see stderr.", flush=True)
+        print(
+            "WARN: repro_lock is null — honest opt-out. Reproducibility reduced.", file=sys.stderr
+        )
+        print(
+            "OK (with WARN): passport valid; repro_lock explicitly null — see stderr.", flush=True
+        )
         return 0
 
     if not isinstance(lock, dict):

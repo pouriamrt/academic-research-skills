@@ -14,6 +14,7 @@ If either migration tool's tests regress after this extraction, the
 shared module has drifted from the per-tool configuration that was
 verified across multiple v3.7.3 / v3.9.0 review rounds.
 """
+
 from __future__ import annotations
 
 import os

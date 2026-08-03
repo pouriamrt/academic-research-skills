@@ -2,6 +2,7 @@
 
 Avoid duplicating subprocess.run boilerplate across multiple test files.
 """
+
 from __future__ import annotations
 
 import json
@@ -86,6 +87,4 @@ def build_schema_validator(schema: dict[str, Any]):
     """
     from jsonschema import Draft202012Validator
 
-    return Draft202012Validator(
-        schema, format_checker=Draft202012Validator.FORMAT_CHECKER
-    )
+    return Draft202012Validator(schema, format_checker=Draft202012Validator.FORMAT_CHECKER)

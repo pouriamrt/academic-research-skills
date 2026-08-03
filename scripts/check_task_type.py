@@ -3,6 +3,7 @@
 
 Legal values: open-ended | outcome-gradable.
 """
+
 from __future__ import annotations
 
 import sys

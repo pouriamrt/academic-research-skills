@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Tests for OpenAlex client per deep-research/references/openalex_api_protocol.md."""
+
 from __future__ import annotations
 
 import json
@@ -14,13 +15,17 @@ def test_title_search_match_at_threshold(monkeypatch):
     from openalex_client import OpenAlexClient
 
     mock_response = MagicMock()
-    mock_response.read.return_value = json.dumps({
-        "results": [{
-            "title": "Attention Is All You Need",
-            "publication_year": 2017,
-            "doi": "https://doi.org/10.5555/3295222.3295349",
-        }]
-    }).encode("utf-8")
+    mock_response.read.return_value = json.dumps(
+        {
+            "results": [
+                {
+                    "title": "Attention Is All You Need",
+                    "publication_year": 2017,
+                    "doi": "https://doi.org/10.5555/3295222.3295349",
+                }
+            ]
+        }
+    ).encode("utf-8")
     mock_response.__enter__ = MagicMock(return_value=mock_response)
     mock_response.__exit__ = MagicMock(return_value=None)
 
@@ -37,12 +42,16 @@ def test_title_search_no_match_below_threshold(monkeypatch):
     from openalex_client import OpenAlexClient
 
     mock_response = MagicMock()
-    mock_response.read.return_value = json.dumps({
-        "results": [{
-            "title": "Completely Unrelated Paper Title",
-            "publication_year": 2017,
-        }]
-    }).encode("utf-8")
+    mock_response.read.return_value = json.dumps(
+        {
+            "results": [
+                {
+                    "title": "Completely Unrelated Paper Title",
+                    "publication_year": 2017,
+                }
+            ]
+        }
+    ).encode("utf-8")
     mock_response.__enter__ = MagicMock(return_value=mock_response)
     mock_response.__exit__ = MagicMock(return_value=None)
 
@@ -58,11 +67,13 @@ def test_doi_lookup_with_title_cross_check(monkeypatch):
     from openalex_client import OpenAlexClient
 
     mock_response = MagicMock()
-    mock_response.read.return_value = json.dumps({
-        "title": "Some Other Paper",
-        "doi": "https://doi.org/10.5555/3295222.3295349",
-        "publication_year": 2020,
-    }).encode("utf-8")
+    mock_response.read.return_value = json.dumps(
+        {
+            "title": "Some Other Paper",
+            "doi": "https://doi.org/10.5555/3295222.3295349",
+            "publication_year": 2020,
+        }
+    ).encode("utf-8")
     mock_response.__enter__ = MagicMock(return_value=mock_response)
     mock_response.__exit__ = MagicMock(return_value=None)
 
@@ -81,11 +92,13 @@ def test_doi_lookup_with_matching_title(monkeypatch):
     from openalex_client import OpenAlexClient
 
     mock_response = MagicMock()
-    mock_response.read.return_value = json.dumps({
-        "title": "Attention Is All You Need",
-        "doi": "https://doi.org/10.5555/3295222.3295349",
-        "publication_year": 2017,
-    }).encode("utf-8")
+    mock_response.read.return_value = json.dumps(
+        {
+            "title": "Attention Is All You Need",
+            "doi": "https://doi.org/10.5555/3295222.3295349",
+            "publication_year": 2017,
+        }
+    ).encode("utf-8")
     mock_response.__enter__ = MagicMock(return_value=mock_response)
     mock_response.__exit__ = MagicMock(return_value=None)
 
@@ -315,12 +328,14 @@ def test_title_search_prefers_matching_year(monkeypatch):
     from openalex_client import OpenAlexClient
 
     mock_response = MagicMock()
-    mock_response.read.return_value = json.dumps({
-        "results": [
-            {"title": "Attention Is All You Need", "publication_year": 1999},  # wrong year
-            {"title": "Attention Is All You Need", "publication_year": 2017},  # matching year
-        ]
-    }).encode("utf-8")
+    mock_response.read.return_value = json.dumps(
+        {
+            "results": [
+                {"title": "Attention Is All You Need", "publication_year": 1999},  # wrong year
+                {"title": "Attention Is All You Need", "publication_year": 2017},  # matching year
+            ]
+        }
+    ).encode("utf-8")
     mock_response.__enter__ = MagicMock(return_value=mock_response)
     mock_response.__exit__ = MagicMock(return_value=None)
 
@@ -455,10 +470,12 @@ def test_doi_lookup_quotes_doi_path_segment(monkeypatch):
     def mock_urlopen(req, *args, **kwargs):
         captured_urls.append(req.full_url)
         mock_response = MagicMock()
-        mock_response.read.return_value = json.dumps({
-            "title": "Attention Is All You Need",
-            "doi": "https://doi.org/10.1000/foo?bar=baz",
-        }).encode("utf-8")
+        mock_response.read.return_value = json.dumps(
+            {
+                "title": "Attention Is All You Need",
+                "doi": "https://doi.org/10.1000/foo?bar=baz",
+            }
+        ).encode("utf-8")
         mock_response.__enter__ = MagicMock(return_value=mock_response)
         mock_response.__exit__ = MagicMock(return_value=None)
         return mock_response

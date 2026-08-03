@@ -6,6 +6,7 @@ Usage: python scripts/check_sprint_contract.py path/to/contract.json [--ars-vers
 Exit 0 on pass (warnings may still be printed to stderr).
 Exit 1 on schema or structural validation failure, or file error.
 """
+
 from __future__ import annotations
 
 import argparse
@@ -185,9 +186,11 @@ def warn_suspicious(contract: dict, ars_current_version: str | None) -> list[str
         pmd_source = "measurement_procedure.paraphrase_minimum_dimensions"
         phase_label = "Phase 1"
     elif mode == "writer_full":
-        pmd = (contract.get("pre_commitment_artifacts", {})
-               .get("acceptance_criteria_paraphrase", {})
-               .get("minimum_dimensions"))
+        pmd = (
+            contract.get("pre_commitment_artifacts", {})
+            .get("acceptance_criteria_paraphrase", {})
+            .get("minimum_dimensions")
+        )
         pmd_source = "pre_commitment_artifacts.acceptance_criteria_paraphrase.minimum_dimensions"
         phase_label = "Phase 4a"
     elif mode == "evaluator_full":
@@ -223,8 +226,7 @@ def warn_suspicious(contract: dict, ars_current_version: str | None) -> list[str
             continue
         pkw = priority_keywords[prio]
         priority_covered = any(
-            pkw in fc.get("expression", "").lower()
-            for fc in contract.get("failure_conditions", [])
+            pkw in fc.get("expression", "").lower() for fc in contract.get("failure_conditions", [])
         )
         if priority_covered:
             continue
@@ -257,8 +259,12 @@ def warn_suspicious(contract: dict, ars_current_version: str | None) -> list[str
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("contract", type=Path, help="Path to the sprint contract JSON")
-    parser.add_argument("--ars-version", type=str, default=None,
-                        help="Current ARS version (e.g. v3.6.2) for SC-1 baseline lag check")
+    parser.add_argument(
+        "--ars-version",
+        type=str,
+        default=None,
+        help="Current ARS version (e.g. v3.6.2) for SC-1 baseline lag check",
+    )
     args = parser.parse_args()
 
     try:

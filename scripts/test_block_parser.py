@@ -9,6 +9,7 @@ the §3.2 hash normalization rules.
 Run standalone:
     python -m unittest scripts/test_block_parser.py -v
 """
+
 from __future__ import annotations
 
 import unittest
@@ -88,7 +89,9 @@ class TestSegmentation(unittest.TestCase):
         doc = parse_document(text)
         self.assertIsNotNone(doc.frontmatter_span)
         self.assertEqual(len(doc.blocks), 1)
-        self.assertEqual(doc.text[doc.frontmatter_span[0] : doc.frontmatter_span[1]], "---\ntitle: x\n---\n")
+        self.assertEqual(
+            doc.text[doc.frontmatter_span[0] : doc.frontmatter_span[1]], "---\ntitle: x\n---\n"
+        )
 
     def test_unterminated_frontmatter_rejected(self):
         with self.assertRaises(BlockParseError) as ctx:

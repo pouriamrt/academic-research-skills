@@ -30,6 +30,7 @@ machine-checkable substrate the prompt is bound to:
      `feedback_reverse_invariant_writer_boundary_pin` (the prompt is the writer; the
      oracle pins what it must emit).
 """
+
 from __future__ import annotations
 
 import json
@@ -55,11 +56,14 @@ from scripts.citation_verification_summary import reduce_lookup_verified
 # Resolver-outcome builders (production shape: status + queried_by)
 # ===========================================================================
 
+
 def _ro(**overrides):
     """All four resolver keys, default skipped/null; override individual ones with
     a (status, queried_by) tuple or a dict."""
-    ro = {r: {"status": "skipped", "queried_by": None}
-          for r in ("crossref", "openalex", "semantic_scholar", "arxiv")}
+    ro = {
+        r: {"status": "skipped", "queried_by": None}
+        for r in ("crossref", "openalex", "semantic_scholar", "arxiv")
+    }
     for k, v in overrides.items():
         ro[k] = v if isinstance(v, dict) else {"status": v[0], "queried_by": v[1]}
     return ro
@@ -75,9 +79,13 @@ def _ro(**overrides):
 _ADVISORY = "advisory"
 
 
-_CITATION_TIME_KEYS = frozenset({
-    "contamination_triangulation", "citation_existence", "temporal_integrity",
-})
+_CITATION_TIME_KEYS = frozenset(
+    {
+        "contamination_triangulation",
+        "citation_existence",
+        "temporal_integrity",
+    }
+)
 
 
 def policy_hash_slug(terminal_policies: dict | None) -> str | None:
@@ -91,8 +99,7 @@ def policy_hash_slug(terminal_policies: dict | None) -> str | None:
     is the oracle the prompt's policy_hash stamp must match."""
     tp = terminal_policies or {}
     non_advisory = sorted(
-        f"{k}.{v}" for k, v in tp.items()
-        if v != _ADVISORY and k in _CITATION_TIME_KEYS
+        f"{k}.{v}" for k, v in tp.items() if v != _ADVISORY and k in _CITATION_TIME_KEYS
     )
     if not non_advisory:
         return None
@@ -118,6 +125,7 @@ def citation_existence_terminal_token(policy_hash: str) -> str:
 # ===========================================================================
 # 1. SCHEMA (D-7)
 # ===========================================================================
+
 
 @pytest.fixture(scope="module")
 def tp_schema():
@@ -149,8 +157,7 @@ def test_schema_citation_existence_no_json_schema_default(tp_schema):
 
 
 def test_schema_object_stays_closed_with_new_key(tp_validator):
-    errs = list(tp_validator.iter_errors(
-        {"citation_existence": "strict", "bogus_key": "x"}))
+    errs = list(tp_validator.iter_errors({"citation_existence": "strict", "bogus_key": "x"}))
     assert errs, "terminal_policies must stay a closed object"
 
 
@@ -168,12 +175,13 @@ def test_lint_helper_accepts_citation_existence(tp_schema):
 # 2. MARKER GRAMMAR — the policy=citation_existence terminal token (C-V6(c)/(g))
 # ===========================================================================
 
+
 def test_citation_existence_terminal_marker_parses_and_refuses():
     """Canonical co-emit: advisory annotation slot + citation_existence terminal
     token. Caught by the SAME generic severity=HIGH-BLOCK refusal as contamination."""
     marker = (
-        f"<!--ref:bogus2024 ok "
-        f"{citation_existence_terminal_token('citation_existence.strict')}-->")
+        f"<!--ref:bogus2024 ok {citation_existence_terminal_token('citation_existence.strict')}-->"
+    )
     pm = parse_ref_marker(marker)
     assert pm is not None
     assert pm.slug == "bogus2024"
@@ -210,7 +218,8 @@ def test_two_policy_co_emit_dedupes_to_one_affected_ref():
         "reason=k3_all_indexes_unmatched mode=strict "
         "TERMINAL-BLOCK severity=HIGH-BLOCK policy=citation_existence "
         "reason=lookup_verified_false mode=strict "
-        "policy_hash=citation_existence.strict+contamination_triangulation.strict-->")
+        "policy_hash=citation_existence.strict+contamination_triangulation.strict-->"
+    )
     pm = parse_ref_marker(marker)
     assert pm is not None
     assert pm.is_high_block is True
@@ -225,8 +234,10 @@ def test_two_policy_co_emit_dedupes_to_one_affected_ref():
 def test_bare_prose_citation_existence_token_does_not_refuse():
     """Anti-false-refuse (Invariant 12): a HIGH-BLOCK token in plain prose, outside
     any <!--ref:...--> comment, is NOT a refusal trigger."""
-    prose = ("The reviewer noted a TERMINAL-BLOCK severity=HIGH-BLOCK "
-             "policy=citation_existence concern in passing.")
+    prose = (
+        "The reviewer noted a TERMINAL-BLOCK severity=HIGH-BLOCK "
+        "policy=citation_existence concern in passing."
+    )
     assert parse_ref_marker(prose) is None
     assert any_marker_triggers_refusal(prose) is False
 
@@ -234,6 +245,7 @@ def test_bare_prose_citation_existence_token_does_not_refuse():
 # ===========================================================================
 # 3. REDUCER (C-V6(a)/(f)) — the narrowed-false verdict the gate consumes
 # ===========================================================================
+
 
 def test_reducer_case_a_id_keyed_unmatched_is_false():
     """C-V6(a): an ID-keyed (DOI/arXiv) unmatched with no matched ⟹ false (provably-
@@ -255,13 +267,16 @@ def test_reducer_case_f_manual_all_skipped_is_unresolvable():
 
 
 def test_reducer_matched_wins_is_true():
-    assert reduce_lookup_verified(
-        _ro(crossref=("matched", "id"), openalex=("unmatched", "id"))) == "true"
+    assert (
+        reduce_lookup_verified(_ro(crossref=("matched", "id"), openalex=("unmatched", "id")))
+        == "true"
+    )
 
 
 # ===========================================================================
 # 4. POLICY ORACLES (C-V6(b)/(c)/(d)/(g)/(h))
 # ===========================================================================
+
 
 def test_oracle_b_d_advisory_never_blocks():
     """C-V6(b)/(d): under advisory (or absent key), a false row never blocks."""
@@ -290,19 +305,26 @@ def test_oracle_slug_single_policy():
 def test_oracle_slug_two_policies_sorted_by_key():
     """C-V6(g) slug: two non-advisory keys join sorted by key name. 'citation_existence'
     sorts before 'contamination_triangulation'."""
-    slug = policy_hash_slug({
-        "citation_existence": "strict",
-        "contamination_triangulation": "strict",
-    })
+    slug = policy_hash_slug(
+        {
+            "citation_existence": "strict",
+            "contamination_triangulation": "strict",
+        }
+    )
     assert slug == "citation_existence.strict+contamination_triangulation.strict"
 
 
 def test_oracle_slug_advisory_key_omitted():
     """A key whose value is the advisory default contributes nothing to the slug."""
-    assert policy_hash_slug({
-        "citation_existence": "advisory",
-        "contamination_triangulation": "strict",
-    }) == "contamination_triangulation.strict"
+    assert (
+        policy_hash_slug(
+            {
+                "citation_existence": "advisory",
+                "contamination_triangulation": "strict",
+            }
+        )
+        == "contamination_triangulation.strict"
+    )
 
 
 def test_oracle_slug_all_advisory_is_none():
@@ -320,10 +342,15 @@ def test_oracle_slug_submission_package_never_enters():
     this scope, package-only strict mode would force unrelated ref-marker
     stamping and stale-refuse legacy markers)."""
     assert policy_hash_slug({"submission_package": "strict"}) is None
-    assert policy_hash_slug({
-        "submission_package": "strict",
-        "citation_existence": "strict",
-    }) == "citation_existence.strict"
+    assert (
+        policy_hash_slug(
+            {
+                "submission_package": "strict",
+                "citation_existence": "strict",
+            }
+        )
+        == "citation_existence.strict"
+    )
 
 
 def test_oracle_h_recompute_is_pure_no_cache():
@@ -347,6 +374,7 @@ def test_oracle_h_recompute_is_pure_no_cache():
 # oracle above cannot silently drift away from the writer. feedback_reverse_invariant_
 # writer_boundary_pin.
 # ===========================================================================
+
 
 @pytest.fixture(scope="module")
 def orchestrator_text():
@@ -404,11 +432,13 @@ def test_formatter_has_no_per_policy_citation_existence_refusal(formatter_text):
 # are not trivially-passing. feedback_schema_mutation_test_for_constraints.
 # ===========================================================================
 
+
 def test_mutation_M1_title_only_as_false_must_fail_case_a():
     """M1 (spec line 158): a trivial reducer that treats a title-only unmatched as
     `false` MUST break case (a) — the unindexed-real-paper protection. We assert the
     trivial verdict FAILS the case-(a) assertion, proving the real reducer's narrowing
     is load-bearing (not incidentally satisfied)."""
+
     def trivial_reduce_unmatched_is_false(ro):
         outcomes = [v or {} for v in ro.values()]
         applicable = [o for o in outcomes if o.get("status") != "skipped"]
@@ -453,7 +483,8 @@ def test_mutation_M2_accept_all_ignores_policy_must_fail_case_d():
     real = DEFAULT_ORCHESTRATOR.read_text(encoding="utf-8")
     section = _extract_section(real, V3_10_FINALIZER_HEADER)
     strict_line = next(
-        ln for ln in section.splitlines()
+        ln
+        for ln in section.splitlines()
         if "policy=citation_existence" in ln and "appends the terminal token" in ln
     )
     widened_line = strict_line.replace(
@@ -466,12 +497,14 @@ def test_mutation_M2_accept_all_ignores_policy_must_fail_case_d():
     fails = check_finalizer_prompt(mutated_prompt)
     assert any("strict-only gate predicate" in f for f in fails), (
         "check_finalizer_prompt must flag a widened strict promotion rule even when "
-        "sibling paragraphs still carry the predicate strings (the bypass codex caught)")
+        "sibling paragraphs still carry the predicate strings (the bypass codex caught)"
+    )
     # the real prompt, by contrast, carries the predicate IN THE RULE and passes:
     assert check_finalizer_prompt(real) == []
 
     # (2) Oracle-consistency sanity check (not the load-bearing layer).
     def trivial_accept_all(lookup_verified, citation_existence):
         return False  # ignores policy, never blocks
+
     assert would_terminal_block("false", "strict") is True
     assert trivial_accept_all("false", "strict") is False

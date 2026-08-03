@@ -24,6 +24,7 @@ Structural home: #134 Slice 3+.
 Run:
     python -m pytest scripts/test_runtime_injection_boundary_xfail.py
 """
+
 from __future__ import annotations
 
 import sys
@@ -33,9 +34,9 @@ import pytest
 
 @pytest.mark.xfail(
     reason="Runtime instruction/data enforcement is unbuilt (#272 structural "
-           "layer / #134 Slice 3+). The guidance layer documents the boundary "
-           "but does not enforce it at runtime. Remove this xfail only when the "
-           "structural defense lands.",
+    "layer / #134 Slice 3+). The guidance layer documents the boundary "
+    "but does not enforce it at runtime. Remove this xfail only when the "
+    "structural defense lands.",
     strict=True,
 )
 def test_runtime_injection_boundary_is_enforced():

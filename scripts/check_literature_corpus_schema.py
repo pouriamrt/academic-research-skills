@@ -19,6 +19,7 @@ Exit codes:
     1 - one or more validations failed
     2 - invocation error (e.g., schema file missing)
 """
+
 from __future__ import annotations
 import argparse
 import json
@@ -48,7 +49,9 @@ except ImportError:
 REPO_ROOT = Path(__file__).resolve().parent.parent
 ENTRY_SCHEMA_PATH = REPO_ROOT / "shared/contracts/passport/literature_corpus_entry.schema.json"
 REJECTION_SCHEMA_PATH = REPO_ROOT / "shared/contracts/passport/rejection_log.schema.json"
-TERMINAL_POLICIES_SCHEMA_PATH = REPO_ROOT / "shared/contracts/passport/terminal_policies.schema.json"
+TERMINAL_POLICIES_SCHEMA_PATH = (
+    REPO_ROOT / "shared/contracts/passport/terminal_policies.schema.json"
+)
 EXAMPLES_ROOT = REPO_ROOT / "scripts/adapters/examples"
 
 
@@ -75,9 +78,7 @@ def _build_validator(schema: dict[str, Any]) -> Draft202012Validator:
     Without this, malformed timestamps validate silently — a hole codex
     flagged in the T3 review (plan §901/§922 referenced this script's
     validators)."""
-    return Draft202012Validator(
-        schema, format_checker=Draft202012Validator.FORMAT_CHECKER
-    )
+    return Draft202012Validator(schema, format_checker=Draft202012Validator.FORMAT_CHECKER)
 
 
 def _safe_load_yaml(path: Path) -> tuple[Any, str | None]:
@@ -107,9 +108,7 @@ def validate_passport(
         errors.append(f"{path}: empty YAML file")
         return errors
     if not isinstance(data, dict):
-        errors.append(
-            f"{path}: passport YAML must be a mapping (got {type(data).__name__})"
-        )
+        errors.append(f"{path}: passport YAML must be a mapping (got {type(data).__name__})")
         return errors
     # v3.10 (spec §3 PR-B item 1, R2-P1): validate the passport-level
     # terminal_policies block BEFORE iterating entries. An absent block is the
@@ -121,15 +120,12 @@ def validate_passport(
         tp = data["terminal_policies"]
         if not isinstance(tp, dict):
             errors.append(
-                f"{path}: 'terminal_policies' must be a mapping "
-                f"(got {type(tp).__name__})"
+                f"{path}: 'terminal_policies' must be a mapping (got {type(tp).__name__})"
             )
         else:
             tp_validator = _build_validator(terminal_policies_schema)
             for err in tp_validator.iter_errors(tp):
-                errors.append(
-                    f"{path}: terminal_policies schema validation error: {err.message}"
-                )
+                errors.append(f"{path}: terminal_policies schema validation error: {err.message}")
     if "literature_corpus" not in data:
         errors.append(
             f"{path}: missing required 'literature_corpus' key (a passport must declare it, even as an empty list)"
@@ -143,9 +139,7 @@ def validate_passport(
     citation_keys: dict[str, int] = {}
     for i, entry in enumerate(corpus):
         for err in validator.iter_errors(entry):
-            errors.append(
-                f"{path}: literature_corpus[{i}] schema validation error: {err.message}"
-            )
+            errors.append(f"{path}: literature_corpus[{i}] schema validation error: {err.message}")
         # v3.10 laundering guard (R2-P1, #329): the schema types venue_type_source
         # as a non-empty string but cannot express the lookup-index exclusion, so
         # the semantic check runs here over real entries. A trusted_source_declared
@@ -181,9 +175,7 @@ def validate_rejection_log(path: Path, log_schema: dict[str, Any]) -> list[str]:
         errors.append(f"{path}: empty YAML file")
         return errors
     if not isinstance(data, dict):
-        errors.append(
-            f"{path}: rejection log YAML must be a mapping (got {type(data).__name__})"
-        )
+        errors.append(f"{path}: rejection log YAML must be a mapping (got {type(data).__name__})")
         return errors
     validator = _build_validator(log_schema)
     for err in validator.iter_errors(data):
@@ -200,9 +192,7 @@ def scan_examples(
     if not EXAMPLES_ROOT.exists():
         return errors
     for passport in EXAMPLES_ROOT.glob("*/expected_passport.yaml"):
-        errors.extend(
-            validate_passport(passport, entry_schema, terminal_policies_schema)
-        )
+        errors.extend(validate_passport(passport, entry_schema, terminal_policies_schema))
     for log in EXAMPLES_ROOT.glob("*/expected_rejection_log.yaml"):
         errors.extend(validate_rejection_log(log, log_schema))
     return errors
@@ -212,9 +202,7 @@ def main() -> int:
     ap = argparse.ArgumentParser(
         description="Validate literature_corpus passport + rejection log YAMLs."
     )
-    ap.add_argument(
-        "--passport", type=Path, help="Validate a single passport YAML."
-    )
+    ap.add_argument("--passport", type=Path, help="Validate a single passport YAML.")
     ap.add_argument(
         "--rejection-log",
         type=Path,
@@ -228,9 +216,7 @@ def main() -> int:
 
     errors: list[str] = []
     if args.passport:
-        errors.extend(
-            validate_passport(args.passport, entry_schema, terminal_policies_schema)
-        )
+        errors.extend(validate_passport(args.passport, entry_schema, terminal_policies_schema))
     if args.rejection_log:
         errors.extend(validate_rejection_log(args.rejection_log, log_schema))
 

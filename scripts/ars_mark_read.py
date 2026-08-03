@@ -21,6 +21,7 @@ Behavior summary:
 - First-time write creates the file with the YAML schema header. Not a
   fail-fast condition.
 """
+
 from __future__ import annotations
 
 import argparse
@@ -82,8 +83,7 @@ def _validate_passport_environment(passport_path: Path | None) -> tuple[Path, Pa
         log_path = _read_log_path(passport_path)
         print(
             _err(
-                f"read-log path target is unwritable at {log_path}; "
-                "parent directory not writable"
+                f"read-log path target is unwritable at {log_path}; parent directory not writable"
             ),
             file=sys.stderr,
         )
@@ -92,10 +92,7 @@ def _validate_passport_environment(passport_path: Path | None) -> tuple[Path, Pa
     log_path = _read_log_path(passport_path)
     if log_path.exists() and not os.access(log_path, os.W_OK):
         print(
-            _err(
-                f"read-log path target is unwritable at {log_path}; "
-                "existing file not writable"
-            ),
+            _err(f"read-log path target is unwritable at {log_path}; existing file not writable"),
             file=sys.stderr,
         )
         raise SystemExit(2)
@@ -129,9 +126,7 @@ def _save_log(log_path: Path, data: dict) -> None:
 
 
 def _mark(log: dict, citation_key: str) -> None:
-    log["human_read"].append(
-        {"citation_key": citation_key, "marked_at": _now_iso()}
-    )
+    log["human_read"].append({"citation_key": citation_key, "marked_at": _now_iso()})
 
 
 def _unmark(log: dict, citation_key: str) -> bool:
@@ -183,15 +178,11 @@ def main(argv: list[str] | None = None) -> int:
     log = _load_log(log_path)
 
     if args.unmark:
-        not_found = [
-            k for k in args.citation_keys if not _unmark(log, k)
-        ]
+        not_found = [k for k in args.citation_keys if not _unmark(log, k)]
         if not_found:
             for k in not_found:
                 print(
-                    _err(
-                        f"citation_key '{k}' has no active mark to rescind"
-                    ),
+                    _err(f"citation_key '{k}' has no active mark to rescind"),
                     file=sys.stderr,
                 )
             return 2

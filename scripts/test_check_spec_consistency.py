@@ -6,6 +6,7 @@ fixture README, drive a specific checker directly, and read ERRORS. When
 #171 lands the schema-driven manifest, these tests rewrite to call the
 manifest runner instead.
 """
+
 from __future__ import annotations
 
 import unittest
@@ -13,8 +14,6 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 
 from scripts import check_spec_consistency as csc
-
-
 
 
 ARCHITECTURE_TEMPLATE = """\
@@ -118,7 +117,8 @@ class TestArchitectureComponentVersion(unittest.TestCase):
             csc.check_architecture_component_version()
 
             self.assertEqual(
-                csc.ERRORS, [],
+                csc.ERRORS,
+                [],
                 msg=f"timeline marker must not be policed, but got: {csc.ERRORS!r}",
             )
 
@@ -156,7 +156,8 @@ class TestArchitectureComponentVersion(unittest.TestCase):
             csc.check_architecture_component_version()
 
             self.assertEqual(
-                csc.ERRORS, [],
+                csc.ERRORS,
+                [],
                 msg=f"unexpected errors on aligned 4-component fixture: {csc.ERRORS!r}",
             )
 
@@ -194,7 +195,8 @@ class TestArchitectureComponentVersion(unittest.TestCase):
             csc.check_architecture_component_version()
 
             self.assertEqual(
-                csc.ERRORS, [],
+                csc.ERRORS,
+                [],
                 msg=f"prose provenance mention must not be policed, but got: {csc.ERRORS!r}",
             )
 
@@ -281,9 +283,7 @@ class TestSkillVersionTableConsistency(unittest.TestCase):
         with TemporaryDirectory() as tmp:
             root = Path(tmp)
             csc.ROOT = root
-            _write_skill_fixtures(
-                root, overrides={"academic-pipeline": {"tbl_date": "2026-06-01"}}
-            )
+            _write_skill_fixtures(root, overrides={"academic-pipeline": {"tbl_date": "2026-06-01"}})
 
             csc.check_skill_version_blocks()
 
@@ -301,9 +301,7 @@ class TestSkillVersionTableConsistency(unittest.TestCase):
         with TemporaryDirectory() as tmp:
             root = Path(tmp)
             csc.ROOT = root
-            _write_skill_fixtures(
-                root, overrides={"deep-research": {"tbl_ver": "2.9.3"}}
-            )
+            _write_skill_fixtures(root, overrides={"deep-research": {"tbl_ver": "2.9.3"}})
 
             csc.check_skill_version_blocks()
 
@@ -363,9 +361,7 @@ def _write_date_sanity_fixtures(
     )
     _write_skill_fixtures(
         root,
-        overrides={
-            "academic-pipeline": {"fm_date": pipeline_date, "tbl_date": pipeline_date}
-        },
+        overrides={"academic-pipeline": {"fm_date": pipeline_date, "tbl_date": pipeline_date}},
     )
 
 
@@ -428,9 +424,7 @@ class TestSuiteSkillDateSanity(unittest.TestCase):
 
             self.assertTrue(
                 any(
-                    "academic-pipeline/SKILL.md" in e
-                    and "2026-06-01" in e
-                    and "2026-06-08" in e
+                    "academic-pipeline/SKILL.md" in e and "2026-06-01" in e and "2026-06-08" in e
                     for e in csc.ERRORS
                 ),
                 msg=f"expected stale-suite-date error in: {csc.ERRORS!r}",
@@ -460,7 +454,8 @@ class TestSuiteSkillDateSanity(unittest.TestCase):
                 # Real constant → only pipeline policed; academic-paper's early date is ignored.
                 csc.check_suite_skill_date_sanity()
                 self.assertEqual(
-                    csc.ERRORS, [],
+                    csc.ERRORS,
+                    [],
                     msg=f"independent-skill early date must not be policed, got: {csc.ERRORS!r}",
                 )
 
@@ -503,7 +498,8 @@ class TestSuiteSkillDateSanity(unittest.TestCase):
 
             pipeline_errors = [e for e in csc.ERRORS if "academic-pipeline/SKILL.md" in e]
             self.assertEqual(
-                len(pipeline_errors), 1,
+                len(pipeline_errors),
+                1,
                 msg=f"expected exactly one pipeline error, got {len(pipeline_errors)}: {pipeline_errors!r}",
             )
 
@@ -526,7 +522,9 @@ class RebuttalAuditGuardTest(unittest.TestCase):
         orig_read = csc.read
         csc.ERRORS.clear()
         try:
-            csc.read = lambda rel: skill_text if rel == "academic-paper/SKILL.md" else orig_read(rel)
+            csc.read = lambda rel: (
+                skill_text if rel == "academic-paper/SKILL.md" else orig_read(rel)
+            )
             csc.check_rebuttal_audit_guard()
             return list(csc.ERRORS)
         finally:

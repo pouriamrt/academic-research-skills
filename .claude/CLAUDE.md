@@ -36,6 +36,20 @@ A suite of Claude Code skills for rigorous academic research, experimentation, s
   name the scanner. Both consuming agents already load `writing_quality_check.md`, which
   carries the instruction ahead of section A.
 
+## Cross-model reviewer track — standing invariants
+
+Not release notes. These sentences are byte-witnesses pinned by
+`scripts/check_calibration_tiers.py` (`CLAUDE_WITNESSES`), so they must stay in this file
+verbatim. They previously lived inside a `## vX Key Additions` section and were lost when
+that section was rotated out at release — keep them here, outside any release heading.
+
+The ordinary reviewer path is `reviewer_full` only and consent-gated; Reviewer 2 runs on
+the second model family as a substrate swap inside the fixed five-seat panel, never a 6th
+reviewer. Do NOT re-wrap the next line — the witness is matched as an exact substring, so
+a line break inside it fails the lint.
+
+Calibration is the sole explicit exception and uses the canonical non-sprint single-call transport plus attempt-atomic fallback in `shared/cross_model_verification.md`; it never borrows the sprint payload or mixes substrates in one scored attempt.
+
 ## Command model routing
 
 Relocated here from the SessionStart banner in Task 3 - not derivable from Claude Code's

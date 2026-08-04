@@ -1,6 +1,12 @@
 name: pytest
 
 on:
+  # Manual re-run against an arbitrary ref. The push/pull_request triggers below are
+  # path-filtered, so a fix that lands OUTSIDE those paths cannot re-validate a red run:
+  # test_check_calibration_tiers pins byte-witnesses in `.claude/CLAUDE.md`, which is not
+  # in the filter, so restoring a lost witness there left this workflow stuck red with no
+  # way to re-run it on the fixed commit. `gh workflow run pytest.yml --ref main` now works.
+  workflow_dispatch:
   pull_request:
     paths:
       - 'scripts/**'

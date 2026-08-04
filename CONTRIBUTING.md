@@ -226,8 +226,7 @@ Examples: `feat: add bootstrap mode to simulation-runner`, `fix: correct Schema 
 
 1. **Accuracy over completeness** — we'd rather have fewer, verified journal entries than a long unvetted list
 2. **Human-in-the-loop always** — contributions that reduce human oversight or enable fully autonomous paper generation will be declined
-3. **No detection evasion** — features designed to make AI-generated text harder to detect (as opposed to higher quality) are out of scope
-4. **Discipline diversity welcome** — ARS aims to be domain-agnostic across all academic fields. Discipline-specific modules are encouraged.
+3. **Discipline diversity welcome** — ARS aims to be domain-agnostic across all academic fields. Discipline-specific modules are encouraged.
 
 ---
 
@@ -249,7 +248,7 @@ When drafting a release's CHANGELOG entry, include a **`Real-use findings`** sub
 
 ## Academic Integrity Policy
 
-This repo is designed to be **assistive, not deceptive**. See [POSITIONING.md](POSITIONING.md) for the full design philosophy. Contributors must not add features designed to evade AI detection tools. If unsure, open an issue to discuss before submitting a PR.
+This repo is designed to be **assistive, with disclosure**. See [POSITIONING.md](POSITIONING.md) for the full design philosophy. The pipeline attaches an AI-usage disclosure to the manuscript and the compliance ladder makes that addendum non-removable at runtime; that behaviour is a mechanism, enforced in code, not a contribution rule. If unsure about a change, open an issue to discuss before submitting a PR.
 
 ## Credit
 

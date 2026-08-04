@@ -1,6 +1,6 @@
 # Academic Research Skills
 
-A suite of Claude Code skills for rigorous academic research, experimentation, statistical analysis, paper writing, peer review, and pipeline orchestration. 8 skills, 61 agents, 21 handoff schemas + passport schemas. v3.21.0 synced upstream v3.17.0 → v3.19.0+ — the #576 three-gate re-review contract, #574 role-scoped reviewer scoring, #549 risk-stratified Stage 2.5 claim verification, #512/#513 read-integrity and read-scope attestation, and the #544 SessionStart update reminder. Earlier syncs: v3.20.0 (upstream v3.13.0 → v3.17.0), v3.19.0 (upstream v3.10 → v3.13.0).
+A suite of Claude Code skills for rigorous academic research, experimentation, statistical analysis, paper writing, peer review, and pipeline orchestration. 8 skills, 61 agents, 21 handoff schemas + passport schemas. v3.22.0 adds `scripts/check_prose_tells.py`, the deterministic pass now opening the Writing Quality Check, and retires the anti-humanizer positioning along with the contribution rule that governed it. v3.21.0 synced upstream v3.17.0 → v3.19.0+ (three-gate re-review contract, role-scoped reviewer scoring, risk-stratified Stage 2.5 claim verification); earlier syncs v3.20.0 and v3.19.0. Full history in `CHANGELOG.md`.
 
 ## Skills Overview
 
@@ -13,31 +13,28 @@ A suite of Claude Code skills for rigorous academic research, experimentation, s
 | `lab-notebook` v1.0.1 | Experiment research record | full, log-entry, deviation, snapshot, export, audit |
 | `academic-paper` v3.2.0 | 11-agent academic paper writing (English-only) | full, plan, outline-only, revision, revision-coach, abstract-only, lit-review, format-convert, citation-check, disclosure, rebuttal-audit |
 | `academic-paper-reviewer` v1.9.1 | Multi-perspective paper review (5 reviewers + optional cross-model DA critique) | full, re-review, quick, methodology-focus, guided, calibration |
-| `academic-pipeline` v3.21.0 | Full pipeline orchestrator (suite-version-pinned, auto-by-default) | (coordinates all above) |
+| `academic-pipeline` v3.22.0 | Full pipeline orchestrator (suite-version-pinned, auto-by-default) | (coordinates all above) |
 
 
-## v3.21.0 Key Additions
+## v3.22.0 Key Additions
 
-Upstream sync v3.17.0 → v3.19.0+ (51 commits). Full detail in `CHANGELOG.md`.
-
-- **#576 three-gate re-review contract** is now the Stage 3' default: criteria are committed
-  before the revision is seen, evidence verdicts before the author's Response letter, and every
-  later verdict change rides a typed, evidence-bound adjustment record. Legacy single-pass
-  survives only behind `ARS_RE_REVIEW_LEGACY=1`. Stage 4 → 3' must now hand over the ORIGINAL
-  pre-revision draft — without it every new issue degrades to `indeterminate`.
-- **#574 role-scoped reviewer scoring.** Each sprint-contract dimension carries `eligible_roles`
-  / `owner_role`; Phase 1 commits only eligible scoring plans, Phase 2 marks the rest
-  `not_assessed`. Fork numbering is unchanged (Schema 20.1, upstream's 13.2).
-- **#549 risk-stratified Stage 2.5 claim verification** replaces the flat 30% sample with 100%
-  of HIGH-IMPACT claims + a 10% RANDOM sentinel, topped to min(10, total). Phase F
-  (reproducibility script) and the fork's C4 experiment-provenance rate are unaffected.
-- **#512 PDF read-integrity preflight** and **#513 `read_scope` attestation** on
-  `/ars-mark-read` (`--scope`/`--locator`/`--note`), plus **#541** verification-cache staleness
-  advisory with opt-in live re-validation.
-- **#544 SessionStart update reminder** now rides the fork's ~500-char banner.
-- **Cross-model reviewer track (#540 → #558, #611 calibration branch).** The ordinary reviewer path remains `reviewer_full` only and consent-gated (the env var is configuration, not consent): Reviewer 2 runs on the second model family — a substrate swap inside the fixed five-seat panel, explicitly NOT the retired 6th reviewer; no synthesizer aggregation (cross-family splits visible in the panel matrix); the Editorial Decision Letter gains a Review Panel Provenance block (active / single-family correlated-error caveat / disclosed fallback, tiering-orthogonal). Calibration is the sole explicit exception and uses the canonical non-sprint single-call transport plus attempt-atomic fallback in `shared/cross_model_verification.md`; it never borrows the sprint payload or mixes substrates in one scored attempt.
-- Reviewer seat `EIC` is displayed as **Journal-Fit Reviewer** everywhere; the fork's five-seat
-  panel matrix (Devil's Advocate column + CRITICAL-findings row) is unchanged.
+- **`scripts/check_prose_tells.py`** — deterministic scanner for the four mechanically
+  detectable AI copy tells (`copy-em-dash`, `copy-antithesis`, `hype-copy`,
+  `copy-servile`), with `file:line` evidence, `--json`, `--strict`, `--exclude-quotes`,
+  and stdin. It is the *deterministic pass* that now opens
+  `academic-paper/references/writing_quality_check.md`; sections A–E keep the judgment
+  calls. The checklist reports the scanner count and keeps judgment findings internal —
+  replacing the old "Do NOT report scores to the user" self-report. MIT port, attributed
+  in THIRD_PARTY.md; the CC BY-SA-derived `humanizer/SKILL.md` was deliberately not vendored.
+- **Anti-humanizer positioning retired.** README, POSITIONING, both design-boundary
+  blockquotes, and two SKILL.md clauses lose the anti-detection-evasion framing.
+  CONTRIBUTING's decision principle governing it is **deleted** (4 principles → 3), and
+  the Academic Integrity Policy now points at the runtime mechanism instead of a
+  contribution rule. The non-removable `disclosure_addendum` is unchanged — it is enforced
+  in code by the compliance ladder, so it never needed a policy to hold it up.
+- **Guard note:** `*/agents/*.md` is infra-protected, so agent files were not edited to
+  name the scanner. Both consuming agents already load `writing_quality_check.md`, which
+  carries the instruction ahead of section A.
 
 ## Command model routing
 
@@ -175,8 +172,8 @@ Materials: Sprint Contract (Schema 20, v3.6.2+ for reviewers; Schema 20.1, v3.6.
 Run `python tools/self_test.py` to validate plugin structural integrity (200+ checks). See `tools/` for schema validation, dependency graph generation, pipeline dashboard, and reproducibility replay. CI workflows under `.github/workflows/`: `pytest.yml`, `spec-consistency.yml`, `freshness-check.yml`.
 
 ## Version Info
-- **Version**: 3.21.0
-- **Suite version**: 3.21.0
+- **Version**: 3.22.0
+- **Suite version**: 3.22.0
 - **Last Updated**: 2026-08-03
 - **Author**: Pouria Mortezaagha
 - **Upstream**: Imbad0202 (merged through v3.19.0+ / commit 49e79a7)

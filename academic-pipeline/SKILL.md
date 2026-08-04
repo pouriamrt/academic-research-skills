@@ -2,7 +2,7 @@
 name: academic-pipeline
 description: "Orchestrator for the full academic research pipeline: research -> experiment (optional) -> write -> integrity check -> review -> revise -> re-review -> re-revise -> final integrity check -> finalize -> process summary. Coordinates deep-research, experiment-designer, data-analyst, simulation-runner, lab-notebook, academic-paper, and academic-paper-reviewer into a seamless workflow with auto-detected experiment stages, mandatory integrity verification, two-stage peer review, AI Research Failure Mode Checklist (Lu 2026), Score Trajectory tracking, Early-Stopping criterion, and reproducible quality gates. Triggers on: academic pipeline, research to paper, full paper workflow, paper pipeline, end-to-end paper, research-to-publication, complete paper workflow."
 metadata:
-  version: "3.21.0"
+  version: "3.22.0"
   last_updated: "2026-08-03"
   depends_on: "deep-research, experiment-designer, data-analyst, simulation-runner, lab-notebook, academic-paper, academic-paper-reviewer"
   status: active
@@ -883,7 +883,7 @@ When `ARS_MODEL_TIERING` is set, the dispatching session routes this skill's age
 
 | Item | Content |
 |------|---------|
-| Skill Version | 3.21.0 |
+| Skill Version | 3.22.0 |
 | Last Updated | 2026-08-03 |
 | Maintainer | Pouria Mortezaagha (fork) / Cheng-I Wu (upstream) |
 | Dependent Skills | deep-research v2.0+, experiment-designer v1.0+, data-analyst v1.0+, simulation-runner v1.0+, lab-notebook v1.0+, academic-paper v2.0+, academic-paper-reviewer v1.1+ |

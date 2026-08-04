@@ -387,3 +387,7 @@ path = "scripts/test_render_harness_retirement_issue.py"
 [[pytest]]
 id = "633-command-frontmatter-name"
 path = "scripts/test_check_command_frontmatter_name.py"
+
+[[pytest]]
+id = "v3.22-prose-tells"
+path = "scripts/test_check_prose_tells.py"

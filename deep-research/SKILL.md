@@ -19,7 +19,7 @@ metadata:
 Universal deep research tool — a domain-agnostic 14-agent team for rigorous academic research on any topic. v2.5 adds concept lineage tracing via Semantic Scholar and OpenAlex APIs, enriched gap analysis, methodology distribution audits, and literature assumption extraction. v2.4 added writing quality improvements to the report compiler:
 
 - **Style Profile consumption** (optional) — If a Style Profile is available from academic-paper intake, the report compiler applies it as a soft guide for the Executive Summary and Synthesis sections. Discipline conventions and report objectivity take priority.
-- **Writing Quality Check** — The report compiler runs a writing quality checklist before finalizing: flags AI-typical overused terms, checks sentence/paragraph length variation, removes throat-clearing openers. See `academic-paper/references/writing_quality_check.md`.
+- **Writing Quality Check** — The report compiler runs a writing quality checklist before finalizing: a deterministic scan via `scripts/check_prose_tells.py` (em dash, antithesis, hype vocabulary, servile framing), then the judgment pass — AI-typical overused terms, sentence/paragraph length variation, throat-clearing openers. See `academic-paper/references/writing_quality_check.md`.
 
 > **Routing discipline (v3.9.2):** see `.claude/CLAUDE.md` "Routing Discipline (v3.9.2)" + `shared/references/intent_clarification_protocol.md` for cross-skill routing rules. This skill assumes routing has already settled — ambiguous cross-phase materials should have been clarified upstream.
 

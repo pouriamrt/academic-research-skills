@@ -10,6 +10,54 @@ All notable changes to this project will be documented in this file.
 
 _Nothing yet._
 
+## [3.22.0] - 2026-08-03 — Deterministic prose-tells scanner; anti-humanizer positioning retired
+
+**`scripts/check_prose_tells.py` (new).** `writing_quality_check.md` carried five
+categories of writing-quality rules and closed with "Do NOT report scores to the user.
+Just fix the issues silently during drafting" — an unverifiable self-report in a repo
+where every other invariant has a runnable checker. This release adds the deterministic
+half: a stdlib scanner for the four mechanically detectable tells (`copy-em-dash`,
+`copy-antithesis`, `hype-copy`, `copy-servile`) with `file:line` evidence, `--json`,
+`--strict`, `--exclude-quotes`, and stdin support. Sections A–E of the checklist keep
+the judgment calls regex cannot make; the checklist now opens with the scanner and
+reports its count, while judgment findings stay internal.
+
+Ported from `devibe_scan.py` in jcarterjohnson/vibecoded-design-tells (MIT) via
+jensheitmann/humanizer-stack (MIT); attribution and the license obligation are recorded
+in THIRD_PARTY.md. ARS additions on top of the port: fenced-code-block tracking (upstream
+skipped only the fence delimiter, so code samples in ARS reference docs flagged as prose),
+the `--exclude-quotes` flag honouring the section B quoted-source exception, and a
+31-case mutation test suite registered in the CI manifest as `v3.22-prose-tells`.
+
+`skills/humanizer/SKILL.md` from the same upstream stack was deliberately NOT vendored:
+it derives from Wikipedia CC BY-SA 4.0, which does not permit adding this repository's
+NonCommercial restriction, and its rules are substantially covered by
+`writing_quality_check.md` already. Reasoning recorded in THIRD_PARTY.md.
+
+**Anti-humanizer positioning retired (maintainer decision).** The "NOT a humanizer / no
+detection evasion" framing is removed from README.md, POSITIONING.md,
+`writing_quality_check.md`, `shared/style_calibration_protocol.md`,
+`academic-paper/SKILL.md`, and `deep-research/SKILL.md`. The CONTRIBUTING.md decision
+principle that governed it is **deleted outright** (4 principles → 3), and the Academic
+Integrity Policy section now describes the runtime mechanism rather than stating a
+contribution rule. The compliance ladder's non-removable `disclosure_addendum` is
+unchanged: it is enforced in code by `compliance_agent`, so it never depended on the
+policy that has been removed. The two documents that cited the retired rule by name
+(`shared/compliance_checkpoint_protocol.md`, the v3.4 design doc) were repointed rather
+than left dangling.
+
+No tracking issue: this fork commits directly to `main` without PR numbers, so the
+`#N` convention in CONTRIBUTING's changelog guidance does not apply here. Motivation and
+scope for this release are recorded in the approved plan, not an issue tracker.
+
+**Known follow-up.** `academic-paper/agents/draft_writer_agent.md` and
+`deep-research/agents/report_compiler_agent.md` were NOT edited to name the scanner:
+`*/agents/*.md` is in `INFRA_PROTECTED_GLOBS` and the write-scope guard denies every
+agent-file write, including from the main session. Both agents already load
+`references/writing_quality_check.md`, whose new "Deterministic pass (run first)" section
+sits ahead of section A — so the instruction reaches them through the reference doc, with
+one source of truth instead of three copies needing mirror-sync.
+
 ## [3.21.0] - 2026-08-03 — Upstream sync: v3.17.0 → v3.19.0+ (re-review three-gate contract, role-scoped reviewer scoring, risk-stratified claim gate)
 
 Merges 51 upstream commits (Imbad0202 `039d94f` → `49e79a7`, spanning upstream

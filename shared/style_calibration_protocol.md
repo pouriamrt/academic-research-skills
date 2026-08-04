@@ -2,9 +2,7 @@
 
 ## Purpose
 
-Learns the author's natural writing voice from past writing samples and applies it as a soft guide during paper drafting. The goal is **personalization**, not de-AI-ification — the author's voice should come through in the final text, within the boundaries of discipline conventions.
-
-> **Design boundary**: This is NOT a humanizer. We do not aim to evade AI detectors. We aim to produce text that sounds like the author wrote it, because the author's judgment and style are part of scholarly identity.
+Learns the author's natural writing voice from past writing samples and applies it as a soft guide during paper drafting. The goal is **personalization** — the author's voice should come through in the final text, within the boundaries of discipline conventions, because the author's judgment and style are part of scholarly identity.
 
 ---
 

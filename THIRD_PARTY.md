@@ -62,3 +62,20 @@ acknowledgement, not endorsement, and implies no affiliation.
 | Project | Maintainer | Relationship | Link |
 |---------|-----------|--------------|------|
 | sci-ssci-skills | [@MissOrangePeel](https://github.com/MissOrangePeel) (Yila-AI) | Origin of the claim-strength ladder + deterministic invariant-checking mechanism shape adapted into the v3.19.0 revision-round claim-drift guards (#569 / #570, PR [#571](https://github.com/Imbad0202/academic-research-skills/pull/571)) | [Yila-AI/sci-ssci-skills](https://github.com/Yila-AI/sci-ssci-skills) |
+| vibecoded-design-tells | [@jcarterjohnson](https://github.com/jcarterjohnson) | **Vendored code**, not merely an adapted mechanism: `scripts/check_prose_tells.py` (v3.22.0) is a port of the four copy rules in that project's `devibe_scan.py`, reaching ARS via `humanizer-stack`. MIT — see the obligation note below | [jcarterjohnson/vibecoded-design-tells](https://github.com/jcarterjohnson/vibecoded-design-tells) |
+| humanizer-stack | [@jensheitmann](https://github.com/jensheitmann) | Intermediate packaging the port travelled through: narrowed the rules to prose files and added the standalone CLI that `check_prose_tells.py` inherits. MIT | — |
+
+### MIT obligation on `scripts/check_prose_tells.py`
+
+This is a license condition, not a courtesy. The file carries a header naming both
+upstreams, and that header must survive edits and redistribution. The four rule
+patterns (`copy-em-dash`, `copy-antithesis`, `hype-copy`, `copy-servile`) are the
+substance taken; ARS additions on top — fenced-block tracking, `--exclude-quotes`,
+the test suite — are original work under this repository's license.
+
+**Not vendored, deliberately.** `humanizer-stack`'s `skills/humanizer/SKILL.md` derives
+from [Wikipedia:Signs of AI writing](https://en.wikipedia.org/wiki/Wikipedia:Signs_of_AI_writing)
+(**CC BY-SA 4.0**). ShareAlike does not permit adding the NonCommercial restriction this
+repository ships under, and upstream's own `ATTRIBUTION.md` flags the same hazard. Its
+rules are substantially covered by `academic-paper/references/writing_quality_check.md`
+in any case. Anyone considering importing that file should get an independent read first.

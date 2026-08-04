@@ -1,6 +1,6 @@
 # Academic Research Skills for Claude Code
 
-[![Version](https://img.shields.io/badge/version-v3.21.0-blue)](https://github.com/pouriamrt/academic-research-skills)
+[![Version](https://img.shields.io/badge/version-v3.22.0-blue)](https://github.com/pouriamrt/academic-research-skills)
 [![License: CC BY-NC 4.0](https://img.shields.io/badge/license-CC%20BY--NC%204.0-lightgrey)](https://creativecommons.org/licenses/by-nc/4.0/)
 
 A Claude Code plugin covering the full academic research lifecycle — from literature review through experimentation, statistical analysis, paper writing, peer review, and publication. **8 skills, 58+ agents, 20 handoff schemas + 6 claim-audit schemas**, full pipeline orchestration with PRISMA-trAIce + RAISE compliance gates, reviewer + writer/evaluator sprint contracts, opt-in L3 claim ↔ reference faithfulness audit gate (v3.18.0 #103), passport reset boundary for long-running sessions, three-layer citation locator, temporal verification (v3.18.0 #135), Phase Boundary protocol (v3.18.0 #133), cross-index triangulation (v3.18.0 #102), and collaboration depth observer. **v3.17.0 runs the pipeline unattended by default — set `ARS_INTERACTIVE=1` to restore prompts.** English-only output. New `/ars-mark-read`, `/ars-unmark-read`, `/ars-reviewer` plugin commands. Experiment skills integrate with the [superpowers](https://github.com/obra/superpowers) plugin for disciplined, test-driven code development.
@@ -18,7 +18,7 @@ Then try `/ars-plan` to walk through your paper structure via Socratic dialogue,
 
 > **AI is your copilot, not the pilot.** This tool won't write your paper for you. It handles the grunt work — hunting down references, formatting citations, verifying data, checking logical consistency — so you can focus on the parts that actually require your brain: defining the question, choosing the method, interpreting what the data means, and writing the sentence after "I argue that."
 >
-> Unlike a humanizer, this tool doesn't help you hide the fact that you used AI. It helps you write better. Style Calibration learns your voice from past work. Writing Quality Check catches the patterns that make prose feel machine-generated. The goal is quality, not cheating.
+> Style Calibration learns your voice from past work. Writing Quality Check catches the patterns that make prose feel machine-generated, and `scripts/check_prose_tells.py` scans for the mechanically detectable ones with `file:line` evidence. The goal is prose you would have written yourself.
 
 ### Why human-in-the-loop, not full automation?
 
@@ -440,7 +440,7 @@ Four experiment skills (22 agents total) auto-detected from the methodology blue
 
 **Optional cross-model verification:** set `ARS_CROSS_MODEL` to use GPT-5.4 Pro or Gemini 3.1 Pro as an independent second reviewer.
 
-### Academic Pipeline (v3.21.0; suite-version-pinned, auto-by-default)
+### Academic Pipeline (v3.22.0; suite-version-pinned, auto-by-default)
 
 Pipeline orchestrator with integrity verification, compliance, sprint-contract gates, two-stage review, experiment re-entry, Socratic coaching, passport reset boundary, and collaboration evaluation:
 
@@ -572,6 +572,12 @@ https://github.com/Imbad0202/academic-research-skills
 ---
 
 ## Changelog
+
+### v3.22.0 (2026-08-03) — Deterministic prose-tells scanner
+- **`scripts/check_prose_tells.py`**: stdlib scanner for the four mechanically detectable AI copy tells (`copy-em-dash`, `copy-antithesis`, `hype-copy`, `copy-servile`) with `file:line` evidence. Flags: `--json`, `--strict`, `--exclude-quotes`, stdin via `-`. Skips fenced code blocks; `copy-ignore` exempts a line
+- **Wired as the deterministic pass** opening `academic-paper/references/writing_quality_check.md`. Sections A–E keep the judgment calls regex cannot make. The scanner count is now reported; judgment findings stay internal
+- **Anti-humanizer positioning retired**: the anti-detection-evasion framing is removed from README, POSITIONING, both design-boundary blockquotes, and two SKILL.md clauses. CONTRIBUTING's decision principle governing it is deleted (4 principles → 3). The non-removable `disclosure_addendum` mechanism is unchanged — the compliance ladder enforces it in code, so it never rested on the policy
+- MIT port from jcarterjohnson/vibecoded-design-tells via humanizer-stack; attribution in `THIRD_PARTY.md`. The CC BY-SA-derived `humanizer/SKILL.md` was deliberately not vendored (license incompatible with this repo's NC terms)
 
 ### v3.21.0 (2026-08-03) — Upstream sync: v3.17.0 → v3.19.0+ (re-review three-gate contract, role-scoped reviewer scoring, risk-stratified claim gate)
 
@@ -933,7 +939,7 @@ The bullets below describe the upstream v3.3 content that fork v3.15.0 absorbed.
 
 ### v2.9 (2026-03-27) — Style Calibration + Writing Quality Check
 - **Style Calibration** (academic-paper intake Step 10, optional): Provide 3+ past papers and the pipeline learns your writing voice — sentence rhythm, vocabulary preferences, citation integration style. Applied as a soft guide during drafting; discipline conventions always take priority. Priority system: discipline norms (hard) > journal conventions (strong) > personal style (soft). See `shared/style_calibration_protocol.md`
-- **Writing Quality Check** (`academic-paper/references/writing_quality_check.md`): Writing quality checklist applied during draft self-review. 5 categories: AI high-frequency term warnings (25 terms), punctuation pattern control (em dash ≤3), throat-clearing opener detection, structural pattern warnings (Rule of Three, uniform paragraphs, synonym cycling), and burstiness checks (sentence length variation). These are good writing rules — not detection evasion
+- **Writing Quality Check** (`academic-paper/references/writing_quality_check.md`): Writing quality checklist applied during draft self-review. 5 categories: AI high-frequency term warnings (25 terms), punctuation pattern control (em dash ≤3), throat-clearing opener detection, structural pattern warnings (Rule of Three, uniform paragraphs, synonym cycling), and burstiness checks (sentence length variation)
 - **Style Profile** carried through academic-pipeline Material Passport (Schema 17 in `shared/handoff_schemas.md`)
 - **deep-research** report compiler also consumes both features optionally
 - Versions: academic-paper v2.5, deep-research v2.4, academic-pipeline v2.7

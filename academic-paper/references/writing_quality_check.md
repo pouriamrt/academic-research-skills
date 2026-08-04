@@ -2,23 +2,44 @@
 
 ## Purpose
 
-A set of writing quality rules extracted from common patterns in AI-generated text. These are **good writing rules** that apply regardless of whether the text was AI-generated or human-written. The goal is better prose, not detection evasion.
-
-> **Design boundary**: This checklist improves writing quality. It is NOT a humanizer. We do not aim to fool AI detectors. We aim to produce clear, precise, varied academic prose.
+A set of writing quality rules extracted from common patterns in AI-generated text. These are **good writing rules** that apply regardless of whether the text was AI-generated or human-written.
 
 Reference this checklist during the self-review step of drafting (draft_writer_agent Step 2.7, report_compiler_agent final check).
 
 ---
 
+## Deterministic pass (run first)
+
+```bash
+python scripts/check_prose_tells.py --json --exclude-quotes <draft>
+```
+
+Four tells are mechanically detectable, and the scanner finds them with `file:line`
+precision: `copy-em-dash`, `copy-antithesis` ("not just X, it's Y"), `hype-copy` <!-- copy-ignore: naming the rule, not committing it -->
+(marketing cliches), `copy-servile` (sycophantic openers, signposted wrap-ups). Resolve
+its hits before working through sections A–E.
+
+- `--exclude-quotes` skips blockquoted source material, matching the section B exception below.
+- Fenced code blocks are skipped automatically.
+- A line carrying `copy-ignore` is exempt — use it where a flagged term is the subject
+  rather than the style (this file's own term catalogue is the canonical example).
+- `--strict` exits 1 on any hit, for callers that want a gate.
+
+Sections A–E below cover what regex cannot see: vocabulary judgment, structural rhythm,
+burstiness. **Scanner output is evidence; the rest is judgment.** A clean scan does not
+mean the prose is good.
+
+---
+
 ## A. High-Frequency Term Warnings
 
-The following terms appear disproportionately in AI-generated text. They are not banned — but when you encounter one, ask: **"Is this really the most precise word here, or am I defaulting to it?"**
+The following terms appear disproportionately in AI-generated text. They are not banned. When you encounter one, ask: **"Is this really the most precise word here, or am I defaulting to it?"**
 
 ### Flagged Terms
 
 | Term | Why it's flagged | Better alternatives (context-dependent) |
 |------|-----------------|----------------------------------------|
-| delve | Overused as "explore" substitute | examine, investigate, analyze, explore |
+| delve | Overused as "explore" substitute | examine, investigate, analyze, explore <!-- copy-ignore: cataloguing the term, not using it --> |
 | tapestry | Cliché metaphor for complexity | network, interplay, system, landscape |
 | landscape | Vague when not literal | field, domain, context, state of |
 | pivotal | Inflation of importance | important, significant, central, key |
@@ -41,7 +62,7 @@ The following terms appear disproportionately in AI-generated text. They are not
 | synergy | Business jargon | interaction, cooperation, combined effect |
 | holistic | Vague without definition | comprehensive, integrated, whole-system |
 | streamline | Non-academic | simplify, optimize, improve efficiency |
-| cutting-edge | Cliché | recent, advanced, state-of-the-art, novel |
+| cutting-edge | Cliché | recent, advanced, state-of-the-art, novel <!-- copy-ignore: cataloguing the term, not using it --> |
 | groundbreaking | Inflation | novel, innovative, pioneering, original |
 
 ### Exception Rule
@@ -122,7 +143,7 @@ Exception: Roadmap sentences in the Introduction ("Section 2 reviews the literat
 - **Fix**: Pick one term per concept per section. Repeat it. Technical repetition is clarity, not weakness
 
 ### Binary Contrast Overuse
-- **Pattern**: "Not X. Y." or "It's not about X — it's about Y." used more than twice per paper
+- **Pattern**: "Not X. Y." or "It's not about X — it's about Y." used more than twice per paper <!-- copy-ignore: quoting the pattern this rule bans -->
 - **Why**: This rhetorical device is effective once. Repeated, it becomes a tic
 - **Limit**: ≤ 2 per paper
 
@@ -144,7 +165,7 @@ If 5+ consecutive sentences all fall within a narrow word-count range (e.g., all
 ### How to Fix
 - Insert a short sentence (≤ 10 words) to break the pattern
 - Combine two short sentences into one complex one if the pattern is monotonously short
-- Read the paragraph aloud — if it feels metronomic, vary it
+- Read the paragraph aloud. If it feels metronomic, vary it
 
 ### Burstiness Targets (by section)
 - **Abstract**: Moderate variation (factual, steady pace)
@@ -164,10 +185,17 @@ Apply rules **while writing each section** in the self-review sub-step (Step 2.7
 ### During Final Review (Fallback)
 If not applied during drafting, run a full-paper sweep before handoff to citation_compliance_agent.
 
-### Scoring (Internal, Not Reported to User)
-For each rule category, track violations:
-- 0 violations: Clean
-- 1-3 violations: Minor — fix in self-review
-- 4+ violations: Pattern issue — review the section's writing approach
+### Reporting
 
-Do NOT report scores to the user. Just fix the issues silently during drafting.
+**Report the scanner count.** It is a deterministic number with `file:line` evidence
+behind it, so state it: "prose-tells scan: N hits (M resolved)". An unverifiable claim
+that the checklist "was applied" is worth less than the count.
+
+**Keep the judgment findings internal.** Sections A–E produce reader-dependent calls
+(is this term imprecise? is this rhythm monotonous?). Fix those silently during drafting
+rather than reporting a score the user cannot check.
+
+Severity bands for the judgment categories, for the agent's own routing:
+- 0 violations: Clean
+- 1-3 violations: Minor. Fix in self-review
+- 4+ violations: Pattern issue. Review the section's writing approach

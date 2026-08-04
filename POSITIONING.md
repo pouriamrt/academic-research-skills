@@ -54,10 +54,10 @@ These reflect our policy intent. See the [CC BY-NC 4.0 license](https://creative
 
 ## Design philosophy
 
-**Assistive, not deceptive.** ARS helps you write better, not hide that you used AI.
+**Assistive, with disclosure.** ARS helps you write better, and keeps the AI-use statement attached to the work.
 
 - Style Calibration learns your voice from past papers — so the output sounds like you, not like a machine
-- Writing Quality Check catches AI-typical patterns — to improve prose quality, not evade detection
+- Writing Quality Check catches AI-typical patterns, and `scripts/check_prose_tells.py` scans for the mechanically detectable ones
 - Disclosure Mode generates venue-specific AI usage statements — because transparency is the standard
 
 **Human-in-the-loop, always.** The pipeline's checkpoint system is mandatory by design:

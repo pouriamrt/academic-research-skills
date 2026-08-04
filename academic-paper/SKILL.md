@@ -22,7 +22,7 @@ metadata:
 A general-purpose academic paper writing tool — 11-agent pipeline covering all disciplines, with higher education domain as the default reference. English-only output (v3.17.0). v2.5 adds experiment results integration (Schema 11/12 from data-analyst, simulation-runner, and lab-notebook), plus two writing quality features:
 
 - **Style Calibration** (intake Step 10, optional) — Provide 3+ past papers and the pipeline learns your writing voice (sentence rhythm, vocabulary preferences, citation integration style). Applied as a soft guide during drafting; discipline conventions always take priority. See `shared/style_calibration_protocol.md`.
-- **Writing Quality Check** (`references/writing_quality_check.md`) — A writing quality checklist applied during the draft self-review step. Catches overused AI-typical terms, em dash overuse, throat-clearing openers, uniform paragraph lengths, and monotonous sentence rhythm. These are good writing rules, not detection evasion.
+- **Writing Quality Check** (`references/writing_quality_check.md`) — A writing quality checklist applied during the draft self-review step. Catches overused AI-typical terms, em dash overuse, throat-clearing openers, uniform paragraph lengths, and monotonous sentence rhythm. Opens with a deterministic pass — `scripts/check_prose_tells.py` scans for the four mechanically detectable tells with `file:line` evidence — then the judgment sections handle what regex cannot see.
 
 v2.4 hardened LaTeX output formatting: mandatory `apa7` document class for APA 7.0, text justification override for `man` mode, table column width formula with `\tabcolsep` deduction, standardized font stack (Times New Roman + Courier New), and PDF compilation via tectonic.
 

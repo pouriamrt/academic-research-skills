@@ -140,10 +140,12 @@ jobs:
           PYTHONPATH: .
         run: python3 -m unittest scripts.test_check_version_consistency -v
 
-      - name: Run check_sprint_contract unit tests
-        env:
-          PYTHONPATH: .
-        run: python3 -m unittest scripts.test_check_sprint_contract -v
+      # test_check_sprint_contract is NOT run here. Upstream's v3.21.0 merge (47ed3a1)
+      # converted it to pytest style — bare `def test_*`, no unittest.TestCase — which
+      # `python3 -m unittest` collects as ZERO tests, and Python >=3.12 exits 5 on
+      # "NO TESTS RAN". That turned a silently-green legacy step into a hard CI failure.
+      # Its 84 tests already run via the manifest runner above (id 574-schema-13-2-validator
+      # in scripts/_ci_pytest_manifest.toml), so this step was redundant as well as broken.
       - name: Run spec consistency unit tests
         env:
           PYTHONPATH: .

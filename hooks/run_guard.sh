@@ -212,8 +212,40 @@ find_real_python() {
     return 1
 }
 
-REAL_PY=$(find_real_python) || emit_passthrough_and_exit
-[ -n "$REAL_PY" ] || emit_passthrough_and_exit
+# --- Fast path: try the likeliest interpreter WITHOUT paying for a separate marker probe --
+# The probe and the guard are two Python cold starts; on a host where the first candidate is
+# real, that doubles hot-path latency for no added safety. The guard's OWN output validity is
+# already a strictly stronger realness check than the marker (a stub emits no
+# `{"hookSpecificOutput"...` object), and an invalid result here costs only a fall-through to
+# the full probe below. So: attempt the guard directly, and on ANY doubt take the slow path.
+# Posture is unchanged — this can only turn a would-be pass-through into the same
+# pass-through, or a valid decision into the same valid decision, one spawn cheaper.
+# Cost on a stub-first host: one wasted guard spawn before the probe runs. Accepted.
+GUARD_ERR=$(mktemp 2>/dev/null) || emit_passthrough_and_exit
+
+# Emits the guard's JSON and returns 0 only for a healthy decision; non-zero otherwise.
+try_guard_with() {
+    _tg_out=$(printf '%s' "$PAYLOAD" | run_bounded "$@" "$GUARD" 2>"$GUARD_ERR")
+    _tg_st=$?
+    [ "$_tg_st" -eq 0 ] || return 1
+    case $_tg_out in
+        '{"hookSpecificOutput"'*) ;;
+        *) return 1 ;;
+    esac
+    [ -s "$GUARD_ERR" ] && cat "$GUARD_ERR" >&2
+    printf '%s\n' "$_tg_out"
+    return 0
+}
+
+if command -v py >/dev/null 2>&1; then
+    if try_guard_with py -3; then
+        rm -f "$GUARD_ERR" 2>/dev/null
+        exit 0
+    fi
+fi
+
+REAL_PY=$(find_real_python) || { rm -f "$GUARD_ERR" 2>/dev/null; emit_passthrough_and_exit; }
+[ -n "$REAL_PY" ] || { rm -f "$GUARD_ERR" 2>/dev/null; emit_passthrough_and_exit; }
 
 # --- Supervise the guard subprocess (P1-b: time-bound it too; P1-c: validate JSON) --------
 # Run the guard with the found interpreter, replaying the captured payload on its stdin,
@@ -231,7 +263,6 @@ set -- $REAL_PY
 # No predictable /tmp fallback: a guessable path is a symlink-attack surface, and a redirect
 # onto an attacker-owned symlink fails -> we'd read that as a broken guard and fail OPEN
 # (gemini round-6 P1). If mktemp can't give us a private file, degrade safely to pass-through.
-GUARD_ERR=$(mktemp 2>/dev/null) || emit_passthrough_and_exit
 GUARD_OUT=$(printf '%s' "$PAYLOAD" | run_bounded "$@" "$GUARD" 2>"$GUARD_ERR")
 GUARD_STATUS=$?
 

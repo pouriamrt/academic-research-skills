@@ -16,7 +16,8 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/run_guard.sh\""
+            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/run_guard.sh\"",
+            "timeout": 5
           }
         ]
       }

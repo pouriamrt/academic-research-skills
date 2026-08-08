@@ -61,6 +61,7 @@ Usage:
 
 Exit 0 on pass (warnings may print to stderr), 1 on any error.
 """
+
 from __future__ import annotations
 
 import argparse
@@ -141,9 +142,7 @@ def _suite_registry() -> tuple[dict, tuple[str, ...]]:
     valid_classes = set(_suite_class_enum())
     for suite, klass in registry.items():
         if klass not in valid_classes:
-            errors.append(
-                f"I5: suite_registry.json maps {suite!r} to unknown class {klass!r}"
-            )
+            errors.append(f"I5: suite_registry.json maps {suite!r} to unknown class {klass!r}")
     return registry, tuple(errors)
 
 
@@ -226,9 +225,9 @@ def _invariant_findings(report: dict) -> tuple[list[str], list[str]]:
     config_pairs: dict[tuple[str, str], list[str]] = {}
     for j in judges:
         model_to_families.setdefault(_fold(j["model_id"]), set()).add(_fold(j["model_family"]))
-        config_pairs.setdefault(
-            (_fold(j["model_id"]), _fold(j["prompt_ref"])), []
-        ).append(j["judge_id"])
+        config_pairs.setdefault((_fold(j["model_id"]), _fold(j["prompt_ref"])), []).append(
+            j["judge_id"]
+        )
     for model_id, families in model_to_families.items():
         if len(families) > 1:
             errors.append(
@@ -260,15 +259,13 @@ def _invariant_findings(report: dict) -> tuple[list[str], list[str]]:
                 )
             if fid in seen_in_judge:
                 errors.append(
-                    f"I9: judge {judge['judge_id']!r} lists item {raw_id!r} more "
-                    "than once"
+                    f"I9: judge {judge['judge_id']!r} lists item {raw_id!r} more than once"
                 )
                 continue
             seen_in_judge.add(fid)
             payload = {k: v for k, v in row.items() if k != "item_id"}
             by_item.setdefault(fid, {})[idx] = payload
 
-    judged_ids = set(by_item)
     comparable = {i for i, per_judge in by_item.items() if len(per_judge) >= 2}
     divergent: set[str] = set()
     for fid in comparable:
@@ -298,16 +295,10 @@ def _invariant_findings(report: dict) -> tuple[list[str], list[str]]:
                 f"{expected:.3f} (1 - {len(divergent)}/{len(comparable)})"
             )
     elif rate is not None:
-        errors.append(
-            "I1: agreement.rate must be null when no item is judged by >=2 judges"
-        )
+        errors.append("I1: agreement.rate must be null when no item is judged by >=2 judges")
 
     # ---- I2: derived judge minimum + family diversity ----------------------
-    if (
-        report["decision_relevant"]
-        and suite_class != "mechanical_match"
-        and exception == "none"
-    ):
+    if report["decision_relevant"] and suite_class != "mechanical_match" and exception == "none":
         families = {_fold(j["model_family"]) for j in judges}
         if len(judges) < 2:
             errors.append(
@@ -343,9 +334,7 @@ def _invariant_findings(report: dict) -> tuple[list[str], list[str]]:
     for override in adjudication.get("overrides", []):
         o_item, o_judge = _fold(override["item_id"]), override["judge_id"]
         if o_judge not in judge_index:
-            errors.append(
-                f"I4: override references unknown judge {o_judge!r}"
-            )
+            errors.append(f"I4: override references unknown judge {o_judge!r}")
         elif o_item not in by_item or judge_index[o_judge] not in by_item[o_item]:
             errors.append(
                 f"I4: override targets item {override['item_id']!r} which judge "
@@ -399,20 +388,14 @@ def _invariant_findings(report: dict) -> tuple[list[str], list[str]]:
             )
 
     # ---- I11 / W1: partial judge coverage ----------------------------------
-    per_judge_sets = [
-        {_fold(row["item_id"]) for row in j["per_item"]} for j in judges
-    ]
+    per_judge_sets = [{_fold(row["item_id"]) for row in j["per_item"]} for j in judges]
     if per_judge_sets:
         union = set().union(*per_judge_sets)
         gaps = {i for s in per_judge_sets for i in union - s}
         if gaps:
             if report["decision_relevant"]:
                 blocked = report["attempts"]["blocked_runs"]
-                uncovered = {
-                    g
-                    for g in gaps
-                    if not any(_names_item(_fold(b), g) for b in blocked)
-                }
+                uncovered = {g for g in gaps if not any(_names_item(_fold(b), g) for b in blocked)}
                 if uncovered:
                     errors.append(
                         f"I11: items {sorted(uncovered)!r} are missing from some "
@@ -420,8 +403,7 @@ def _invariant_findings(report: dict) -> tuple[list[str], list[str]]:
                     )
                 if report["attempts"]["partial_published"] is not True:
                     errors.append(
-                        "I11: partial judge coverage requires "
-                        "attempts.partial_published=true"
+                        "I11: partial judge coverage requires attempts.partial_published=true"
                     )
             else:
                 warnings.append(
@@ -434,8 +416,7 @@ def _invariant_findings(report: dict) -> tuple[list[str], list[str]]:
         _dt.date.fromisoformat(report["measurement_date"])
     except ValueError:
         errors.append(
-            f"I12: measurement_date {report['measurement_date']!r} is not a real "
-            "calendar date"
+            f"I12: measurement_date {report['measurement_date']!r} is not a real calendar date"
         )
 
     return errors, warnings
@@ -507,8 +488,7 @@ def _resolution_findings(report: dict) -> list[str]:
         missing = False
     if missing:
         errors.append(
-            f"R3: subject.config.suite_commit {commit!r} is not a commit in this "
-            "repository"
+            f"R3: subject.config.suite_commit {commit!r} is not a commit in this repository"
         )
 
     return errors
@@ -540,9 +520,7 @@ def location_errors(path: Path, report: dict) -> list[str]:
     return []
 
 
-def validate_report(
-    report: dict, *, resolve_refs: bool = False
-) -> tuple[list[str], list[str]]:
+def validate_report(report: dict, *, resolve_refs: bool = False) -> tuple[list[str], list[str]]:
     """Full validation: (errors, warnings). Does not mutate the input.
 
     Schema errors short-circuit: invariants only run on schema-valid reports,
@@ -551,8 +529,7 @@ def validate_report(
     """
     validator = _validator()
     schema_errors = [
-        f"schema {list(e.absolute_path)}: {e.message}"
-        for e in validator.iter_errors(report)
+        f"schema {list(e.absolute_path)}: {e.message}" for e in validator.iter_errors(report)
     ]
     if schema_errors:
         return schema_errors, []
@@ -619,10 +596,7 @@ def _walk_json_files(root: Path) -> tuple[list[Path], list[str]]:
                     file_real = p.resolve()
                 except OSError:
                     file_real = p
-                if not (
-                    file_real.is_relative_to(root_real)
-                    or file_real.is_relative_to(repo_real)
-                ):
+                if not (file_real.is_relative_to(root_real) or file_real.is_relative_to(repo_real)):
                     walk_errors.append(
                         f"{p}: file symlink resolves outside the repository — "
                         "not scanned (repo-published rows cannot live there)"
@@ -664,10 +638,7 @@ def _scan_all() -> int:
             lenient = json.loads(text)
         except (ValueError, RecursionError) as exc:
             if MARKER_KEY in text.replace("\\u005f", "_"):
-                print(
-                    f"ERROR: {path}: mentions {MARKER_KEY!r} but does not parse "
-                    f"as JSON ({exc})"
-                )
+                print(f"ERROR: {path}: mentions {MARKER_KEY!r} but does not parse as JSON ({exc})")
                 rc = 1
             continue
         if not isinstance(lenient, dict):

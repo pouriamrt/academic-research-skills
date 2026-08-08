@@ -8,6 +8,7 @@ and are asserted separately.
 
 Run: pytest scripts/test_check_heldout_measurement_report.py
 """
+
 from __future__ import annotations
 
 import copy
@@ -16,7 +17,6 @@ import subprocess
 from pathlib import Path
 
 import pytest
-
 from check_heldout_measurement_report import (
     HELDOUT_ROOT,
     REPO_ROOT,
@@ -200,10 +200,7 @@ def test_marker_status_classification():
     assert marker_status({"measurement_date": "x"}) == "absent"
     # leading space, homoglyph hyphen (U+2011), case games: all near-miss
     assert marker_status({"measurement_contract": " heldout-measurement/1.0"}) == "near_miss"
-    assert (
-        marker_status({"measurement_contract": "heldout‑measurement/1.0"})
-        == "near_miss"
-    )
+    assert marker_status({"measurement_contract": "heldout‑measurement/1.0"}) == "near_miss"
     assert marker_status({"measurement_contract": "Heldout-Measurement/1.0"}) == "near_miss"
     assert marker_status({"measurement_contract": "internal-notes/0.1"}) == "near_miss"
 
@@ -876,9 +873,7 @@ def test_scan_duplicate_key_marked_file_fails(monkeypatch, tmp_path, capsys):
 
 def test_scan_near_miss_marker_fails(monkeypatch, tmp_path, capsys):
     (tmp_path / "s").mkdir()
-    (tmp_path / "s" / "m.json").write_text(
-        '{"measurement_contract": " heldout-measurement/1.0"}'
-    )
+    (tmp_path / "s" / "m.json").write_text('{"measurement_contract": " heldout-measurement/1.0"}')
     assert _scan_with_root(monkeypatch, tmp_path) == 1
     assert "near-miss" in capsys.readouterr().out
 
@@ -931,9 +926,7 @@ def test_scan_non_utf8_json_fails(monkeypatch, tmp_path, capsys):
 
 def test_scan_uppercase_extension_discovered(monkeypatch, tmp_path):
     (tmp_path / "s").mkdir()
-    (tmp_path / "s" / "M.JSON").write_text(
-        '{"measurement_contract": "heldout-measurement/1.0"}'
-    )
+    (tmp_path / "s" / "M.JSON").write_text('{"measurement_contract": "heldout-measurement/1.0"}')
     assert _scan_with_root(monkeypatch, tmp_path) == 1
 
 

@@ -486,7 +486,7 @@ Pipeline orchestrator with integrity verification, compliance, sprint-contract g
 - Post-pipeline collaboration evaluation with honest, evidence-based scoring
 - Score trajectory tracking detects revision regressions across 7 quality dimensions
 - Early-stopping criterion + budget transparency at pipeline start
-- **v3.6.3 passport reset boundary** — opt-in `ARS_PASSPORT_RESET=1` for cross-session resume from Material Passport ledger
+- **v3.6.3 passport reset boundary** — opt-in `ARS_PASSPORT_RESET=1` for cross-session resume from Material Passport ledger ([`academic-pipeline/references/passport_as_reset_boundary.md`](academic-pipeline/references/passport_as_reset_boundary.md))
 - **v3.6.7 downstream-agent pattern protection** — hardens 13/18 documented hallucination/drift patterns in synthesis/research-architect/report-compiler agents
 - **v3.7.1+ trust-chain frontmatter** + **v3.7.3 three-layer citation locator** — NO-LOCATOR hard-gate refusal at finalizer
 

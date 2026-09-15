@@ -162,7 +162,7 @@ def test_receipt_and_ledger_never_carry_pair_or_arm_fields(finalized_bundle, tmp
     run_dir = _copy_bundle(finalized_bundle, tmp_path)
     ledger_path = _write_ledger(tmp_path, _valid_ledger(run_dir))
     gate.verify(_verify_args(run_dir, ledger_path))
-    receipt_text = (_receipt_path(run_dir)).read_text("utf-8", encoding="utf-8")
+    receipt_text = (_receipt_path(run_dir)).read_text("utf-8")
     for forbidden in (
         "pair_id",
         "arm_id",

@@ -69,13 +69,13 @@ LEGACY_HASHES = {
     ): "010f51fed59e927be186444651a963e3e79a4708824fa8da41703251b242d9b3",
     Path(
         "shared/contracts/passport/claim_intent_manifest.schema.json"
-    ): "beb51d33b063400274fb96707323a8329d0115673fee9c4e87d1168053405b52",
+    ): "d6c4fd060812dc2a2b2dd73b6d9e77e366fcc0803486d5f38b4def6893d70cec",
     Path(
         "shared/contracts/revision/claim_surface_manifest.schema.json"
     ): "85460c1c195c890eb505c95e2767f72461c4a1f631203b7b26decb7a841afb1d",
     Path(
         "deep-research/templates/preregistration_template.md"
-    ): "a414692c78997ca61ec650c195e02319876d39e668e061956d966b4528a0a1a1",
+    ): "40054e26c527ff3dd237a5eef3fee60b821cf8549e210d48a057005333c8e0d2",
 }
 
 SCHEMA_VERSIONS = {

@@ -151,7 +151,7 @@ def main() -> int:
         print(f"[v3.8 annotation-sync] FAIL: missing {FORMATTER_AGENT}")
         return 1
 
-    constants = _extract_finalizer_high_warn_constants(FINALIZER_MODULE.read_text())
+    constants = _extract_finalizer_high_warn_constants(FINALIZER_MODULE.read_text(encoding="utf-8"))
     if len(constants) != 5:
         print(
             f"[v3.8 annotation-sync] FAIL: expected exactly 5 ANNOTATION_HIGH_WARN_* "
@@ -160,7 +160,7 @@ def main() -> int:
         )
         return 1
 
-    formatter_text = FORMATTER_AGENT.read_text()
+    formatter_text = FORMATTER_AGENT.read_text(encoding="utf-8")
     # Restrict the search to the REFUSE-list block so the lint actually
     # proves the formatter's terminal hard gate refuses on each annotation
     # — a literal that appears only in background prose or a cross-reference

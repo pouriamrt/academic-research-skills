@@ -227,6 +227,7 @@ def _issue_is_open(url: str) -> bool:
             capture_output=True,
             text=True,
             check=True,
+            encoding="utf-8",
         )
     except (subprocess.CalledProcessError, FileNotFoundError):
         return False

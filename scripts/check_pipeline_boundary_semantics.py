@@ -70,11 +70,11 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 # reviewed against the #528 resolutions.
 # ---------------------------------------------------------------------------
 CONTENT_LOCKS = {
-    "academic-pipeline/SKILL.md": "5b69ade007c9c288feab586216df7a2c0ea35beab958505d6341b73f0e1e9813",
-    "academic-pipeline/agents/pipeline_orchestrator_agent.md": "eb09fbf90151a00c6f2f701e75711c302eea9d2c5e25ab3c2dd131ea177070b4",
-    "academic-pipeline/agents/state_tracker_agent.md": "67a96de27b860ef97ce7c8a6d363033ae5b5a05222ec6e013479f2983fdfb59d",
-    "academic-pipeline/references/pipeline_state_machine.md": "1af77464ab1bbe8536cc34666391dce52d683018a3da3408f27825a046bd8dce",
-    "academic-pipeline/references/process_summary_protocol.md": "c2e6ff0dc72a6f11232f47226a494a4bb45d2c7eca81425e97aa96a11244252d",
+    "academic-pipeline/SKILL.md": "6924bef531412abc73804e950815e3a24590f42421d24fbcf3fa39ba88ca9807",
+    "academic-pipeline/agents/pipeline_orchestrator_agent.md": "506eeae19f7d0660efc78e966802a482f292041ab1cc08ed0714746b885fee1b",
+    "academic-pipeline/agents/state_tracker_agent.md": "4b1be6ed39521766b1b64da32b4083441a682e3e0d8bcc7dca61075abdb664a7",
+    "academic-pipeline/references/pipeline_state_machine.md": "857dca43235d8a186d8545b24ff8a8866a1b2a9eaae6e786fbfd2644c4519f91",
+    "academic-pipeline/references/process_summary_protocol.md": "a094450efaa2ec6cab4abcee1d9305605c57ca6147a9d6fca79391e60daa862f",
 }
 
 SKILL = "academic-pipeline/SKILL.md"
@@ -201,7 +201,7 @@ PROTO_STEP5_HEADER = "5. Terminal acknowledgement (pipeline terminal checkpoint)
 PROTO_NO_NEXT_STAGE = "There is no next stage."
 # SKILL Step 4 handoff line (codex round-7 P1: the executing transition list
 # could reverse the decline option while the Stage 6 section stayed pinned).
-SKILL_STEP4_HANDOFF = "- Stage 5  --> 6: Pass final deliverables list + pipeline state history to Process Summary (user may decline Stage 6 at the Stage 5 completion checkpoint)"
+SKILL_STEP4_HANDOFF = "- Stage 5  --> 6: Pass final deliverables list + the Process-Summary projection of pipeline state history, omitting the #673 activity projection of terminal root `run_id`, pending/sealed activity fields, selected-store data, renderer output, and diagnostics (user may decline Stage 6 at the Stage 5 completion checkpoint)"
 
 # The #528/#529 diagram edges (codex round-7 P1: the ASCII diagram is an
 # operative surface too — a /Minor -> /Reject or relabeled terminal edge

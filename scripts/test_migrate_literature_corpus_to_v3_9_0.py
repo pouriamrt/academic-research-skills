@@ -87,7 +87,7 @@ def _make_passport(tmp_path, entries):
     y = YAML()
     y.preserve_quotes = True
     y.indent(mapping=2, sequence=4, offset=2)
-    with p.open("w") as f:
+    with p.open("w", encoding="utf-8") as f:
         y.dump({"version": 9, "literature_corpus": entries}, f)
     return p
 

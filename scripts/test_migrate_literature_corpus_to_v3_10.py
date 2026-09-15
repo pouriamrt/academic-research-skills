@@ -46,13 +46,13 @@ def _v3_9_0_entry(**overrides):
 
 def _write_passport(tmp_path, doc):
     p = tmp_path / "passport.yaml"
-    with p.open("w") as f:
+    with p.open("w", encoding="utf-8") as f:
         _yaml().dump(doc, f)
     return p
 
 
 def _read_passport(p):
-    with p.open() as f:
+    with p.open(encoding="utf-8") as f:
         return _yaml().load(f)
 
 
@@ -190,7 +190,7 @@ class MalformedShapeTest(unittest.TestCase):
         with tempfile.TemporaryDirectory() as d:
             tmp = Path(d)
             p = tmp / "passport.yaml"
-            with p.open("w") as f:
+            with p.open("w", encoding="utf-8") as f:
                 _yaml().dump(["just", "a", "list"], f)
             with self.assertRaises(mig.PassportShapeError):
                 mig.migrate_passport(p, dry_run=False)

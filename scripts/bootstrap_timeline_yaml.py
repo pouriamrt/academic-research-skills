@@ -59,6 +59,7 @@ def _pdftotext_first_line(pdf_path: Path, dry_run: bool) -> str | None:
             capture_output=True,
             text=True,
             timeout=10,
+            encoding="utf-8",
         )
         if result.returncode != 0:
             return None
@@ -141,7 +142,7 @@ def main(argv: list[str] | None = None) -> int:
     )
     args = parser.parse_args(argv)
 
-    corpus_data = yaml.safe_load(args.corpus.read_text())
+    corpus_data = yaml.safe_load(args.corpus.read_text(encoding="utf-8"))
     entries = corpus_data.get("literature_corpus", [])
     sources = [_bootstrap_entry(e, args.dry_run) for e in entries]
 
@@ -150,7 +151,7 @@ def main(argv: list[str] | None = None) -> int:
         "sources": sources,
         "events": [],
     }
-    args.output.write_text(yaml.safe_dump(timeline, sort_keys=False))
+    args.output.write_text(yaml.safe_dump(timeline, sort_keys=False), encoding="utf-8")
     return 0
 
 

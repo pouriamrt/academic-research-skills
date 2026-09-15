@@ -315,7 +315,7 @@ def _validate_verdict_yaml(yaml_path: Path) -> list[str]:
             doc = yaml.safe_load(fp)
     except (OSError, yaml.YAMLError) as exc:
         return [f"{yaml_path.relative_to(REPO_ROOT)}: cannot parse YAML: {exc}"]
-    schema = json.loads(schema_path.read_text())
+    schema = json.loads(schema_path.read_text(encoding="utf-8"))
     errors = []
     for err in sorted(_validator(schema).iter_errors(doc), key=lambda e: e.path):
         loc = "/".join(str(p) for p in err.absolute_path) or "<root>"

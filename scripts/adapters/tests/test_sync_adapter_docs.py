@@ -14,6 +14,7 @@ def _run(*args):
         capture_output=True,
         text=True,
         cwd=REPO_ROOT,
+        encoding="utf-8",
     )
 
 

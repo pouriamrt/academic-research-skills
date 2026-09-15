@@ -2,13 +2,30 @@
 
 from __future__ import annotations
 
+import ast
+import json
 import re
 import sys
 from pathlib import Path
 
+if __package__:  # Package import in tests.
+    from ._markdown_lint_util import (
+        NON_RELATIVE_LINK_PREFIXES,
+        extract_link_targets,
+        strip_non_rendering,
+    )
+    from ._skill_lint import iter_skill_files
+else:  # pragma: no cover - exercised by the CLI smoke path
+    from _markdown_lint_util import (
+        NON_RELATIVE_LINK_PREFIXES,
+        extract_link_targets,
+        strip_non_rendering,
+    )
+    from _skill_lint import iter_skill_files
+
+
 ROOT = Path(__file__).resolve().parents[1]
 ERRORS: list[str] = []
-MARKDOWN_LINK_RE = re.compile(r"\[[^\]]+\]\(([^)]+)\)")
 
 
 def read(rel_path: str) -> str:
@@ -50,10 +67,10 @@ def extract_section(text: str, start: str, end: str) -> str:
 def check_relative_markdown_links(rel_path: str) -> None:
     text = read(rel_path)
     doc_path = ROOT / rel_path
-    for raw_target in MARKDOWN_LINK_RE.findall(text):
-        if raw_target.startswith(("http://", "https://", "mailto:", "#")):
+    for raw_target in extract_link_targets(text):
+        if raw_target.startswith(NON_RELATIVE_LINK_PREFIXES):
             continue
-        target = raw_target.split("#", 1)[0]
+        target = raw_target.partition("#")[0]
         if not target:
             continue
         resolved = (doc_path.parent / target).resolve()
@@ -90,14 +107,16 @@ def check_claude_md() -> None:
         expect_absent(rel_path, forbidden)
 
 
-# All four skills carry the same frontmatter (`version` / `last_updated`) + Version-Info-table
-# (`| Skill Version |` / `| Last Updated |`) pair. Pre-#377 only the reviewer was policed.
-_SKILL_VERSION_PATHS = (
-    "academic-pipeline/SKILL.md",
-    "academic-paper/SKILL.md",
-    "academic-paper-reviewer/SKILL.md",
-    "deep-research/SKILL.md",
-)
+# Every top-level skill carries the same frontmatter (`version` / `last_updated`) +
+# Version-Info-table (`| Skill Version |` / `| Last Updated |`) pair. Pre-#377 only the
+# reviewer was policed. Derived from disk (#809) rather than hand-listed, so a new skill
+# directory is policed the moment it exists; check_skill_inventory_parity.py pins that
+# the on-disk set matches every surface that advertises it.
+def _skill_version_paths() -> tuple[str, ...]:
+    """Read ROOT at call time (tests swap `csc.ROOT` for fixture trees; an
+    import-time tuple would carry the real checkout's skills into them)."""
+    return tuple(f"{skill_md.parent.name}/SKILL.md" for skill_md in iter_skill_files(ROOT))
+
 
 # The single skill whose `version` tracks the suite version. The other three move independently,
 # so only this one's date is sanity-checked against the release (CHANGELOG) in #377(b).
@@ -134,7 +153,7 @@ def _parse_skill_version_block(rel_path: str) -> tuple[str, str, str, str] | Non
 def check_skill_version_blocks() -> None:
     """#377(a): for ALL FOUR SKILL.md, the frontmatter version/last_updated must match the
     Version-Info-table rows (an internal per-file consistency check)."""
-    for rel_path in _SKILL_VERSION_PATHS:
+    for rel_path in _skill_version_paths():
         parsed = _parse_skill_version_block(rel_path)
         if parsed is None:
             continue
@@ -279,31 +298,73 @@ def check_architecture_component_version() -> None:
             )
 
 
+# README changelog sections keep only the most recent releases; the full history
+# (including the one-paragraph summaries) lives in CHANGELOG.md.
+# Bump README_CHANGELOG_KEEP at every release (prepend the new release,
+# drop the oldest) — the lint fails on any extra `### v` heading so the section
+# cannot silently regrow (2026-09-15 README slimming).
+README_CHANGELOG_KEEP = (
+    ("3.22.0", "2026-08-03"),
+    ("3.21.0", "2026-08-03"),
+    ("3.20.0", "2026-07-16"),
+)
+README_CHANGELOG_LINK = "CHANGELOG.md"
+_README_RELEASE_HEADING_RE = re.compile(r"^### v[^\n]*$", re.M)
+
+
+def check_readme_changelog_section(
+    rel_path: str, text: str, h2: str, paren: str, archive: str | None = None
+) -> None:
+    """The README changelog section carries exactly README_CHANGELOG_KEEP.
+
+    `paren` is "ascii" (`### v3.21.2 (2026-09-06)`, en / ja / ko / es) or
+    "fullwidth" (`### v3.21.2（2026-09-06）`, zh-TW / zh-CN). The section must
+    link to CHANGELOG.md and, for translated READMEs, to the frozen archive.
+    Fenced code and HTML comments are stripped first, so a commented-out or
+    fenced copy of the section neither satisfies nor trips the checks.
+    """
+    rendered = strip_non_rendering(text)
+    marker = "\n" + h2 + "\n"
+    idx = rendered.find(marker)
+    if idx == -1:
+        fail(f"{rel_path}: missing changelog heading {h2!r}")
+        return
+    section = rendered[idx + 1 :]
+    nxt = re.search(r"^## ", section[len(h2) + 1 :], re.M)
+    if nxt:
+        section = section[: len(h2) + 1 + nxt.start()]
+    if paren == "ascii":
+        expected = [f"### v{v} ({d})" for v, d in README_CHANGELOG_KEEP]
+    else:
+        expected = [f"### v{v}（{d}）" for v, d in README_CHANGELOG_KEEP]
+    found = [m.group(0) for m in _README_RELEASE_HEADING_RE.finditer(section)]
+    for exp in expected:
+        hits = sum(1 for h in found if h.startswith(exp))
+        if hits == 0:
+            fail(f"{rel_path}: changelog section missing {exp!r}")
+        elif hits > 1:
+            fail(f"{rel_path}: changelog section repeats {exp!r} {hits} times")
+    extra = [h for h in found if not any(h.startswith(e) for e in expected)]
+    if extra:
+        fail(
+            f"{rel_path}: changelog section keeps {len(found)} release headings; only the "
+            f"{len(expected)} most recent belong in the README (unexpected: {extra[:3]!r}). "
+            f"Older summaries live in {README_CHANGELOG_LINK}"
+            + (f" and the frozen {archive}" if archive else "")
+            + "."
+        )
+    targets = set(extract_link_targets(section))
+    for link in (README_CHANGELOG_LINK, archive):
+        if link and link not in targets:
+            fail(f"{rel_path}: changelog section must link to {link}")
+
+
 def check_readme_sections() -> None:
     rel_path = "README.md"
     text = read(rel_path)
 
     expect_contains(rel_path, "version-v3.22.0-blue")
-    expect_contains(rel_path, "### v3.20.0 (2026-07-16)")
-    expect_contains(rel_path, "### v3.18.0 (2026-05-23)")
-    expect_contains(rel_path, "### v3.17.0 (2026-05-15)")
-    expect_contains(rel_path, "### v3.16.0 (2026-05-15)")
-    # Upstream historical entries preserved in fork README for traceability.
-    expect_contains(rel_path, "### v3.7.0 (2026-05-05)")
-    expect_contains(rel_path, "### v3.6.8 (2026-05-03)")
-    expect_contains(rel_path, "### v3.6.7 (2026-04-30)")
-    expect_contains(rel_path, "### v3.6.5 (2026-04-27)")
-    expect_contains(rel_path, "### v3.6.4 (2026-04-25)")
-    expect_contains(rel_path, "### v3.6.3 (2026-04-23)")
-    expect_contains(rel_path, "### v3.6.2 (2026-04-23)")
-    expect_contains(rel_path, "### v3.5.1 (2026-04-22)")
-    expect_contains(rel_path, "### v3.5.0 (2026-04-21)")
-    expect_contains(rel_path, "### v3.4.0 (2026-04-20)")
-    expect_contains(rel_path, "### v3.3.6 (2026-04-15)")
-    expect_contains(rel_path, "### v3.3.5 (2026-04-15)")
-    expect_contains(rel_path, "### v3.3.4 (2026-04-15)")
-    expect_contains(rel_path, "### v3.3.3 (2026-04-15)")
-    expect_contains(rel_path, "### v3.3.2 (2026-04-15)")
+    check_readme_changelog_section(rel_path, text, "## Changelog", "ascii")
     for heading in (
         "#### Deep Research (8 modes)",
         "#### Academic Paper (11 modes)",
@@ -363,6 +424,9 @@ def check_setup_docs() -> None:
     expect_contains("docs/SETUP.md", "ARS_AUTO_MAX_RETRIES")
     expect_contains("docs/SETUP.md", "ARS_AUTO_FAIL_MODE")
     check_relative_markdown_links("docs/SETUP.md")
+    # #758 data-flow map: its outbound relative links (audit doc, SECURITY,
+    # THIRD_PARTY, cross_model_verification) must keep resolving.
+    check_relative_markdown_links("docs/DATA_FLOWS.md")
 
 
 def check_bilingual_purge() -> None:
@@ -470,6 +534,491 @@ def check_rebuttal_audit_guard() -> None:
         )
 
 
+def check_ideation_diversity_no_call_contract() -> None:
+    """Keep #659's schemas, runner, docs, and CI registration aligned."""
+    suite = "evals/heldout/within_session_ideation_diversity"
+    schema_paths = {
+        "run_plan": f"{suite}/run_plan.schema.json",
+        "authorization": f"{suite}/authorization_record.schema.json",
+        "transcript": f"{suite}/transcript.schema.json",
+        "ingestion": f"{suite}/ingestion_manifest.schema.json",
+        "stop_intent": f"{suite}/stop_intent.schema.json",
+        "blind_packet": f"{suite}/blind_packet.schema.json",
+        "blind_inventory": f"{suite}/blind_inventory.schema.json",
+        "blind_manifest": f"{suite}/blind_manifest.schema.json",
+        "private_arm_map": f"{suite}/private_arm_map.schema.json",
+        "blind_intent": f"{suite}/blind_intent.schema.json",
+    }
+    schemas: dict[str, dict] = {}
+    for name, rel_path in schema_paths.items():
+        try:
+            value = json.loads(read(rel_path))
+        except (OSError, UnicodeError, json.JSONDecodeError) as exc:
+            fail(f"{rel_path}: cannot load #659 contract: {exc}")
+            continue
+        if not isinstance(value, dict) or value.get("additionalProperties") is not False:
+            fail(f"{rel_path}: root contract must be a closed object")
+            continue
+        schemas[name] = value
+
+    plan = schemas.get("run_plan", {})
+    plan_properties = plan.get("properties", {})
+    design = plan_properties.get("design", {}).get("properties", {})
+    expected_design = {
+        "experiments": 2,
+        "scenarios": 6,
+        "arms_per_experiment": 2,
+        "replicates_per_scenario_arm": 2,
+        "subject_session_cells": 48,
+    }
+    for field, expected in expected_design.items():
+        if design.get(field, {}).get("const") != expected:
+            fail(f"{schema_paths['run_plan']}: {field} must remain const {expected}")
+    execution = plan.get("$defs", {}).get("execution", {}).get("properties", {})
+    no_call_constants = {
+        "tools": [],
+        "web_enabled": False,
+        "runner_transport": "none",
+        "dispatch_available": False,
+        "api_spend_ceiling_usd": 0,
+        "api_fallback": False,
+        "envelope_grants_consent": False,
+        "fresh_external_authorization_required": True,
+    }
+    for field, expected in no_call_constants.items():
+        if execution.get(field, {}).get("const") != expected:
+            fail(f"{schema_paths['run_plan']}: no-call constant {field!r} drifted")
+    provenance = plan_properties.get("suite_commit_provenance", {}).get("properties", {})
+    if provenance.get("status", {}).get("const") != "operator_declared_unverified":
+        fail(f"{schema_paths['run_plan']}: suite commit must remain unverified")
+    cap_boundary = execution.get("token_cap_verification", {}).get("properties", {})
+    for field, expected in {
+        "status": "operator_declared_unverified",
+        "enforced_by_no_call_runner": False,
+        "observed_usage_recorded": False,
+        "provider_tokenizer_verified": False,
+    }.items():
+        if cap_boundary.get(field, {}).get("const") != expected:
+            fail(f"{schema_paths['run_plan']}: token-cap boundary {field!r} drifted")
+    judge = plan_properties.get("judge_requirements", {}).get("properties", {})
+    for field, expected in {
+        "first_round_assignment_ledger_required_before_delivery": True,
+        "same_role_card_cross_arm_or_replicate_exposure_forbidden": True,
+        "bundle_alone_proves_judge_exposure_blindness": False,
+    }.items():
+        if judge.get(field, {}).get("const") != expected:
+            fail(f"{schema_paths['run_plan']}: judge exposure boundary {field!r} drifted")
+    if (
+        plan_properties.get("cells", {}).get("minItems") != 48
+        or plan_properties.get("cells", {}).get("maxItems") != 48
+    ):
+        fail(f"{schema_paths['run_plan']}: cells must remain exactly 48")
+    assets = plan_properties.get("asset_bindings", {})
+    if assets.get("minItems") != 18 or assets.get("maxItems") != 18:
+        fail(f"{schema_paths['run_plan']}: asset bindings must remain exactly 18")
+
+    stop_receipt = (
+        schemas.get("ingestion", {}).get("$defs", {}).get("stop_receipt", {}).get("properties", {})
+    )
+    if "pre_stop_inventory" not in stop_receipt:
+        fail(f"{schema_paths['ingestion']}: compact pre-stop inventory binding missing")
+    blind_intent = schemas.get("blind_intent", {}).get("properties", {})
+    for field, expected in {
+        "staging_ref": "blind-staging",
+        "final_ref": "blind",
+        "recovery_policy": "exact_recovery_only_no_second_bundle",
+    }.items():
+        if blind_intent.get(field, {}).get("const") != expected:
+            fail(f"{schema_paths['blind_intent']}: {field!r} recovery boundary drifted")
+    intent_protection = blind_intent.get("protection", {}).get("properties", {})
+    for field, expected in {
+        "procedural_nondisclosure_only": True,
+        "file_mode": "0600",
+        "deliver_to_judges": False,
+    }.items():
+        if intent_protection.get(field, {}).get("const") != expected:
+            fail(f"{schema_paths['blind_intent']}: protection boundary {field!r} drifted")
+
+    runner_path = "scripts/run_ideation_diversity_no_call.py"
+    runner_source = read(runner_path)
+    try:
+        tree = ast.parse(runner_source)
+    except SyntaxError as exc:
+        fail(f"{runner_path}: cannot parse runner AST: {exc}")
+        tree = ast.Module(body=[], type_ignores=[])
+    allowed_direct_imports = {
+        "argparse",
+        "base64",
+        "copy",
+        "hashlib",
+        "json",
+        "os",
+        "re",
+        "secrets",
+        "stat",
+        "sys",
+        "unicodedata",
+        "validate_ideation_diversity_assets",
+    }
+    allowed_from_imports = {
+        "__future__": {"annotations"},
+        "datetime": {"datetime"},
+        "jsonschema": {"Draft202012Validator", "FormatChecker"},
+        "pathlib": {"Path"},
+        "typing": {"Any", "NoReturn"},
+    }
+    allowed_module_calls = {
+        "argparse": {"ArgumentParser"},
+        "base64": {"b64decode", "b64encode"},
+        "copy": {"deepcopy"},
+        "hashlib": {"sha256"},
+        "json": {"dumps", "loads"},
+        "os": {
+            "chmod",
+            "close",
+            "fsync",
+            "link",
+            "open",
+            "rename",
+            "replace",
+            "write",
+        },
+        "re": {"compile", "escape", "search"},
+        "secrets": {"token_hex"},
+        "stat": {"S_IFMT", "S_IMODE", "S_ISREG"},
+        "unicodedata": {"category", "normalize"},
+        "validate_ideation_diversity_assets": {"load_assets", "render_variant"},
+    }
+    allowed_module_constants = {
+        "argparse": {"ArgumentParser", "Namespace"},
+        "json": {"JSONDecodeError"},
+        "os": {
+            "O_CREAT",
+            "O_DIRECTORY",
+            "O_EXCL",
+            "O_NOFOLLOW",
+            "O_RDONLY",
+            "O_WRONLY",
+        },
+        "re": {"IGNORECASE"},
+    }
+    forbidden_dynamic_names = {
+        "__builtins__",
+        "__import__",
+        "breakpoint",
+        "compile",
+        "delattr",
+        "eval",
+        "exec",
+        "getattr",
+        "globals",
+        "locals",
+        "setattr",
+        "vars",
+    }
+    forbidden_dynamic_attributes = {
+        "Popen",
+        "__bases__",
+        "__builtins__",
+        "__class__",
+        "__closure__",
+        "__code__",
+        "__dict__",
+        "__getattribute__",
+        "__globals__",
+        "__import__",
+        "__loader__",
+        "__subclasses__",
+        "_getframe",
+        "call",
+        "check_call",
+        "check_output",
+        "connect",
+        "create_connection",
+        "execv",
+        "execve",
+        "f_builtins",
+        "f_globals",
+        "f_locals",
+        "fork",
+        "import_module",
+        "modules",
+        "popen",
+        "request",
+        "run",
+        "spawn",
+        "system",
+        "urlopen",
+    }
+    commands: set[str] = set()
+    forbidden_imports: set[str] = set()
+    direct_module_bindings: dict[str, str] = {}
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Import):
+            for alias in node.names:
+                if alias.name not in allowed_direct_imports:
+                    forbidden_imports.add(alias.name)
+                    continue
+                binding = alias.asname or alias.name
+                existing = direct_module_bindings.get(binding)
+                if existing is not None and existing != alias.name:
+                    forbidden_imports.add(f"ambiguous-binding:{binding}")
+                direct_module_bindings[binding] = alias.name
+        elif isinstance(node, ast.ImportFrom):
+            module = node.module or "<relative>"
+            allowed_symbols = allowed_from_imports.get(module, set()) if node.level == 0 else set()
+            forbidden_imports.update(
+                f"{module}.{alias.name}"
+                for alias in node.names
+                if alias.name not in allowed_symbols
+            )
+        if (
+            isinstance(node, ast.Call)
+            and isinstance(node.func, ast.Attribute)
+            and node.func.attr == "add_parser"
+            and node.args
+            and isinstance(node.args[0], ast.Constant)
+            and isinstance(node.args[0].value, str)
+        ):
+            commands.add(node.args[0].value)
+    if forbidden_imports:
+        fail(
+            f"{runner_path}: imports must match the exact import allowlist: "
+            f"{sorted(forbidden_imports)!r}"
+        )
+
+    shadowed_module_bindings: set[str] = set()
+    for node in ast.walk(tree):
+        if (
+            isinstance(node, ast.Name)
+            and isinstance(node.ctx, (ast.Store, ast.Del))
+            and node.id in direct_module_bindings
+        ):
+            shadowed_module_bindings.add(node.id)
+        elif isinstance(node, ast.arg) and node.arg in direct_module_bindings:
+            shadowed_module_bindings.add(node.arg)
+        elif isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)):
+            if node.name in direct_module_bindings:
+                shadowed_module_bindings.add(node.name)
+        elif isinstance(node, ast.ExceptHandler):
+            if isinstance(node.name, str) and node.name in direct_module_bindings:
+                shadowed_module_bindings.add(node.name)
+        elif isinstance(node, (ast.MatchAs, ast.MatchStar)):
+            if isinstance(node.name, str) and node.name in direct_module_bindings:
+                shadowed_module_bindings.add(node.name)
+        elif isinstance(node, ast.MatchMapping):
+            if isinstance(node.rest, str) and node.rest in direct_module_bindings:
+                shadowed_module_bindings.add(node.rest)
+        elif isinstance(node, ast.ImportFrom):
+            for alias in node.names:
+                binding = alias.asname or alias.name
+                if binding in direct_module_bindings:
+                    shadowed_module_bindings.add(binding)
+    if shadowed_module_bindings:
+        fail(
+            f"{runner_path}: direct module bindings cannot be shadowed: "
+            f"{sorted(shadowed_module_bindings)!r}"
+        )
+
+    parents = {child: parent for parent in ast.walk(tree) for child in ast.iter_child_nodes(parent)}
+    module_reference_errors: set[str] = set()
+    for node in ast.walk(tree):
+        if not (
+            isinstance(node, ast.Name)
+            and isinstance(node.ctx, ast.Load)
+            and node.id in direct_module_bindings
+        ):
+            continue
+        module = direct_module_bindings[node.id]
+        parent = parents.get(node)
+        allowed_hasattr = (
+            isinstance(parent, ast.Call)
+            and isinstance(parent.func, ast.Name)
+            and parent.func.id == "hasattr"
+            and len(parent.args) == 2
+            and parent.args[0] is node
+            and isinstance(parent.args[1], ast.Constant)
+            and parent.args[1].value in {"O_DIRECTORY", "O_NOFOLLOW"}
+            and module == "os"
+        )
+        if allowed_hasattr:
+            continue
+        if not (isinstance(parent, ast.Attribute) and parent.value is node):
+            module_reference_errors.add(f"{module} via {node.id}: bare module reference")
+            continue
+        attributes = [parent.attr]
+        outer = parent
+        while True:
+            ancestor = parents.get(outer)
+            if not (isinstance(ancestor, ast.Attribute) and ancestor.value is outer):
+                break
+            attributes.append(ancestor.attr)
+            outer = ancestor
+        attribute_path = ".".join(attributes)
+        use_parent = parents.get(outer)
+        allowed_call = (
+            attribute_path in allowed_module_calls.get(module, set())
+            and isinstance(use_parent, ast.Call)
+            and use_parent.func is outer
+        )
+        allowed_print_value = (
+            module == "sys"
+            and attribute_path == "stderr"
+            and isinstance(use_parent, ast.keyword)
+            and use_parent.arg == "file"
+            and isinstance(parents.get(use_parent), ast.Call)
+            and isinstance(parents[use_parent].func, ast.Name)
+            and parents[use_parent].func.id == "print"
+        )
+        allowed_constant = attribute_path in allowed_module_constants.get(
+            module, set()
+        ) and isinstance(outer.ctx, ast.Load)
+        if not (allowed_call or allowed_print_value or allowed_constant):
+            module_reference_errors.add(f"{module} via {node.id}.{attribute_path}")
+    if module_reference_errors:
+        fail(
+            f"{runner_path}: direct module references must match exact "
+            "current-use call/value allowlists: "
+            f"{sorted(module_reference_errors)!r}"
+        )
+
+    dynamic_references: set[str] = set()
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Name) and node.id in forbidden_dynamic_names:
+            dynamic_references.add(node.id)
+        elif isinstance(node, ast.Attribute) and node.attr in forbidden_dynamic_attributes:
+            dynamic_references.add(node.attr)
+    if dynamic_references:
+        fail(
+            f"{runner_path}: dynamic import, introspection, process, or network "
+            f"references are forbidden: {sorted(dynamic_references)!r}"
+        )
+    expected_commands = {
+        "init-run",
+        "materialize",
+        "validate",
+        "ingest",
+        "prepare-blind-packet",
+    }
+    if commands != expected_commands:
+        fail(f"{runner_path}: command set must be exactly {sorted(expected_commands)!r}")
+
+    readme = f"{suite}/README.md"
+    design_doc = "docs/design/2026-08-13-659-within-session-ideation-diversity-design.md"
+    for rel_path, phrases in (
+        (
+            readme,
+            (
+                "48-cell plan",
+                "no transport, dispatch, probe",
+                "The first binding",
+                "compact canonical digest",
+                "blind-intent.json",
+                "exactly one isolated packet",
+                "cannot authenticate the operator",
+                "two independent human judges",
+            ),
+        ),
+        (
+            design_doc,
+            (
+                "Phase-2 no-call execution envelope",
+                "= 48 subject-session",
+                "API spend ceiling USD 0",
+                "48 write-once isolated single-session packets",
+                "durable deterministic blind intent",
+                "does not authenticate operator identity",
+                "No subject, actor, judge, or adjudicator session is authorized",
+            ),
+        ),
+    ):
+        for phrase in phrases:
+            expect_contains(rel_path, phrase)
+    expect_contains(
+        "scripts/_ci_pytest_manifest.toml",
+        'id = "659-within-session-ideation-diversity-no-call-envelope"',
+    )
+    expect_contains(
+        "scripts/_ci_pytest_manifest.toml",
+        'path = "scripts/test_run_ideation_diversity_no_call.py"',
+    )
+    expect_contains(
+        "CHANGELOG.md",
+        "Within-session ideation-diversity Phase-2 no-call envelope (#659)",
+    )
+
+
+def check_indirect_prompt_injection_no_call_envelope() -> None:
+    """Pin #675 Phase-2's no-call surface and human-evidence boundary."""
+    readme = "evals/heldout/indirect_prompt_injection_behavior/README.md"
+    design = "docs/design/2026-08-13-675-indirect-prompt-injection-behavior-eval-spec.md"
+    workflow = ".github/workflows/spec-consistency.yml"
+    manifest = "scripts/_ci_pytest_manifest.toml"
+    for rel_path in (
+        "evals/heldout/indirect_prompt_injection_behavior/run_plan.schema.json",
+        "evals/heldout/indirect_prompt_injection_behavior/authorization_record.schema.json",
+        "evals/heldout/indirect_prompt_injection_behavior/transcript.schema.json",
+        "evals/heldout/indirect_prompt_injection_behavior/ingestion_manifest.schema.json",
+        "evals/heldout/indirect_prompt_injection_behavior/blind_session_packet.schema.json",
+        "evals/heldout/indirect_prompt_injection_behavior/blind_inventory.schema.json",
+        "evals/heldout/indirect_prompt_injection_behavior/blind_private_map.schema.json",
+        "evals/heldout/indirect_prompt_injection_behavior/blind_manifest.schema.json",
+        "evals/heldout/indirect_prompt_injection_behavior/stop_intent.schema.json",
+        "evals/heldout/indirect_prompt_injection_behavior/judge_assignment_ledger.schema.json",
+        "evals/heldout/indirect_prompt_injection_behavior/journal_token.schema.json",
+        "scripts/run_indirect_prompt_injection_no_call.py",
+        "scripts/check_indirect_prompt_injection_no_call.py",
+        "scripts/test_run_indirect_prompt_injection_no_call.py",
+    ):
+        if not (ROOT / rel_path).is_file():
+            fail(f"#675 Phase-2 required surface is missing: {rel_path}")
+    for needle in (
+        "8 scenarios x 2 content conditions x 2 guidance",
+        "runner_transport=none",
+        "64 complete records",
+        "two independent arm-blind human judges",
+        "separate arm-blind human",
+        "does not verify",
+        "operator identity",
+        "pinned canonical-event decoder",
+        "unique receipt id",
+        "write-once stop intent",
+        "pre-armed journal claim",
+        "pre-load-terminal token",
+        "same-inode completed",
+        "ambiguous state before reading another transcript",
+        "deterministic sibling staging path",
+        "pre-load quarantine",
+        "future closed assignment ledger",
+        "does not prove arm blindness",
+        "finalized blind manifest",
+        "map is unencrypted",
+    ):
+        expect_contains(readme, needle)
+    for needle in (
+        "exactly 64 subject",
+        "provider transport, detect, dispatch, probe, model, network, process",
+        "does not authenticate the operator",
+        "two independent arm-blind human judges",
+        "closed write-once stop",
+        "pre-arms 64 immutable ingestion journal tokens",
+        "one pre-load-terminal",
+        "same-inode completed",
+        "claimed-only state is permanently ambiguous",
+        "deterministic sibling staging path",
+        "pre-load quarantine",
+        "future closed assignment ledger",
+        "does not prove that property",
+        "unique receipt id",
+        "final manifest binds the exact",
+        "private map is not encrypted",
+    ):
+        expect_contains(design, needle)
+    expect_contains(workflow, "python3 scripts/check_indirect_prompt_injection_no_call.py")
+    expect_contains(manifest, 'path = "scripts/test_run_indirect_prompt_injection_no_call.py"')
+    check_relative_markdown_links(readme)
+
+
 def main() -> int:
     check_mode_registry()
     check_claude_md()
@@ -483,6 +1032,8 @@ def main() -> int:
     check_reference_docs()
     check_bilingual_purge()
     check_rebuttal_audit_guard()
+    check_ideation_diversity_no_call_contract()
+    check_indirect_prompt_injection_no_call_envelope()
 
     if ERRORS:
         print("Spec consistency check failed:")

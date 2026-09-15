@@ -1,6 +1,11 @@
 #!/usr/bin/env python3
 """Mutation tests for the #611 Journal-Fit Reviewer display-name contract."""
 
+# Fork adaptation: upstream also pins the zh-TW / zh-CN / ja-JP / ko-KR / es-ES
+# READMEs and docs/PERFORMANCE.zh-TW.md. This fork deleted or never shipped those
+# (check_spec_consistency.check_bilingual_purge asserts the purged ones stay
+# deleted), so their pins are dropped. The invariant is unchanged: every surviving
+# surface still carries the display label and the frozen internal tokens.
 from __future__ import annotations
 
 import shutil
@@ -13,11 +18,6 @@ from check_reviewer_role_label import REQUIRED
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 CHECKER = REPO_ROOT / "scripts" / "check_reviewer_role_label.py"
-# Fork adaptation: the zh-TW / zh-CN / ja-JP / ko-KR READMEs and
-# docs/PERFORMANCE.zh-TW.md were deleted in the v3.17.0 bilingual purge, so their
-# rows are dropped from the surface dicts below — the `tree` fixture copies every
-# listed file out of the repo and would otherwise raise FileNotFoundError before
-# any assertion runs. check_reviewer_role_label.py carries the matching adaptation.
 UNCOVERED_PUBLIC_SURFACES = {
     "academic-paper/examples/revision_recovery_example.md": (
         "Journal-Fit Reviewer (serialized source ID EIC):",
@@ -30,15 +30,16 @@ UNCOVERED_PUBLIC_SURFACES = {
     ),
     "academic-pipeline/examples/full_pipeline_example.md": (
         "Journal-Fit Reviewer (serialized source ID EIC):",
+        "5 role-separated review reports (Journal-Fit Reviewer + R1/R2/R3 + Devil's Advocate)",
     ),
     "academic-pipeline/examples/integrity_failure_recovery.md": (
         "(Journal-Fit Reviewer + R1 Methodology + R2 Domain + R3 Perspective + Devil's Advocate)",
     ),
     "academic-pipeline/examples/mid_entry_example.md": (
-        "full: Complete 4-person review (Journal-Fit Reviewer + 3 Peer Reviewers)",
+        "full: Complete 5-person review (Journal-Fit Reviewer + R1/R2/R3 + Devil's Advocate)",
     ),
     "academic-pipeline/references/reproducibility_audit.md": (
-        "Journal-Fit Reviewer + R1/R2/R3 + Devil's Advocate — five fixed perspectives",
+        "Journal-Fit Reviewer + R1/R2/R3 + Devil's Advocate — five role-separated perspectives",
     ),
     "docs/ARCHITECTURE.md": (
         "5 review reports (Journal-Fit Reviewer + R1 methodology + R2 domain + R3 interdisciplinary + Devil's Advocate)",
@@ -61,6 +62,28 @@ REVIEW_DISPATCH_SURFACES = {
         "Do not reuse Stage 3 `eic` or `editorial_synthesizer` workers for Stage 3'",
     ),
     "README.md": ("First-round review panel vs. contract-governed re-review dispatch boundary",),
+}
+PROVENANCE_LANGUAGE_SURFACES = {
+    ".claude/CLAUDE.md": (
+        "a blind and separately executed Devil's Advocate critique",
+        "independent Devil's Advocate critique",
+    ),
+    "docs/SETUP.md": (
+        "Cross-model generates a blind, separately executed critique",
+        "Cross-model generates independent critique",
+    ),
+    "deep-research/agents/devils_advocate_agent.md": (
+        "needed for a blind, separately executed critique",
+        "needed for an independent critique",
+    ),
+    "shared/handoff_schemas.md": (
+        "the blind, separately executed pass evaluates",
+        "the independent pass evaluates",
+    ),
+    "shared/cross_model_verification.md": (
+        "blind-separately-executed-DA-critique prompt",
+        "independent-DA-critique prompt",
+    ),
 }
 FILES = tuple(dict.fromkeys((*REQUIRED, *UNCOVERED_PUBLIC_SURFACES, *REVIEW_DISPATCH_SURFACES)))
 
@@ -147,9 +170,6 @@ def test_field_card_has_public_display_and_stable_wire_role(tree: Path) -> None:
 def test_field_card_preserves_existing_non_eic_role_values(tree: Path) -> None:
     rel = "academic-paper-reviewer/agents/field_analyst_agent.md"
     text = (tree / rel).read_text(encoding="utf-8")
-    # Fork: five-seat panel — the DA seat is load-bearing for the DA-CRITICAL
-    # terminal gate in check_panel_synthesis.py, so the serialized token
-    # carries it. check_reviewer_role_label.py pins the same string.
     existing_role_field = (
         "**Role**: [EIC / Peer Reviewer 1 / Peer Reviewer 2 / Peer Reviewer 3 / Devil's Advocate]"
     )
@@ -368,6 +388,71 @@ def test_public_readme_cannot_restore_legacy_role_name(tree: Path) -> None:
     result = _run(tree)
     assert result.returncode == 1
     assert "display-label drift" in result.stderr
+
+
+def test_full_mode_example_cannot_regress_to_four_person_panel(tree: Path) -> None:
+    rel = "academic-pipeline/examples/full_pipeline_example.md"
+    _mutate(
+        tree,
+        rel,
+        "5 role-separated review reports (Journal-Fit Reviewer + R1/R2/R3 + Devil's Advocate)",
+        "Complete 4-person review",
+    )
+    result = _run(tree)
+    assert result.returncode == 1
+    assert "panel-cardinality/provenance drift" in result.stderr
+
+
+def test_full_mode_example_cannot_claim_binary_independence(tree: Path) -> None:
+    rel = "academic-pipeline/examples/full_pipeline_example.md"
+    _mutate(
+        tree,
+        rel,
+        "5 role-separated review reports",
+        "4 independent review reports",
+    )
+    result = _run(tree)
+    assert result.returncode == 1
+    assert "panel-cardinality/provenance drift" in result.stderr
+
+
+@pytest.mark.parametrize(
+    ("rel", "safe_phrase", "binary_phrase"),
+    tuple((rel, phrases[0], phrases[1]) for rel, phrases in PROVENANCE_LANGUAGE_SURFACES.items()),
+)
+def test_active_surfaces_cannot_restore_binary_independence(
+    tree: Path, rel: str, safe_phrase: str, binary_phrase: str
+) -> None:
+    _mutate(tree, rel, safe_phrase, binary_phrase)
+    result = _run(tree)
+    assert result.returncode == 1
+    assert "provenance drift" in result.stderr
+
+
+def test_reviewer_skill_cannot_call_fixed_da_dynamically_configured(tree: Path) -> None:
+    rel = "academic-paper-reviewer/SKILL.md"
+    _mutate(
+        tree,
+        rel,
+        "dynamically configures 4 card-backed identities (Journal-Fit Reviewer + 3 peer reviewers), and adds the fixed Devil's Advocate as the fifth execution seat",
+        "dynamically configures 5 reviewers",
+    )
+    result = _run(tree)
+    assert result.returncode == 1
+    assert "panel-cardinality/provenance drift" in result.stderr
+
+
+def test_decision_template_cannot_drop_fixed_da_report(tree: Path) -> None:
+    rel = "academic-paper-reviewer/templates/editorial_decision_template.md"
+    _mutate(
+        tree,
+        rel,
+        "[Attach all 5 complete reviewer reports — four card-backed scoring reports plus the fixed Devil's Advocate — for the author's reference]",
+        "[Attach all 4 complete reviewer reports for the author's reference]",
+    )
+    result = _run(tree)
+    assert result.returncode == 1
+    assert "panel-cardinality/provenance drift" in result.stderr
 
 
 @pytest.mark.parametrize(

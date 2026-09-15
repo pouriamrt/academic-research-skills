@@ -62,15 +62,15 @@ def make_tree(tmp_path: Path) -> Path:
     # A Bucket A agent with NO tools key (inherit) — must pass untouched.
     eic = tmp_path / "academic-paper-reviewer/agents/eic_agent.md"
     eic.parent.mkdir(parents=True, exist_ok=True)
-    eic.write_text("---\nname: eic_agent\n---\n\nbody\n", encoding="utf-8", newline="\n")
+    eic.write_text("---\nname: eic_agent\n---\n\nbody\n", newline="\n", encoding="utf-8")
     # A NON-Bucket-A agent advertising Bash — allowed (invariant 2 is
     # scoped to fenced agents; the orchestrator legitimately holds shell).
     orch = tmp_path / "academic-pipeline/agents/pipeline_orchestrator_agent.md"
     orch.parent.mkdir(parents=True, exist_ok=True)
     orch.write_text(
         "---\nname: pipeline_orchestrator_agent\ntools: Read, Bash\n---\n\nbody\n",
-        encoding="utf-8",
         newline="\n",
+        encoding="utf-8",
     )
     return tmp_path
 
@@ -201,7 +201,7 @@ def test_missing_allowlisted_file_fails(tmp_path):
 def test_no_frontmatter_fails(tmp_path):
     make_tree(tmp_path)
     src, _ = first_pair()
-    (tmp_path / src).write_text("body only\n", encoding="utf-8", newline="\n")
+    (tmp_path / src).write_text("body only\n", newline="\n", encoding="utf-8")
     assert any("no YAML frontmatter" in e for e in errs_for(tmp_path, src))
 
 
@@ -400,8 +400,8 @@ def test_bom_canonical_allowlist_value_still_fires_byte_witness(tmp_path):
     target = tmp_path / sorted(ALLOWLISTED_FILES)[0]
     target.write_text(
         "---\nname: report_compiler_agent\ntools: ﻿Read﻿, Write, Edit, Grep, Glob\n---\n\nbody\n",
-        encoding="utf-8",
         newline="\n",
+        encoding="utf-8",
     )
     errs = [e for e in check(tmp_path) if "byte-equal" in e]
     assert errs, "byte-witness must still fire on an invisible-char canonical value"
@@ -570,8 +570,8 @@ def test_flow_merge_with_quoted_hash_key_fails_closed(tmp_path):
     eic = tmp_path / "academic-paper-reviewer/agents/eic_agent.md"
     eic.write_text(
         '---\n{ "x#": y, name: eic_agent, <<: &b {tools: "Read, Bash"} }\n---\n\nbody\n',
-        encoding="utf-8",
         newline="\n",
+        encoding="utf-8",
     )
     assert any("merge key / alias" in e for e in check(tmp_path) if "eic_agent" in e)
 
@@ -603,8 +603,8 @@ def test_allowlisted_file_with_alias_fails_closed(tmp_path):
     p.write_text(
         "---\nname: research_architect_agent\n_t: &t Read, Write, Edit, "
         "Grep, Glob\ntools: *t\n---\n\nbody\n",
-        encoding="utf-8",
         newline="\n",
+        encoding="utf-8",
     )
     assert any("merge key / alias" in e for e in errs_for(tmp_path, src))
 
@@ -618,8 +618,8 @@ def test_indented_fence_in_block_scalar_does_not_truncate(tmp_path):
     eic = tmp_path / "academic-paper-reviewer/agents/eic_agent.md"
     eic.write_text(
         "---\ndescription: |\n  ---\nname: eic_agent\ntools: Read, Bash\n---\n\nbody\n",
-        encoding="utf-8",
         newline="\n",
+        encoding="utf-8",
     )
     assert any("declares Bash" in e for e in check(tmp_path) if "eic_agent" in e)
 
@@ -681,8 +681,8 @@ def test_escaped_tools_key_fires_byte_witness_on_allowlisted(tmp_path):
     p.write_text(
         '---\nname: research_architect_agent\n"tool\\u0073": Read, Write, '
         "Edit, Grep, Glob\n---\n\nbody\n",
-        encoding="utf-8",
         newline="\n",
+        encoding="utf-8",
     )
     assert any("not byte-equal" in e for e in errs_for(tmp_path, src))
 
@@ -727,7 +727,7 @@ def test_nested_bucket_a_agent_declaring_bash_fails_closed(tmp_path):
     nested = tmp_path / "academic-paper-reviewer/agents/subdir/eic_agent.md"
     nested.parent.mkdir(parents=True, exist_ok=True)
     nested.write_text(
-        "---\nname: eic_agent\ntools: Read, Bash\n---\nbody\n", encoding="utf-8", newline="\n"
+        "---\nname: eic_agent\ntools: Read, Bash\n---\nbody\n", newline="\n", encoding="utf-8"
     )
     assert any("declares Bash" in e for e in check(tmp_path) if "eic_agent" in e)
 
@@ -742,7 +742,7 @@ def test_directory_symlink_under_agent_dir_fails_closed(tmp_path):
     payload = tmp_path / "payload"
     payload.mkdir()
     (payload / "eic_agent.md").write_text(
-        "---\nname: eic_agent\ntools: Read, Bash\n---\nbody\n", encoding="utf-8", newline="\n"
+        "---\nname: eic_agent\ntools: Read, Bash\n---\nbody\n", newline="\n", encoding="utf-8"
     )
     try:
         (agents / "nested").symlink_to(payload, target_is_directory=True)

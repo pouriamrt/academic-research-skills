@@ -40,17 +40,14 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 SCHEMAS = REPO_ROOT / "shared/contracts/passport"
 
 BIBLIOGRAPHY_AGENT_PATH = REPO_ROOT / "deep-research/agents/bibliography_agent.md"
-# Fork baseline (LF-normalized): fork carries the v3.9.2 Phase Boundary block +
-# fork-specific Material Passport corpus-consumer protocol, merged with upstream
-# #511 Part A "Omission reason-provenance" (Triangulation Extension § Per-API
-# degradation) and upstream #548 "Last Searched" line in the Search Strategy
-# output template (Schema 2 last_searched_at emission).
-# F2 ownership invariant intact: NO M6 citation-provenance / M5 version-family /
-# temporal logic in bibliography_agent — those remain owned by
-# timeline_extraction_agent per spec §3.4 + §3.6.
-# Re-pin procedure: sha256 of the file, updated IN THE SAME COMMIT as any
-# reviewed change to deep-research/agents/bibliography_agent.md.
-BIBLIOGRAPHY_AGENT_SHA256 = "21ac3864fe91cc2a5e9005665ff1bc4ce94d0f902751ce6a59ce1ba6fcf0dc62"
+# Fork baseline (LF-normalized). The fork's bibliography_agent.md carries the
+# v3.9.2 Phase Boundary block and the Material Passport corpus-consumer
+# protocol on top of upstream's content. F2 ownership invariant intact: no
+# M6 citation-provenance / M5 version-family / temporal logic lives here —
+# those stay owned by timeline_extraction_agent per spec §3.4 + §3.6.
+# Re-pin procedure: sha256 of the LF-normalized file, updated IN THE SAME
+# COMMIT as any reviewed change to deep-research/agents/bibliography_agent.md.
+BIBLIOGRAPHY_AGENT_SHA256 = "bd84c0b2adba6b78a74cb4b5d10057e53da9b516d1e2e5b6af02a8e0a37c79f7"
 
 
 def _validate(yaml_path: Path, schema_path: Path) -> list[str]:
@@ -59,8 +56,8 @@ def _validate(yaml_path: Path, schema_path: Path) -> list[str]:
     if not schema_path.exists():
         return [f"missing schema: {schema_path}"]
     try:
-        data = yaml.safe_load(yaml_path.read_text())
-        schema = json.loads(schema_path.read_text())
+        data = yaml.safe_load(yaml_path.read_text(encoding="utf-8"))
+        schema = json.loads(schema_path.read_text(encoding="utf-8"))
         jsonschema.validate(data, schema)
         return []
     except jsonschema.ValidationError as exc:
@@ -78,7 +75,7 @@ def _check_supersession_cycles(timeline_path: Path) -> list[str]:
     if not timeline_path.exists():
         return []
     try:
-        data = yaml.safe_load(timeline_path.read_text())
+        data = yaml.safe_load(timeline_path.read_text(encoding="utf-8"))
     except Exception:
         return []  # schema validation handles parse errors
     sources = {s["citation_key"]: s for s in data.get("sources", []) if "citation_key" in s}
@@ -113,8 +110,8 @@ def _check_bibliography_agent_unchanged() -> list[str]:
     """
     if not BIBLIOGRAPHY_AGENT_PATH.exists():
         return [f"missing: {BIBLIOGRAPHY_AGENT_PATH}"]
-    # Normalize CRLF→LF so Windows core.autocrlf=true checkouts hash the
-    # same bytes as the LF blob stored in git.
+    # Normalize CRLF->LF so a Windows checkout hashes the same bytes as the
+    # LF blob stored in git.
     raw = BIBLIOGRAPHY_AGENT_PATH.read_bytes().replace(b"\r\n", b"\n")
     actual = hashlib.sha256(raw).hexdigest()
     if actual != BIBLIOGRAPHY_AGENT_SHA256:

@@ -22,6 +22,7 @@ def _run(*args, cwd=None):
         capture_output=True,
         text=True,
         cwd=cwd or REPO_ROOT,
+        encoding="utf-8",
     )
 
 
@@ -71,7 +72,7 @@ def test_empty_folder_emits_empty_passport(tmp_path):
     assert r.returncode == 0
     import yaml
 
-    with passport_out.open() as f:
+    with passport_out.open(encoding="utf-8") as f:
         doc = yaml.safe_load(f)
     assert doc == {"literature_corpus": []}
 
@@ -124,7 +125,7 @@ def test_duplicate_collision_handled(tmp_path):
     assert r.returncode == 0
     import yaml
 
-    with passport_out.open() as f:
+    with passport_out.open(encoding="utf-8") as f:
         doc = yaml.safe_load(f)
     keys = {e["citation_key"] for e in doc["literature_corpus"]}
     assert len(keys) == 2  # no collisions
@@ -142,7 +143,7 @@ def test_filename_with_spaces_produces_valid_uri(tmp_path):
     assert r.returncode == 0, r.stderr
     import yaml
 
-    with p_out.open() as f:
+    with p_out.open(encoding="utf-8") as f:
         doc = yaml.safe_load(f)
     if doc["literature_corpus"]:
         ptr = doc["literature_corpus"][0]["source_pointer"]
@@ -162,7 +163,7 @@ def test_chen2024_no_tail_uses_empty_title_hint(tmp_path):
     assert r.returncode == 0, r.stderr
     import yaml
 
-    with p_out.open() as f:
+    with p_out.open(encoding="utf-8") as f:
         doc = yaml.safe_load(f)
     assert len(doc["literature_corpus"]) == 1
     e = doc["literature_corpus"][0]
@@ -188,9 +189,9 @@ def test_mixed_valid_invalid_in_nested_tree(tmp_path):
     assert r.returncode == 0, r.stderr
     import yaml
 
-    with p_out.open() as f:
+    with p_out.open(encoding="utf-8") as f:
         passport = yaml.safe_load(f)
-    with r_out.open() as f:
+    with r_out.open(encoding="utf-8") as f:
         rej = yaml.safe_load(f)
     keys = {e["citation_key"] for e in passport["literature_corpus"]}
     assert keys == {"park2022main", "lee2021review"}
@@ -220,9 +221,9 @@ def test_symlink_pointing_outside_input_does_not_crash(tmp_path):
     import jsonschema
     import yaml
 
-    with p_out.open() as f:
+    with p_out.open(encoding="utf-8") as f:
         passport = yaml.safe_load(f)
-    with r_out.open() as f:
+    with r_out.open(encoding="utf-8") as f:
         rejection = yaml.safe_load(f)
     assert passport == {"literature_corpus": []}
     assert rejection["rejected"] == [
@@ -238,7 +239,9 @@ def test_symlink_pointing_outside_input_does_not_crash(tmp_path):
     # just be crash-free — a non-enum reason would pass the run but break the
     # schema (Codex follow-up to #310).
     schema = json.loads(
-        (REPO_ROOT / "shared/contracts/passport/rejection_log.schema.json").read_text()
+        (REPO_ROOT / "shared/contracts/passport/rejection_log.schema.json").read_text(
+            encoding="utf-8"
+        )
     )
     jsonschema.validate(rejection, schema)
 
@@ -255,7 +258,7 @@ def test_parseable_non_pdf_extension(tmp_path):
     assert r.returncode == 0, r.stderr
     import yaml
 
-    with p_out.open() as f:
+    with p_out.open(encoding="utf-8") as f:
         doc = yaml.safe_load(f)
     assert len(doc["literature_corpus"]) == 1
     assert doc["literature_corpus"][0]["citation_key"] == "kim2020book"

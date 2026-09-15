@@ -15,6 +15,59 @@ from tempfile import TemporaryDirectory
 
 from scripts import check_spec_consistency as csc
 
+
+class TestRelativeMarkdownLinkGrammar(unittest.TestCase):
+    """#794: rendered-link grammar, with the old lint scope retained."""
+
+    def setUp(self) -> None:
+        self._old_root = csc.ROOT
+        csc.ERRORS.clear()
+        self._tmp = TemporaryDirectory()
+        csc.ROOT = Path(self._tmp.name)
+        (csc.ROOT / "docs").mkdir()
+
+    def tearDown(self) -> None:
+        csc.ROOT = self._old_root
+        csc.ERRORS.clear()
+        self._tmp.cleanup()
+
+    def _check(self, text: str) -> list[str]:
+        (csc.ROOT / "docs/PAGE.md").write_text(text, encoding="utf-8")
+        csc.check_relative_markdown_links("docs/PAGE.md")
+        return list(csc.ERRORS)
+
+    def test_rendered_dead_link_still_fires(self) -> None:
+        errors = self._check("[dead](MISSING.md)\n")
+        self.assertTrue(any("MISSING.md" in error for error in errors))
+
+    def test_non_rendering_and_image_targets_do_not_fire(self) -> None:
+        errors = self._check(
+            "![image](missing-image.png)\n"
+            "`[example](missing-inline.md)`\n"
+            "<!-- [commented](missing-comment.md) -->\n"
+            "```markdown\n[fenced](missing-fenced.md)\n```\n"
+        )
+        self.assertEqual(errors, [])
+
+    def test_titled_link_checks_only_its_destination(self) -> None:
+        errors = self._check('[dead](MISSING.md "optional title")\n')
+        self.assertEqual(
+            errors,
+            ["docs/PAGE.md: broken relative markdown link 'MISSING.md'"],
+        )
+
+    def test_existing_file_with_unknown_fragment_remains_out_of_scope(self) -> None:
+        (csc.ROOT / "docs/TARGET.md").write_text("# Real Heading\n", encoding="utf-8")
+        errors = self._check("[pointer](TARGET.md#not-a-real-heading)\n")
+        self.assertEqual(errors, [])
+
+
+# Minimal docs/ARCHITECTURE.md fixture carrying the THREE marker kinds the invariant-4 check (#345)
+# must distinguish: current-component markers (mermaid node + component/stage rows, which MUST equal
+# the suite version), a feature-history timeline marker (`vX.Y.Z : <feature>`, which must NOT be
+# policed), and a prose mention of `academic-pipeline vX.Y.Z` (provenance narrative, which must also
+# NOT be policed — it is excluded by the table-row anchor). `{comp}` = current-component version;
+# `{hist}` = timeline version; `{prose}` = the version named in the narrative provenance line.
 ARCHITECTURE_TEMPLATE = """\
 # Architecture
 
@@ -261,6 +314,22 @@ class TestSkillVersionTableConsistency(unittest.TestCase):
         csc.ROOT = self._orig_root
         csc.ERRORS.clear()
         csc.ERRORS.extend(self._orig_errors)
+
+    def test_skill_paths_follow_the_active_root(self) -> None:
+        """#809: paths derive from ROOT at call time, so a fixture tree with a
+        different skill set is policed on ITS skills, never the checkout's."""
+        with TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            csc.ROOT = root
+            (root / "only-skill").mkdir()
+            (root / "only-skill" / "SKILL.md").write_text(
+                "---\nname: only-skill\n---\n", encoding="utf-8"
+            )
+            self.assertEqual(csc._skill_version_paths(), ("only-skill/SKILL.md",))
+            csc.check_skill_version_blocks()
+            self.assertTrue(
+                all(e.startswith("only-skill/SKILL.md:") for e in csc.ERRORS), csc.ERRORS
+            )
 
     def test_all_four_aligned_passes(self) -> None:
         """All four SKILL.md with frontmatter matching their table → no errors."""

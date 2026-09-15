@@ -304,6 +304,7 @@ def execute_script(
             timeout=timeout_seconds,
             cwd=str(project_root),
             env={**os.environ, "PYTHONDONTWRITEBYTECODE": "1"},
+            encoding="utf-8",
         )
         elapsed = (datetime.now(UTC) - start_time).total_seconds()
         result.exit_code = proc.returncode
@@ -710,10 +711,7 @@ def get_current_environment(experiment_env: Path) -> dict[str, str]:
     # Python version
     try:
         proc = subprocess.run(
-            [python_exe, "--version"],
-            capture_output=True,
-            text=True,
-            timeout=10,
+            [python_exe, "--version"], capture_output=True, text=True, timeout=10, encoding="utf-8"
         )
         version_str = proc.stdout.strip() or proc.stderr.strip()
         # "Python 3.12.3" -> "3.12.3"
@@ -730,6 +728,7 @@ def get_current_environment(experiment_env: Path) -> dict[str, str]:
             capture_output=True,
             text=True,
             timeout=30,
+            encoding="utf-8",
         )
         if proc.returncode == 0:
             for line in proc.stdout.strip().splitlines():

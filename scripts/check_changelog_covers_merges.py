@@ -166,6 +166,7 @@ def _git_out(repo: Path, *args: str) -> str | None:
             capture_output=True,
             text=True,
             check=True,
+            encoding="utf-8",
         )
     except (subprocess.CalledProcessError, FileNotFoundError):
         return None

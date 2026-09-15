@@ -146,7 +146,7 @@ BAND_ANCHORS = (
 TEMPLATE_BAND_WITNESS = (
     "Apply the test to each finding independently, never to its surrounding "
     "narrative or defect cluster. A finding never inherits a higher band from "
-    "siblings; joint impact belongs in the dimension score and synthesis. If "
+    "siblings; joint impact belongs in the criterion judgement and synthesis. If "
     "a defect needs siblings to reach rejection-level impact, it is not "
     "Critical alone. These are per-finding decision-impact tests, never "
     "distributional targets: there is no expected frequency for any band."
@@ -768,23 +768,22 @@ def check(root: Path) -> list[str]:
         "genuine-merits Reject rule (A1/B1)",
     )
 
-    # The calibration leniency prior must stay bridged to B1 (a measurement-
-    # reading prior, never a decision rule) so the two cannot be read as
-    # contradicting surfaces.
+    # External calibration evidence may motivate a hypothesis, but it cannot be
+    # imported as a decision prior or numeric correction for a live review.
     cal_norm = _norm(_read(root, CALIBRATION_REL))
     _require(
         errors,
         cal_norm,
         CALIBRATION_REL,
-        "measurement-reading prior for calibration",
-        "B1 bridge note",
+        "External studies can motivate hypotheses about leniency or harshness",
+        "external-evidence scope note",
     )
     _require(
         errors,
         cal_norm,
         CALIBRATION_REL,
-        "no verdict is shaded stricter on this prior's account",
-        "B1 bridge rule",
+        "must not be imported as correction factors, thresholds, or target-profile measurements",
+        "no imported decision-prior rule",
     )
 
     # Mandatory-strength mirrors (round-2 P2): guided mode's opener and the
@@ -906,7 +905,7 @@ def check(root: Path) -> list[str]:
         errors,
         rcf_norm,
         RCF_REL,
-        "Affirm genuine strengths first when they exist",
+        "Acknowledge genuine strengths",
         "conditional hypercriticism guidance (A1/B1)",
     )
 
@@ -939,22 +938,22 @@ def check(root: Path) -> list[str]:
     # (round-7 P1, extended round-8: Confidence + Evidence Anchor columns too,
     # and the template's tables in lockstep).
     n_sev_tables = synth.count(
-        "| # | Revision Item | Sub-Claim(s) | Severity | Evidence Anchor | Confidence | Source | Priority | Estimated Effort |"
+        "| Transport ref | Revision Item | Sub-Claim(s) | Severity | Evidence Anchor | Confidence | Source | Obligation class | Cost scope | Bounded consequence |"
     )
     if n_sev_tables != 2:
         errors.append(
             f"{SYNTH_REL}: expected the transported-metadata columns on both "
             f"roadmap tables (Required + Suggested), found {n_sev_tables}"
         )
-    for header in (
-        "| # | Revision Item | Sub-Claim(s) | Severity | Evidence Anchor | Confidence | Source Reviewer | Section | Estimated Effort |",
-        "| # | Revision Item | Sub-Claim(s) | Severity | Evidence Anchor | Confidence | Source Reviewer | Priority | Section | Expected Improvement |",
-    ):
-        if header not in dt:
-            errors.append(
-                f"{DECISION_TEMPLATE_REL}: roadmap table lost its transported-metadata "
-                f"columns: {header[:60]!r}..."
-            )
+    template_header = (
+        "| Transport ref | Revision Item | Sub-Claim(s) | Severity | Evidence Anchor | "
+        "Confidence | Source Reviewer | Obligation class | Cost scope | Bounded consequence |"
+    )
+    if dt.count(template_header) != 2:
+        errors.append(
+            f"{DECISION_TEMPLATE_REL}: expected the non-ranking transported-metadata "
+            f"columns on both roadmap tables, found {dt.count(template_header)}"
+        )
     _require(
         errors,
         synth_norm,
@@ -1020,7 +1019,7 @@ def check(root: Path) -> list[str]:
         errors,
         skill_norm,
         SKILL_REL,
-        "independent overlap in findings is legitimate corroboration",
+        "overlapping findings may corroborate one another, but role/persona separation is not evidence of independent errors",
         "overlap-corroboration standard (P0-3)",
     )
     _require(

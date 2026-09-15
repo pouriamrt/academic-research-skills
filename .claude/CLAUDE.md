@@ -50,6 +50,8 @@ a line break inside it fails the lint.
 
 Calibration is the sole explicit exception and uses the canonical non-sprint single-call transport plus attempt-atomic fallback in `shared/cross_model_verification.md`; it never borrows the sprint payload or mixes substrates in one scored attempt.
 
+Cross-model verification (`ARS_CROSS_MODEL`, optional) runs integrity sample checks, a blind and separately executed Devil's Advocate critique, and blind disagreement checkpoints at design freeze and final editorial decision (#518). The once-planned generic sixth reviewer is retired, not deferred. These execution facts are not a binary independence claim.
+
 ## Command model routing
 
 Relocated here from the SessionStart banner in Task 3 - not derivable from Claude Code's

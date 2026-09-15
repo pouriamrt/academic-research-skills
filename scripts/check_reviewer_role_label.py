@@ -1,13 +1,11 @@
 #!/usr/bin/env python3
-"""Pin #611's public Journal-Fit Reviewer name and frozen eic/EIC tokens.
+"""Pin #611's public Journal-Fit Reviewer name and frozen eic/EIC tokens."""
 
-Fork adaptation: upstream also pins the zh-TW / zh-CN / ja-JP / ko-KR READMEs and
-docs/PERFORMANCE.zh-TW.md. This fork deleted those in the v3.17.0 bilingual purge
-(check_spec_consistency.check_bilingual_purge asserts they stay deleted), so their
-pins are dropped here. The invariant itself is unchanged — every surviving surface
-still has to carry the display label and the frozen internal tokens.
-"""
-
+# Fork adaptation: upstream also pins the zh-TW / zh-CN / ja-JP / ko-KR / es-ES
+# READMEs and docs/PERFORMANCE.zh-TW.md. This fork deleted or never shipped those
+# (check_spec_consistency.check_bilingual_purge asserts the purged ones stay
+# deleted), so their pins are dropped. The invariant is unchanged: every surviving
+# surface still carries the display label and the frozen internal tokens.
 from __future__ import annotations
 
 import argparse
@@ -37,6 +35,8 @@ REQUIRED = {
         "Those compatibility tokens do not select a Stage 3' agent file",
         "Three dedicated contract calls owned by the orchestrating layer",
         "orchestrating layer; routed-seat Phase 1/2A calls; Phase 2B integration call",
+        "dynamically configures 4 card-backed identities; the Devil's Advocate remains a fixed fifth seat",
+        "dynamically configures 4 card-backed identities (Journal-Fit Reviewer + 3 peer reviewers), and adds the fixed Devil's Advocate as the fifth execution seat",
     ),
     "academic-paper-reviewer/agents/eic_agent.md": (
         "name: eic_agent",
@@ -52,6 +52,7 @@ REQUIRED = {
         "**Display role**: [Journal-Fit Reviewer",
         "**Journal-Fit Reviewer Configuration** (internal role `EIC`)",
         "[Card #1: Journal-Fit Reviewer (serialized source ID: EIC)]",
+        "The full panel has five execution seats: these four card-backed roles plus one fixed Devil's Advocate.",
     ),
     "academic-paper-reviewer/agents/methodology_reviewer_agent.md": (
         "Journal-Fit Reviewer recommendation, domain expertise score",
@@ -73,6 +74,9 @@ REQUIRED = {
         "[EIC/R1/R2/R3/DA]",
         "A genuine SPLIT requires Journal-Fit Reviewer arbitration: the Journal-Fit Reviewer reviews all positions and makes a binding recommendation.",
         "one the Journal-Fit Reviewer adjudicates and rejects",
+        "All 5 reports have been fully read and cited (four dynamically configured cards plus the fixed Devil's Advocate)",
+        "Based on all 5 reports (four card-backed scoring reports plus the fixed Devil's Advocate)",
+        "### Devil's Advocate Summary",
     ),
     "academic-paper-reviewer/references/sprint_contract_protocol.md": (
         "Journal-Fit Reviewer (`eic`) + methodology + domain + perspective + DA",
@@ -106,6 +110,8 @@ REQUIRED = {
     "academic-paper-reviewer/templates/editorial_decision_template.md": (
         "| Journal-Fit Reviewer | [Senior-editor or associate-editor identity]",
         "[EIC/R1/R2/R3/DA]",
+        "| Devil's Advocate | Fixed adversarial seat | N/A — findings only | N/A — per-finding only |",
+        "Attach all 5 complete reviewer reports — four card-backed scoring reports plus the fixed Devil's Advocate",
     ),
     "academic-paper-reviewer/templates/revision_response_template.md": (
         "## Response to Journal-Fit Reviewer",
@@ -117,12 +123,14 @@ REQUIRED = {
     "academic-paper-reviewer/examples/hei_paper_review_example.md": (
         "**Role**: EIC\n**Display role**: Journal-Fit Reviewer",
         "### Journal-Fit Review Report",
+        "### Devil's Advocate Review Report (Fixed Fifth Seat)",
         "| Journal-Fit Reviewer | *Higher Education* Associate Editor",
         "Source: EIC-W1",
     ),
     "academic-paper-reviewer/examples/interdisciplinary_review_example.md": (
         "**Role**: EIC\n**Display role**: Journal-Fit Reviewer",
         "### Journal-Fit Review Report (Summary)",
+        "### Devil's Advocate Review Report (Fixed Fifth Seat)",
         "Source: EIC-W1",
     ),
     "academic-paper-reviewer/examples/subclaim_decomposition_example.md": (
@@ -146,15 +154,18 @@ REQUIRED = {
     ),
     "academic-pipeline/examples/full_pipeline_example.md": (
         "Journal-Fit Reviewer (serialized source ID EIC):",
+        "5 role-separated review reports (Journal-Fit Reviewer + R1/R2/R3 + Devil's Advocate)",
+        "Typed six-axis Review Panel Provenance receipt; no binary independence claim",
     ),
     "academic-pipeline/examples/integrity_failure_recovery.md": (
         "(Journal-Fit Reviewer + R1 Methodology + R2 Domain + R3 Perspective + Devil's Advocate)",
     ),
     "academic-pipeline/examples/mid_entry_example.md": (
-        "full: Complete 4-person review (Journal-Fit Reviewer + 3 Peer Reviewers)",
+        "full: Complete 5-person review (Journal-Fit Reviewer + R1/R2/R3 + Devil's Advocate)",
+        "Among the 4 non-DA scoring reviewers: 2 Accept + 2 Minor Revision",
     ),
     "academic-pipeline/references/reproducibility_audit.md": (
-        "Journal-Fit Reviewer + R1/R2/R3 + Devil's Advocate — five fixed perspectives",
+        "Journal-Fit Reviewer + R1/R2/R3 + Devil's Advocate — five role-separated perspectives",
     ),
     "academic-pipeline/references/two_stage_review_protocol.md": (
         "**Review team**: Journal-Fit Reviewer + R1",
@@ -175,6 +186,23 @@ REQUIRED = {
         "Stage 3' uses three dedicated contract judgment calls",
         "They are protocol calls, not agent-manifest identities",
         "Do not reuse Stage 3 `eic` or `editorial_synthesizer` workers for Stage 3'",
+    ),
+    ".claude/CLAUDE.md": (
+        "a blind and separately executed Devil's Advocate critique",
+        "These execution facts are not a binary independence claim",
+    ),
+    "docs/SETUP.md": ("Cross-model generates a blind, separately executed critique",),
+    "deep-research/agents/devils_advocate_agent.md": (
+        "a blind, separately executed critique",
+        "Blinding and separate execution are typed facts, not proof of independent errors",
+    ),
+    "shared/handoff_schemas.md": (
+        "the blind, separately executed pass evaluates `must_fix` rows only",
+        "This describes execution and blinding, not binary independence",
+    ),
+    "shared/cross_model_verification.md": (
+        "blind-separately-executed-DA-critique prompt",
+        "it does not assert independent error processes",
     ),
 }
 
@@ -225,11 +253,6 @@ FORBIDDEN_REVIEW_DISPATCH = {
 # `contract_role: eic`, frozen evidence, and real-journal EIC roles remain valid.
 FORBIDDEN_DISPLAY = {
     "README.md": ("(EIC + 3 dynamic reviewers",),
-    "academic-paper-reviewer/agents/eic_agent.md": (
-        "# EIC Agent",
-        'description: "Editor-in-Chief seat;',
-        "## EIC Review Report",
-    ),
     "academic-paper-reviewer/agents/field_analyst_agent.md": (
         "**EIC Configuration**",
         "[Card #1: EIC]",
@@ -276,6 +299,41 @@ FORBIDDEN_DISPLAY = {
     "academic-paper-reviewer/examples/subclaim_decomposition_example.md": ("EIC arbitration",),
 }
 
+# Full-mode execution has five seats: four configured scoring identities plus
+# the fixed Devil's Advocate. A 4/4 count is valid only when the prose names the
+# non-DA consensus denominator. Role separation and blinding are typed axes;
+# neither licenses a binary "independent reports" claim.
+FORBIDDEN_PANEL_LANGUAGE = {
+    "academic-paper-reviewer/SKILL.md": ("dynamically configures 5 reviewers",),
+    "academic-paper-reviewer/agents/editorial_synthesizer_agent.md": ("Based on the 4 reports",),
+    "academic-paper-reviewer/templates/editorial_decision_template.md": (
+        "[Attach all 4 complete reviewer reports",
+        "**[CONSENSUS-4]** (All reviewers agree)",
+    ),
+    "academic-pipeline/examples/full_pipeline_example.md": (
+        "Complete 4-person review",
+        "complete review process with 4 reviewers",
+        "4 reviewers review in parallel",
+        "4 independent review reports",
+    ),
+    "academic-pipeline/examples/mid_entry_example.md": (
+        "Complete 4-person review",
+        "complete 4-person review",
+        "4 reviewers will do a complete review",
+        "2 out of 4 reviewers Accept",
+    ),
+}
+
+# Active cross-model documentation may state observed blinding and separate
+# execution, but those facts do not prove statistically independent errors.
+FORBIDDEN_BINARY_INDEPENDENCE = {
+    ".claude/CLAUDE.md": ("independent Devil's Advocate critique",),
+    "docs/SETUP.md": ("Cross-model generates independent critique",),
+    "deep-research/agents/devils_advocate_agent.md": ("needed for an independent critique",),
+    "shared/handoff_schemas.md": ("the independent pass evaluates",),
+    "shared/cross_model_verification.md": ("independent-DA-critique prompt",),
+}
+
 
 def check(root: Path) -> list[str]:
     errors: list[str] = []
@@ -311,6 +369,20 @@ def check(root: Path) -> list[str]:
             if needle in text:
                 errors.append(
                     f"{rel}: re-review dispatch drift; fixed-agent roster {needle!r} remains"
+                )
+    for rel, needles in FORBIDDEN_PANEL_LANGUAGE.items():
+        text = texts[rel]
+        for needle in needles:
+            if needle in text:
+                errors.append(
+                    f"{rel}: panel-cardinality/provenance drift; stale phrase {needle!r} remains"
+                )
+    for rel, needles in FORBIDDEN_BINARY_INDEPENDENCE.items():
+        text = texts[rel]
+        for needle in needles:
+            if needle in text:
+                errors.append(
+                    f"{rel}: provenance drift; binary-independence phrase {needle!r} remains"
                 )
     return errors
 

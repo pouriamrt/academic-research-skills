@@ -19,7 +19,7 @@ metadata:
 Universal deep research tool — a domain-agnostic 14-agent team for rigorous academic research on any topic. v2.5 adds concept lineage tracing via Semantic Scholar and OpenAlex APIs, enriched gap analysis, methodology distribution audits, and literature assumption extraction. v2.4 added writing quality improvements to the report compiler:
 
 - **Style Profile consumption** (optional) — If a Style Profile is available from academic-paper intake, the report compiler applies it as a soft guide for the Executive Summary and Synthesis sections. Discipline conventions and report objectivity take priority.
-- **Writing Quality Check** — The report compiler runs a writing quality checklist before finalizing: a deterministic scan via `scripts/check_prose_tells.py` (em dash, antithesis, hype vocabulary, servile framing), then the judgment pass — AI-typical overused terms, sentence/paragraph length variation, throat-clearing openers. See `academic-paper/references/writing_quality_check.md`.
+- **Writing Quality Check** — The report compiler runs a writing quality checklist before finalizing: a deterministic scan via `scripts/check_prose_tells.py` (em dash, antithesis, hype vocabulary, servile framing), then the judgment pass — AI-typical overused terms, sentence/paragraph length variation, throat-clearing openers. See `academic-paper/references/writing_quality_check.md`. It also flags claims the cited sources do not support as `[MATERIAL GAP]` rather than hedging them (#825).
 
 > **Routing discipline (v3.9.2):** see `.claude/CLAUDE.md` "Routing Discipline (v3.9.2)" + `shared/references/intent_clarification_protocol.md` for cross-skill routing rules. This skill assumes routing has already settled — ambiguous cross-phase materials should have been clarified upstream.
 
@@ -51,7 +51,11 @@ Guide my research on the impact of declining birth rates on private universities
 
 ### Trigger Keywords
 
-**Triggers**: research, deep research, literature review, systematic review, meta-analysis, PRISMA, evidence synthesis, fact-check, methodology, APA report, academic analysis, policy analysis, guide my research, help me think through, monitor this topic, set up alerts
+**English**: research, deep research, literature review, systematic review, meta-analysis, PRISMA, evidence synthesis, fact-check, methodology, APA report, academic analysis, policy analysis, WHY HOW WHAT papers, 3W literature scan, guide my research, help me think through, monitor this topic, set up alerts
+
+**Español**: investigación profunda, revisión de literatura, revisión sistemática, metaanálisis, síntesis de evidencia, verificación de datos, informe APA, comparación de artículos WHY HOW WHAT, escaneo de tres vías, guía mi investigación, ayúdame a razonar, monitorear este tema, configurar alertas
+
+**繁體中文**: 研究, 深度研究, 文獻回顧, 文獻探討, 系統性回顧, 後設分析, 證據綜整, 事實查核, 三段式文獻掃描, WHY HOW WHAT 論文比較, 研究方法, 學術分析, 政策分析, 引導我的研究, 幫我釐清, 監測這個主題, 設定追蹤
 
 **한국어**: 심층 연구, 문헌 조사, 문헌 고찰, 체계적 문헌고찰, 메타분석, 근거 종합, 사실 확인, 팩트체크, 연구 방법 설계, 학술 분석, 연구 방향을 잡아줘, 연구 주제 정하는 것을 도와줘, 무엇을 연구할지 모르겠어, 이 주제 계속 모니터링해줘
 
@@ -240,12 +244,17 @@ User: "Research [topic]"
      |   - Writing quality (clarity, conciseness, flow)
      |   - Verdict: ACCEPT / MINOR REVISION / MAJOR REVISION / REJECT
      |
-     |-> [ethics_review_agent] -> Ethics Clearance
+     |-> [ethics_review_agent] -> Research-Integrity Review + Human-Subjects Administrative Status
      |   - AI disclosure compliance
      |   - Attribution integrity
      |   - Dual-use screening
      |   - Fair representation check
-     |   - Verdict: CLEARED / CONDITIONAL / BLOCKED
+     |   - Integrity verdict only: CLEARED / CONDITIONAL / BLOCKED
+     |   - Human subjects: readiness and authorization reported separately; institutional determination required
+     |   - Authority-bound planning: exact requirement IDs + actor/consumer scope only after the #666 replay-validated resolved-context gate
+     |   - Candidate rule trace: display only a replay-validated and surface-linted #669 artifact; never use it as a pathway result or workflow input
+     |   - Packet structure: consume only a replay-validated #667 manifest; deterministic status never becomes authorization or content adequacy
+     |   - Content coverage: consume only a replay-validated #681 `LLM-ADVISORY`; preserve deterministic status and report efficacy as `UNMEASURED`
      |
      +-> [devils_advocate_agent] -- CHECKPOINT 3
          - Final vulnerability scan
@@ -290,69 +299,20 @@ Routing into Mode B requires explicit user signal — `/ars-<mode>` slash comman
 
 ## Socratic Mode: GUIDED RESEARCH DIALOGUE
 
-Core principle: From the perspective of a Q1 international journal editor-in-chief, guide users to clarify their research questions through Socratic questioning. Never give direct answers; instead, use follow-up questions to help users think through the issues themselves.
+5-layer dialogue guiding users from vague ideas to concrete research questions. Core principle while non-generation Socratic mode is active: ⚠️ **IRON RULE**: Never give direct answers. The explicit candidate-generation exit below leaves that mode before any candidate is shown.
 
 See `agents/socratic_mentor_agent.md` for the detailed agent definition.
 See `references/socratic_questioning_framework.md` for the questioning framework.
 
-```
-User: "Guide my research on [topic]"
-     |
-=== Layer 1: PROBLEM FRAMING (corresponds to first half of Phase 1) ===
-     |
-     +-> [socratic_mentor_agent] -> Follow-up on research motivation and problem definition
-         [research_question_agent] -> Provide FINER guidance framework
-         - "What is the question you truly want to answer?"
-         - "Why does this question matter? To whom?"
-         - "If your research succeeds, how would the world be different?"
-         Extract [INSIGHT: ...] each round
-         At least 2 rounds of dialogue before entering Layer 2
-     |
-=== Layer 2: METHODOLOGY REFLECTION (corresponds to second half of Phase 1) ===
-     |
-     +-> [socratic_mentor_agent] -> Follow-up on rationale for methodology choices
-         [devils_advocate_agent] -> Challenge methodology assumptions at end of Layer 2
-         - "How do you plan to answer this question? Why this approach?"
-         - "Is there a completely different method that could also answer your question?"
-         - "What is the biggest weakness of your method?"
-         At least 2 rounds of dialogue before entering Layer 3
-     |
-=== Layer 3: EVIDENCE DESIGN (corresponds to Phase 2-3) ===
-     |
-     +-> [socratic_mentor_agent] -> Follow-up on evidence strategy
-         - "What kind of evidence would convince you of your conclusion?"
-         - "What evidence would make you change your conclusion?"
-         - "What are you most worried about not finding?"
-         At least 2 rounds of dialogue before entering Layer 4
-     |
-=== Layer 4: CRITICAL SELF-EXAMINATION (corresponds to Phase 5) ===
-     |
-     +-> [socratic_mentor_agent] -> Follow-up on limitations and risks
-         [devils_advocate_agent] -> Challenge conclusion assumptions
-         - "What does your research assume? What if those assumptions don't hold?"
-         - "How would someone with the opposite view refute you?"
-         - "What negative impact could your research have?"
-         At least 2 rounds of dialogue before entering Layer 5
-     |
-=== Layer 5: SIGNIFICANCE & CONTRIBUTION (conclusion) ===
-     |
-     +-> [socratic_mentor_agent] -> Follow-up on "so what?"
-         - "Why should readers care about your findings?"
-         - "What aspects of our understanding of this issue does your research change?"
-         At least 1 round of dialogue
-     |
-     +-> Compile all [INSIGHT]s into Research Plan Summary
-         Can directly hand off to academic-paper (plan mode)
-```
+**Research-question authorship boundary:** Socratic mode is non-generation by
+default. Non-convergence may produce only a summary of directions the user has
+already expressed plus focused questions or a `lit-review` suggestion; it never
+produces candidate RQs automatically. If the user explicitly asks the system to
+propose candidates, announce the exit from non-generation Socratic mode and
+emit `[SOCRATIC-NON-GENERATION-EXIT: explicit_user_request]` on a standalone
+line before any clearly labeled AI-generated candidate. Never switch silently.
 
-### Socratic Mode Dialogue Management Rules
-
-- At least 2 rounds of dialogue per layer before moving to the next (Layer 5 requires at least 1)
-- Users can request to skip to the next layer at any time
-- Mentor responses limited to 200-400 words
-- If no convergence after 10 rounds -> suggest switching to `full` mode (see Failure Paths F6)
-- If dialogue exceeds 15 rounds -> automatically compile INSIGHTs and end
-- If user requests direct answers -> gently decline, explain the value of guided learning
+> See `references/socratic_mode_protocol.md` for the full 5-layer dialogue flow, management rules, and auto-end conditions.
 
 ### Opt-in Reading Probe (v3.5.1)
 
@@ -524,7 +484,7 @@ Key failure path summary:
 
 | Failure Scenario | Trigger Condition | Recovery Strategy |
 |---------|---------|---------|
-| RQ cannot converge | Phase 1 / Layer 1 exceeds multiple rounds while still vague | Provide 3 candidate RQs or suggest lit-review |
+| RQ cannot converge | Phase 1 / Layer 1 exceeds multiple rounds while still vague | Full mode may use its candidate workflow; Socratic mode summarizes user-expressed directions or suggests `lit-review`, with no candidate generation unless the user explicitly exits non-generation mode |
 | Insufficient literature | bibliography_agent finds < 5 sources | Expand search strategy, alternative keywords |
 | Methodology mismatch | RQ type misaligned with method capability | Return to Phase 1, suggest 3 alternative methods |
 | Devil's Advocate CRITICAL | Fatal logical flaw discovered | STOP, explain the issue, require correction |
@@ -568,15 +528,27 @@ After research is complete, the following materials can be handed off to `academ
 4. **Schema 3: Synthesis Report** (from synthesis_agent) — now includes methodology distribution and enriched gap analysis
 5. **Schema 16: Concept Lineage Report** (from concept_lineage_agent) — intellectual genealogy of central concepts with citation chain data
 6. **Schema 15: INSIGHT Collection** [if socratic mode, also includes Research Plan Summary]
+6. **Preregistration handoff** — exactly one builder-produced
+   `preregistration-artifact/1.0` sidecar (including an unavailable receipt) and,
+   when `status=provided`, its explicitly named companion bytes
 
 See `shared/handoff_schemas.md` for full schema field definitions.
-
 **Trigger**: User says "now help me write a paper" or "write a paper based on this"
 
 `academic-paper`'s `intake_agent` will automatically detect available materials and skip redundant steps:
 - Has RQ Brief -> skip topic scoping
 - Has Bibliography -> skip literature search
 - Has Synthesis -> accelerate findings / discussion writing
+- Has preregistration sidecar -> strict-validate it and its named companion,
+  then carry both byte-for-byte; never rebuild it from prose or a template
+
+The non-shell `research_architect_agent` supplies only the explicit caller
+declaration and companion handle. Before handoff, a shell-capable dispatcher
+must run the named deterministic `build-preregistration-artifact` subcommand in
+`scripts/build_cross_document_consistency_advisory.py`, with caller-held RFC3339
+`declared_at`. Only that builder may create or update the sidecar. A later
+explicit user supply creates a new builder-produced sidecar; omission or silent
+substitution is invalid.
 
 See `examples/handoff_to_paper.md` for a detailed handoff example.
 
@@ -622,9 +594,22 @@ See `academic-pipeline/SKILL.md` for the complete workflow.
 | `references/socratic_questioning_framework.md` | 6 types of Socratic questions + 30+ prompt patterns | socratic_mentor |
 | `references/failure_paths.md` | 12 failure scenarios with triggers and recovery paths | all agents |
 | `references/mode_selection_guide.md` | Mode selection flowchart and comparison table | orchestrator |
-| `references/irb_decision_tree.md` | IRB decision tree + Taiwan process + HE quick reference | ethics_review, research_architect |
+| `references/irb_decision_tree.md` | Portable human-subjects navigation aid; not an authority, universal taxonomy, or pathway determination | ethics_review, research_architect |
+| `shared/references/human_subjects_authority_protocol.md` | Exact authority selection, replay validation, actor/consumer filtering, and fail-closed resolved-context gate | ethics_review, research_architect |
+| `shared/human_subjects_authority_registry.json` | Bounded jurisdiction profiles with exact requirement IDs, authority anchors, obligated actors, and consumer scopes | ethics_review, research_architect |
+| `shared/contracts/human_subjects/resolved_authority_context.schema.json` | Pointer-only resolved-context shape; consumers still require deterministic replay validation | ethics_review, research_architect |
+| `shared/references/review_pathway_rule_trace_protocol.md` | Candidate-name ownership, exact selected-profile predicate partition, replay, render, surface lint, and non-consumer boundary (#669) | ethics_review, research_architect |
+| `shared/contracts/human_subjects/review_pathway_trace_request.schema.json` | Closed caller-owned candidate mapping; every selected-profile `pathway_trace` requirement is accounted for exactly once | dispatching layer |
+| `shared/contracts/human_subjects/review_pathway_rule_trace.schema.json` | Closed candidate-only predicate trace; replay and surface lint remain mandatory | ethics_review, research_architect |
+| `shared/references/submission_packet_manifest_protocol.md` | Deterministic packet inventory, authority replay, status, and non-authorization boundary (#667) | ethics_review, research_architect |
+| `shared/contracts/human_subjects/submission_packet_manifest.schema.json` | Pointer-only deterministic packet-manifest shape; consumers still require exact replay validation | ethics_review, research_architect |
+| `shared/references/authority_content_coverage_advisory_protocol.md` | Replay-bound authority-profile content observations, evidence-row/1.1 provenance, and noninterference boundary (#681) | ethics_review, research_architect |
+| `shared/contracts/human_subjects/content_coverage_advisory.schema.json` | Closed `LLM-ADVISORY` carrier; consumers still require finalizer replay validation | ethics_review, research_architect |
+| `shared/contracts/evidence/evidence_row_v1_1.schema.json` | Requirement/expectation/artifact-bound bounded excerpt rows for the #681 advisory surface | ethics_review |
 | `references/equator_reporting_guidelines.md` | EQUATOR reporting guideline mapping | research_architect, report_compiler |
 | `references/preregistration_guide.md` | Preregistration decision tree + platforms + checklist | research_architect |
+| `shared/references/cross_document_consistency_advisory_protocol.md` | Exact preregistration sidecar ownership/replay plus #672 advisory and #660 coexistence boundaries | research_architect, academic-paper intake, pipeline orchestrator |
+| `shared/contracts/passport/preregistration_artifact.schema.json` | Closed persistent preregistration handoff receipt; companion bytes remain separately named | dispatching layer, intake, pipeline orchestrator |
 | `references/systematic_review_toolkit.md` | Cochrane v6.4, PRISMA 2020, RoB 2, ROBINS-I, I² guide, GRADE, protocol registration | risk_of_bias, meta_analysis, bibliography, report_compiler |
 | `references/literature_monitoring_strategies.md` | Google Scholar alerts, PubMed alerts, RSS feeds, Retraction Watch, citation tracking, monitoring cadence | monitoring_agent |
 | `references/citation_graph_apis.md` | Semantic Scholar + OpenAlex API reference: endpoints, fields, rate limits, citation chain tracing patterns | concept_lineage_agent, bibliography_agent |
@@ -678,7 +663,7 @@ Follows the user's language. Academic terminology kept in English. Socratic mode
 4. **Limitation transparency** — every report must have an explicit limitations section
 5. **AI disclosure** — all reports include a statement that AI-assisted research tools were used
 6. **Reproducibility** — search strategies, inclusion criteria, and analytical methods must be documented for replication
-7. **Socratic integrity** — in socratic mode, never give direct answers; always guide through questions
+7. **Socratic integrity** — while non-generation Socratic mode is active, never give direct answers; always guide through questions. A candidate response is lawful only after the explicit exit marker and is outside that mode.
 
 ## Cross-Agent Quality Alignment
 

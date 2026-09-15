@@ -817,6 +817,7 @@ def check_b4(
             capture_output=True,
             text=True,
             timeout=10,
+            encoding="utf-8",
         )
         if result.returncode != 0:
             return [

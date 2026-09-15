@@ -885,7 +885,7 @@ class PluginRootInfraScopeTest(unittest.TestCase):
         link = os.path.join(self.ws, "sneaky_link.py")
         target = os.path.join(self.plugin, "scripts/ars_write_scope_guard.py")
         os.makedirs(os.path.dirname(target), exist_ok=True)
-        with open(target, "w") as fh:
+        with open(target, "w", encoding="utf-8") as fh:
             fh.write("# real guard\n")
         symlink_or_skip(self, target, link)
         p = payload("Write", {"file_path": link, "content": "x"}, cwd=self.ws)  # main session

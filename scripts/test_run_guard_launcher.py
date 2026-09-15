@@ -52,7 +52,7 @@ REAL_PY = sys.executable
 
 def _write_exec(path, body):
     """Write an executable script at `path` with `body` (a /bin/sh script)."""
-    with open(path, "w") as fh:
+    with open(path, "w", encoding="utf-8") as fh:
         fh.write(body)
     os.chmod(path, os.stat(path).st_mode | stat.S_IEXEC | stat.S_IXGRP | stat.S_IXOTH)
 
@@ -136,7 +136,9 @@ def _make_plugin_layout(base, guard_body):
     os.makedirs(os.path.join(base, "scripts"))
     launcher_copy = os.path.join(base, "hooks", "run_guard.sh")
     shutil.copy(LAUNCHER, launcher_copy)
-    with open(os.path.join(base, "scripts", "ars_write_scope_guard.py"), "w") as fh:
+    with open(
+        os.path.join(base, "scripts", "ars_write_scope_guard.py"), "w", encoding="utf-8"
+    ) as fh:
         fh.write(guard_body)
     # The real guard reads this manifest; copy it so an unmodified-guard layout also works.
     manifest = os.path.join(os.path.dirname(GUARD), "ars_phase_scope_manifest.json")
@@ -309,7 +311,7 @@ class LauncherPyDashThreeArgTest(unittest.TestCase):
             # Confirm py was actually called with -3 (not as a literal "py -3" command, which
             # would have produced no log line at all because no such command exists).
             self.assertTrue(os.path.exists(argv_log), "py was never invoked")
-            with open(argv_log) as fh:
+            with open(argv_log, encoding="utf-8") as fh:
                 first = fh.readline().strip()
             self.assertTrue(
                 first.startswith("-3"), f"py must be called with -3 first; got {first!r}"

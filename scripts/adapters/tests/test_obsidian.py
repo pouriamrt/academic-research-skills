@@ -16,6 +16,7 @@ def _run(*args):
         capture_output=True,
         text=True,
         cwd=REPO_ROOT,
+        encoding="utf-8",
     )
 
 
@@ -195,8 +196,7 @@ def test_authors_wrong_type_is_rejected(tmp_path, load_yaml):
     vault = tmp_path / "v"
     vault.mkdir()
     (vault / "bad_authors.md").write_text(
-        "---\ncitekey: bad2024\ntitle: T\nauthors: 42\nyear: 2024\n---\n",
-        encoding="utf-8",
+        "---\ncitekey: bad2024\ntitle: T\nauthors: 42\nyear: 2024\n---\n", encoding="utf-8"
     )
     p = tmp_path / "p.yaml"
     r = tmp_path / "r.yaml"
@@ -247,8 +247,7 @@ def test_malformed_yaml_frontmatter_rejected(tmp_path, load_yaml):
     vault = tmp_path / "v"
     vault.mkdir()
     (vault / "malformed.md").write_text(
-        "---\nbad: [unclosed\n---\nbody content here\n",
-        encoding="utf-8",
+        "---\nbad: [unclosed\n---\nbody content here\n", encoding="utf-8"
     )
     p = tmp_path / "p.yaml"
     r = tmp_path / "r.yaml"
@@ -320,8 +319,7 @@ def test_all_rejected_corpus_produces_empty_passport(tmp_path, load_yaml):
     vault = tmp_path / "v"
     vault.mkdir()
     (vault / "only_invalid.md").write_text(
-        "This file has no frontmatter and no parseable structure.\n",
-        encoding="utf-8",
+        "This file has no frontmatter and no parseable structure.\n", encoding="utf-8"
     )
     p = tmp_path / "p.yaml"
     r = tmp_path / "r.yaml"

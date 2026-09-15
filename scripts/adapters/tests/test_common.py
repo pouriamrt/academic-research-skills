@@ -202,7 +202,7 @@ def test_write_passport_sorts_by_citation_key(tmp_path: Path):
     ]
     p = tmp_path / "passport.yaml"
     write_passport(p, entries)
-    loaded = yaml.safe_load(p.read_text())
+    loaded = yaml.safe_load(p.read_text(encoding="utf-8"))
     keys = [e["citation_key"] for e in loaded["literature_corpus"]]
     assert keys == ["chen2024", "wang2024"]
 
@@ -210,7 +210,7 @@ def test_write_passport_sorts_by_citation_key(tmp_path: Path):
 def test_write_passport_empty_list(tmp_path: Path):
     p = tmp_path / "passport.yaml"
     write_passport(p, [])
-    loaded = yaml.safe_load(p.read_text())
+    loaded = yaml.safe_load(p.read_text(encoding="utf-8"))
     assert loaded == {"literature_corpus": []}
 
 
@@ -225,7 +225,7 @@ def test_write_rejection_log_minimal(tmp_path: Path):
         adapter_version="1.0.0",
         rejected=[],
     )
-    loaded = yaml.safe_load(p.read_text())
+    loaded = yaml.safe_load(p.read_text(encoding="utf-8"))
     assert loaded["adapter_name"] == "folder_scan.py"
     assert loaded["adapter_version"] == "1.0.0"
     assert loaded["rejected"] == []
@@ -244,7 +244,7 @@ def test_write_rejection_log_sorts_by_source(tmp_path: Path):
             {"source": "a.pdf", "reason": "year_unparseable"},
         ],
     )
-    loaded = yaml.safe_load(p.read_text())
+    loaded = yaml.safe_load(p.read_text(encoding="utf-8"))
     sources = [r["source"] for r in loaded["rejected"]]
     assert sources == ["a.pdf", "z.pdf"]
 
@@ -259,7 +259,7 @@ def test_write_rejection_log_passes_validation(tmp_path: Path):
     schema_path = (
         Path(__file__).resolve().parents[3] / "shared/contracts/passport/rejection_log.schema.json"
     )
-    schema = json.loads(schema_path.read_text())
+    schema = json.loads(schema_path.read_text(encoding="utf-8"))
     validator = Draft202012Validator(schema, format_checker=Draft202012Validator.FORMAT_CHECKER)
     p = tmp_path / "rejection_log.yaml"
     write_rejection_log(
@@ -275,7 +275,7 @@ def test_write_rejection_log_passes_validation(tmp_path: Path):
         ],
         input_source="/path/to/lib",
     )
-    doc = yaml.safe_load(p.read_text())
+    doc = yaml.safe_load(p.read_text(encoding="utf-8"))
     errors = list(validator.iter_errors(doc))
     assert errors == [], f"helper output failed schema: {[e.message for e in errors]}"
 
@@ -289,7 +289,7 @@ def test_write_rejection_log_with_input_source(tmp_path: Path):
         rejected=[],
         input_source="/path/to/refs",
     )
-    loaded = yaml.safe_load(p.read_text())
+    loaded = yaml.safe_load(p.read_text(encoding="utf-8"))
     assert loaded["input_source"] == "/path/to/refs"
 
 
@@ -308,7 +308,7 @@ def test_write_rejection_log_with_summary_totals(tmp_path: Path):
         total_input=10,
         total_accepted=8,
     )
-    loaded = yaml.safe_load(p.read_text())
+    loaded = yaml.safe_load(p.read_text(encoding="utf-8"))
     assert loaded["summary"] == {
         "total_input": 10,
         "total_accepted": 8,

@@ -69,12 +69,25 @@ def synthesis_response() -> str:
     return synth_fixtures.synthesis_for(synth_fixtures.reports())[0] + SYNTHESIS_DELIVERABLES
 
 
+# #610 step 5: the methodology seat's extraction call. The attestation basis
+# matches the card fixture's receipt line byte-for-byte, so the calculator's
+# pass-through output and the card's receipt section satisfy the injected-
+# receipt identity gate without touching the synthesis fixtures.
+EXTRACTION_TEXT = (
+    "## Recompute Extraction\n"
+    "\n"
+    "no_recomputable_statistics: the fixture manuscript reports no "
+    "statistic covered by a bounded procedure\n"
+)
+
+
 def scripted(overrides: dict[str, list[str]] | None = None) -> harness.ScriptedTransport:
     """A panel that passes every real gate, with per-label overrides."""
     responses: dict[str, list[str]] = {"field_analysis": [FIELD_ANALYSIS]}
     for role in SEATS:
         responses[f"{role}.phase1"] = [phase_fixtures.phase1_text(role)]
         responses[f"{role}.phase2"] = [synth_fixtures.report_text(role)]
+    responses["methodology.extraction"] = [EXTRACTION_TEXT]
     responses["synthesis"] = [synthesis_response()]
     for label, queue in (overrides or {}).items():
         responses[label] = queue
@@ -465,7 +478,17 @@ def test_every_seat_is_dispatched_in_the_frozen_order(tmp_path):
     assert labels[-1] == "synthesis"
     expected = (
         ["field_analysis"]
-        + [f"{role}.{phase}" for role in SEATS for phase in ("phase1", "phase2")]
+        + [
+            f"{role}.{phase}"
+            for role in SEATS
+            # #610 step 5: the methodology seat alone carries the extraction
+            # call between its Phase 1 and Phase 2.
+            for phase in (
+                ("phase1", "extraction", "phase2")
+                if role == "methodology"
+                else ("phase1", "phase2")
+            )
+        ]
         + ["synthesis"]
     )
     assert labels == expected
@@ -2229,7 +2252,7 @@ def test_the_auth_staging_happens_once_per_transport(tmp_path, monkeypatch):
 
     class Ok:
         returncode = 0
-        stdout = "ok"
+        stdout = _stream("ok")
         stderr = ""
 
     def capture(argv, **kwargs):
@@ -2353,11 +2376,6 @@ def test_a_file_named_bundle_prints_no_absolute_path(tmp_path, capsys):
 # Thirteenth round: codex r12 and the seventh closing security pass.
 
 
-@pytest.mark.skipif(
-    sys.platform == "win32",
-    reason="no /tmp on Windows; the macOS /tmp -> /private/tmp alias this "
-    "exercises does not exist there",
-)
 def test_a_tmp_spelled_work_dir_is_scrubbed_from_the_record(monkeypatch):
     """RUN_ROOTS stored only RESOLVED spellings, but an OSError message
     carries the caller's spelling: on darwin `/tmp` resolves to
@@ -4728,3 +4746,502 @@ def test_a_missing_abort_artifact_is_rewritten_at_emission(tmp_path):
     assert named.exists()
     assert record["diagnostic"] in named.read_text(encoding="utf-8")
     assert record["provenance_status"] == "valid"
+
+
+# --- #610 step 5: extraction call + calculator + injected receipts --------
+
+
+from scripts import recompute_receipts as recompute  # noqa: E402
+
+
+def test_a_clean_panel_records_the_three_call_methodology_shape(tmp_path):
+    result, bundle, record = run(tmp_path, scripted())
+    assert record["score_eligible"] is True, record.get("diagnostic")
+    stages = record["completed_stages"]
+    assert "methodology.extraction" in stages
+    assert "methodology.recompute" in stages
+    assert (
+        stages.index("methodology.phase1")
+        < stages.index("methodology.extraction")
+        < stages.index("methodology.recompute")
+        < stages.index("methodology.phase2")
+    )
+    assert bundle.resolves("methodology.extraction.a1.md")
+    assert bundle.resolves(harness.RECEIPTS_ARTIFACT)
+    assert bundle.resolves("methodology.recompute.log")
+    receipts = (bundle.root / harness.RECEIPTS_ARTIFACT).read_text(encoding="utf-8")
+    assert receipts == recompute.compute_receipts(recompute.parse_extraction(EXTRACTION_TEXT))
+    assert record["evidence_contract"] == "reviewer-e4/2026-08-06"
+
+
+def test_the_computed_receipts_ride_the_methodology_phase2_prompt(tmp_path):
+    transport = scripted()
+    run(tmp_path, transport)
+    prompts = {call.label: call.prompt for call, _sandbox in transport.calls}
+    assert "<computed_receipts>" in prompts["methodology.phase2"]
+    assert "no_recomputable_statistics: the fixture manuscript" in prompts["methodology.phase2"]
+    # The extraction call itself carries the manuscript and nothing of the
+    # contract: transcription is deliberately contract-blind.
+    assert "<paper_content>" in prompts["methodology.extraction"]
+    assert "acceptance_dimensions" not in prompts["methodology.extraction"]
+    # No other seat sees a receipts block.
+    assert "<computed_receipts>" not in prompts["domain.phase2"]
+
+
+def test_a_rejected_extraction_gets_one_structural_retry(tmp_path):
+    malformed = "Let me extract the statistics.\n\n" + EXTRACTION_TEXT
+    result, bundle, record = run(
+        tmp_path,
+        scripted(
+            {
+                "methodology.extraction": [malformed, EXTRACTION_TEXT],
+            }
+        ),
+    )
+    assert record["score_eligible"] is True, record.get("diagnostic")
+    events = record["extraction_retries"]
+    assert len(events) == 1
+    assert events[0]["role"] == "methodology"
+    assert events[0]["rejected_response_preserved"] is True
+    assert events[0]["checker_output_preserved"] is True
+    assert "[EXTRACTION-GRAMMAR:" in events[0]["diagnostic"]
+    assert bundle.resolves("methodology.extraction.a1.md")
+    assert bundle.resolves("methodology.extraction.a2.md")
+
+
+def test_a_twice_rejected_extraction_shrinks_the_panel(tmp_path):
+    malformed = "Not an extraction at all."
+    result, _bundle, record = run(
+        tmp_path,
+        scripted(
+            {
+                "methodology.extraction": [malformed, malformed],
+            }
+        ),
+    )
+    assert record["score_eligible"] is False
+    assert record["failure_stage"] == "methodology.extraction"
+    assert "[PANEL-SHRUNK:" in record["diagnostic"]
+    assert "[EXTRACTION-GRAMMAR:" in record["diagnostic"]
+
+
+def test_a_calculator_refusal_is_a_panel_fatal_infra_fault(tmp_path):
+    # By construction the gate and the calculator share one parser, so a
+    # calculator refusal of a gate-passed extraction cannot happen through
+    # the dispatch path; exercise the classification directly.
+    bundle = harness.Bundle(tmp_path / "bundle")
+    bundle.write("methodology.extraction.a1.md", "not an extraction\n")
+    with pytest.raises(harness.PanelAborted) as aborted:
+        harness._run_calculator(bundle, "methodology.extraction.a1.md")
+    assert aborted.value.stage == "methodology.recompute"
+    assert aborted.value.exit_code == harness.EXIT_PRECONDITION
+    assert "[RECOMPUTE-CALCULATOR:" in aborted.value.diagnostic
+    assert bundle.resolves("methodology.recompute.log")
+
+
+def test_a_tampered_receipt_section_is_a_conformance_abort(tmp_path):
+    tampered = synth_fixtures.report_text("methodology").replace(
+        "no_recomputable_statistics: the fixture manuscript reports no "
+        "statistic covered by a bounded procedure",
+        "no_recomputable_statistics: I checked and found nothing at all",
+    )
+    result, _bundle, record = run(
+        tmp_path,
+        scripted(
+            {
+                "methodology.phase2": [tampered],
+            }
+        ),
+    )
+    assert record["score_eligible"] is False
+    assert record["failure_stage"] == "methodology.phase2"
+    assert "[RECEIPT-IDENTITY:" in record["diagnostic"]
+
+
+def test_a_real_recompute_extraction_flows_receipts_into_the_card(tmp_path):
+    extraction = phase_fixtures.GRIM_EXTRACTION
+    injected = recompute.compute_receipts(recompute.parse_extraction(extraction))
+    card = phase_fixtures.phase2_text(
+        "methodology",
+        body=phase_fixtures.W1_BACKREF_BODY,
+        receipts=phase_fixtures.faithful_card_lines(injected),
+    )
+    result, bundle, record = run(
+        tmp_path,
+        scripted(
+            {
+                "methodology.extraction": [extraction],
+                "methodology.phase2": [card],
+            }
+        ),
+    )
+    assert record["score_eligible"] is True, record.get("diagnostic")
+    receipts = (bundle.root / harness.RECEIPTS_ARTIFACT).read_text(encoding="utf-8")
+    assert receipts == injected
+    assert "status: mismatch" in receipts
+
+
+# --- 2026-09-07 subject isolation + stream-json capture --------------------
+
+
+def _event(kind, **fields):
+    return json.dumps({"type": kind, **fields})
+
+
+def _stream(*texts, subtype="success", is_error=False, num_turns=None):
+    """A stream-json transcript: one assistant message per text, then the
+    result event (its `result` field mirrors only the LAST message, which
+    is exactly why the transport must not read it)."""
+    lines = [_event("system", subtype="init")]
+    for text in texts:
+        lines.append(
+            _event(
+                "assistant",
+                message={"role": "assistant", "content": [{"type": "text", "text": text}]},
+            )
+        )
+    lines.append(
+        _event(
+            "result",
+            subtype=subtype,
+            is_error=is_error,
+            num_turns=num_turns or len(texts),
+            result=texts[-1] if texts else "",
+        )
+    )
+    return "\n".join(lines) + "\n"
+
+
+def test_response_text_joins_every_assistant_message():
+    """A continued reply arrives as two assistant messages; the text-mode
+    CLI printed only the second (the 2026-09-06 synthesis lost its head)."""
+    stdout = _stream("# Part 1\n### Decision: [Accept]\n| S1 |", "| S19 |\n## Part 3")
+    text = harness.ClaudeCliTransport.response_text(stdout)
+    assert text.startswith("# Part 1") and text.endswith("## Part 3")
+    assert "### Decision: [Accept]" in text
+
+
+def test_response_text_refuses_error_results_and_junk():
+    with pytest.raises(ValueError, match="error_max_turns"):
+        harness.ClaudeCliTransport.response_text(
+            _stream("x", subtype="error_max_turns", is_error=True)
+        )
+    with pytest.raises(ValueError, match="no result event"):
+        harness.ClaudeCliTransport.response_text(
+            _event("assistant", message={"content": []}) + "\n"
+        )
+    with pytest.raises(ValueError, match="non-JSON"):
+        harness.ClaudeCliTransport.response_text("Failed to authenticate\n")
+    # Text blocks only: tool_use or thinking blocks never enter the response.
+    stdout = "\n".join(
+        [
+            _event(
+                "assistant",
+                message={
+                    "content": [
+                        {"type": "thinking", "thinking": "hmm"},
+                        {"type": "text", "text": "answer"},
+                    ]
+                },
+            ),
+            _event("result", subtype="success", is_error=False, result="answer"),
+        ]
+    )
+    assert harness.ClaudeCliTransport.response_text(stdout) == "answer"
+
+
+def test_unreadable_stream_is_a_transport_failure_with_bytes(tmp_path, monkeypatch):
+    class Junk:
+        returncode = 0
+        stdout = "Failed to authenticate. API Error: 401\n"
+        stderr = ""
+
+    monkeypatch.setattr(harness.subprocess, "run", lambda *a, **k: Junk())
+    transport = harness.ClaudeCliTransport(model="m", effort="high")
+    call = harness.Call("eic.phase1", "system", "user", paper_visible=False)
+    with pytest.raises(harness.TransportFailure) as err:
+        transport(call, tmp_path)
+    assert "unreadable stream-json" in err.value.summary
+    assert err.value.stdout.startswith("Failed to authenticate")
+
+
+def test_subject_environment_is_an_allowlist_with_an_empty_config_dir(tmp_path):
+    """The subject inherits nothing from a parent Claude Code session and
+    reads no user-level config: `--bare` alone let the whole global
+    CLAUDE.md, the `language` setting and the output style through."""
+    source = {
+        "PATH": "/usr/bin",
+        "HOME": "/Users/x",
+        "LANG": "en_US.UTF-8",
+        "ANTHROPIC_API_KEY": "sk-ant-test",
+        "ANTHROPIC_BASE_URL": "https://proxy",
+        "CLAUDECODE": "1",
+        "CLAUDE_CODE_SESSION_ID": "abc",
+        "CLAUDE_CONFIG_DIR": "/Users/x/.claude",
+        "CLAUDE_EFFORT": "high",
+        "MAX_THINKING_TOKENS": "5",
+        "EDITOR": "vim",
+        "AWS_PROFILE": "p",
+    }
+    env = harness.ClaudeCliTransport.subject_environment(
+        source, config_dir=tmp_path / "cfg", thinking_tokens=31999
+    )
+    assert env["CLAUDE_CONFIG_DIR"] == str(tmp_path / "cfg")
+    assert env["MAX_THINKING_TOKENS"] == "31999"
+    assert (
+        env["ANTHROPIC_API_KEY"] == "sk-ant-test" and env["ANTHROPIC_BASE_URL"] == "https://proxy"
+    )
+    assert env["PATH"] == "/usr/bin" and env["HOME"] == "/Users/x"
+    for key in ("CLAUDECODE", "CLAUDE_CODE_SESSION_ID", "CLAUDE_EFFORT", "EDITOR", "AWS_PROFILE"):
+        assert key not in env
+
+
+def test_the_transport_runs_with_stream_json_and_its_own_config_dir(tmp_path, monkeypatch):
+    seen = {}
+
+    class Ok:
+        returncode = 0
+        stdout = _stream("head", "tail")
+        stderr = ""
+
+    def capture(argv, **kwargs):
+        seen["argv"] = list(argv)
+        seen["env"] = kwargs["env"]
+        return Ok()
+
+    monkeypatch.setenv("CLAUDECODE", "1")
+    monkeypatch.setenv("ANTHROPIC_API_KEY", "sk-ant-test")
+    monkeypatch.setattr(harness.subprocess, "run", capture)
+    transport = harness.ClaudeCliTransport(model="m", effort="high")
+    call = harness.Call("eic.phase1", "system", "user", paper_visible=False)
+    assert transport(call, tmp_path) == "headtail"
+    assert transport.last_raw_stdout == Ok.stdout
+    argv = seen["argv"]
+    assert argv[argv.index("--output-format") + 1] == "stream-json" and "--verbose" in argv
+    assert "CLAUDECODE" not in seen["env"]
+    config_dir = Path(seen["env"]["CLAUDE_CONFIG_DIR"])
+    assert config_dir.is_dir() and not any(config_dir.iterdir())
+    assert config_dir != Path.home() / ".claude"
+
+
+def test_retracted_and_superseded_messages_are_evicted():
+    """Refusal fallback: the retracted partial must not precede its
+    replacement in the response (wire signals verified on CLI 2.1.260)."""
+    lines = [
+        _event(
+            "assistant", uuid="u1", message={"content": [{"type": "text", "text": "partial-A "}]}
+        ),
+        _event(
+            "assistant",
+            uuid="u2",
+            supersedes=["u1"],
+            message={"content": [{"type": "text", "text": "final-A "}]},
+        ),
+        _event(
+            "assistant", uuid="u3", message={"content": [{"type": "text", "text": "partial-B "}]}
+        ),
+        _event("system", subtype="model_refusal_fallback", retracted_message_uuids=["u3"]),
+        _event("assistant", uuid="u4", message={"content": [{"type": "text", "text": "final-B"}]}),
+        _event("result", subtype="success", is_error=False, result="final-B"),
+    ]
+    text = harness.ClaudeCliTransport.response_text("\n".join(lines) + "\n")
+    assert text == "final-A final-B"
+
+
+def test_unicode_line_separators_inside_text_do_not_break_framing():
+    text = "line one\u2028line two\u0085line three\u2029end"
+    lines = [
+        json.dumps(
+            {"type": "assistant", "message": {"content": [{"type": "text", "text": text}]}},
+            ensure_ascii=False,
+        ),
+        json.dumps(
+            {"type": "result", "subtype": "success", "is_error": False, "result": text},
+            ensure_ascii=False,
+        ),
+    ]
+    assert harness.ClaudeCliTransport.response_text("\r\n".join(lines) + "\r\n") == text
+
+
+def test_subject_environment_keeps_documented_network_configuration(tmp_path):
+    source = {
+        "PATH": "/usr/bin",
+        "HTTPS_PROXY": "http://proxy:3128",
+        "no_proxy": "localhost",
+        "NODE_EXTRA_CA_CERTS": "/etc/ca.pem",
+        "CLAUDE_CODE_CLIENT_CERT": "/c.pem",
+        "CLAUDE_CODE_SESSION_ID": "leak",
+        "AWS_PROFILE": "p",
+    }
+    env = harness.ClaudeCliTransport.subject_environment(
+        source, config_dir=tmp_path, thinking_tokens=1
+    )
+    for key in ("HTTPS_PROXY", "no_proxy", "NODE_EXTRA_CA_CERTS", "CLAUDE_CODE_CLIENT_CERT"):
+        assert env[key] == source[key]
+    assert "CLAUDE_CODE_SESSION_ID" not in env and "AWS_PROFILE" not in env
+
+
+def test_structured_failures_expose_text_not_framing(tmp_path, monkeypatch):
+    """A stream that stops after init carries NO response; an error result
+    carries the CLI's diagnostic; both keep the raw stream separately."""
+
+    class InitOnly:
+        returncode = 1
+        stdout = _event("system", subtype="init") + "\n"
+        stderr = ""
+
+    transport = harness.ClaudeCliTransport(model="m", effort="high")
+    call = harness.Call("eic.phase1", "system", "user", paper_visible=False)
+    monkeypatch.setattr(harness.subprocess, "run", lambda *a, **k: InitOnly())
+    with pytest.raises(harness.TransportFailure) as err:
+        transport(call, tmp_path)
+    assert err.value.stdout == "" and err.value.raw_stdout.startswith("{")
+
+    class AuthResult:
+        returncode = 0
+        stdout = (
+            _event("system", subtype="init")
+            + "\n"
+            + _event(
+                "result",
+                subtype="error_during_execution",
+                is_error=True,
+                result="Failed to authenticate. API Error: 401 API key is invalid.",
+            )
+            + "\n"
+        )
+        stderr = ""
+
+    monkeypatch.setattr(harness.subprocess, "run", lambda *a, **k: AuthResult())
+    with pytest.raises(harness.TransportFailure) as err:
+        transport(call, tmp_path)
+    assert err.value.summary.startswith("[TRANSPORT: result error_during_execution]")
+    assert err.value.stdout == ""
+    assert err.value.diagnostic.startswith("Failed to authenticate")
+    assert err.value.raw_stdout.startswith("{")
+
+    class Plain:
+        returncode = 1
+        stdout = "Failed to authenticate. API Error: 401 API key is invalid.\n"
+        stderr = ""
+
+    monkeypatch.setattr(harness.subprocess, "run", lambda *a, **k: Plain())
+    with pytest.raises(harness.TransportFailure) as err:
+        transport(call, tmp_path)
+    assert (
+        err.value.summary == "[TRANSPORT: exit 1]"
+        and err.value.stdout.startswith("Failed")
+        and err.value.raw_stdout == ""
+    )
+
+
+def test_a_framing_only_failure_is_recorded_as_no_model_response(tmp_path, monkeypatch):
+    """E4's abort handler used to write the stream framing as a
+    `partial-response.md` and claim a partial response was preserved."""
+
+    class InitOnly:
+        returncode = 1
+        stdout = _event("system", subtype="init", cwd="/private/secret") + "\n"
+        stderr = ""
+
+    transport = harness.ClaudeCliTransport(model="m", effort="high")
+    call = harness.Call("eic.phase1", "system", "user", paper_visible=False)
+    monkeypatch.setattr(harness.subprocess, "run", lambda *a, **k: InitOnly())
+    with pytest.raises(harness.TransportFailure) as err:
+        transport(call, tmp_path)
+    assert not err.value.stdout
+    assert err.value.raw_stdout
+
+
+@pytest.mark.parametrize("failure_mode", ["timeout", "nonzero", "zero"])
+def test_truncated_stream_keeps_complete_surviving_assistant_frames(
+    tmp_path, monkeypatch, failure_mode
+):
+    raw = "\n".join(
+        [
+            _event(
+                "assistant",
+                uuid="old",
+                message={"content": [{"type": "text", "text": "retracted"}]},
+            ),
+            _event(
+                "assistant",
+                uuid="new",
+                supersedes=["old"],
+                message={"content": [{"type": "text", "text": "kept"}]},
+            ),
+            _event(
+                "assistant",
+                uuid="other",
+                message={"content": [{"type": "text", "text": "also retracted"}]},
+            ),
+            _event("system", subtype="model_refusal_fallback", retracted_message_uuids=["other"]),
+            '{"type":"assistant","message":',
+        ]
+    )
+    assert harness.ClaudeCliTransport.partial_text(raw) == "kept"
+
+    def fake_cli(*args, **kwargs):
+        if failure_mode == "timeout":
+            raise subprocess.TimeoutExpired(cmd=args[0], timeout=1, output=raw.encode())
+        from types import SimpleNamespace
+
+        return SimpleNamespace(
+            returncode=1 if failure_mode == "nonzero" else 0, stdout=raw, stderr=""
+        )
+
+    monkeypatch.setenv("ANTHROPIC_API_KEY", "test-key")
+    transport = harness.ClaudeCliTransport(model="m", effort="high")
+    monkeypatch.setattr(harness.subprocess, "run", fake_cli)
+    with pytest.raises(harness.TransportFailure) as err:
+        transport(harness.Call("eic.phase1", "system", "user", paper_visible=False), tmp_path)
+    assert err.value.stdout == "kept"
+    assert err.value.raw_stdout == (raw.encode() if failure_mode == "timeout" else raw)
+
+
+@pytest.mark.parametrize("exit_code", [0, 1])
+def test_cli_byte_truncation_preserves_prefix_and_exact_raw_bytes(tmp_path, monkeypatch, exit_code):
+    # A real local byte emitter reproduces subprocess text-mode decoding;
+    # no subject CLI or provider is invoked.
+    raw = (
+        _event("assistant", uuid="u1", message={"content": [{"type": "text", "text": "kept"}]})
+        + '\n{"type":"assistant","message":{"content":[{"type":"text","text":"'
+    ).encode() + b"\xe4\xb8"
+    real_run = subprocess.run
+
+    def byte_emitter(argv, **kwargs):
+        assert argv[:2] == ["claude", "-p"]
+        assert kwargs["text"] is False and isinstance(kwargs["input"], bytes)
+        program = f"import sys; sys.stdin.buffer.read(); sys.stdout.buffer.write({raw!r}); sys.exit({exit_code})"
+        return real_run([sys.executable, "-c", program], **kwargs)
+
+    monkeypatch.setenv("ANTHROPIC_API_KEY", "test-key")
+    transport = harness.ClaudeCliTransport(model="m", effort="high")
+    monkeypatch.setattr(harness.subprocess, "run", byte_emitter)
+    with pytest.raises(harness.TransportFailure) as err:
+        transport(harness.Call("eic.phase1", "system", "user", paper_visible=False), tmp_path)
+    assert "invalid UTF-8" in err.value.summary
+    assert err.value.stdout == "kept" and err.value.raw_stdout == raw
+    bundle = harness.Bundle(tmp_path / "evidence")
+    bundle.write("raw.jsonl", err.value.raw_stdout)
+    assert (bundle.root / "raw.jsonl").read_bytes() == raw
+    with pytest.raises(harness.PreservationError):
+        bundle.write("raw.jsonl", b"replacement")
+
+
+def test_valid_utf8_bytes_decode_strictly_without_rewriting_line_endings(tmp_path, monkeypatch):
+    from types import SimpleNamespace
+
+    raw = _stream("review \u2028 text\r\nend").encode()
+    monkeypatch.setenv("ANTHROPIC_API_KEY", "test-key")
+    transport = harness.ClaudeCliTransport(model="m", effort="high")
+    monkeypatch.setattr(
+        harness.subprocess,
+        "run",
+        lambda *a, **k: SimpleNamespace(returncode=0, stdout=raw, stderr=b""),
+    )
+    assert (
+        transport(harness.Call("eic.phase1", "system", "user", paper_visible=False), tmp_path)
+        == "review \u2028 text\r\nend"
+    )
+    assert transport.last_raw_stdout.encode() == raw

@@ -49,7 +49,12 @@ def phase1_text(role: str, overrides=None) -> str:
     return "\n".join(lines)
 
 
-def phase2_text(role: str, overrides=None, body="", dissent=()) -> str:
+def phase2_text(role: str, overrides=None, body="", dissent=(), receipts=None) -> str:
+    """Build a Phase 2 card; a methodology card carries its #610 receipt
+    section (default: the no-recomputable-statistics attestation), because a
+    methodology card without one stopped being conformant when the receipt
+    gate landed. Pass a list of section lines via ``receipts`` to override.
+    """
     overrides = overrides or {}
     lines = [f"contract_role: {role}", ""]
     if dissent:
@@ -91,6 +96,13 @@ def phase2_text(role: str, overrides=None, body="", dissent=()) -> str:
                 lines.append("score: pass")
         lines.append("")
     lines += ["## Review Body", "", body]
+    if role == "methodology":
+        if receipts is None:
+            receipts = [
+                "no_recomputable_statistics: the fixture manuscript reports "
+                "no statistic covered by a bounded procedure",
+            ]
+        lines += ["", "## Arithmetic Receipts", "", *receipts]
     return "\n".join(lines)
 
 
@@ -539,7 +551,10 @@ def test_empty_section_diagnostic_reports_the_non_blank_line_count():
 )
 def test_non_canonical_dissent_field_shape_aborts(field_line):
     text = phase2_with_dissent_section([field_line])
-    with pytest.raises(phase.ConformanceError, match="canonical unbulleted"):
+    with pytest.raises(
+        phase.ConformanceError,
+        match="DISSENT-HIDDEN|DISSENT-RAW-HTML|canonical unbulleted",
+    ):
         phase.parse_dissent_dimensions(text)
 
 
@@ -553,7 +568,7 @@ def test_non_canonical_dissent_field_shape_aborts(field_line):
 )
 def test_a_dissent_hidden_from_the_sanitizers_still_aborts(hidden):
     """Fences, comments and headings must not launder a dissent field."""
-    with pytest.raises(phase.ConformanceError, match="canonical unbulleted"):
+    with pytest.raises(phase.ConformanceError, match="DISSENT-HIDDEN|canonical unbulleted"):
         phase.parse_dissent_dimensions(phase2_with_dissent_section(hidden))
 
 
@@ -573,7 +588,7 @@ def test_a_canonical_dissent_cannot_hide_a_second_laundered_one(wrapper):
             *wrapper,
         ]
     )
-    with pytest.raises(phase.ConformanceError, match="canonical unbulleted"):
+    with pytest.raises(phase.ConformanceError, match="DISSENT-HIDDEN|canonical unbulleted"):
         phase.parse_dissent_dimensions(text)
 
 
@@ -612,7 +627,7 @@ def test_a_fenced_heading_does_not_end_the_scanned_span():
             "```",
         ]
     )
-    with pytest.raises(phase.ConformanceError, match="canonical unbulleted"):
+    with pytest.raises(phase.ConformanceError, match="DISSENT-HIDDEN|canonical unbulleted"):
         phase.parse_dissent_dimensions(text)
 
 
@@ -648,7 +663,7 @@ def test_a_fenced_structural_heading_does_not_end_the_scanned_span(fence):
             fence,
         ]
     )
-    with pytest.raises(phase.ConformanceError, match="canonical unbulleted"):
+    with pytest.raises(phase.ConformanceError, match="DISSENT-HIDDEN|canonical unbulleted"):
         phase.parse_dissent_dimensions(text)
 
 
@@ -739,7 +754,7 @@ def test_a_duplicate_field_hidden_in_a_fence_is_counted_not_matched():
             "```",
         ]
     )
-    with pytest.raises(phase.ConformanceError, match="canonical unbulleted"):
+    with pytest.raises(phase.ConformanceError, match="DISSENT-HIDDEN|canonical unbulleted"):
         phase.parse_dissent_dimensions(text)
 
 
@@ -755,7 +770,7 @@ def test_a_commented_out_dissent_is_not_credited_as_one():
             "-->",
         ]
     )
-    with pytest.raises(phase.ConformanceError, match="canonical unbulleted"):
+    with pytest.raises(phase.ConformanceError, match="DISSENT-HIDDEN|canonical unbulleted"):
         phase.parse_dissent_dimensions(text)
 
 
@@ -796,7 +811,7 @@ def test_a_comment_reopened_on_its_opening_line_still_hides(opener_line):
             "-->",
         ]
     )
-    with pytest.raises(phase.ConformanceError, match="canonical unbulleted"):
+    with pytest.raises(phase.ConformanceError, match="DISSENT-HIDDEN|canonical unbulleted"):
         phase.parse_dissent_dimensions(text)
 
 
@@ -813,7 +828,7 @@ def test_a_comment_reopened_on_its_closing_line_still_hides():
             "-->",
         ]
     )
-    with pytest.raises(phase.ConformanceError, match="canonical unbulleted"):
+    with pytest.raises(phase.ConformanceError, match="DISSENT-HIDDEN|canonical unbulleted"):
         phase.parse_dissent_dimensions(text)
 
 
@@ -851,7 +866,7 @@ def test_a_container_prefixed_opener_still_hides(opener):
             "rationale: plan was inadequate",
         ]
     )
-    with pytest.raises(phase.ConformanceError, match="canonical unbulleted"):
+    with pytest.raises(phase.ConformanceError, match="DISSENT-HIDDEN|canonical unbulleted"):
         phase.parse_dissent_dimensions(text)
 
 
@@ -869,15 +884,13 @@ def test_a_container_prefixed_opener_still_hides(opener):
         " 1. \t<!--",
     ],
 )
-def test_an_indented_container_marker_is_code_not_a_comment(indented):
-    """Four columns before the marker is indented code, so it hides nothing.
-
-    Widening the opener to container prefixes must not let the outer and inner
-    indentation allowances add up: `    - <!--` renders as a code example with
-    the fields below it in the clear, and striking them aborts a valid card on
-    a phase that permits no retry. A tab is measured to the next four-column
-    stop, not counted as one character, so `  - \\t<!--` reaches column eight
-    and is code while `> \\t<!--` reaches column four and is not.
+def test_an_indented_container_marker_aborts(indented):
+    """#613: a bare `<!--` inside the dissent span is out-of-grammar
+    wherever it appears (the delivered prompts require inline code for
+    any mention), so this shape now aborts loudly instead of the
+    pre-#613 credit this test used to pin. Whether the renderer would
+    have shown the fields is decided by the output grammar now, not by
+    block-structure modelling in the parser.
     """
     text = phase2_with_dissent_section(
         [
@@ -886,16 +899,18 @@ def test_an_indented_container_marker_is_code_not_a_comment(indented):
             "rationale: plan was inadequate",
         ]
     )
-    assert phase.parse_dissent_dimensions(text).dimensions == {"D1"}
+    with pytest.raises(phase.ConformanceError, match="DISSENT-HIDDEN"):
+        phase.parse_dissent_dimensions(text)
 
 
 @pytest.mark.parametrize("marker", ["2.", "9)", "10.", "  2."])
-def test_an_ordered_marker_cannot_interrupt_a_paragraph(marker):
-    """Only an ordered list starting at 1 may interrupt an open paragraph.
-
-    After a paragraph line, `2. <!--` is paragraph text: the marker is not a
-    list, no raw-HTML block opens, and the fields below stay on the page.
-    Striking them aborts a phase that permits no retry.
+def test_an_ordered_marker_mid_paragraph_aborts(marker):
+    """#613: a bare `<!--` inside the dissent span is out-of-grammar
+    wherever it appears (the delivered prompts require inline code for
+    any mention), so this shape now aborts loudly instead of the
+    pre-#613 credit this test used to pin. Whether the renderer would
+    have shown the fields is decided by the output grammar now, not by
+    block-structure modelling in the parser.
     """
     text = phase2_with_dissent_section(
         [
@@ -905,7 +920,8 @@ def test_an_ordered_marker_cannot_interrupt_a_paragraph(marker):
             "rationale: plan was inadequate",
         ]
     )
-    assert phase.parse_dissent_dimensions(text).dimensions == {"D1"}
+    with pytest.raises(phase.ConformanceError, match="DISSENT-HIDDEN"):
+        phase.parse_dissent_dimensions(text)
 
 
 @pytest.mark.parametrize("marker", ["1.", "1)", "2.", "10.", "-", ">"])
@@ -924,7 +940,7 @@ def test_a_container_marker_at_a_block_start_still_opens(marker):
             "rationale: plan was inadequate",
         ]
     )
-    with pytest.raises(phase.ConformanceError, match="canonical unbulleted"):
+    with pytest.raises(phase.ConformanceError, match="DISSENT-HIDDEN|canonical unbulleted"):
         phase.parse_dissent_dimensions(text)
 
 
@@ -958,7 +974,7 @@ def test_a_paragraph_closing_line_restores_every_marker(closer, marker):
             "<!-- -->",
         ]
     )
-    with pytest.raises(phase.ConformanceError, match="canonical unbulleted"):
+    with pytest.raises(phase.ConformanceError, match="DISSENT-HIDDEN|canonical unbulleted"):
         phase.parse_dissent_dimensions(text)
 
 
@@ -999,21 +1015,18 @@ def test_a_comment_block_is_not_a_paragraph(comment_block):
             "rationale: plan was inadequate",
         ]
     )
-    with pytest.raises(phase.ConformanceError, match="canonical unbulleted"):
+    with pytest.raises(phase.ConformanceError, match="DISSENT-HIDDEN|canonical unbulleted"):
         phase.parse_dissent_dimensions(text)
 
 
 @pytest.mark.parametrize("nested", ["- 2. <!--", "> 2. <!--", "> - 2. <!--"])
-def test_a_nested_marker_after_a_paragraph_is_a_declared_limit(nested):
-    """Documents an ACCEPTED miss, not a desired behaviour.
-
-    An outer bullet or quote interrupts the paragraph, and inside the
-    container it opens the nested ordered list may start at any number. The
-    start-at-1 restriction is applied to every ordered marker in the prefix
-    rather than only the interrupting one, because telling them apart means
-    tracking which container each marker sits in. That is the block-structure
-    modelling whose three earlier approximations cost 425, 77 and 154 false
-    aborts on the render grid. Tracked in #613. Change deliberately.
+def test_a_nested_marker_after_a_paragraph_aborts(nested):
+    """#613: a bare `<!--` inside the dissent span is out-of-grammar
+    wherever it appears (the delivered prompts require inline code for
+    any mention), so this shape now aborts loudly instead of the
+    pre-#613 credit this test used to pin. Whether the renderer would
+    have shown the fields is decided by the output grammar now, not by
+    block-structure modelling in the parser.
     """
     text = phase2_with_dissent_section(
         [
@@ -1023,17 +1036,18 @@ def test_a_nested_marker_after_a_paragraph_is_a_declared_limit(nested):
             "rationale: plan was inadequate",
         ]
     )
-    assert phase.parse_dissent_dimensions(text).dimensions == {"D1"}
+    with pytest.raises(phase.ConformanceError, match="DISSENT-HIDDEN"):
+        phase.parse_dissent_dimensions(text)
 
 
 @pytest.mark.parametrize("orphan", ["==", "--", "=", "===="])
-def test_an_orphan_setext_marker_is_paragraph_text(orphan):
-    """A setext underline needs a paragraph above it to underline.
-
-    With nothing above, `==` or `--` is ordinary paragraph text and OPENS a
-    paragraph rather than closing one, so a non-1 ordered marker on the next
-    line cannot interrupt it and the fields below stay on the page. Clearing
-    the flag here refused a card the base branch accepted.
+def test_a_marker_after_an_orphan_setext_line_aborts(orphan):
+    """#613: a bare `<!--` inside the dissent span is out-of-grammar
+    wherever it appears (the delivered prompts require inline code for
+    any mention), so this shape now aborts loudly instead of the
+    pre-#613 credit this test used to pin. Whether the renderer would
+    have shown the fields is decided by the output grammar now, not by
+    block-structure modelling in the parser.
     """
     text = phase2_with_dissent_section(
         [
@@ -1043,7 +1057,8 @@ def test_an_orphan_setext_marker_is_paragraph_text(orphan):
             "rationale: plan was inadequate",
         ]
     )
-    assert phase.parse_dissent_dimensions(text).dimensions == {"D1"}
+    with pytest.raises(phase.ConformanceError, match="DISSENT-HIDDEN"):
+        phase.parse_dissent_dimensions(text)
 
 
 @pytest.mark.parametrize("marker", ["-", "*", "+"])
@@ -1059,18 +1074,18 @@ def test_a_lone_bullet_at_a_block_start_is_an_empty_list_item(marker):
             "<!-- -->",
         ]
     )
-    with pytest.raises(phase.ConformanceError, match="canonical unbulleted"):
+    with pytest.raises(phase.ConformanceError, match="DISSENT-HIDDEN|canonical unbulleted"):
         phase.parse_dissent_dimensions(text)
 
 
 @pytest.mark.parametrize("marker", ["*", "+", "2.", "10)"])
-def test_a_lone_marker_cannot_interrupt_a_paragraph(marker):
-    """An empty list item has a blank first line, so it cannot interrupt a
-    paragraph: the line stays paragraph text and the paragraph stays open.
-
-    `-` is the exception and is covered above, because after a paragraph it
-    reads as a setext underline rather than a marker. Treating every lone
-    marker as a paragraph-closer looked symmetrical and aborted valid cards.
+def test_a_marker_after_a_lone_list_marker_aborts(marker):
+    """#613: a bare `<!--` inside the dissent span is out-of-grammar
+    wherever it appears (the delivered prompts require inline code for
+    any mention), so this shape now aborts loudly instead of the
+    pre-#613 credit this test used to pin. Whether the renderer would
+    have shown the fields is decided by the output grammar now, not by
+    block-structure modelling in the parser.
     """
     text = phase2_with_dissent_section(
         [
@@ -1081,7 +1096,8 @@ def test_a_lone_marker_cannot_interrupt_a_paragraph(marker):
             "rationale: plan was inadequate",
         ]
     )
-    assert phase.parse_dissent_dimensions(text).dimensions == {"D1"}
+    with pytest.raises(phase.ConformanceError, match="DISSENT-HIDDEN"):
+        phase.parse_dissent_dimensions(text)
 
 
 def test_a_setext_underline_closes_the_paragraph_above_it():
@@ -1095,18 +1111,18 @@ def test_a_setext_underline_closes_the_paragraph_above_it():
             "<!-- -->",
         ]
     )
-    with pytest.raises(phase.ConformanceError, match="canonical unbulleted"):
+    with pytest.raises(phase.ConformanceError, match="DISSENT-HIDDEN|canonical unbulleted"):
         phase.parse_dissent_dimensions(text)
 
 
 @pytest.mark.parametrize("whitespace", ["　", " ", " ", "\x0c"])
-def test_a_line_of_exotic_whitespace_is_not_a_blank_line(whitespace):
-    """CommonMark counts only spaces and tabs as blank.
-
-    A line holding an ideographic space is a paragraph to the renderer, which
-    is a live shape in zh-TW output. Treating it as blank put the next line at
-    a block start, read `2. <!--` as an opener, struck the visible fields
-    below it and aborted a phase that permits no retry.
+def test_a_marker_after_exotic_whitespace_aborts(whitespace):
+    """#613: a bare `<!--` inside the dissent span is out-of-grammar
+    wherever it appears (the delivered prompts require inline code for
+    any mention), so this shape now aborts loudly instead of the
+    pre-#613 credit this test used to pin. Whether the renderer would
+    have shown the fields is decided by the output grammar now, not by
+    block-structure modelling in the parser.
     """
     text = phase2_with_dissent_section(
         [
@@ -1117,7 +1133,8 @@ def test_a_line_of_exotic_whitespace_is_not_a_blank_line(whitespace):
             "rationale: plan was inadequate",
         ]
     )
-    assert phase.parse_dissent_dimensions(text).dimensions == {"D1"}
+    with pytest.raises(phase.ConformanceError, match="DISSENT-HIDDEN"):
+        phase.parse_dissent_dimensions(text)
 
 
 @pytest.mark.parametrize("marker", ["1.", "1)", "-", "*", ">"])
@@ -1132,7 +1149,7 @@ def test_a_paragraph_interrupting_marker_still_opens(marker):
             "rationale: plan was inadequate",
         ]
     )
-    with pytest.raises(phase.ConformanceError, match="canonical unbulleted"):
+    with pytest.raises(phase.ConformanceError, match="DISSENT-HIDDEN|canonical unbulleted"):
         phase.parse_dissent_dimensions(text)
 
 
@@ -1159,20 +1176,13 @@ def test_a_balanced_container_prefixed_comment_hides_nothing_after():
         ("> an earlier note", ">     <!--"),
     ],
 )
-def test_an_opener_inside_an_open_container_is_a_declared_limit(container, opener):
-    """Documents an ACCEPTED miss, not a desired behaviour.
-
-    An open list item or block quote shifts the column at which a block
-    starts, and changing marker type starts a fresh list, so shapes that read
-    as indented text at absolute column N are block openers relative to the
-    container. Resolving them needs a container parser, and this walk refuses
-    to grow one on measured grounds: over one 8064-shape render grid `main`
-    credits 4552 hidden shapes and this parser 1424, both at zero false
-    aborts, while the two interim spellings that approximated block structure
-    scored 1112/144 and 1709/57. Cost stated in full: each miss grants a
-    trigger-binding exemption for a dissent the page does not show. Tracked
-    in #613, whose closure is a reviewer-output-grammar rule, not more
-    parsing. Change deliberately.
+def test_an_opener_inside_an_open_container_aborts(container, opener):
+    """#613: a bare `<!--` inside the dissent span is out-of-grammar
+    wherever it appears (the delivered prompts require inline code for
+    any mention), so this shape now aborts loudly instead of the
+    pre-#613 credit this test used to pin. Whether the renderer would
+    have shown the fields is decided by the output grammar now, not by
+    block-structure modelling in the parser.
     """
     text = phase2_with_dissent_section(
         [
@@ -1183,7 +1193,8 @@ def test_an_opener_inside_an_open_container_is_a_declared_limit(container, opene
             "-->",
         ]
     )
-    assert phase.parse_dissent_dimensions(text).dimensions == {"D1"}
+    with pytest.raises(phase.ConformanceError, match="DISSENT-HIDDEN"):
+        phase.parse_dissent_dimensions(text)
 
 
 def test_an_angle_bracket_field_label_is_read_as_prose():
@@ -1200,18 +1211,13 @@ def test_an_angle_bracket_field_label_is_read_as_prose():
     assert len(parsed.diagnostics) == 1
 
 
-def test_an_indented_opener_continuing_a_paragraph_is_a_declared_limit():
-    """Documents an ACCEPTED miss, not a desired behaviour.
-
-    Four spaces makes an indented code block only when the line STARTS a
-    block. After a paragraph line it is lazy continuation, so CommonMark does
-    form the comment and the fields below are invisible to a reader while
-    still credited here. Deciding that needs the surrounding block context,
-    which the span walk deliberately does not model: every mechanism added to
-    this walk has produced a false abort of its own, and an indented `<!--`
-    that merely starts an example must stay inert. Cost stated in full: this
-    grants a trigger-binding exemption for a dissent the page does not show.
-    Change deliberately, never incidentally.
+def test_an_indented_opener_continuing_a_paragraph_aborts():
+    """#613: a bare `<!--` inside the dissent span is out-of-grammar
+    wherever it appears (the delivered prompts require inline code for
+    any mention), so this shape now aborts loudly instead of the
+    pre-#613 credit this test used to pin. Whether the renderer would
+    have shown the fields is decided by the output grammar now, not by
+    block-structure modelling in the parser.
     """
     text = phase2_with_dissent_section(
         [
@@ -1222,7 +1228,8 @@ def test_an_indented_opener_continuing_a_paragraph_is_a_declared_limit():
             "-->",
         ]
     )
-    assert phase.parse_dissent_dimensions(text).dimensions == {"D1"}
+    with pytest.raises(phase.ConformanceError, match="DISSENT-HIDDEN"):
+        phase.parse_dissent_dimensions(text)
 
 
 @pytest.mark.parametrize(
@@ -1301,20 +1308,13 @@ def test_a_comment_closed_and_reopened_then_closed_hides_nothing_after():
     assert phase.parse_dissent_dimensions(text).dimensions == {"D1"}
 
 
-def test_a_comment_opened_after_prose_on_its_line_is_a_declared_limit():
-    """Documents an ACCEPTED miss, not a desired behaviour.
-
-    Only a block opener starts a comment, so a marker following text on its
-    own line leaves the fields below credited. Cost stated in full, since it
-    is not the free kind: CommonMark does form that comment, so this grants a
-    trigger-binding exemption for a dissent the rendered page does not show
-    (omitting the section grants no exemption at all, so the two are not
-    equivalent). Refused anyway, because closing it deterministically means
-    reading a bare `<!--` inside unrestricted `rationale:` text as an opener,
-    which aborts the valid card pinned by the test below, and a Phase 2 abort
-    is unretryable. A grammar rule requiring seats to write comment syntax in
-    inline code would close it on the prompt side; that is a separate change
-    to reviewer output, not to this parser. Change deliberately.
+def test_a_comment_opened_after_prose_on_its_line_aborts():
+    """#613: a bare `<!--` inside the dissent span is out-of-grammar
+    wherever it appears (the delivered prompts require inline code for
+    any mention), so this shape now aborts loudly instead of the
+    pre-#613 credit this test used to pin. Whether the renderer would
+    have shown the fields is decided by the output grammar now, not by
+    block-structure modelling in the parser.
     """
     text = phase2_with_dissent_section(
         [
@@ -1324,17 +1324,16 @@ def test_a_comment_opened_after_prose_on_its_line_is_a_declared_limit():
             "-->",
         ]
     )
-    assert phase.parse_dissent_dimensions(text).dimensions == {"D1"}
+    with pytest.raises(phase.ConformanceError, match="DISSENT-HIDDEN"):
+        phase.parse_dissent_dimensions(text)
 
 
-def test_an_unbackticked_marker_in_a_rationale_hides_no_later_dissent():
-    """The false abort that keeps the opener rule at block start.
-
-    `rationale:` text is unrestricted, so a seat discussing an unclosed
-    marker is a plausible card, not decoration. Reading that mid-line opener
-    as real strikes the second dissent below it and aborts an unretryable
-    Phase 2 on a card that claimed both dissents in the clear.
-    """
+def test_an_unbackticked_marker_in_a_rationale_now_aborts_loudly():
+    """#613 flips the #612 pin: the delivered output grammar makes a bare
+    marker out-of-grammar prose (mentions go in inline code), so the
+    mid-line opener is read as real — it swallows the second dissent, and
+    the card aborts as unparsed occurrences instead of silently keeping
+    D2's credit while CommonMark hides it."""
     text = phase2_with_dissent_section(
         [
             "dimension_id: D1",
@@ -1343,17 +1342,32 @@ def test_an_unbackticked_marker_in_a_rationale_hides_no_later_dissent():
             "rationale: the second plan was inadequate too",
         ]
     )
-    assert phase.parse_dissent_dimensions(text).dimensions == {"D1", "D2"}
+    with pytest.raises(phase.ConformanceError, match="DISSENT-HIDDEN"):
+        phase.parse_dissent_dimensions(text)
 
 
 def test_a_canonical_rationale_may_mention_comment_syntax():
-    """`rationale: <nonempty explanation>` permits any text, including the
-    literal comment tokens; rewriting them broke equality with the canonical
-    parse and aborted an unretryable Phase 2 on a valid card."""
+    """The sanctioned spelling: comment tokens in INLINE CODE are prose
+    under the #613 output grammar — code spans are blanked before the
+    inline-opener scan, so the mention neither opens a comment nor aborts."""
     text = phase2_with_dissent_section(
         [
             "dimension_id: D1",
             "rationale: the seat wrote `<!--` and `-->` in its explanation",
+        ]
+    )
+    assert phase.parse_dissent_dimensions(text).dimensions == {"D1"}
+
+
+def test_an_inline_comment_that_closes_restores_the_parse():
+    """A mid-line comment that opens AND closes leaves the following
+    canonical fields rendered, so they parse normally — the inline state is
+    delimiter-order-resolved, not presence-tested."""
+    text = phase2_with_dissent_section(
+        [
+            "Reviewed the plan. <!-- aside --> Standing by the dissent:",
+            "dimension_id: D1",
+            "rationale: plan was inadequate",
         ]
     )
     assert phase.parse_dissent_dimensions(text).dimensions == {"D1"}
@@ -1368,15 +1382,17 @@ def test_a_comment_opened_before_the_heading_credits_no_dissent():
         "rationale: plan was inadequate\n\n-->\n\n## Dimension Scores",
         1,
     )
-    with pytest.raises(phase.ConformanceError, match="canonical unbulleted"):
+    with pytest.raises(phase.ConformanceError, match="DISSENT-HIDDEN|canonical unbulleted"):
         phase.parse_dissent_dimensions(text)
 
 
-def test_an_indented_comment_marker_is_code_not_a_comment():
-    """CommonMark: four spaces STARTING a block makes it indented code.
-
-    The lazy-continuation case, where the same indent follows a paragraph
-    line and does form a comment, is the declared limit pinned above.
+def test_an_indented_comment_marker_aborts():
+    """#613: a bare `<!--` inside the dissent span is out-of-grammar
+    wherever it appears (the delivered prompts require inline code for
+    any mention), so this shape now aborts loudly instead of the
+    pre-#613 credit this test used to pin. Whether the renderer would
+    have shown the fields is decided by the output grammar now, not by
+    block-structure modelling in the parser.
     """
     text = phase2_with_dissent_section(
         [
@@ -1385,7 +1401,8 @@ def test_an_indented_comment_marker_is_code_not_a_comment():
             "rationale: plan was inadequate",
         ]
     )
-    assert phase.parse_dissent_dimensions(text).dimensions == {"D1"}
+    with pytest.raises(phase.ConformanceError, match="DISSENT-HIDDEN"):
+        phase.parse_dissent_dimensions(text)
 
 
 def test_a_nested_paren_link_destination_is_a_declared_limit():
@@ -1400,11 +1417,26 @@ def test_a_nested_paren_link_destination_is_a_declared_limit():
     """
     for line in (
         "[dimension_id](https://e/x_(y_(z))w): D1",
-        '<span title="x>y">dimension_id</span>: D1',
         "dimension_id&#58; D1",
     ):
         text = phase2_with_dissent_section([line])
         assert phase.parse_dissent_dimensions(text).dimensions == set()
+
+
+def test_a_quoted_attribute_raw_html_field_now_aborts():
+    """#682 closes the raw-HTML half of the old declared limit.
+
+    The field-shape helper still need not parse quoted ``>`` attributes: the
+    span guard rejects the tag itself before an empty-section advisory could
+    grant any exemption.
+    """
+    text = phase2_with_dissent_section(
+        [
+            '<span title="x>y">dimension_id</span>: D1',
+        ]
+    )
+    with pytest.raises(phase.ConformanceError, match="DISSENT-RAW-HTML"):
+        phase.parse_dissent_dimensions(text)
 
 
 def test_one_nesting_level_in_a_link_destination_still_aborts():
@@ -1413,7 +1445,7 @@ def test_one_nesting_level_in_a_link_destination_still_aborts():
             "[dimension_id](https://e/x_(y)z): D1",
         ]
     )
-    with pytest.raises(phase.ConformanceError, match="canonical unbulleted"):
+    with pytest.raises(phase.ConformanceError, match="DISSENT-HIDDEN|canonical unbulleted"):
         phase.parse_dissent_dimensions(text)
 
 
@@ -1447,7 +1479,7 @@ def test_bulleted_multi_dissent_cannot_bypass_the_cardinality_gate():
             "- rationale: second plan was inadequate",
         ]
     )
-    with pytest.raises(phase.ConformanceError, match="canonical unbulleted"):
+    with pytest.raises(phase.ConformanceError, match="DISSENT-HIDDEN|canonical unbulleted"):
         phase.parse_dissent_dimensions(text)
 
 
@@ -1469,7 +1501,7 @@ def test_a_canonical_dissent_cannot_hide_a_second_decorated_one(wrapper):
             *wrapper,
         ]
     )
-    with pytest.raises(phase.ConformanceError, match="canonical unbulleted"):
+    with pytest.raises(phase.ConformanceError, match="DISSENT-HIDDEN|canonical unbulleted"):
         phase.parse_dissent_dimensions(text)
 
 
@@ -1621,9 +1653,115 @@ second"""
 
 
 def test_same_line_duplicate_severity_declarations_fail():
+    """Unchanged by #637: a mid-line second declaration is a declaration
+    (`_SEVERITY_DECL_RE`) whose value cannot parse mid-prose, so the
+    declared-but-unparseable guard still aborts. Only cross-line
+    supersession takes last-wins."""
     body = "### W1: hidden critical\n**Severity**: Minor and **Severity**: Critical"
     report, _ = parse_report("eic", body=body)
     with pytest.raises(phase.ConformanceError, match="FINDING-GRAMMAR"):
+        phase.check_scoring_seat_anchors(report)
+
+
+def test_same_line_pipe_separated_severity_pair_fails():
+    """`_SEVERITY_RE` also parses after a table-cell pipe, so both halves
+    of `Minor | Critical` on ONE line are parseable — but two parseable
+    declarations on one line are not a reading-order self-correction and
+    must not enter the supersession path (which could otherwise waive the
+    anchor requirement via `Critical | Minor`)."""
+    for pair in ("Minor | **Severity**: Critical", "Critical | **Severity**: Minor"):
+        body = f"### W1: table smuggle\n**Severity**: {pair}"
+        report, _ = parse_report("eic", body=body)
+        with pytest.raises(phase.ConformanceError, match="exactly one parseable Severity"):
+            phase.check_scoring_seat_anchors(report)
+
+
+def test_cross_line_severity_supersession_takes_last(capsys):
+    """#637 ms01_quant baseline r1: the domain seat declared Major, then
+    self-corrected to Critical with explicit supersession prose. The card
+    passes with the last value operative and the trail in the gate log."""
+    body = (
+        "### W1: construct mismatch\n"
+        "**Severity**: Major\n"
+        "Correction: recording this as Critical; the Severity line below "
+        "supersedes the line above.\n"
+        "**Severity**: Critical\n"
+        '**Evidence Anchor**: text: "quote" p. 1'
+    )
+    report, _ = parse_report("eic", body=body)
+    phase.check_scoring_seat_anchors(report)
+    assert (
+        "[SEVERITY-SUPERSEDED: p2.md: W1: construct mismatch: Major -> Critical]"
+    ) in capsys.readouterr().out
+
+
+def test_unparseable_severity_declaration_still_fails():
+    body = "### W1: bad value\n**Severity**: High"
+    report, _ = parse_report("eic", body=body)
+    with pytest.raises(phase.ConformanceError, match="exactly one parseable Severity"):
+        phase.check_scoring_seat_anchors(report)
+
+
+def test_revisited_severity_value_still_fails():
+    """A chain that revisits a value (Minor -> Major -> Minor) is not a
+    supersession — a non-escalating chain keeps the anti-bundling abort."""
+    body = (
+        "### W1: bundled pair\n"
+        "**Severity**: Minor\n"
+        "first\n"
+        "**Severity**: Major\n"
+        "second\n"
+        "**Severity**: Minor"
+    )
+    report, _ = parse_report("eic", body=body)
+    with pytest.raises(phase.ConformanceError, match="strictly escalating"):
+        phase.check_scoring_seat_anchors(report)
+
+
+def test_deescalating_severity_pair_still_fails():
+    """Critical -> Minor must abort: last-wins de-escalation would waive
+    the Critical Evidence-Anchor hard gate with one appended line. Only
+    the observed self-correction direction (escalation) is tolerated."""
+    body = (
+        "### W1: fabricated denominators\n"
+        "**Severity**: Critical\n"
+        "The paper invents denominators.\n"
+        "**Severity**: Minor"
+    )
+    report, _ = parse_report("eic", body=body)
+    with pytest.raises(phase.ConformanceError, match="strictly escalating"):
+        phase.check_scoring_seat_anchors(report)
+
+
+def test_distinct_severity_bundle_still_fails():
+    """Three findings bundled under one W heading with distinct descending
+    severities are not a supersession chain and keep the loud abort."""
+    body = (
+        "### W1: bundled triple\n"
+        "**Severity**: Critical\n"
+        "first\n"
+        "**Severity**: Major\n"
+        "second\n"
+        "**Severity**: Minor"
+    )
+    report, _ = parse_report("eic", body=body)
+    with pytest.raises(phase.ConformanceError, match="strictly escalating"):
+        phase.check_scoring_seat_anchors(report)
+
+
+def test_escalating_supersession_operative_value_needs_anchor():
+    """Minor -> Major with NO anchor must abort at ANCHOR-MISSING: the
+    LAST value (Major) is operative. Pins last-wins — if the first value
+    (Minor) were operative the card would take the no-anchor branch and
+    pass."""
+    body = (
+        "### W1: upgraded finding\n"
+        "**Severity**: Minor\n"
+        "on reflection this forecloses the design claim\n"
+        "**Severity**: Major"
+    )
+    report, _ = parse_report("eic", body=body)
+    with pytest.raises(phase.ConformanceError, match="ANCHOR-MISSING"):
         phase.check_scoring_seat_anchors(report)
 
 
@@ -2660,3 +2798,1555 @@ def test_phase1_lone_list_markers_do_not_satisfy_the_floor():
         )
         with pytest.raises(phase.ConformanceError, match="fewer than"):
             phase.parse_phase1("p1.md", text, FULL, "methodology")
+
+
+# --- #610 methodology arithmetic-receipt gate ----------------------------
+
+
+W1_BACKREF_BODY = (
+    "### W1: reported mean is unreachable\n"
+    "**Severity**: Critical\n"
+    "**Evidence Anchor**: table: Table 2, M=3.847 with N=87\n"
+    "**Confidence**: 5 — quantitative methods reviewer\n"
+    "**Arithmetic Receipt**: AR1\n"
+)
+
+
+def grim_receipt(**overrides) -> list[str]:
+    fields = {
+        "procedure_id": "grim",
+        "evidence_anchor": "table: Table 2, M=3.847 with N=87",
+        "reported_inputs": "single 1-5 integer item, N=87, M=3.847, three-decimal precision",
+        "assumptions": "unweighted single-item mean as stated in §3.2",
+        "derivation": "integer sums 334 and 335 bracket 87 * 3.847",
+        "derived_value_or_range": "334/87 = 3.8390...; 335/87 = 3.8505...",
+        "comparison_rule": "an achievable sum must round to 3.847 at three decimals",
+        "rounding_interval": "[3.8465, 3.8475)",
+        "nearest_achievable": "334/87 = 3.8390...; 335/87 = 3.8505...",
+        "status": "mismatch",
+        "finding_ref": "W1",
+    }
+    fields.update(overrides)
+    return [f"{key}: {value}" for key, value in fields.items() if value is not None]
+
+
+def p_receipt(**overrides) -> list[str]:
+    fields = {
+        "procedure_id": "p_from_test_statistic",
+        "evidence_anchor": 'text: §4.1 "t(140) = 1.31, p = .008"',
+        "reported_inputs": "independent t, t=1.31, df=140, p=.008, no tail stated",
+        "assumptions": "central t distribution; no paper-licensed tail",
+        "tail_convention": "unstated",
+        "derivation": "p from t=1.31 at df=140 under both tail readings",
+        "derived_value_or_range": "two-tailed p ≈ .192; one-tailed p ≈ .096",
+        "comparison_rule": "reported .008 must match either tail value at reported precision",
+        "status": "mismatch",
+        "finding_ref": "W1",
+    }
+    fields.update(overrides)
+    return [f"{key}: {value}" for key, value in fields.items() if value is not None]
+
+
+def n_from_df_receipt(**overrides) -> list[str]:
+    fields = {
+        "procedure_id": "n_from_df",
+        "evidence_anchor": 'text: §4.2 "t(156)" against the stated maximum analytic sample',
+        "reported_inputs": "independent-groups t with df=156; stated maximum analytic N=142",
+        "assumptions": "equal-variance independent t as the paper names",
+        "df_identity": "df = N1 + N2 - 2",
+        "derivation": "df=156 requires total N=158 under the named identity",
+        "derived_value_or_range": "required N = 158",
+        "comparison_rule": "required N must not exceed the stated analytic ceiling of 142",
+        "status": "mismatch",
+        "finding_ref": "W1",
+    }
+    fields.update(overrides)
+    return [f"{key}: {value}" for key, value in fields.items() if value is not None]
+
+
+def receipt_section(*receipts: list[str]) -> list[str]:
+    lines: list[str] = []
+    for index, fields in enumerate(receipts, start=1):
+        lines += [f"### AR{index}", *fields, ""]
+    return lines
+
+
+def methodology_report(receipts=None, body=W1_BACKREF_BODY):
+    text = phase2_text("methodology", body=body, receipts=receipts)
+    return panel.parse_report("p2.md", text, FULL)
+
+
+def check_receipts(receipts=None, body=W1_BACKREF_BODY):
+    phase.check_methodology_receipts(methodology_report(receipts, body))
+
+
+def test_receipt_attestation_card_passes():
+    check_receipts(receipts=None, body="prose review body without findings")
+
+
+def test_valid_grim_mismatch_receipt_passes():
+    check_receipts(receipt_section(grim_receipt()))
+
+
+def test_valid_p_unstated_both_tails_receipt_passes():
+    check_receipts(receipt_section(p_receipt()))
+
+
+def test_valid_n_from_df_receipt_passes():
+    check_receipts(receipt_section(n_from_df_receipt()))
+
+
+def test_valid_consistent_receipt_needs_no_finding():
+    check_receipts(
+        receipt_section(grim_receipt(status="consistent", finding_ref=None)),
+        body="prose only",
+    )
+
+
+def test_valid_not_computable_receipt_passes():
+    check_receipts(
+        receipt_section(
+            p_receipt(
+                status="not_computable",
+                not_computable_reason="tail_ambiguous",
+                finding_ref=None,
+                derived_value_or_range="not derived; tail choice flips the verdict",
+            )
+        ),
+        body="prose only",
+    )
+
+
+def test_receipt_lines_tolerate_bold_and_list_decoration():
+    decorated = [
+        line if ":" not in line else "- **" + line.replace(": ", "**: ", 1)
+        for line in grim_receipt()
+    ]
+    check_receipts(receipt_section(decorated))
+
+
+def test_missing_receipt_section_fails():
+    text = phase2_text("methodology", body=W1_BACKREF_BODY)
+    text = text[: text.index("\n## Arithmetic Receipts")]
+    report = panel.parse_report("p2.md", text, FULL)
+    with pytest.raises(phase.ConformanceError, match=r"RECEIPT-MISSING"):
+        phase.check_methodology_receipts(report)
+
+
+def test_duplicate_receipt_section_fails():
+    text = (
+        phase2_text("methodology", body="prose")
+        + "\n\n## Arithmetic Receipts\n\nno_recomputable_statistics: twice\n"
+    )
+    report = panel.parse_report("p2.md", text, FULL)
+    with pytest.raises(phase.ConformanceError, match="duplicate"):
+        phase.check_methodology_receipts(report)
+
+
+def test_receipt_section_before_review_body_fails():
+    text = phase2_text("methodology", body="prose", receipts=())
+    text = text[: text.index("\n## Arithmetic Receipts")]
+    text = text.replace(
+        "## Review Body",
+        "## Arithmetic Receipts\n\nno_recomputable_statistics: early\n\n## Review Body",
+        1,
+    )
+    report = panel.parse_report("p2.md", text, FULL)
+    with pytest.raises(phase.ConformanceError, match="must be the final section"):
+        phase.check_methodology_receipts(report)
+
+
+def test_empty_receipt_section_without_attestation_fails():
+    with pytest.raises(phase.ConformanceError, match="exactly one"):
+        check_receipts(receipts=(), body="prose")
+
+
+def test_attestation_alongside_receipts_fails():
+    lines = receipt_section(grim_receipt())
+    lines.append("no_recomputable_statistics: but also receipts")
+    with pytest.raises(phase.ConformanceError, match="forbidden when"):
+        check_receipts(lines)
+
+
+def test_non_dense_receipt_ids_fail():
+    lines = ["### AR2", *grim_receipt(), ""]
+    with pytest.raises(phase.ConformanceError, match="dense"):
+        check_receipts(lines)
+
+
+def test_invalid_receipt_heading_fails():
+    lines = ["### AR0", *grim_receipt(), ""]
+    with pytest.raises(phase.ConformanceError, match="invalid receipt"):
+        check_receipts(lines)
+
+
+def test_duplicate_receipt_heading_fails():
+    lines = [
+        "### AR1",
+        *grim_receipt(),
+        "",
+        "### AR1",
+        *grim_receipt(),
+        "",
+    ]
+    with pytest.raises(phase.ConformanceError, match="duplicate receipt"):
+        check_receipts(lines)
+
+
+def test_unknown_procedure_id_fails():
+    with pytest.raises(phase.ConformanceError, match="not a bounded procedure"):
+        check_receipts(receipt_section(grim_receipt(procedure_id="effect_size_check")))
+
+
+@pytest.mark.parametrize(
+    "key",
+    [
+        "procedure_id",
+        "evidence_anchor",
+        "reported_inputs",
+        "assumptions",
+        "derivation",
+        "derived_value_or_range",
+        "comparison_rule",
+        "status",
+    ],
+)
+def test_each_missing_canonical_receipt_field_fails(key):
+    with pytest.raises(phase.ConformanceError, match="RECEIPT-GRAMMAR"):
+        check_receipts(receipt_section(grim_receipt(**{key: None})))
+
+
+def test_duplicated_receipt_field_fails():
+    lines = receipt_section(grim_receipt())
+    lines.insert(2, "status: consistent")
+    with pytest.raises(phase.ConformanceError, match="found 2"):
+        check_receipts(lines)
+
+
+def test_unknown_status_fails():
+    with pytest.raises(phase.ConformanceError, match="closed status enum"):
+        check_receipts(receipt_section(grim_receipt(status="plausible")))
+
+
+def test_not_computable_without_reason_fails():
+    with pytest.raises(phase.ConformanceError, match="not_computable_reason"):
+        check_receipts(
+            receipt_section(grim_receipt(status="not_computable", finding_ref=None)),
+            body="prose",
+        )
+
+
+def test_reason_on_verdict_status_fails():
+    with pytest.raises(phase.ConformanceError, match="forbidden unless"):
+        check_receipts(
+            receipt_section(grim_receipt(not_computable_reason="rounding_rule_ambiguous"))
+        )
+
+
+def test_unknown_not_computable_reason_fails():
+    with pytest.raises(phase.ConformanceError, match="closed v1 enum"):
+        check_receipts(
+            receipt_section(
+                grim_receipt(
+                    status="not_computable",
+                    not_computable_reason="model_was_unsure",
+                    finding_ref=None,
+                )
+            ),
+            body="prose",
+        )
+
+
+def test_p_receipt_without_tail_convention_fails():
+    with pytest.raises(phase.ConformanceError, match="tail_convention"):
+        check_receipts(receipt_section(p_receipt(tail_convention=None)))
+
+
+def test_tail_convention_on_grim_is_forbidden():
+    with pytest.raises(phase.ConformanceError, match="forbidden for"):
+        check_receipts(receipt_section(grim_receipt(tail_convention="two-tailed")))
+
+
+def test_unknown_tail_convention_fails():
+    with pytest.raises(phase.ConformanceError, match="closed enum"):
+        check_receipts(receipt_section(p_receipt(tail_convention="lower-tail")))
+
+
+@pytest.mark.parametrize(
+    "derived",
+    [
+        "two-tailed p ≈ .192 only",
+        "one-tailed p ≈ .096 only",
+        "p ≈ .192 under the default reading",
+    ],
+)
+def test_unstated_tail_verdict_must_show_both_tails(derived):
+    with pytest.raises(phase.ConformanceError, match="RECEIPT-TAILS"):
+        check_receipts(receipt_section(p_receipt(derived_value_or_range=derived)))
+
+
+def test_stated_tail_needs_no_both_tail_display():
+    check_receipts(
+        receipt_section(
+            p_receipt(
+                tail_convention="two-tailed",
+                reported_inputs="paired t, t=1.31, df=140, p=.008, two-tailed stated in §4.1",
+                derived_value_or_range="two-tailed p ≈ .192",
+            )
+        )
+    )
+
+
+@pytest.mark.parametrize("key", ["rounding_interval", "nearest_achievable"])
+def test_grim_verdict_without_reachability_fields_fails(key):
+    with pytest.raises(phase.ConformanceError, match=key):
+        check_receipts(receipt_section(grim_receipt(**{key: None})))
+
+
+def test_grim_not_computable_may_omit_reachability_fields():
+    check_receipts(
+        receipt_section(
+            grim_receipt(
+                status="not_computable",
+                not_computable_reason="scale_granularity_unknown",
+                rounding_interval=None,
+                nearest_achievable=None,
+                finding_ref=None,
+            )
+        ),
+        body="prose",
+    )
+
+
+def test_rounding_interval_on_p_procedure_is_forbidden():
+    with pytest.raises(phase.ConformanceError, match="forbidden for"):
+        check_receipts(receipt_section(p_receipt(rounding_interval="[.0075, .0085)")))
+
+
+def test_n_from_df_verdict_without_identity_fails():
+    with pytest.raises(phase.ConformanceError, match="df_identity"):
+        check_receipts(receipt_section(n_from_df_receipt(df_identity=None)))
+
+
+def test_df_identity_on_grim_is_forbidden():
+    with pytest.raises(phase.ConformanceError, match="forbidden for"):
+        check_receipts(receipt_section(grim_receipt(df_identity="df = N - 1")))
+
+
+def test_invalid_receipt_anchor_fails():
+    with pytest.raises(phase.ConformanceError):
+        check_receipts(receipt_section(grim_receipt(evidence_anchor="somewhere in §4")))
+
+
+def test_mismatch_without_finding_ref_fails():
+    with pytest.raises(phase.ConformanceError, match="finding_ref"):
+        check_receipts(receipt_section(grim_receipt(finding_ref=None)))
+
+
+def test_finding_ref_on_consistent_receipt_fails():
+    with pytest.raises(phase.ConformanceError, match="RECEIPT-LINKAGE"):
+        check_receipts(receipt_section(grim_receipt(status="consistent")))
+
+
+def test_malformed_finding_ref_fails():
+    with pytest.raises(phase.ConformanceError, match="must name one W<n>"):
+        check_receipts(receipt_section(grim_receipt(finding_ref="C1")))
+
+
+def test_finding_ref_to_absent_weakness_fails():
+    with pytest.raises(phase.ConformanceError, match="no matching"):
+        check_receipts(receipt_section(grim_receipt(finding_ref="W9")))
+
+
+def test_two_receipts_sharing_a_finding_ref_fail():
+    with pytest.raises(phase.ConformanceError, match="share a finding_ref"):
+        check_receipts(receipt_section(grim_receipt(), n_from_df_receipt()))
+
+
+def test_mismatch_weakness_without_backref_fails():
+    body = W1_BACKREF_BODY.replace("**Arithmetic Receipt**: AR1\n", "")
+    with pytest.raises(phase.ConformanceError, match="back-reference"):
+        check_receipts(receipt_section(grim_receipt()), body=body)
+
+
+def test_backref_naming_wrong_receipt_fails():
+    body = W1_BACKREF_BODY.replace("**Arithmetic Receipt**: AR1", "**Arithmetic Receipt**: AR2")
+    with pytest.raises(phase.ConformanceError, match="RECEIPT-LINKAGE"):
+        check_receipts(receipt_section(grim_receipt()), body=body)
+
+
+def test_stale_backref_without_mismatch_receipt_fails():
+    with pytest.raises(phase.ConformanceError, match="does not correspond"):
+        check_receipts(
+            receipt_section(grim_receipt(status="consistent", finding_ref=None)),
+            body=W1_BACKREF_BODY,
+        )
+
+
+def test_fenced_receipt_content_is_read_not_dropped():
+    # #610 round-1 fix 3, false-abort direction (#637 family): a model that
+    # fences its receipt block still wrote the receipts, so the section is
+    # read fence-transparently and a well-formed fenced block passes.
+    lines = ["```", *receipt_section(grim_receipt()), "```"]
+    check_receipts(lines)
+
+
+def test_fenced_receipts_beside_unfenced_attestation_abort():
+    # #610 round-1 fix 3, hiding direction: a fenced AR block cannot vanish
+    # and launder the section into an attestation-only card.
+    lines = [
+        "no_recomputable_statistics: nothing recomputable here",
+        "",
+        "```",
+        *receipt_section(grim_receipt()),
+        "```",
+    ]
+    with pytest.raises(phase.ConformanceError, match="forbidden when"):
+        check_receipts(lines)
+
+
+def test_fenced_malformed_receipt_still_fails_its_field_counts():
+    lines = ["```", *receipt_section(grim_receipt(status=None)), "```"]
+    with pytest.raises(phase.ConformanceError, match="exactly one"):
+        check_receipts(lines)
+
+
+def test_fenced_h2_inside_receipt_section_does_not_delimit():
+    lines = receipt_section(grim_receipt()) + [
+        "```",
+        "## Not A Real Section",
+        "```",
+    ]
+    check_receipts(lines)
+
+
+def test_receipt_section_must_be_the_final_h2():
+    # #610 round-1 fix 6: the prompt says "final section"; the checker
+    # enforces exactly that, not merely "after Review Body".
+    text = (
+        phase2_text(
+            "methodology",
+            body=W1_BACKREF_BODY,
+            receipts=receipt_section(grim_receipt()),
+        )
+        + "\n\n## Trailing Notes\n\nnothing\n"
+    )
+    report = panel.parse_report("p2.md", text, FULL)
+    with pytest.raises(phase.ConformanceError, match="must be the final section"):
+        phase.check_methodology_receipts(report)
+
+
+@pytest.mark.parametrize(
+    "derived",
+    [
+        "two-tailed; one-tailed p ≈ .096",
+        "two-tailed p ≈ .192; one-tailed",
+        "two-tailed and one-tailed; both p ≈ .192",
+    ],
+)
+def test_unstated_tail_label_without_value_in_segment_fails(derived):
+    # #610 round-1 fix 1: a bare label is not a shown value — each label
+    # needs a digit inside its own `;`-delimited segment.
+    with pytest.raises(phase.ConformanceError, match="RECEIPT-TAILS"):
+        check_receipts(receipt_section(p_receipt(derived_value_or_range=derived)))
+
+
+@pytest.mark.parametrize(
+    "derived",
+    [
+        "two–tailed p ≈ .192; one–tailed p ≈ .096",
+        "two‐tailed p = 0.192; one tailed p = 0.096",
+        "TWO-TAILED p ≈ .192; One-Tailed p ≈ .096",
+    ],
+)
+def test_unstated_tail_hyphen_and_case_variants_pass(derived):
+    check_receipts(receipt_section(p_receipt(derived_value_or_range=derived)))
+
+
+def test_attestation_pass_prints_declaration_only_advisory(capsys):
+    # #610 round-1 fix 2: the attestation is declaration-only; the pass is
+    # annotated so the run record cannot read it as machine-verified
+    # applicability.
+    check_receipts(receipts=None, body="prose review body without findings")
+    out = capsys.readouterr().out
+    assert "[RECEIPT-ATTESTATION: declaration-only" in out
+
+
+def test_receipt_pass_prints_no_attestation_advisory(capsys):
+    check_receipts(receipt_section(grim_receipt()))
+    assert "[RECEIPT-ATTESTATION" not in capsys.readouterr().out
+
+
+@pytest.mark.parametrize(
+    "decorated",
+    [
+        "**status:** mismatch",
+        "| status: mismatch |",
+        "1. status: mismatch",
+        "> status: mismatch",
+        "  status: mismatch",
+        "`status`: mismatch",
+        "sTaTus: mismatch",
+        "ｓｔａｔｕｓ: mismatch",
+    ],
+)
+def test_decorated_status_line_aborts_loudly(decorated):
+    # #610 round-1 fix 4: an unenumerated decoration of a machine field is a
+    # loud declaration, never a silently starved required-field count.
+    lines = receipt_section(grim_receipt(status=None))
+    lines.insert(lines.index("finding_ref: W1"), decorated)
+    with pytest.raises(phase.ConformanceError, match="decorated or non-canonical"):
+        check_receipts(lines)
+
+
+def test_decorated_forbidden_field_cannot_pass_silently():
+    # A decorated spelling of a field the procedure forbids used to sail
+    # through the forbidden-field guard unseen; it now aborts.
+    lines = receipt_section(grim_receipt())
+    lines.insert(lines.index("finding_ref: W1"), "**tail_convention:** two-tailed")
+    with pytest.raises(phase.ConformanceError, match="decorated or non-canonical"):
+        check_receipts(lines)
+
+
+def test_prose_naming_a_field_mid_sentence_stays_tolerated():
+    lines = receipt_section(grim_receipt())
+    lines.insert(
+        lines.index("finding_ref: W1"),
+        "The reported status: a value the paper never reconciles.",
+    )
+    check_receipts(lines)
+
+
+@pytest.mark.parametrize(
+    "backref",
+    [
+        "**Arithmetic Receipt**: AR1, AR2",
+        "**Arithmetic Receipt**: AR1 which shows the mismatch",
+        "**Arithmetic Receipt:** AR1",
+        "**Arithmetic Receipt**: see AR1",
+    ],
+)
+def test_non_exact_backref_value_aborts(backref):
+    # #610 round-1 fix 5: the back-reference value is exactly AR<n> to end
+    # of line or next pipe; list values and trailing prose abort.
+    body = W1_BACKREF_BODY.replace("**Arithmetic Receipt**: AR1", backref)
+    with pytest.raises(phase.ConformanceError, match="RECEIPT-LINKAGE"):
+        check_receipts(receipt_section(grim_receipt()), body=body)
+
+
+def test_fenced_backref_declaration_aborts():
+    body = W1_BACKREF_BODY.replace(
+        "**Arithmetic Receipt**: AR1\n",
+        "```\n**Arithmetic Receipt**: AR1\n```\n",
+    )
+    with pytest.raises(phase.ConformanceError, match="RECEIPT-LINKAGE"):
+        check_receipts(receipt_section(grim_receipt()), body=body)
+
+
+def test_prose_mentioning_the_receipts_section_stays_tolerated():
+    body = W1_BACKREF_BODY + (
+        "\nSee the Arithmetic Receipts section: AR1 documents the reachability check.\n"
+    )
+    check_receipts(receipt_section(grim_receipt()), body=body)
+
+
+def grimmer_receipt(**overrides) -> list[str]:
+    # Spec §5.3 prospective MS01 v0.2 worked case: N=10, M=3.00, SD=0.10.
+    fields = {
+        "procedure_id": "grimmer",
+        "evidence_anchor": "table: Table 3, SD=0.10 with N=10, M=3.00",
+        "reported_inputs": "single 1-5 integer item, N=10, M=3.00, SD=0.10, "
+        "sample SD, two-decimal precision",
+        "assumptions": "sample SD as stated in §3.4; integer responses on the published 1-5 scale",
+        "derivation": "sum fixed at 30; all-3s give SD 0; any deviation "
+        "pair gives squared-deviation sum >= 2, so minimum "
+        "nonzero sample SD is sqrt(2/9)",
+        "derived_value_or_range": "attainable sample SDs: 0 or >= 0.4714...",
+        "comparison_rule": "an attainable SD must round to 0.10 at two decimals",
+        "rounding_interval": "[0.095, 0.105)",
+        "nearest_achievable": "0 and sqrt(2/9) = 0.4714... straddle the reported 0.10",
+        "status": "mismatch",
+        "finding_ref": "W1",
+    }
+    fields.update(overrides)
+    return [f"{key}: {value}" for key, value in fields.items() if value is not None]
+
+
+def test_valid_grimmer_mismatch_receipt_passes():
+    check_receipts(receipt_section(grimmer_receipt()))
+
+
+@pytest.mark.parametrize(
+    "key",
+    [
+        "rounding_interval",
+        "nearest_achievable",
+        "derivation",
+    ],
+)
+def test_grimmer_verdict_missing_field_fails(key):
+    with pytest.raises(phase.ConformanceError, match=key):
+        check_receipts(receipt_section(grimmer_receipt(**{key: None})))
+
+
+# --- #610 round-2 pins: comment visibility, preamble, cells, tails ---------
+
+
+def test_comment_hidden_receipt_block_aborts():
+    # Round-2 P1 (both tracks): a receipt the rendered card does not show
+    # cannot satisfy an auditability gate.
+    lines = ["<!--", *receipt_section(grim_receipt()), "-->"]
+    with pytest.raises(phase.ConformanceError, match="HTML comment"):
+        check_receipts(lines)
+
+
+def test_comment_hidden_attestation_aborts():
+    lines = ["<!--", "no_recomputable_statistics: nothing", "-->"]
+    with pytest.raises(phase.ConformanceError, match="HTML comment"):
+        check_receipts(lines, body="prose")
+
+
+def test_unclosed_comment_cannot_swallow_the_receipts():
+    lines = ["<!--", *receipt_section(grim_receipt())]
+    with pytest.raises(phase.ConformanceError, match="HTML comment"):
+        check_receipts(lines)
+
+
+def test_visible_receipts_with_hidden_duplicate_field_abort():
+    lines = receipt_section(grim_receipt()) + [
+        "<!--",
+        "status: consistent",
+        "-->",
+    ]
+    with pytest.raises(phase.ConformanceError, match="HTML comment"):
+        check_receipts(lines)
+
+
+def test_comment_markup_in_receipt_section_aborts():
+    # Round-3 adjudication supersedes the round-2 commented-prose
+    # tolerance: the receipt section is a comment-free zone, because a
+    # paragraph-inline `prose <!--` opener the block visibility model
+    # cannot read would otherwise launder the receipts below it.
+    lines = receipt_section(grim_receipt()) + [
+        "<!--",
+        "internal note, no machine fields",
+        "-->",
+    ]
+    with pytest.raises(phase.ConformanceError, match="HTML comment markup"):
+        check_receipts(lines)
+
+
+def test_inline_comment_opener_in_receipt_section_aborts():
+    lines = [
+        "visible explanation <!--",
+        *receipt_section(grim_receipt()),
+        "-->",
+    ]
+    with pytest.raises(phase.ConformanceError, match="HTML comment markup"):
+        check_receipts(lines)
+
+
+def test_fenced_comment_markup_in_receipts_is_literal_text():
+    lines = receipt_section(grim_receipt()) + [
+        "```",
+        "<!-- rendered literally inside the fence -->",
+        "```",
+    ]
+    check_receipts(lines)
+
+
+def test_inline_comment_span_hidden_backref_aborts():
+    # Round-3 P1 (codex track): `prose <!--` inside a paragraph hides the
+    # following lines until `-->` without the block model seeing it.
+    body = W1_BACKREF_BODY.replace(
+        "**Arithmetic Receipt**: AR1\n",
+        "prose lead-in <!--\n**Arithmetic Receipt**: AR1\n-->\n",
+    )
+    with pytest.raises(phase.ConformanceError, match="paragraph-inline"):
+        check_receipts(receipt_section(grim_receipt()), body=body)
+
+
+def test_inline_comment_span_dies_at_a_blank_line():
+    # A blank line ends the paragraph and with it the raw-HTML span, so a
+    # backref in the NEXT paragraph is live and the card conforms.
+    body = W1_BACKREF_BODY.replace(
+        "**Arithmetic Receipt**: AR1\n",
+        "prose mentioning <!-- an unclosed marker\n\n**Arithmetic Receipt**: AR1\n",
+    )
+    check_receipts(receipt_section(grim_receipt()), body=body)
+
+
+@pytest.mark.parametrize(
+    "entity_line",
+    [
+        "tail_convention&#xFF1A; two-tailed",
+        "status&#65306; mismatch",
+    ],
+)
+def test_fullwidth_colon_entity_field_spelling_aborts(entity_line):
+    # Round-3 P1 (codex track): unescape must run BEFORE the NFKC fold so
+    # a fullwidth-colon entity decodes and then folds to `:`.
+    lines = receipt_section(grim_receipt())
+    lines.insert(lines.index("finding_ref: W1"), entity_line)
+    with pytest.raises(phase.ConformanceError, match="decorated or non-canonical"):
+        check_receipts(lines)
+
+
+def test_fullwidth_colon_entity_backref_aborts():
+    body = W1_BACKREF_BODY.replace(
+        "**Arithmetic Receipt**: AR1",
+        "**Arithmetic Receipt**: AR1\n**Arithmetic Receipt**&#xFF1A; AR2",
+    )
+    with pytest.raises(phase.ConformanceError, match="RECEIPT-LINKAGE"):
+        check_receipts(receipt_section(grim_receipt()), body=body)
+
+
+def test_pipe_inside_link_destination_is_not_a_cell(  # codex round-3 P2
+):
+    lines = receipt_section(grim_receipt())
+    lines.insert(
+        lines.index("finding_ref: W1"),
+        "Quoted source: [record](https://example.org/a|status:pending)",
+    )
+    check_receipts(lines)
+
+
+def test_escaped_pipe_and_code_span_pipes_are_not_cells():
+    lines = receipt_section(grim_receipt())
+    lines.insert(
+        lines.index("finding_ref: W1"),
+        "See the raw marker \\| and the cited `a|status:pending` token.",
+    )
+    check_receipts(lines)
+
+
+def test_comment_hidden_backref_aborts():
+    body = W1_BACKREF_BODY.replace(
+        "**Arithmetic Receipt**: AR1\n",
+        "<!--\n**Arithmetic Receipt**: AR1\n-->\n",
+    )
+    with pytest.raises(phase.ConformanceError, match="commented-out"):
+        check_receipts(receipt_section(grim_receipt()), body=body)
+
+
+def test_indented_code_backref_is_not_credited():
+    # Round-3 (security track): a 4-column-indented back-reference renders
+    # as literal indented code, not a field line, and must not earn the
+    # linkage credit its fenced twin is denied.
+    body = W1_BACKREF_BODY.replace(
+        "**Arithmetic Receipt**: AR1\n",
+        "\n    **Arithmetic Receipt**: AR1\n",
+    )
+    with pytest.raises(phase.ConformanceError, match="indented-code"):
+        check_receipts(receipt_section(grim_receipt()), body=body)
+
+
+def test_four_space_paragraph_continuation_backref_still_counts():
+    # A 4-space-indented line CONTINUING an open paragraph is prose to
+    # CommonMark, not code; the backref on it renders with its bold applied
+    # and stays a live declaration.
+    body = W1_BACKREF_BODY.replace(
+        "**Arithmetic Receipt**: AR1\n",
+        "prose lead-in line\n    **Arithmetic Receipt**: AR1\n",
+    )
+    check_receipts(receipt_section(grim_receipt()), body=body)
+
+
+@pytest.mark.parametrize(
+    "bad",
+    [
+        "procedure_id: cohen_d_check",
+        "finding_ref: W9",
+        "not_computable_reason: bogus_reason",
+        "status: not_applicable",
+    ],
+)
+def test_machine_line_in_section_preamble_aborts(bad):
+    # Round-2 P1 (security track): the preamble is not a parking lot — a
+    # canonical machine line the enum/linkage gates never inspect aborts.
+    lines = [bad, "", *receipt_section(grim_receipt())]
+    with pytest.raises(phase.ConformanceError, match="outside every ### AR<n>"):
+        check_receipts(lines)
+
+
+def test_attestation_card_with_stray_machine_line_aborts():
+    lines = [
+        "no_recomputable_statistics: nothing recomputable",
+        "status: consistent",
+    ]
+    with pytest.raises(phase.ConformanceError, match="outside every ### AR<n>"):
+        check_receipts(lines, body="prose")
+
+
+def test_forbidden_field_in_a_later_table_cell_aborts():
+    # Round-2 P1 (codex track): the head-of-line shape test alone let a
+    # decorated forbidden field hide in a later GFM cell.
+    lines = receipt_section(grim_receipt())
+    lines.insert(
+        lines.index("finding_ref: W1"),
+        "| note | **tail_convention:** two-tailed |",
+    )
+    with pytest.raises(phase.ConformanceError, match="decorated or non-canonical"):
+        check_receipts(lines)
+
+
+def test_entity_colon_field_spelling_aborts():
+    lines = receipt_section(grim_receipt())
+    lines.insert(lines.index("finding_ref: W1"), "tail_convention&#58; two-tailed")
+    with pytest.raises(phase.ConformanceError, match="decorated or non-canonical"):
+        check_receipts(lines)
+
+
+def test_cjk_prose_in_a_table_cell_stays_tolerated():
+    lines = receipt_section(grim_receipt())
+    lines.insert(lines.index("finding_ref: W1"), "| 註記 | 狀態說明:如上 |")
+    check_receipts(lines)
+
+
+@pytest.mark.parametrize("half_bold", ["**status: mismatch", "status**: mismatch"])
+def test_half_bold_field_is_not_canonical(half_bold):
+    lines = receipt_section(grim_receipt(status=None))
+    lines.insert(lines.index("finding_ref: W1"), half_bold)
+    with pytest.raises(phase.ConformanceError, match="decorated or non-canonical"):
+        check_receipts(lines)
+
+
+def test_canonical_plus_malformed_backref_on_one_line_aborts():
+    # Round-2 P1 (codex track): a canonical match must not launder a second
+    # malformed declaration on the same line.
+    body = W1_BACKREF_BODY.replace(
+        "**Arithmetic Receipt**: AR1",
+        "**Arithmetic Receipt**: AR1 | **Arithmetic Receipt:** see AR2",
+    )
+    with pytest.raises(phase.ConformanceError, match="RECEIPT-LINKAGE"):
+        check_receipts(receipt_section(grim_receipt()), body=body)
+
+
+def test_indented_trailing_h2_still_violates_terminal_rule():
+    # Round-2 (security track): a 1-3-space-indented `##` renders as a
+    # heading even though the section grammar ignores it.
+    text = (
+        phase2_text(
+            "methodology",
+            body=W1_BACKREF_BODY,
+            receipts=receipt_section(grim_receipt()),
+        )
+        + "\n\n   ## Trailing Section\n\ntext\n"
+    )
+    report = panel.parse_report("p2.md", text, FULL)
+    with pytest.raises(phase.ConformanceError, match="must be the final section"):
+        phase.check_methodology_receipts(report)
+
+
+def test_three_space_indented_fence_is_read_dedented():
+    # Round-2 (codex track): CommonMark strips the opener's indent from the
+    # displayed content of an indented fence; the gate reads display form.
+    lines = ["   ```"] + ["   " + line for line in receipt_section(grim_receipt())] + ["   ```"]
+    check_receipts(lines)
+
+
+def test_indented_fence_hiding_direction_still_aborts():
+    lines = [
+        "no_recomputable_statistics: nothing",
+        "",
+        "   ```",
+        *("   " + line for line in receipt_section(grim_receipt())),
+        "   ```",
+    ]
+    with pytest.raises(phase.ConformanceError, match="forbidden when"):
+        check_receipts(lines)
+
+
+def test_tail_value_before_label_in_segment_passes():
+    check_receipts(
+        receipt_section(
+            p_receipt(
+                derived_value_or_range="p = .192 (two-tailed); p = .096 (one-tailed)",
+            )
+        )
+    )
+
+
+def test_embedded_word_tail_labels_do_not_satisfy_the_rule():
+    with pytest.raises(phase.ConformanceError, match="RECEIPT-TAILS"):
+        check_receipts(
+            receipt_section(
+                p_receipt(
+                    derived_value_or_range="notwo-tailed note 2; someone-tailed 1",
+                )
+            )
+        )
+
+
+def test_fused_tail_label_with_value_still_counts():
+    # A `twotailed` typo carries its value; rejecting it would be a false
+    # abort on an unretryable phase (declared boundary).
+    check_receipts(
+        receipt_section(
+            p_receipt(
+                derived_value_or_range="twotailed p=.192; onetailed p=.096",
+            )
+        )
+    )
+
+
+def test_field_name_leading_prose_abort_is_a_declared_boundary():
+    # Security-track P2, adjudicated as documented cost: a prose line whose
+    # head spells a field name is indistinguishable from a decorated
+    # machine line, and the fragment now warns the seat not to write one.
+    lines = receipt_section(grim_receipt()) + [
+        "Assumptions: none beyond what the paper licenses.",
+    ]
+    with pytest.raises(phase.ConformanceError, match="decorated or non-canonical"):
+        check_receipts(lines)
+
+
+# --- #610 round-4 pins: display-form parity, spans, code semantics ---------
+
+
+def test_code_span_backref_cannot_outrank_the_rendered_one():
+    # Round-4 P1 (security track): canonical parsing and the declaration
+    # count run on the same display form, so a code-span declaration can
+    # never be credited over the rendered field beside it.
+    body = W1_BACKREF_BODY.replace(
+        "**Arithmetic Receipt**: AR1",
+        "`| **Arithmetic Receipt**: AR1 |` **Arithmetic Receipt**: AR7",
+    )
+    with pytest.raises(phase.ConformanceError, match="exactly one"):
+        check_receipts(receipt_section(grim_receipt()), body=body)
+
+
+def test_inert_code_span_beside_a_canonical_backref_is_harmless():
+    body = W1_BACKREF_BODY.replace(
+        "**Arithmetic Receipt**: AR1",
+        "`inert` **Arithmetic Receipt**: AR1",
+    )
+    check_receipts(receipt_section(grim_receipt()), body=body)
+
+
+def test_backref_after_a_closing_comment_on_the_same_line_is_live():
+    # Round-4 (security track): the span ends at `-->`; the rendered
+    # remainder of the line is parsed, not dropped.
+    body = W1_BACKREF_BODY.replace(
+        "**Arithmetic Receipt**: AR1\n",
+        "open <!-- note\nclosed --> **Arithmetic Receipt**: AR1\n",
+    )
+    check_receipts(receipt_section(grim_receipt()), body=body)
+
+
+def test_spurious_backref_after_a_closing_comment_still_aborts():
+    body = W1_BACKREF_BODY.replace(
+        "**Arithmetic Receipt**: AR1\n",
+        "**Arithmetic Receipt**: AR1\nopen <!-- x\nclosed --> **Arithmetic Receipt**: AR2\n",
+    )
+    with pytest.raises(phase.ConformanceError, match="exactly one"):
+        check_receipts(receipt_section(grim_receipt()), body=body)
+
+
+def test_backref_behind_an_opener_on_its_own_line_is_not_credited():
+    # Round-4 P1 (codex track), tightened in round 5: content after `<!--`
+    # on the opener line is inside the span; since round 5 the hidden
+    # declaration itself aborts at the hiding site rather than surfacing
+    # later as a missing linkage.
+    body = W1_BACKREF_BODY.replace(
+        "**Arithmetic Receipt**: AR1\n",
+        "prose <!-- | **Arithmetic Receipt**: AR1\n-->\n",
+    )
+    with pytest.raises(phase.ConformanceError, match="paragraph-inline"):
+        check_receipts(receipt_section(grim_receipt()), body=body)
+
+
+def test_unequal_code_ticks_do_not_hide_a_later_cell_field():
+    # Round-4 P1 (codex track): a 1-backtick opener with a 2-backtick
+    # closer is NOT a code span to the renderer; the pipe still makes a
+    # cell and the forbidden field in it still aborts.
+    lines = receipt_section(grim_receipt())
+    lines.insert(
+        lines.index("finding_ref: W1"),
+        "| `note | **tail_convention:** two-tailed`` |",
+    )
+    with pytest.raises(phase.ConformanceError, match="decorated or non-canonical"):
+        check_receipts(lines)
+
+
+def test_equal_code_ticks_with_pipes_stay_tolerated():
+    lines = receipt_section(grim_receipt())
+    lines.insert(
+        lines.index("finding_ref: W1"),
+        "raw `|status: pending` token cited here.",
+    )
+    check_receipts(lines)
+
+
+def test_second_line_of_an_indented_code_block_is_still_code():
+    # Round-4 P2 (codex track): an indented-code line never opens a
+    # paragraph, so the next code line is not a paragraph continuation.
+    body = W1_BACKREF_BODY.replace(
+        "**Arithmetic Receipt**: AR1\n",
+        "\n    note\n    **Arithmetic Receipt**: AR1\n",
+    )
+    with pytest.raises(phase.ConformanceError, match="indented-code"):
+        check_receipts(receipt_section(grim_receipt()), body=body)
+
+
+def test_literal_comment_marker_in_a_code_span_opens_nothing():
+    # Round-4 P2 (codex track): code spans outrank raw HTML, so a quoted
+    # `<!--` cannot open an inline span and abort the next backref.
+    body = W1_BACKREF_BODY.replace(
+        "**Arithmetic Receipt**: AR1\n",
+        "prose `<!--` literal\n**Arithmetic Receipt**: AR1\n",
+    )
+    check_receipts(receipt_section(grim_receipt()), body=body)
+
+
+def test_hidden_declaration_beside_a_visible_one_still_aborts():
+    # Round-5 P2 (codex track): a declaration inside the hidden span
+    # aborts even when the same line also carries a visible, credited one.
+    body = W1_BACKREF_BODY.replace(
+        "**Arithmetic Receipt**: AR1\n",
+        "**Arithmetic Receipt**: AR1 <!-- | **Arithmetic Receipt**: AR2\n-->\n",
+    )
+    with pytest.raises(phase.ConformanceError, match="paragraph-inline"):
+        check_receipts(receipt_section(grim_receipt()), body=body)
+
+
+def test_prose_span_cannot_shield_a_declaration_in_the_next_span():
+    # Round-6 P2 (codex track): hidden spans are checked one by one, so a
+    # harmless first span cannot prefix-shield a declaration in the next.
+    body = W1_BACKREF_BODY.replace(
+        "**Arithmetic Receipt**: AR1\n",
+        "**Arithmetic Receipt**: AR1 <!-- reviewer note --> <!-- **Arithmetic Receipt**: AR2 -->\n",
+    )
+    with pytest.raises(phase.ConformanceError, match="paragraph-inline"):
+        check_receipts(receipt_section(grim_receipt()), body=body)
+
+
+def test_fragments_across_spans_cannot_synthesize_a_declaration():
+    body = W1_BACKREF_BODY.replace(
+        "**Arithmetic Receipt**: AR1\n",
+        "**Arithmetic Receipt**: AR1 <!-- Arithmetic --> <!-- Receipt: typo -->\n",
+    )
+    check_receipts(receipt_section(grim_receipt()), body=body)
+
+
+def test_hidden_prose_beside_a_visible_declaration_is_harmless():
+    body = W1_BACKREF_BODY.replace(
+        "**Arithmetic Receipt**: AR1\n",
+        "**Arithmetic Receipt**: AR1 <!-- reviewer note\n-->\n",
+    )
+    check_receipts(receipt_section(grim_receipt()), body=body)
+
+
+def test_any_atx_heading_ends_an_inline_comment_span():
+    body = W1_BACKREF_BODY.replace(
+        "**Arithmetic Receipt**: AR1\n",
+        "prose <!-- open\n#### Detail\n**Arithmetic Receipt**: AR1\n",
+    )
+    check_receipts(receipt_section(grim_receipt()), body=body)
+
+
+def test_grimmer_grim_inconsistent_mean_is_not_computable():
+    check_receipts(
+        receipt_section(
+            grimmer_receipt(
+                status="not_computable",
+                not_computable_reason="mean_grim_inconsistent",
+                rounding_interval=None,
+                nearest_achievable=None,
+                finding_ref=None,
+            )
+        ),
+        body="prose",
+    )
+
+
+@pytest.mark.parametrize("role", ["eic", "domain", "perspective", "da"])
+def test_receipt_section_is_forbidden_on_other_seats(role):
+    text = phase2_text(role) + "\n\n## Arithmetic Receipts\n\nno_recomputable_statistics: rogue\n"
+    report = panel.parse_report("p2.md", text, FULL)
+    with pytest.raises(phase.ConformanceError, match="RECEIPT-SECTION-FORBIDDEN"):
+        phase.check_receipt_section_forbidden(report)
+
+
+def test_full_cli_pass_with_real_receipts(tmp_path):
+    args = write_cli_files(tmp_path, "methodology")
+    phase2_path = Path(args[args.index("--phase2") + 1])
+    phase2_path.write_text(
+        phase2_text(
+            "methodology",
+            body=W1_BACKREF_BODY,
+            receipts=receipt_section(grim_receipt()),
+        ),
+        encoding="utf-8",
+    )
+    assert phase.main(args + ["--role", "methodology"]) == phase.EXIT_PASS
+
+
+def test_full_cli_rejects_missing_receipt_section(tmp_path, capsys):
+    args = write_cli_files(tmp_path, "methodology")
+    phase2_path = Path(args[args.index("--phase2") + 1])
+    text = phase2_text("methodology", body="prose")
+    phase2_path.write_text(text[: text.index("\n## Arithmetic Receipts")], encoding="utf-8")
+    assert phase.main(args + ["--role", "methodology"]) == phase.EXIT_CONFORMANCE
+    assert "[RECEIPT-MISSING:" in capsys.readouterr().out
+
+
+# --- #610 step-5 extraction gate + injected-receipt identity gate ---------
+
+
+from scripts import recompute_receipts as recompute  # noqa: E402
+
+GRIM_EXTRACTION = (
+    "## Recompute Extraction\n"
+    "\n"
+    "### RR1\n"
+    "procedure_id: grim\n"
+    "evidence_anchor: table: Table 2, M=3.847 with N=87\n"
+    "reported_inputs: single 1-5 integer item, N=87, M=3.847\n"
+    "assumptions: unweighted single-item mean as stated in §3.2\n"
+    "n: 87\n"
+    "reported_mean: 3.847\n"
+    "scale_min: 1\n"
+    "scale_max: 5\n"
+    "rounding_rule: unstated\n"
+)
+ATTESTATION_EXTRACTION = (
+    "## Recompute Extraction\n"
+    "\n"
+    "no_recomputable_statistics: the manuscript reports no statistic a "
+    "bounded procedure covers\n"
+)
+
+
+def extraction_args(tmp_path: Path, extraction_text: str, role: str = "methodology") -> list[str]:
+    args = write_cli_files(tmp_path, role)
+    del args[args.index("--phase2") : args.index("--phase2") + 2]
+    extraction = tmp_path / "extraction.md"
+    extraction.write_text(extraction_text, encoding="utf-8")
+    return args + ["--extraction", str(extraction), "--role", role]
+
+
+def test_extraction_stage_passes_on_rr_grammar(tmp_path, capsys):
+    assert phase.main(extraction_args(tmp_path, GRIM_EXTRACTION)) == phase.EXIT_PASS
+    assert "EXTRACTION-CONFORMANCE: PASS" in capsys.readouterr().out
+
+
+def test_extraction_stage_passes_on_attestation_with_advisory(tmp_path, capsys):
+    assert phase.main(extraction_args(tmp_path, ATTESTATION_EXTRACTION)) == phase.EXIT_PASS
+    out = capsys.readouterr().out
+    assert "EXTRACTION-CONFORMANCE: PASS" in out
+    assert "[RECEIPT-ATTESTATION:" in out
+
+
+def test_extraction_stage_is_methodology_only(tmp_path, capsys):
+    assert phase.main(extraction_args(tmp_path, GRIM_EXTRACTION, role="eic")) == phase.EXIT_CONTRACT
+    assert "[ROLE-BINDING:" in capsys.readouterr().out
+
+
+def test_extraction_preamble_prose_is_nonconforming(tmp_path, capsys):
+    assert (
+        phase.main(
+            extraction_args(tmp_path, "I will now extract the statistics.\n\n" + GRIM_EXTRACTION)
+        )
+        == phase.EXIT_CONFORMANCE
+    )
+    assert "[EXTRACTION-GRAMMAR:" in capsys.readouterr().out
+
+
+def test_extraction_extra_section_is_nonconforming(tmp_path, capsys):
+    assert (
+        phase.main(extraction_args(tmp_path, GRIM_EXTRACTION + "\n## Notes\n\nsome prose\n"))
+        == phase.EXIT_CONFORMANCE
+    )
+    assert "[EXTRACTION-GRAMMAR:" in capsys.readouterr().out
+
+
+def test_extraction_missing_section_is_nonconforming(tmp_path, capsys):
+    assert (
+        phase.main(extraction_args(tmp_path, "## Wrong Heading\n\nn: 87\n"))
+        == phase.EXIT_CONFORMANCE
+    )
+    assert "[EXTRACTION-GRAMMAR:" in capsys.readouterr().out
+
+
+def test_extraction_unknown_field_is_nonconforming(tmp_path, capsys):
+    assert (
+        phase.main(extraction_args(tmp_path, GRIM_EXTRACTION + "surprise_field: value\n"))
+        == phase.EXIT_CONFORMANCE
+    )
+    assert "unknown field" in capsys.readouterr().out
+
+
+def test_extraction_prose_line_inside_section_is_nonconforming(tmp_path, capsys):
+    assert (
+        phase.main(
+            extraction_args(tmp_path, GRIM_EXTRACTION + "This mean looks impossible to me.\n")
+        )
+        == phase.EXIT_CONFORMANCE
+    )
+    assert "not a machine line" in capsys.readouterr().out
+
+
+def test_extraction_invalid_anchor_is_nonconforming(tmp_path, capsys):
+    bad = GRIM_EXTRACTION.replace(
+        "evidence_anchor: table: Table 2, M=3.847 with N=87",
+        "evidence_anchor: somewhere in the paper",
+    )
+    assert phase.main(extraction_args(tmp_path, bad)) == phase.EXIT_CONFORMANCE
+    assert "ANCHOR" in capsys.readouterr().out
+
+
+def test_extraction_and_phase2_stages_are_mutually_exclusive(tmp_path):
+    args = write_cli_files(tmp_path, "methodology")
+    extraction = tmp_path / "extraction.md"
+    extraction.write_text(GRIM_EXTRACTION, encoding="utf-8")
+    with pytest.raises(SystemExit) as exc:
+        phase._parse_args(args + ["--extraction", str(extraction), "--role", "methodology"])
+    assert exc.value.code == 2
+
+
+def test_injected_receipts_flag_requires_phase2(tmp_path):
+    args = phase1_only_args(tmp_path, "methodology")
+    with pytest.raises(SystemExit) as exc:
+        phase._parse_args(args + ["--injected-receipts", "x.md"])
+    assert exc.value.code == 2
+
+
+def injected_receipts_text() -> str:
+    return recompute.compute_receipts(recompute.parse_extraction(GRIM_EXTRACTION))
+
+
+def injected_cli(
+    tmp_path: Path,
+    card_receipt_lines: list[str],
+    injected_text: str,
+    body: str = W1_BACKREF_BODY,
+    role: str = "methodology",
+) -> list[str]:
+    args = write_cli_files(tmp_path, role)
+    (tmp_path / "p2.md").write_text(
+        phase2_text(role, body=body, receipts=card_receipt_lines),
+        encoding="utf-8",
+    )
+    injected = tmp_path / "injected.md"
+    injected.write_text(injected_text, encoding="utf-8")
+    return args + ["--role", role, "--injected-receipts", str(injected)]
+
+
+def faithful_card_lines(injected_text: str) -> list[str]:
+    # The seat's only permitted addition: the finding_ref linkage line on
+    # the (single, mismatch) receipt.
+    lines = [line for line in injected_text.splitlines()[1:] if line]
+    return lines + ["finding_ref: W1"]
+
+
+def test_injected_identity_passes_on_verbatim_copy(tmp_path):
+    injected = injected_receipts_text()
+    assert (
+        phase.main(injected_cli(tmp_path, faithful_card_lines(injected), injected))
+        == phase.EXIT_PASS
+    )
+
+
+def test_injected_identity_rejects_an_altered_line(tmp_path, capsys):
+    injected = injected_receipts_text()
+    lines = [
+        line.replace("status: mismatch", "status: consistent")
+        if line == "status: mismatch"
+        else line
+        for line in faithful_card_lines(injected)
+        if line != "finding_ref: W1"
+    ]
+    assert (
+        phase.main(injected_cli(tmp_path, lines, injected, body="clean methodology review prose"))
+        == phase.EXIT_CONFORMANCE
+    )
+    assert "[RECEIPT-IDENTITY:" in capsys.readouterr().out
+
+
+def test_injected_identity_rejects_a_paraphrased_line(tmp_path, capsys):
+    # A reworded derivation still satisfies the receipt GRAMMAR (the line
+    # exists and parses), so only the identity gate can catch it — the
+    # incremental value this gate exists for.
+    injected = injected_receipts_text()
+    lines = [
+        "derivation: I re-derived this my own way" if line.startswith("derivation: ") else line
+        for line in faithful_card_lines(injected)
+    ]
+    assert phase.main(injected_cli(tmp_path, lines, injected)) == phase.EXIT_CONFORMANCE
+    assert "[RECEIPT-IDENTITY:" in capsys.readouterr().out
+
+
+def test_injected_identity_rejects_an_extra_receipt(tmp_path, capsys):
+    injected = injected_receipts_text()
+    extra = [
+        "### AR2",
+        "procedure_id: n_from_df",
+        "evidence_anchor: table: Table 3, t(156) with N at most 142",
+        "reported_inputs: df=156, stated analytic N at most 142",
+        "assumptions: independent-groups t as stated",
+        "derivation: df=N1+N2-2 gives N = 158",
+        "derived_value_or_range: implied N = 158",
+        "comparison_rule: implied N must not exceed 142",
+        "status: consistent",
+        "df_identity: df=N1+N2-2",
+    ]
+    assert (
+        phase.main(injected_cli(tmp_path, faithful_card_lines(injected) + extra, injected))
+        == phase.EXIT_CONFORMANCE
+    )
+    assert "[RECEIPT-IDENTITY:" in capsys.readouterr().out
+
+
+def test_injected_identity_survives_added_blank_lines(tmp_path):
+    injected = injected_receipts_text()
+    spaced = []
+    for line in faithful_card_lines(injected):
+        spaced += [line, ""]
+    assert phase.main(injected_cli(tmp_path, spaced, injected)) == phase.EXIT_PASS
+
+
+def test_injected_receipts_are_methodology_only(tmp_path, capsys):
+    injected = injected_receipts_text()
+    args = write_cli_files(tmp_path, "eic")
+    injected_path = tmp_path / "injected.md"
+    injected_path.write_text(injected, encoding="utf-8")
+    assert (
+        phase.main(args + ["--role", "eic", "--injected-receipts", str(injected_path)])
+        == phase.EXIT_CONTRACT
+    )
+    assert "[ROLE-BINDING:" in capsys.readouterr().out
+
+
+def test_injected_file_without_heading_is_a_contract_error(tmp_path, capsys):
+    injected = injected_receipts_text()
+    assert (
+        phase.main(
+            injected_cli(
+                tmp_path,
+                faithful_card_lines(injected),
+                "### AR1\nprocedure_id: grim\n",
+            )
+        )
+        == phase.EXIT_CONTRACT
+    )
+    assert "[INJECTED-RECEIPTS-INVALID:" in capsys.readouterr().out
+
+
+def test_injected_identity_pass_emits_its_witness_marker(tmp_path, capsys):
+    injected = injected_receipts_text()
+    assert (
+        phase.main(injected_cli(tmp_path, faithful_card_lines(injected), injected))
+        == phase.EXIT_PASS
+    )
+    assert "RECEIPT-IDENTITY: PASS" in capsys.readouterr().out
+
+
+def test_injected_identity_rejects_a_decorated_finding_ref(tmp_path, capsys):
+    # codex round 1, P2-4: the receipt GRAMMAR tolerates a decorated
+    # finding_ref, but under injection only the plain spelling is the
+    # permitted addition.
+    injected = injected_receipts_text()
+    lines = [
+        "- **finding_ref**: W1" if line == "finding_ref: W1" else line
+        for line in faithful_card_lines(injected)
+    ]
+    assert phase.main(injected_cli(tmp_path, lines, injected)) == phase.EXIT_CONFORMANCE
+    assert "[RECEIPT-IDENTITY:" in capsys.readouterr().out
+
+
+def test_an_escaped_backtick_span_cannot_hide_a_dissent(  # #613 sec P1a
+):
+    r"""CommonMark: `\`` is a literal backtick and opens no code span, so
+    the marker between two escaped backticks is a live comment opener —
+    blanking it credited a dissent the rendered page hides."""
+    text = phase2_with_dissent_section(
+        [
+            "Note: \\` <!-- \\` end.",
+            "dimension_id: D1",
+            "rationale: plan understated the sampling frame. -->",
+        ]
+    )
+    with pytest.raises(phase.ConformanceError, match="DISSENT-HIDDEN"):
+        phase.parse_dissent_dimensions(text)
+
+
+def test_a_cross_line_code_span_cannot_hide_a_dissent():  # #613 sec P1b
+    """A trailing unpaired backtick run pairs into the NEXT line for the
+    renderer, pulling the marker out of code; once a paragraph's runs stop
+    pairing locally, blanking is off and the marker opens."""
+    text = phase2_with_dissent_section(
+        [
+            "Note on markup: `",
+            "` <!-- `",
+            "dimension_id: D1",
+            "rationale: plan was inadequate -->",
+        ]
+    )
+    with pytest.raises(phase.ConformanceError, match="DISSENT-HIDDEN|DISSENT-GRAMMAR"):
+        phase.parse_dissent_dimensions(text)
+
+
+def test_balanced_inline_code_mention_still_parses_after_the_fix():
+    """The sanctioned spelling survives both new guards: escaped-backtick
+    blanking and paragraph run-parity poisoning leave a balanced same-line
+    span as prose."""
+    text = phase2_with_dissent_section(
+        [
+            "dimension_id: D1",
+            "rationale: the seat wrote `<!--` and `-->` in inline code",
+        ]
+    )
+    assert phase.parse_dissent_dimensions(text).dimensions == {"D1"}
+
+
+def test_an_empty_comment_closer_overlap_does_not_false_abort():
+    """codex #650 round 1 (P2): `<!-->` and `<!--->` CLOSE in CommonMark —
+    the closer reuses the opener's dashes — so the rendered fields below
+    them must keep parsing."""
+    for empty in ("<!-->", "<!--->"):
+        text = phase2_with_dissent_section(
+            [
+                f"note {empty}",
+                "dimension_id: D1",
+                "rationale: plan was inadequate",
+            ]
+        )
+        assert phase.parse_dissent_dimensions(text).dimensions == {"D1"}
+
+
+def test_a_mid_line_reopen_after_a_close_hides_again():
+    """codex #650 round 1 (P3): a genuine close-and-REOPEN on one mid-line
+    — the second opener hides the fields below it."""
+    text = phase2_with_dissent_section(
+        [
+            "prose <!-- first --> more <!--",
+            "dimension_id: D1",
+            "rationale: plan was inadequate",
+            "-->",
+        ]
+    )
+    with pytest.raises(phase.ConformanceError, match="DISSENT-HIDDEN"):
+        phase.parse_dissent_dimensions(text)
+
+
+def test_a_mid_line_double_close_leaves_fields_parsed():
+    text = phase2_with_dissent_section(
+        [
+            "prose <!-- a --> and <!-- b --> clear:",
+            "dimension_id: D1",
+            "rationale: plan was inadequate",
+        ]
+    )
+    assert phase.parse_dissent_dimensions(text).dimensions == {"D1"}
+
+
+@pytest.mark.parametrize(
+    "raw_html",
+    [
+        "<script>",
+        "</script>",
+        '<style media="screen">',
+        "<template>",
+        "<div hidden>",
+        '<span style="display:none">',
+        '<input type="hidden" />',
+        "<details>",
+        '<svg aria-hidden="true">',
+        "<!DOCTYPE html>",
+        "<![CDATA[",
+        '<?xml version="1.0"?>',
+        "<script",
+        "<span>dimension_id</span>: D1",
+    ],
+)
+def test_non_comment_raw_html_in_dissent_aborts(raw_html):
+    text = phase2_with_dissent_section(
+        [
+            raw_html,
+            "dimension_id: D1",
+            "rationale: plan was inadequate",
+        ]
+    )
+    with pytest.raises(phase.ConformanceError, match="DISSENT-RAW-HTML"):
+        phase.parse_dissent_dimensions(text)
+
+
+@pytest.mark.parametrize("container", ["- ", "* ", "1. ", "> ", "> - "])
+def test_container_prefixed_raw_html_in_dissent_aborts(container):
+    text = phase2_with_dissent_section(
+        [
+            f"{container}<template hidden>",
+            "dimension_id: D1",
+            "rationale: plan was inadequate",
+            f"{container}</template>",
+        ]
+    )
+    with pytest.raises(phase.ConformanceError, match="DISSENT-RAW-HTML"):
+        phase.parse_dissent_dimensions(text)
+
+
+@pytest.mark.parametrize(
+    "code",
+    [
+        "`<script>`",
+        "``<template data-tick=`x`>``",
+        "```<span hidden>```",
+    ],
+)
+def test_inline_code_raw_html_mention_in_dissent_is_permitted(code):
+    text = phase2_with_dissent_section(
+        [
+            "dimension_id: D1",
+            f"rationale: the seat mentioned {code} as literal syntax",
+        ]
+    )
+    assert phase.parse_dissent_dimensions(text).dimensions == {"D1"}
+
+
+def test_fenced_raw_html_example_in_dissent_keeps_existing_semantics():
+    text = phase2_with_dissent_section(
+        [
+            "```html",
+            "<script>",
+            "const example = true;",
+            "</script>",
+            "```",
+            "dimension_id: D1",
+            "rationale: plan was inadequate",
+        ]
+    )
+    assert phase.parse_dissent_dimensions(text).dimensions == {"D1"}
+
+
+def test_raw_html_outside_dissent_span_is_not_scanned():
+    text = phase2_with_dissent_section(
+        [
+            "dimension_id: D1",
+            "rationale: plan was inadequate",
+        ]
+    ).replace(
+        "## Review Body",
+        "## Review Body\n\n<script hidden>outside the dissent span</script>",
+        1,
+    )
+    assert phase.parse_dissent_dimensions(text).dimensions == {"D1"}
+
+
+@pytest.mark.parametrize(
+    "prose",
+    [
+        "rationale: compare x < y before accepting the plan",
+        "rationale: see <https://example.test> for the public protocol",
+        "rationale: contact <reviewer@example.test> for the archived note",
+    ],
+)
+def test_non_html_angle_bracket_prose_in_dissent_is_permitted(prose):
+    text = phase2_with_dissent_section(["dimension_id: D1", prose])
+    assert phase.parse_dissent_dimensions(text).dimensions == {"D1"}
+
+
+def test_raw_html_without_fields_aborts_instead_of_empty_advisory():
+    text = phase2_with_dissent_section(["<template>withdrawn draft</template>"])
+    with pytest.raises(phase.ConformanceError, match="DISSENT-RAW-HTML"):
+        phase.parse_dissent_dimensions(text)

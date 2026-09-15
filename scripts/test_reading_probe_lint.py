@@ -29,8 +29,8 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 MENTOR_AGENT = REPO_ROOT / "deep-research" / "agents" / "socratic_mentor_agent.md"
 SOCRATIC_PROTOCOL = REPO_ROOT / "deep-research" / "references" / "socratic_mode_protocol.md"
 DEEP_RESEARCH_SKILL = REPO_ROOT / "deep-research" / "SKILL.md"
-README_EN = REPO_ROOT / "README.md"
-# v3.17.0: README.zh-TW.md deleted from fork. English-only.
+SETUP_EN = REPO_ROOT / "docs" / "SETUP.md"
+SETUP_ZH = REPO_ROOT / "docs" / "SETUP.zh-TW.md"
 PIPELINE_PROCESS_SUMMARY = (
     REPO_ROOT / "academic-pipeline" / "references" / "process_summary_protocol.md"
 )
@@ -87,11 +87,13 @@ class ReadingProbeLintTests(unittest.TestCase):
         not attempt to catch lower-case drift since spec mandates all-caps.
         """
         expected = "ARS_SOCRATIC_READING_PROBE"
-        # Spec §5.1 item 2: "agent, protocol, SKILL, README".
+        # Spec §5.1 item 2: "agent, protocol, SKILL, README". The README
+        # surface moved to docs/SETUP.md (en / zh-TW flag table) on
+        # 2026-09-15 (#870): the READMEs only ever carried the var inside
+        # the v3.5.1 release summary, which no longer lives there.
         # process_summary_protocol is excluded — it carries the [READING-PROBE:]
         # pickup rule (tested separately by test_probe_tag_format), not the env var.
-        # v3.17.0: zh-TW README removed; English-only.
-        files = [MENTOR_AGENT, SOCRATIC_PROTOCOL, DEEP_RESEARCH_SKILL, README_EN]
+        files = [MENTOR_AGENT, SOCRATIC_PROTOCOL, DEEP_RESEARCH_SKILL, SETUP_EN, SETUP_ZH]
         for f in files:
             text = f.read_text(encoding="utf-8")
             self.assertIn(

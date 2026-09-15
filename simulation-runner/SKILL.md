@@ -5,7 +5,7 @@ metadata:
   version: "1.0.1"
   last_updated: "2026-05-15"
   status: active
-  data_access_level: redacted
+  data_access_level: raw
   task_type: open-ended
   related_skills:
     - experiment-designer

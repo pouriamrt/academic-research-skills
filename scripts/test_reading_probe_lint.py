@@ -30,7 +30,7 @@ MENTOR_AGENT = REPO_ROOT / "deep-research" / "agents" / "socratic_mentor_agent.m
 SOCRATIC_PROTOCOL = REPO_ROOT / "deep-research" / "references" / "socratic_mode_protocol.md"
 DEEP_RESEARCH_SKILL = REPO_ROOT / "deep-research" / "SKILL.md"
 SETUP_EN = REPO_ROOT / "docs" / "SETUP.md"
-SETUP_ZH = REPO_ROOT / "docs" / "SETUP.zh-TW.md"
+# docs/SETUP.zh-TW.md was deleted in the v3.17.0 bilingual purge.
 PIPELINE_PROCESS_SUMMARY = (
     REPO_ROOT / "academic-pipeline" / "references" / "process_summary_protocol.md"
 )
@@ -93,7 +93,7 @@ class ReadingProbeLintTests(unittest.TestCase):
         # the v3.5.1 release summary, which no longer lives there.
         # process_summary_protocol is excluded — it carries the [READING-PROBE:]
         # pickup rule (tested separately by test_probe_tag_format), not the env var.
-        files = [MENTOR_AGENT, SOCRATIC_PROTOCOL, DEEP_RESEARCH_SKILL, SETUP_EN, SETUP_ZH]
+        files = [MENTOR_AGENT, SOCRATIC_PROTOCOL, DEEP_RESEARCH_SKILL, SETUP_EN]
         for f in files:
             text = f.read_text(encoding="utf-8")
             self.assertIn(

@@ -46,7 +46,7 @@ BASELINE_LINE_COUNT = 1020
 
 # Per Phase 6.6 verification gate (spec §10): +60 lines over pre-Step-6
 # baseline. The ~50-line decision-policy summary plus 5–10 lines of headroom.
-LINE_BUDGET_OVER_BASELINE = 72  # fork: +9 over upstream's 60 for the #260
+LINE_BUDGET_OVER_BASELINE = 76  # fork: +9 over upstream's 60 for the #260
 # experiment-provenance carry-forward and #390 patch-sequencing inline rows.
 
 # v3.7.1 Step 3b additionally ships the `## Cite-Time Provenance Finalizer

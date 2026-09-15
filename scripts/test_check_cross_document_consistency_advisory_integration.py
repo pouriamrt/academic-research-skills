@@ -439,12 +439,10 @@ def test_pure_renderer_reachable_io_fails(tmp_path: Path) -> None:
     _replace(
         root,
         guard.RUNTIME,
-        "def render_advisory(\n"
-        "    advisory: Mapping[str, Any], *, page: int = 1, page_size: int = 25\n"
-        ") -> str:\n",
-        "def render_advisory(\n"
-        "    advisory: Mapping[str, Any], *, page: int = 1, page_size: int = 25\n"
-        ") -> str:\n"
+        "def render_advisory(advisory: Mapping[str, Any], *, page: int = 1, "
+        "page_size: int = 25) -> str:\n",
+        "def render_advisory(advisory: Mapping[str, Any], *, page: int = 1, "
+        "page_size: int = 25) -> str:\n"
         "    Path('ambient').read_text()\n",
     )
     _assert_error(root, "pure renderer reaches forbidden I/O")

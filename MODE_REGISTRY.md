@@ -1,6 +1,6 @@
 # Mode Registry
 
-Single source of truth for all modes across the ARS suite. **50 modes** across 8 skills.
+Single source of truth for all modes across the ARS suite. **58 modes** across 9 skills.
 
 When adding or modifying modes, update this file first — SKILL.md files and CLAUDE.md should reference this registry.
 
@@ -98,16 +98,29 @@ Last updated: v3.21.0 (2026-08-03)
 | (pipeline) | Balanced | 10-stage orchestrated workflow | Very High | "academic pipeline", "research to paper", "full paper workflow" |
 | `resume_from_passport=<hash>` | Fidelity | Resume a prior pipeline run from a Material Passport reset boundary. Opt-in (`ARS_PASSPORT_RESET=1`). See `academic-pipeline/references/passport_as_reset_boundary.md`. | High | "resume from passport", "continue pipeline from reset boundary" |
 
+## sr-screener (8 modes)
+
+| Mode | Spectrum | Output | Oversight | Triggers |
+|------|----------|--------|-----------|----------|
+| `protocol` | Fidelity | `screening_protocol.md` + `screening_config.json`, confirmed by the user | Very High | "turn my proposal into a screening protocol", "screening criteria" |
+| `quick` | Fidelity | Decision table in chat, labelled single-reviewer triage | Medium | "is this abstract eligible", "screen these abstracts" |
+| `pilot` | Fidelity | Calibration report (seeds, agreement, conflicts) + agreed protocol clarifications | High | "pilot the screening", "calibrate screening" |
+| `ta-screen` | Fidelity | Dual-review title/abstract decisions, screening log, RIS groups, PRISMA counts, methods draft | High | "title/abstract screening", "screen these papers" |
+| `ft-screen` | Fidelity | Full-text decisions with one reason per exclusion (page and section) | High | "full-text screening", "full-text eligibility" |
+| `adjudicate` | Fidelity | Advisory third-reviewer suggestions for a human screening set's conflicts | Medium | "resolve screening conflicts", "adjudicate Rayyan conflicts" |
+| `audit` | Fidelity | Exclusions a senior reviewer would advance, advisory | Medium | "audit my exclusions", "double-check excluded records" |
+| `report` | Fidelity | PRISMA 2020 counts, methods draft, RIS exports, `literature_corpus[]` handoff | Medium | "PRISMA flow numbers", "methods paragraph for the screening" |
+
 ---
 
 ## Summary
 
 | Metric | Count |
 |--------|-------|
-| Total modes | 50 |
-| Fidelity | 33 (66%) |
-| Balanced | 12 (24%) |
-| Originality | 5 (10%) |
+| Total modes | 58 |
+| Fidelity | 42 (72%) |
+| Balanced | 12 (21%) |
+| Originality | 4 (7%) |
 
 ### Oversight levels
 

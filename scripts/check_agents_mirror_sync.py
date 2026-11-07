@@ -42,6 +42,7 @@ MIRRORS = {
     "agents/report_compiler_agent.md": "deep-research/agents/report_compiler_agent.md",
     "agents/research_architect_agent.md": "deep-research/agents/research_architect_agent.md",
     "agents/synthesis_agent.md": "deep-research/agents/synthesis_agent.md",
+    "agents/screening_reviewer_agent.md": "sr-screener/agents/screening_reviewer_agent.md",
 }
 
 

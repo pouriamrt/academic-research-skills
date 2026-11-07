@@ -28,6 +28,12 @@ extend-exclude = [
 # in a repo whose guard design is about failing in a chosen direction.
 select = ["E4", "E7", "E9", "F", "I", "RUF100", "UP"]
 
+[tool.ruff.lint.per-file-ignores]
+# sr-screener scripts promise Python 3.9+ (sr-screener/SKILL.md), so py311 pyupgrade
+# rewrites could break them; E731 is upstream style. Not rewritten here, so each sync
+# takes upstream's files as they are.
+"sr-screener/scripts/*" = ["UP", "E731"]
+
 [tool.ruff.format]
 # Pin LF explicitly rather than relying on ruff's default of "auto".
 # Proven: with this set, `ruff format` normalizes a CRLF file back to LF —

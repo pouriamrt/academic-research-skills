@@ -27,9 +27,11 @@ claude plugin eval . --eval-dir plugin-evals-citation-check --ablation with-with
 ```
 
 Add `--no-publish` to keep the HTML report local. Headline number is Δ
-(with-plugin score − without-plugin score). `runs: 3` per case. Cases pin
-`model: sonnet` (the `/ars-citation-check` command pins sonnet itself), so the
-judge must be a different, larger model — the runner's default judge is haiku,
+(with-plugin score − without-plugin score). `runs: 3` per case. Cases request
+`model: sonnet`, an alias that moves to each new Sonnet release, so compare runs
+only when the resolved agent and judge versions match (the `/ars-citation-check`
+command itself inherits the session model). The judge must be a different,
+larger model — the runner's default judge is haiku,
 which is both too small and never to be used here.
 
 ## Cases
@@ -37,7 +39,6 @@ which is both too small and never to be used here.
 | Case | Fires? | Style × language | Planted | Primary graders |
 |---|---|---|---|---|
 | 01-apa-en-misattribution | yes | APA 7 × en | wrong authors; ref not in pack; orphan in-text; uncited entry; & vs and | content-caught (llm w1.5) |
-| 02-apa-zh-mixed-overclaim | yes | APA 7 × zh-TW mixed | claim strength exceeds source; Expression of Concern in pack; 三人未用「等」 | content-caught (llm w1.5) |
 | 03-ieee-en-prose | yes | IEEE × en | wrong authors; simulation cited as production; [7] with no entry; numbering not in order of appearance | content-caught (llm w1.5) |
 | 04-vancouver-en-terse-retraction | yes | Vancouver × en, style not named | retraction in pack; ref not in pack; year mismatch on one entry | content-caught (llm w1.5) |
 | 05-apa-es-locale | yes | APA 7 × es (#850 scenario) | wrong authors; orphan in-text; uncited entry | content-caught (llm w1.5) + locale-respected (llm w1) + no-chinese-chars regex |
@@ -45,11 +46,48 @@ which is both too small and never to be used here.
 | 07-neg-convert-apa-to-ieee | no (format-convert shape) | — | — | is-conversion (llm) + numbered-in-order regex + not-audit-report regex |
 | 08-neg-python-unused-imports | no | — | — | regex on the two unused imports co-occurring with an "unused" statement + `tool_used: Skill` with `min: 0, max: 0, arm: both` (scored in both arms, unlike the display-only `skill-fired`) |
 
+Fork note: upstream's case 02 (APA 7 × zh-TW mixed) and its separate Chinese
+boundary suite are not shipped here. This fork is English-only and carries no
+Chinese APA 7 guide, so a case that grades loading that guide cannot pass. The
+routing record below is upstream's run and still mentions case 02.
+
 Shared graders on 01–06: `content-caught` (w1.5), `format-caught` (w0.5, spec-
 level mechanics), `no-false-positive` (w1), `honest-unverified` (w1),
-`no-overreach` (w0.5), plus `skill-fired` (`tool_used: Skill`, display-only under
-ablation, never moves Δ). Every llm rubric is written as "work through the checks
+`no-overreach` (w0.5), plus `skill-fired` (`tool_used: Skill`, matching
+`academic-research-skills:academic-paper`, display-only under ablation, never
+moves Δ). The exact core-skill match excludes command-stub-only invocation.
+With `--ablation none`, this grader contributes to the score; report loading
+coverage separately from output-quality grades. Every llm rubric is written as "work through the checks
 one at a time and quote the evidence"; keep that style when adding graders.
+
+## Routing verification (2026-09-21)
+
+Claude Code 2.1.278, `--ablation none --model sonnet --judge-model opus
+--runs 1 --no-publish`, from a working directory outside the plugin checkout:
+
+- All six positive cases called `academic-research-skills:academic-paper`.
+  Cases 07 (format conversion) and 08 (unused Python imports) passed their
+  negative-case rubrics; 08 made no Skill call.
+- The full eight-case run passed six cases. Cases 01 and 02 hit the 600-second
+  timeout **after** calling the core skill; their output-quality failures
+  remain failures, not successful end-to-end runs.
+- Isolated reruns: case 01 passed all rubrics; case 02 completed with the core
+  skill invoked but failed `format-caught` and `no-false-positive` (score 0.75).
+  It omitted the three-author 「等」 correction and incorrectly called the
+  correctly stroke-ordered Chinese references misordered. These output-quality
+  failures were the motivation for #882 below; the routing acceptance was not a
+  suite-wide pass.
+- A separate manual `/academic-research-skills:ars-citation-check` smoke,
+  using case 03's synthetic material, called the core skill and read
+  `citation_compliance_agent.md`. This is runtime evidence for citation-check,
+  not a runtime coverage claim for all 13 mode commands.
+
+These are loading/routing checks, not a with/without ablation or a measured
+quality uplift. Earlier candidates are not pooled with this run: simply adding
+nested Skill instructions still allowed command-only execution; hiding mode
+commands without updating the SessionStart announcement led to attempted
+calls to user-only commands. The announcement now names the core Skill-tool
+targets for natural-language requests, including resume/compact events.
 
 ## Side channels and ceilings (pilot 3, 2026-09-13, 1 run × 2 arms, sonnet agents)
 
@@ -68,20 +106,17 @@ required on the conversion negative, real journal names replaced).
 
 ## Known caveats
 
-- **The with-plugin arm cannot load the mode's own prompt in the eval sandbox.**
-  `/ars-citation-check` is a command stub that tells the model to read
-  `MODE_REGISTRY.md` and `academic-paper/SKILL.md`; the plugin directory is
-  outside the sandbox cwd, `Glob`/`Read` there are denied under `dontAsk`, and the
-  model never falls back to invoking the `academic-paper` skill itself
-  (`--allow-tools 'Read(<plugin>/**)'` does not help: the model does not know the
-  path). So in this suite the with arm ≈ command text + base model, and
-  `citation_compliance_agent.md` never runs. Δ ≈ 0 across the suite is the
-  honest current reading, not a calibration failure. Fix belongs in the plugin
-  (command should invoke the skill, or carry `${CLAUDE_PLUGIN_ROOT}` paths): #857.
-- **Trigger rate with sonnet is 3 of 6 fire cases** (01, 02, 06 fired; 03 prose
-  "check the citations", 04 terse "look over the refs", 05 Spanish did not).
-  05 is exactly the #850 gap: the skill description carries no Spanish
-  triggers. Display-only; tracked in #858 (triggers) and #850 (locale).
+- **Historical loading failure (2026-09-13 pilot).** The with-plugin arm
+  invoked a command stub but could not find the mode prompt outside its cwd;
+  `citation_compliance_agent.md` never loaded. Its near-zero Δ measured the
+  stub plus base model, not the complete mode. #857 adds an explicit core-skill
+  invocation and plugin-root references, and makes mode command stubs
+  user-invocable only so automatic routing selects the core skill directly.
+- **Historical trigger rate was 3 of 6 fire cases.** The old loose
+  `input_match: academic` counted a command-stub invocation as firing. That
+  number is not comparable to the stronger core-skill indicator now used.
+  The Spanish trigger `verificar citas` subsequently arrived with #856;
+  #858 adds English, Traditional Chinese, and Korean citation-check phrases.
 - **03 was a `/ars-citation-check` slash-command case in pilot 1.** The
   without-plugin arm answered "Unknown command" and Δ was +0.70 for the wrong
   reason (command existence). Switched to a prose trigger.

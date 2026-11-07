@@ -427,8 +427,7 @@ def check(root: Path) -> list[str]:
                 live_paths.add(path)
     live_paths.update(root / rel for rel in LIVE_FILES)
     for path in sorted(live_paths):
-        # as_posix(): a bare str() yields backslashes on Windows, so the
-        # `rel == QUALITY` owner-file exclusion below never matched there.
+        # as_posix() so rel matches RE_REVIEW_PROTOCOL ('/') on Windows.
         rel = path.relative_to(root).as_posix()
         text = path.read_text(encoding="utf-8")
         if rel == RE_REVIEW_PROTOCOL:

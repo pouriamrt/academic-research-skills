@@ -5,16 +5,18 @@ Triage of an external PR that added a fifth top-level skill directory showed
 that the existing inventory lints are anchored to the skills they already
 know about: `check_spec_consistency.py` hardcodes four SKILL.md paths,
 `check_version_consistency.py` iterates the `.claude/CLAUDE.md` table, and
-nothing cross-checks the `skills/` symlink directory or the marketplace
-manifest. A skill could therefore exist on disk without being packaged,
-listed, or versioned, with every lint green.
+nothing cross-checks the plugin manifest or the marketplace manifest. A
+skill could therefore exist on disk without being packaged, listed, or
+versioned, with every lint green.
 
 This lint takes the set of top-level `<name>/SKILL.md` directories as the
 authority (it is what exists) and requires set-equality against the three
 surfaces that advertise or package the inventory:
 
-  B. `skills/<name>` — one symlink per skill, resolving to `<root>/<name>`
-     (plugin auto-discovery packages from here);
+  B. `.claude-plugin/plugin.json` `skills[]` as `./<name>` (what Claude Code
+     loads the skills from, #1035: a plugin copy synced from a claude.ai
+     account marketplace carries no symlinks, so a `skills/` symlink
+     directory left the core skills unregistered there);
   C. `.claude/CLAUDE.md` § "Skills Overview" table rows (the canonical
      inventory other lints iterate);
   D. `.claude-plugin/marketplace.json` `plugins[].skills[]` as `./<name>`
@@ -27,6 +29,10 @@ per-plugin descriptions, and `MODE_REGISTRY.md`. README and CHANGELOG are delibe
 carry historical release notes whose counts are legitimately frozen at the
 time of writing, so a prose-wide grep would flag correct history. A surface
 that carries no count makes no claim and is not checked.
+
+A `skills/` directory at the root is a violation of its own (#1035): Claude
+Code scans it in addition to the `plugin.json` `skills[]` paths, so keeping
+both loads every core skill twice.
 
 Every asymmetric difference is reported in both directions, so a stale row
 and an unpackaged directory are both single, named violations.
@@ -77,51 +83,14 @@ def _skills_on_disk(root: Path) -> set[str]:
     return {p.parent.name for p in iter_skill_files(root)}
 
 
-def _is_windows_symlink_stand_in(entry: Path, expected: Path) -> bool:
-    """True when `entry` is the checked-out stand-in for a mode-120000 blob.
-
-    A stand-in is a small regular file whose entire content is the relative
-    target path. Anything else — a directory, or a file with real content —
-    is a genuine violation on every platform.
-    """
-    if entry.is_dir():
-        return False
-    try:
-        body = entry.read_text(encoding="utf-8").strip()
-    except (OSError, UnicodeDecodeError):
-        return False
-    return body in (f"../{entry.name}", entry.name) and expected.is_dir()
-
-
-def _skills_dir_entries(root: Path, violations: list[str]) -> set[str]:
+def _check_no_skills_dir(root: Path, violations: list[str]) -> None:
     skills_dir = root / SKILLS_DIR
-    if not skills_dir.is_dir():
-        violations.append(f"{skills_dir}: directory is missing")
-        return set()
-    names: set[str] = set()
-    for entry in sorted(skills_dir.iterdir(), key=lambda p: p.name):
-        names.add(entry.name)
-        expected = root / entry.name
-        if not entry.is_symlink():
-            # Windows checkouts with core.symlinks=false materialize a git
-            # symlink as a regular file holding its target path. The index
-            # entry is still mode 120000, so CI sees a real symlink; accept
-            # that representation here instead of failing every local run.
-            if _is_windows_symlink_stand_in(entry, expected):
-                continue
-            violations.append(
-                f"{entry}: must be a symlink to ../{entry.name}, "
-                f"found a real {'directory' if entry.is_dir() else 'file'}"
-            )
-            continue
-        try:
-            target = entry.resolve(strict=True)
-        except (FileNotFoundError, RuntimeError):
-            violations.append(f"{entry}: dangling symlink")
-            continue
-        if target != expected.resolve():
-            violations.append(f"{entry}: symlink resolves to {target}, expected {expected}")
-    return names
+    if skills_dir.exists() or skills_dir.is_symlink():
+        violations.append(
+            f"{skills_dir}: must not exist; Claude Code scans a skills/ "
+            f"directory in addition to the {PLUGIN_JSON} skills[] paths, so "
+            f"skills placed there would load twice (#1035)"
+        )
 
 
 def _overview_table_lines(section: str) -> list[str]:
@@ -234,6 +203,29 @@ def _load_json(path: Path, violations: list[str]) -> dict | None:
     return data
 
 
+def _skill_paths(label: str, skills: object, names: set[str], violations: list[str]) -> None:
+    """Collect `./<name>` entries from a manifest `skills` value into names.
+
+    A repeated entry is a violation: the set comparison below would otherwise
+    absorb it silently."""
+    if not isinstance(skills, list):
+        violations.append(f"{label} must be a list of './<name>' paths")
+        return
+    seen: set[str] = set()
+    for raw in skills:
+        match = MANIFEST_SKILL_RE.fullmatch(raw) if isinstance(raw, str) else None
+        if match is None:
+            violations.append(
+                f"{label} entry {raw!r} must be './<name>' with a single lowercase path segment"
+            )
+            continue
+        name = match.group(1)
+        if name in seen:
+            violations.append(f"{label} lists './{name}' more than once")
+        seen.add(name)
+        names.add(name)
+
+
 def _marketplace_skills(root: Path, violations: list[str]) -> tuple[set[str], list[str]]:
     """Return (skill names across all plugins, plugin descriptions)."""
     path = root / MARKETPLACE_JSON
@@ -255,22 +247,7 @@ def _marketplace_skills(root: Path, violations: list[str]) -> tuple[set[str], li
         description = plugin.get("description")
         if isinstance(description, str):
             descriptions.append(description)
-        skills = plugin.get("skills")
-        if not isinstance(skills, list):
-            violations.append(
-                f"{path}: plugins[{index}].skills must be a list of './<name>' "
-                f"paths (symlink-blind importers read this list)"
-            )
-            continue
-        for raw in skills:
-            match = MANIFEST_SKILL_RE.fullmatch(raw) if isinstance(raw, str) else None
-            if match is None:
-                violations.append(
-                    f"{path}: plugins[{index}].skills entry {raw!r} must be "
-                    f"'./<name>' with a single lowercase path segment"
-                )
-                continue
-            names.add(match.group(1))
+        _skill_paths(f"{path}: plugins[{index}].skills", plugin.get("skills"), names, violations)
     return names, descriptions
 
 
@@ -302,8 +279,7 @@ def run_all_checks(root: Path) -> list[str]:
         violations.append(f"{root}: no top-level <name>/SKILL.md found (wrong --path?)")
         return violations
 
-    symlinked = _skills_dir_entries(root, violations)
-    _report_set_diff(on_disk, symlinked, f"{SKILLS_DIR}/ symlinks", violations)
+    _check_no_skills_dir(root, violations)
 
     table = _claude_table_rows(root, violations)
     _report_set_diff(on_disk, table, f"{CLAUDE_MD} Skills Overview table", violations)
@@ -315,6 +291,9 @@ def run_all_checks(root: Path) -> list[str]:
 
     plugin = _load_json(root / PLUGIN_JSON, violations)
     if plugin is not None:
+        declared: set[str] = set()
+        _skill_paths(f"{root / PLUGIN_JSON}: skills", plugin.get("skills"), declared, violations)
+        _report_set_diff(on_disk, declared, f"{PLUGIN_JSON} skills", violations)
         description = plugin.get("description")
         if isinstance(description, str):
             _check_count_claim(f"{PLUGIN_JSON} description", description, len(on_disk), violations)
@@ -348,7 +327,7 @@ def main() -> int:
         return 1
     print(
         "OK: skill inventory is identical across top-level directories, "
-        "skills/ symlinks, the CLAUDE.md table, and the marketplace manifest."
+        "the plugin manifest, the CLAUDE.md table, and the marketplace manifest."
     )
     return 0
 

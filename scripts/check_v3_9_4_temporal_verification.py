@@ -47,7 +47,7 @@ BIBLIOGRAPHY_AGENT_PATH = REPO_ROOT / "deep-research/agents/bibliography_agent.m
 # those stay owned by timeline_extraction_agent per spec §3.4 + §3.6.
 # Re-pin procedure: sha256 of the LF-normalized file, updated IN THE SAME
 # COMMIT as any reviewed change to deep-research/agents/bibliography_agent.md.
-BIBLIOGRAPHY_AGENT_SHA256 = "bd84c0b2adba6b78a74cb4b5d10057e53da9b516d1e2e5b6af02a8e0a37c79f7"
+BIBLIOGRAPHY_AGENT_SHA256 = "9c601bd2a7049d7626faa39d326ae3356e25a8c82613905b81cf19a616363384"
 
 
 def _validate(yaml_path: Path, schema_path: Path) -> list[str]:

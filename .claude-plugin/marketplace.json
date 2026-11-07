@@ -9,7 +9,7 @@
     {
       "name": "academic-research-skills",
       "version": "3.22.0",
-      "description": "8 AI skills covering literature review, experiment design, statistical analysis, simulation, lab notebook, paper writing, peer review, and pipeline orchestration. v3.17 auto-by-default pipeline (English-only). Merges upstream v3.4–v3.7.3 (PRISMA-trAIce compliance, sprint contract, generator-evaluator gates, literature corpus adapters, claim faithfulness) on top of fork's experiment pipeline (PaperOrchestra + Lu 2026). Optional PaperBanana and Google Colab MCP integrations.",
+      "description": "9 AI skills covering literature review, experiment design, statistical analysis, simulation, lab notebook, systematic-review screening, paper writing, peer review, and pipeline orchestration. v3.17 auto-by-default pipeline (English-only). Merges upstream v3.4–v3.7.3 (PRISMA-trAIce compliance, sprint contract, generator-evaluator gates, literature corpus adapters, claim faithfulness) on top of fork's experiment pipeline (PaperOrchestra + Lu 2026). Optional PaperBanana and Google Colab MCP integrations.",
       "source": "./",
       "license": "CC-BY-NC-4.0",
       "skills": [
@@ -20,7 +20,8 @@
         "./experiment-designer",
         "./data-analyst",
         "./simulation-runner",
-        "./lab-notebook"
+        "./lab-notebook",
+        "./sr-screener"
       ]
     }
   ]

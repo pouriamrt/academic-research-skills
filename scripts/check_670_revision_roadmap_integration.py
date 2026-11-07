@@ -57,7 +57,7 @@ LEGACY_APPLY_RUNTIME = Path("scripts/legacy/ars_apply_revision_patch_v1_0.py")
 RUNTIME_HASHES = {
     ROADMAP_RUNTIME: "2d9fb28aae08962eea1b2aad31c63a82edd51dd389540fc3ac6240e8a93b65e6",
     APPLY_RUNTIME: "6a811530ef7199fd345892ce9e0cbd1a4533d038a341cce699c78ce31e483e59",
-    RE_REVIEW_RUNTIME: "2e486f658bef82c4f858dcdf63acb612aad8207c20f8f1b8a7d52aa67ed4f150",
+    RE_REVIEW_RUNTIME: "ed95faf943851cf0f95f34afbc3d2721160248c40f8dec68e29b5ab2e281f3f2",
 }
 
 # #670 originally froze the five reviewer finding producers. Subsequent
@@ -65,23 +65,28 @@ RUNTIME_HASHES = {
 # criterion judgements, an explicit NOT_CALIBRATED boundary, typed provenance,
 # and confidence-as-disclosure-only semantics. These hashes are re-pinned with
 # those reviewed changes; exact hashes keep later drift auditable without a
-# live-model comparison.
+# live-model comparison. Re-pinned for #973 (Phase Boundary enforcement sentence
+# reworded to the actual coverage condition; devils_advocate's #523 transport note
+# states the same condition; no detection-surface change).
+# Re-pinned for #1001 (domain and perspective reviewers repeat the works they
+# recommend in a `yaml suggested-references` block for a post-decision lookup;
+# no finding, score, or detection rule changes).
 DETECTION_HASHES = {
     Path(
         "academic-paper-reviewer/agents/eic_agent.md"
-    ): "4bc29b9a31fb08ca51eb8770312c0189a8bc92884b776cd3f663bbbc40c10a9c",
+    ): "ecba4b1d6cf502dea2128e6212fe6ec6a6952b64126980fa1dbbb90ba94e499a",
     Path(
         "academic-paper-reviewer/agents/methodology_reviewer_agent.md"
-    ): "91e462ee104cc253a44d387570ea95a49a4efffcc2b4765617baf292431de6cb",
+    ): "7369527eb99f1ca2a7351a338a4e7ef0df482d3fb516056d271a944eb7d6d8b9",
     Path(
         "academic-paper-reviewer/agents/domain_reviewer_agent.md"
-    ): "eb6660aafadc851e3fc4545111b5113d467c9eb263ef069394db62c944ece1e5",
+    ): "706a70fab08a37dff52f6e097787cf8d5712fff02bcce87ac0a184109f478f55",
     Path(
         "academic-paper-reviewer/agents/perspective_reviewer_agent.md"
-    ): "49bb946547593a918bd60faee88555d46a2a10b39f2857ef94163eef65920d81",
+    ): "a99386515c1e9e5b73e91f3f9cd62f6ec3660f03e229371ad53531fa165cf007",
     Path(
         "academic-paper-reviewer/agents/devils_advocate_reviewer_agent.md"
-    ): "b42eb5559bf91c8767f85e532dfa240e5e30feb92ae3fc0be96f20058acfcf6a",
+    ): "a3ddde4c1e26e9e8603f71e47b3afb0c83131e0428b84048c0c3e634f19e5b5c",
     Path(
         "academic-paper-reviewer/templates/peer_review_report_template.md"
     ): "5da1f9d24d6e321cec5f38c13fa03fe23b9363b1842cb0d8111c5e39a810c7d1",

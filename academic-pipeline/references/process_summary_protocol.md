@@ -3,12 +3,21 @@
 **Trigger**: After the user confirms the Stage 5 completion checkpoint (FULL). Stage 6 is non-mandatory — the user may decline it at that checkpoint; it is then marked `skipped` and the pipeline still terminates `completed` (see `pipeline_state_machine.md` § Stage 6 terminal semantics)
 **Purpose**: Document the complete human-AI collaboration history for the paper creation process, for user sharing, reporting, or reflection
 
-> **v3.17.0 AUTO-mode contract:** When `ARS_INTERACTIVE` is unset (AUTO, the default), Stage 6 generates `paper_creation_process.md` + `paper_creation_process.pdf` in English unconditionally — NO language picker. When `ARS_INTERACTIVE=1`, the original interactive prompt fires (English only since v3.17.0; the prompt is retained for symmetry with v3.16 muscle memory but the only valid response is English). The "Failure Mode Audit Log" section MUST include every FAIL marker from `compliance_history[]`, every `auto_retry_history[]` entry (v3.17.0 schema), and every `auto_disclosure_addendum`. When `ARS_AUTO_FAIL_MODE=continue-with-warning` shipped a paper with integrity FAIL on record, this Stage 6 section is the user-readable surface that exposes it.
+> **v3.17.0 AUTO-mode contract:** When `ARS_INTERACTIVE` is unset (AUTO, the default), Stage 6 generates `paper_creation_process.md` + `paper_creation_process.pdf` in English unconditionally — NO language picker. When `ARS_INTERACTIVE=1`, workflow step 1 asks only whether to add a PDF; there is no language picker (English only since v3.17.0). The "Failure Mode Audit Log" section MUST include every FAIL marker from `compliance_history[]`, every `auto_retry_history[]` entry (v3.17.0 schema), and every `auto_disclosure_addendum`. When `ARS_AUTO_FAIL_MODE=continue-with-warning` shipped a paper with integrity FAIL on record, this Stage 6 section is the user-readable surface that exposes it.
 
 ## Workflow
 
 ```
-1. Review session history and compile the following:
+1. Ask whether to add a PDF (interactive mode, ARS_INTERACTIVE=1; the record is
+   English-only, so there is no language question). An active standing
+   constraint that answers it is followed without asking (pipeline orchestrator
+   § Standing Constraints (#927)). AUTO mode (default) asks nothing and always
+   produces the PDF (AUTO-mode contract above).
+
+2. Review session history and compile the following (after a reset boundary the
+   session holds only the turns since the last resume: take earlier decisions and
+   words from the passport and run ledger, and say in the record which parts come
+   from those rather than the conversation):
    - User's initial instructions (verbatim quote)
    - Key decision points and user interventions at each stage
    - Direction correction moments and reasons
@@ -17,14 +26,14 @@
    - Quality requirement evolution (e.g., formatting, tone adjustments)
    - Pipeline statistics (stage count, review rounds, integrity verification count, etc.)
 
-2. Dispatch collaboration_depth_agent in whole-pipeline mode (range = all
+2b. Dispatch collaboration_depth_agent in whole-pipeline mode (range = all
    stages, v3.5); its advisory report becomes the "Collaboration Depth
    Trajectory" chapter of the Process Record — this dispatch happens BEFORE
    record generation so the chapter is inside the record the user acknowledges
 
 3. Generate English Markdown version (paper_creation_process.md)
 
-4. Convert to LaTeX and compile PDF:
+4. Only when a PDF was asked for (always in AUTO mode), convert to LaTeX and compile PDF:
    - pandoc MD -> LaTeX body
    - Package complete LaTeX document (with cover page, table of contents, headers/footers)
    - tectonic compile PDF
@@ -153,8 +162,8 @@ All metrics below are derived from existing agent logs (`[DA-DECISION]`, `[DA-RE
 |  DA Consecutive Concessions   [list if any]       |
 |  (violations of no-consecutive rule)              |
 |                                                   |
-|  Checkpoints Skipped          X/Y                 |
-|  (SLIM or user-skipped / total checkpoints)       |
+|  SLIM checkpoints             X/Y                 |
+|  User-skipped stages          X/Y                 |
 |                                                   |
 |  User Overrides               X                   |
 |  (times user overruled AI recommendation)         |
@@ -181,7 +190,7 @@ All metrics below are derived from existing agent logs (`[DA-DECISION]`, `[DA-RE
 3. **Frame-Lock Incidents**: List any `[CROSS-MODEL-FINDING]` that the primary DA missed (if cross-model was enabled), or any frame-lock detections triggered during checkpoints. If none, state "No frame-lock incidents detected — note this could mean either good coverage or undetected frame-lock."
 4. **Convergence Pattern**: In Socratic dialogue stages, was intent correctly detected? Did the mentor try to converge prematurely? Report mode transitions and any premature-convergence health alerts.
 5. **What AI Got Wrong**: Candid list of AI errors or shortcomings during the run — corrections needed, checkpoint failures, integrity issues found. This is not a failure report; it is evidence that quality gates are working.
-6. **Failure Mode Audit Log** (v3.2): For each of the 7 AI research failure modes from the Stage 2.5 / 4.5 checklist (see `references/ai_research_failure_modes.md`), report (a) final status at 4.5 — `CLEAR` / `OVERRIDDEN`, (b) history — was it ever `SUSPECTED` during the pipeline? At which stage? How was it resolved? (c) if `OVERRIDDEN`, the user's recorded reasoning. This makes the failure-mode defences part of the permanent process record. Modes with no history can be listed as `CLEAR (no flags)` in one line; expand only on modes that were flagged.
+6. **Failure Mode Audit Log** (v3.2): For each of the 7 AI research failure modes from the Stage 2.5 / 4.5 checklist (see `references/ai_research_failure_modes.md`), report (a) final status at 4.5 — `CLEAR` / `NOT APPLICABLE` (quote the no-experiments declaration it rests on) / `OVERRIDDEN`, (b) history — was it ever `SUSPECTED` during the pipeline? At which stage? How was it resolved? (c) if `OVERRIDDEN`, the user's recorded reasoning. This makes the failure-mode defences part of the permanent process record. Modes with no history can be listed as `CLEAR (no flags)` or `NOT APPLICABLE (no-experiments declaration)` in one line, never merging the two; expand only on modes that were flagged.
 - **Reading Probe Outcomes (if present)** — transcribes the `### Reading Probe Outcomes` subsection from the Research Plan Summary verbatim, with a one-line note that the AI did not verify paraphrase accuracy. If the Research Plan Summary has no such subsection (i.e., `ARS_SOCRATIC_READING_PROBE` was unset), this item is omitted entirely (no "not applicable" noise). Pickup rule (two sources, either sufficient): (a) copy the entire `### Reading Probe Outcomes` subsection body verbatim — this is the authoritative human-readable record; (b) additionally grep for `[READING-PROBE: status=..., paper=..., outcome=..., turn=...]` which the Mentor emits once in the summary as a machine-stable anchor (including for `not_fired_*` statuses). If both are present use (a) as the display source and keep (b) as the final line of the transcribed block so downstream tooling can still parse it. If only raw inline tags from dialogue turns (`[READING-PROBE: paper=..., outcome=..., turn=...]` without the `status=` field) are found and no subsection exists, the Mentor compilation step was skipped — log this as a pipeline anomaly rather than silently dropping the probe data.
 - **Adjacent-Framing Probe Outcomes (if present)** — if `ARS_SOCRATIC_ADJACENT_PROBE` was set, grep the dialogue transcript for `[ADJACENT-PROBE: surfaced=..., anchor=internal_knowledge, turn=..., outcome=...]` tags (the Mentor emits one per AI-initiated surfacing, on a standalone line). Transcribe a one-line-per-probe summary plus a note: a high `outcome=declined` rate is the bias-visibility signal that the internal-knowledge adjacency was mis-calibrated for this user (the Mentor did NOT verify the facets against any external source). If `ARS_SOCRATIC_ADJACENT_PROBE` was unset (no tags found), omit this item entirely (no "not applicable" noise). Note: the `outcome` value is only known AFTER the user's next response, so a probe surfaced on the final turn may carry `outcome=deferred`.
 
@@ -193,14 +202,14 @@ For dimensions with no findings, state the null result in one sentence. Expand o
 
 - **Self-honesty**: AI must not minimize its own shortcomings. If the DA conceded too easily, say so.
 - **Not self-flagellation**: The purpose is transparency, not performative humility. Report facts with interpretation.
-- **Actionable**: Every finding should suggest what could be done differently next time (e.g., "Consider enabling cross-model verification for the next run" or "The user might want to push back harder on DA concessions")
+- **Actionable**: Every finding should suggest what could be done differently next time (e.g., "Consider enabling cross-model verification for the next run" or "The user might want to push back harder on DA concessions"); never suggest a mechanism the user declined
 - **The irony is noted**: This self-reflection is itself produced by the same AI that may have been sycophantic during the pipeline. The user should read it with that awareness. This caveat must be stated in the report.
 
 ## Output Specifications
 
 - **Filename**: `paper_creation_process.md` (English)
-- **PDF**: `paper_creation_process_zh.pdf` / `paper_creation_process_en.pdf`
-- **LaTeX template**: `article` class, 12pt, A4, Times New Roman + Source Han Serif TC VF
+- **PDF** (when asked for; always in AUTO mode): `paper_creation_process.pdf`
+- **LaTeX template**: `article` class, 12pt, A4, Times New Roman
 - **Includes table of contents**: `\tableofcontents`
 - **Header**: left = document title (italic), right = date
 - **Compilation**: tectonic (same toolchain as Stage 5)

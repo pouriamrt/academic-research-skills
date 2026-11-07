@@ -18,6 +18,8 @@ Any other value is warned once (one line) and treated as absent — misconfigura
 
 Tier positions are expressed relative to the session: "session model", "frontier tier of the session's model family", "one tier below the session model", "the Opus-class floor". Concrete model ids are NEVER pinned in this mechanism's FILES — a hard-pinned floor becomes a downgrade ceiling on the next model generation (the v3.7.0 `opus` command floor, retired in the 2026-06 Fable 5 harness pass, is the precedent).
 
+**Vocabulary.** In this mechanism a *model family* is a vendor's whole lineup (for Anthropic, every Claude model), and a *tier* is a position in that lineup as the vendor orders it. This is not Claude Code's "model family alias" (`opus`, `sonnet`, `fable`, each called a family there): read that way, an Opus-class session would be the frontier of its own "family" and `quality-boost` would silently do nothing. Tier position is lineup order, not a capability ranking: a lower tier can outscore the frontier tier on some tasks at a lower per-token price, so `quality-boost` buys the top lineup position, not a guaranteed gain. User guidance for the current pair of Claude models is in `docs/PERFORMANCE.md`; the dated evidence is in `audits/harness-retirement-2026-09-opus-5-5.md` DM-004.
+
 ### Resolving a tier at dispatch time
 
 The no-hard-pinning rule is about what lives in the repo, not about the dispatch call — a subagent invocation ultimately needs a model value the runtime accepts (an alias such as `opus`/`sonnet`, or a concrete current-generation id). The dispatching session resolves the relative target at the moment of dispatch:
@@ -27,7 +29,7 @@ The no-hard-pinning rule is about what lives in the repo, not about the dispatch
 3. Pass whatever identifier the runtime accepts for that target (alias preferred where supported; otherwise the current generation's concrete id). The concrete value exists only in that ephemeral call — it is never written into agent files, manifests, or this doc.
 4. If the session cannot resolve the target (unknown lineup, runtime exposes no model choice): the direction is a no-op for that call — announce `[MODEL-TIERING: could not resolve target tier — ran on the session model]` once per run. Fail-open, never a guessed id.
 
-The resolved tier names the **declared** session model, not a per-call attestation of what served the request: the runtime may serve a classifier-flagged request on a different model of the same family, with no signal ARS reads (vendor specifics in `audits/harness-retirement-2026-09-model-update.md` G-3). Tiering decisions, provenance blocks, and cost estimates therefore describe the declared model; a run whose content trips those classifiers — security-topic manuscripts are the likely case — may have been served on another tier without notice. This is a recorded residual gap (`docs/RISK_REGISTER.md` R5), not something the switch can detect or correct.
+The resolved tier names the **declared** session model, not a per-call attestation of what served the request: the runtime may serve a classifier-flagged request on a different model of the same family, with no signal ARS reads (vendor specifics in `audits/harness-retirement-2026-09-model-update.md` G-3 and `audits/harness-retirement-2026-09-opus-5-5.md` DM-005). Tiering decisions, provenance blocks, and cost estimates therefore describe the declared model; a run whose content trips those classifiers — security-topic and biology-adjacent manuscripts are the likely cases — may have been served on another tier. Claude Code shows the user a notice in the transcript and keeps the session on the fallback model until the user runs `/model`, so subagents that inherit the session model and start after the fallback run on the fallback model too. This is a recorded residual gap (`docs/RISK_REGISTER.md` R5), not something the switch can detect or correct.
 
 ## Direction 1 — `quality-boost` (for sessions below the frontier tier)
 
@@ -57,11 +59,11 @@ Agent files are untouched — frontmatter stays `model: inherit`, and this mecha
 
 When a tiering direction is active, route repeated same-stage calls to the SAME worker so its cache accumulates where the protocol permits. Do not reuse Stage 3 `eic` or `editorial_synthesizer` workers for Stage 3' contract calls: their first-round agent prompts are not the dedicated three-gate protocol. A provider-level prompt cache may be shared across separate Stage 3' calls only when the Phase 1 / 2A / 2B withholding boundaries remain intact; cached transport never turns them into one conversational context. `field_analyst` is not re-invoked on the normal Stage 3' path because the Round-1 cards travel as data; only the visible regeneration fallback may dispatch it. With the flag unset this guidance imposes nothing: default behavior stays byte-equivalent, dispatch shapes included.
 
-## Classification table (61 agents; upstream 39 frozen 2026-07-11 #517, fork +22 experiment-skill agents 2026-07-16)
+## Classification table (65 agents; upstream 43 frozen 2026-07-11 #517 with sr-screener's four added 2026-09-29; fork drops abstract_bilingual and adds 23 experiment-skill agents 2026-07-16)
 
 One tier per agent; membership changes require editing BOTH this table and `scripts/model_tiering_manifest.json` (the lint pins them together).
 
-### Judgment-type (29) — session model; quality-boost upgrade candidates at checkpoint surfaces
+### Judgment-type (32) — session model; quality-boost upgrade candidates at checkpoint surfaces
 
 | Skill | Agents |
 |---|---|
@@ -73,8 +75,9 @@ One tier per agent; membership changes require editing BOTH this table and `scri
 | experiment-designer (1) | `design_architect` |
 | simulation-runner (1) | `diagnostics` (convergence/validity assessment feeds design decisions) |
 | lab-notebook (1) | `provenance_auditor` (audit authority over the research record) |
+| sr-screener (3) | `protocol_architect`, `screening_reviewer` (screening calls take per-role models from the screening config; see the note below), `qc_auditor` |
 
-### Execution-type (32) — economy-direction downgrade candidates (one tier, floor Opus-class)
+### Execution-type (33) — economy-direction downgrade candidates (one tier, floor Opus-class)
 
 | Skill | Agents |
 |---|---|
@@ -86,6 +89,9 @@ One tier per agent; membership changes require editing BOTH this table and `scri
 | simulation-runner (4) | `intake`, `model_builder`, `execution_engine`, `report_compiler` |
 | lab-notebook (3) | `notebook_manager`, `entry_writer`, `deviation_tracker` |
 | academic-pipeline (2) | `collaboration_depth` (advisory-only, never blocks), `state_tracker` |
+| sr-screener (1) | `reporter` |
+
+**sr-screener note.** The screening calls (Reviewers A and B, the adjudicator, the QC and full-text reviewers) run on `screening_reviewer` with the model the user sets per role in `screening_config.json` `models` and confirms at the skill's cost check before every fan-out; `ARS_MODEL_TIERING` does not override those per-role choices. Its other three agents follow this document like any other agent. See `sr-screener/SKILL.md` § Model Tiering.
 
 ## Interaction with cross-model verification
 

@@ -72,6 +72,7 @@ Detailed per-phase agent behavior and output descriptions for the 8-phase orches
 - In-text citations integrated
 - Word count tracking per section
 - Transition paragraphs between sections
+- Acronym check on the saved draft (#849; [`writing_quality_check.md`](writing_quality_check.md) § F)
 
 ---
 

@@ -246,6 +246,22 @@
   {
    "path": "lab-notebook/agents/deviation_tracker_agent.md",
    "tier": "execution"
+  },
+  {
+   "path": "sr-screener/agents/protocol_architect_agent.md",
+   "tier": "judgment"
+  },
+  {
+   "path": "sr-screener/agents/screening_reviewer_agent.md",
+   "tier": "judgment"
+  },
+  {
+   "path": "sr-screener/agents/qc_auditor_agent.md",
+   "tier": "judgment"
+  },
+  {
+   "path": "sr-screener/agents/reporter_agent.md",
+   "tier": "execution"
   }
  ]
 }

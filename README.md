@@ -3,20 +3,22 @@
 [![Version](https://img.shields.io/badge/version-v3.22.0-blue)](https://github.com/pouriamrt/academic-research-skills)
 [![License: CC BY-NC 4.0](https://img.shields.io/badge/license-CC%20BY--NC%204.0-lightgrey)](https://creativecommons.org/licenses/by-nc/4.0/)
 
-A Claude Code plugin covering the full academic research lifecycle — from literature review through experimentation, statistical analysis, paper writing, peer review, and publication. **8 skills, 58+ agents, 20 handoff schemas + 6 claim-audit schemas**, full pipeline orchestration with PRISMA-trAIce + RAISE compliance gates, reviewer + writer/evaluator sprint contracts, opt-in L3 claim ↔ reference faithfulness audit gate (v3.18.0 #103), passport reset boundary for long-running sessions, three-layer citation locator, temporal verification (v3.18.0 #135), Phase Boundary protocol (v3.18.0 #133), cross-index triangulation (v3.18.0 #102), and collaboration depth observer. **v3.17.0 runs the pipeline unattended by default — set `ARS_INTERACTIVE=1` to restore prompts.** English-only output. New `/ars-mark-read`, `/ars-unmark-read`, `/ars-reviewer` plugin commands. Experiment skills integrate with the [superpowers](https://github.com/obra/superpowers) plugin for disciplined, test-driven code development.
+A Claude Code plugin covering the full academic research lifecycle — from literature review and study screening through experimentation, statistical analysis, paper writing, peer review, and publication. **9 skills, 65 agents, 20 handoff schemas + 6 claim-audit schemas**, full pipeline orchestration with PRISMA-trAIce + RAISE compliance gates, reviewer + writer/evaluator sprint contracts, opt-in L3 claim ↔ reference faithfulness audit gate (v3.18.0 #103), passport reset boundary for long-running sessions, three-layer citation locator, temporal verification (v3.18.0 #135), Phase Boundary protocol (v3.18.0 #133), cross-index triangulation (v3.18.0 #102), and collaboration depth observer. **v3.17.0 runs the pipeline unattended by default — set `ARS_INTERACTIVE=1` to restore prompts.** English-only output. New `/ars-mark-read`, `/ars-unmark-read`, `/ars-reviewer` plugin commands. Experiment skills integrate with the [superpowers](https://github.com/obra/superpowers) plugin for disciplined, test-driven code development.
 
 ## Skills
 
 **Install in 30 seconds** (Claude Code CLI / VS Code / JetBrains, v3.17.0+; plugin packaging from upstream v3.7.0):
 
 ```text
-/plugin marketplace add Imbad0202/academic-research-skills
+/plugin marketplace add pouriamrt/academic-research-skills
 /plugin install academic-research-skills
 ```
 
 Then try `/ars-plan` to walk through your paper structure via Socratic dialogue, or jump to [Quick install](#quick-install) for prerequisites and the traditional symlink flow.
 
-> **AI is your copilot, not the pilot.** This tool won't write your paper for you. It handles the grunt work — hunting down references, formatting citations, verifying data, checking logical consistency — so you can focus on the parts that actually require your brain: defining the question, choosing the method, interpreting what the data means, and writing the sentence after "I argue that."
+On claude.ai or Claude Desktop (paid plans), add the same repository under **Customize → Plugins → Add → Add marketplace → Add from a repository**, then install `academic-research-skills`. Hooks and plugin agents do not run in plain chat there; see [SETUP Method 0](docs/SETUP.md#install-from-claudeai-or-claude-desktop-account-marketplace).
+
+> **AI is your copilot, not the pilot.** It can draft text, including a whole paper in full mode, but the decisions stay yours, and the pipeline stops for your confirmation at every stage. It handles the grunt work (hunting down references, formatting citations, verifying data, checking logical consistency) so you can focus on the parts that actually require your brain: defining the question, choosing the method, interpreting what the data means, and deciding what comes after "I argue that." You remain the author, and you answer for every claim you submit.
 >
 > Style Calibration learns your voice from past work. Writing Quality Check catches the patterns that make prose feel machine-generated, and `scripts/check_prose_tells.py` scans for the mechanically detectable ones with `file:line` evidence. The goal is prose you would have written yourself.
 
@@ -28,13 +30,15 @@ ARS is built on the premise that **a human researcher augmented by AI avoids the
 
 [**Zhao et al.**](https://arxiv.org/abs/2605.07723) (2026-05) audited 111M references across 2.5M papers on arXiv, bioRxiv, SSRN, and PMC. Their conservative estimate is 146,932 hallucinated citations for 2025 alone, with an observed mid-2024 inflection; for the bioRxiv-to-PMC pairing they report 85.3% preprint-to-published persistence. The paper describes "real citations deployed to support claims the cited references do not actually make" as an open challenge. ARS v3.7.1 added trust-chain frontmatter for source provenance; v3.7.3 added locator infrastructure (three-layer citation anchors) for future claim-level audits and surfaces advisory risk signals at cite time (ARS labels the claim-faithfulness gap internally as "L3"; this is ARS terminology, not the paper's). v3.7.x is motivated by Zhao et al.'s corpus-scale findings; corpus-scale evaluation of ARS itself remains future work.
 
-v3.8 closes the second half of the L3 gap. v3.7.3 made every citation carry a locator anchor; v3.8 adds an opt-in audit pass (`ARS_CLAIM_AUDIT=1`) that fetches the cited source against each anchor and judges whether the claim is actually supported. Five new HIGH-WARN classes (claim-not-supported, negative-constraint-violation, fabricated-reference, anchorless, constraint-violation-uncited) gate-refuse output through the formatter terminal hard gate. Calibration is shipped as a 20-tuple gold set with FNR<0.15 + FPR<0.10 acceptance thresholds; ramp-on plan is deferred to post-calibration evidence per v3.8 spec §5.
+v3.8 closes the second half of the L3 gap. v3.7.3 made every citation carry a locator anchor; v3.8 adds an opt-in audit pass (`ARS_CLAIM_AUDIT=1`) that fetches the cited source against each anchor and judges whether the claim is actually supported. Five new HIGH-WARN classes (claim-not-supported, negative-constraint-violation, fabricated-reference, anchorless, constraint-violation-uncited) gate-refuse output through the formatter terminal hard gate. A calibration runner ships with a 25-tuple synthetic gold set and FNR<0.15 + FPR<0.10 acceptance thresholds. Its shipped test drives the runner with a stub judge that returns the gold labels, so it checks the tooling, not a live judge; no live-judge calibration result is recorded yet, and the ramp-on plan waits for one (v3.8 spec §5).
 
 [**Ren et al.**](https://arxiv.org/abs/2607.13104) (2026, *Self-Improvements in Modern Agentic Systems: A Survey*) supplies a third, survey-level anchor. Its scientific-discovery synthesis (§7.4) concludes that discovery agents cannot easily verify novelty, correctness, or reproducibility on their own and may exploit weak proxies instead, must manage evidence across heterogeneous tools and literature, and raise governance issues — "scientific writing can also amplify misinformation when the evidence is weak." Its generation-loop chapters (§5.1–§5.2) list human auditing and retained human anchors among the practical safeguards for self-generated evaluation loops, and its historical chapter (§2.2) records the oldest form of the same lesson: the practical success of Lenat's EURISKO depended heavily on the user serving as the external evaluation signal, pruning unproductive heuristic drift — a limitation the survey notes persists in modern agentic systems. ARS cites the survey as design rationale for its human-in-the-loop stance, not as empirical proof that human-in-the-loop pipelines outperform autonomous ones; the survey's actionable deltas for ARS are tracked in #539–#541 and #547–#550.
 
 [**Gartenberg et al.**](https://doi.org/10.1287/orsc.2026.ed.v37.n3) (2026, *Organization Science* 37(3):795-812, "More versus better") supplies a fourth anchor, and the first from the journal side. The *Organization Science* AI Task Force scored every first submission (6,957) and every text-format review (10,389) the journal received between January 2021 and February 2026 with a commercial AI-writing classifier and standard readability indices. Manuscripts scored as heavily AI-written read worse on those indices and were desk-rejected more often; reviews scored as more AI-written leaned toward theory and away from data; and the editors conclude that current AI tools, amplified by publish-or-perish incentives, "appear to be pushing the system toward an equilibrium of more rather than better research." Their §5 contrasts "cognitive surrender" (Shaw & Nave, 2026, as cited there) with human-first use and asks authors to disclose how a manuscript was produced. The evidence is observational, aggregate, and from one journal, and the classifier is a proprietary instrument. ARS cites the editorial as design rationale for recording volume as a non-goal (see `POSITIONING.md`) and for the Collaboration Depth Observer and the claim-strength ladder, not as evidence about ARS output; the actionable deltas are tracked in #829–#833.
 
 [**Wang, Li et al.**](https://arxiv.org/abs/2609.07713) (2026-09, *The Emerging AI Paper-Review Arms Race: Adversarial Co-Evolution in Scholarly Publishing*, a survey of 230 sources) supplies a fifth anchor, and the first that treats research production and peer review as one coupled system. Its evaluative-authority ladder (§4.1) runs from author-facing feedback through reviewer assistance and official AI reviews to scoring and decision support, with the survey's point that capability at one rung does not justify use at the next; ARS's simulated panel sits on the lowest rung by design (see `POSITIONING.md`). Two of its findings shape the reviewer roadmap. First, as the survey summarizes Dycke & Gurevych (2026, §4.5), 391 edits that break a paper's scientific support relations produced no statistically significant difference in the tested automated reviewers' aspects, sentiment, or scores compared with 540 soundness-neutral controls, while presentation-only rewrites with the science held fixed moved AI-review scores (§5.2); the survey's §9.2 conclusion is that a static evaluation can overstate an AI reviewer's reliability once authors can observe and adapt to it. ARS tracks the corresponding Round-1 paired controls in #871 and the author-identity-cue controls (§7.2) in #872; both are measurements, not new mechanisms. Second, its §9.1 cites Brodeur et al. (2026, *PNAS* 123(22):e2524747123), a randomized study in which 288 researchers in 103 teams reproduced published quantitative social-science results under three conditions: human-only, AI-assisted (ChatGPT as a collaborative tool), and AI-led (ChatGPT with minimal human oversight). Human-only and AI-assisted teams reproduced 94% and 91%, AI-led teams 37%, and the AI-assisted teams detected fewer major coding errors than the human-only teams. In that study, then, AI assistance did not verify better than humans alone and AI-led verification did much worse; ARS reads this as a reason to keep verification human-led at every checkpoint, not as evidence that its own checkpoints or integrity gates are effective. The survey is a synthesis rather than an experiment, its structured search stops at 2026-07-01 and the later targeted update did not rerun every query (§10), its deployment evidence is concentrated in a small number of AI/CS conferences, OpenReview-based settings, and selected journals, and its "arms race" framing is a lens, not a finding; ARS cites it as design rationale, not as evidence about ARS output.
+
+[**King & Worthington**](https://gking.harvard.edu/peerless) (2026-10, *AI Article Reviews Dominate Human Peer Reviews at Their Best: Evidence and Policy Choices*) supplies a sixth anchor, and the first that compares AI and human reviews of the same manuscripts head to head. On 124 manuscripts and 134 paid expert reviews from a pre-submission review service whose authors rated those reviews highly, Claude Opus 4.8 wrote one review per manuscript in each of two conditions, at maximum reasoning effort. A GPT-5.5 judge preferred the AI review in every decided pair, each pair judged in both presentation orders, and three former journal editors preferred it in 26 of 30 blinded judgements. In a replication that used both model families as reviewers and judges, the AI review was preferred in 404 of 416 comparisons (97.1%) by the Opus judge and in 392 of 416 (94.2%) by the GPT judge. Two results bear on ARS's reviewer. In the additional-sources area (alternative data, theory, or literature), the AI review won 62% of decided pairs without web retrieval (n=85) and 100% with it (n=99), and ARS's domain reviewer recommends literature without retrieving or verifying it (#1001). The AI reviews were also not error-free: in the no-tools condition, 5.5% of AI claim assessments were judged contradicted by the manuscript, against 15.9% for the human reviews, and 37.1% of AI reviews had at least one such claim; ARS does not check its panel's claims against the manuscript (#1002). The paper's policy section describes authors iterating with a published AI review prompt and answering it in a letter, close to the use ARS is designed for, and warns that authors who revise for a published prompt may end up optimizing for it, leaving biases unrelated to the quality of the science. Its limits frame how ARS reads it: one review service, one judge model in the main analysis, editors who judged from the reviews alone, no measure of whether revised papers improved, and results that, in the authors' words, "do not speak to" how editors should make publication decisions. That last boundary matches where `POSITIONING.md` places ARS's panel. This paper and the Dycke & Gurevych result above address different questions: review preference and factual grounding here, sensitivity to changes in a manuscript's soundness there, so neither result answers the other. ARS cites the paper as design rationale, not as evidence about ARS output.
 
 v3.3 was inspired by [**PaperOrchestra**](https://arxiv.org/abs/2604.05018) (Song, Song, Pfister & Yoon, 2026, Google): Semantic Scholar API verification, anti-leakage protocol, VLM figure verification, and revision-trajectory tracking. ARS now implements that last idea through categorical, evidence-anchored criterion trajectories rather than score deltas.
 
@@ -47,6 +51,7 @@ v3.3 was inspired by [**PaperOrchestra**](https://arxiv.org/abs/2604.05018) (Son
 | **data-analyst** v1.0.1 | 7 | Statistical analysis execution with APA-formatted results | full, guided*, quick, assumption-check, exploratory, replication |
 | **simulation-runner** v1.0.1 | 5 | Monte Carlo, bootstrap, agent-based models, parameter sweeps | full, guided*, quick, power-sim, sensitivity, bootstrap |
 | **lab-notebook** v1.0.1 | 4 | Experiment research record with provenance tracking | full, log-entry, deviation, snapshot, export, audit |
+| **sr-screener** v1.0.0 | 4 | Protocol-driven study screening for systematic, scoping and rapid reviews: two blinded AI reviewers + adjudicator, PRISMA 2020 counts, `literature_corpus[]` handoff to academic-paper | protocol, quick, pilot, ta-screen, ft-screen, adjudicate, audit, report |
 | **academic-paper** v3.2.0 | 11 | English-only paper writing with experiment integration, LaTeX output, anti-leakage protocol, VLM figure verification, disclosure mode | full, plan*, outline-only, revision, revision-coach, abstract-only, lit-review, format-convert, citation-check, disclosure |
 | **academic-paper-reviewer** v1.9.1 | 7 | Multi-perspective peer review (EIC + 3 reviewers + Devil's Advocate + optional cross-model DA critique) with calibration + sprint-contract gates; auto-routes from machine-readable verdict | full, re-review, quick, methodology-focus, guided*, calibration |
 | **academic-pipeline** v3.17.0 | 4 in-skill + 1 shared (`compliance_agent`) | Auto-by-default pipeline orchestrator with AI Research Failure Mode Checklist (Lu 2026), score trajectory tracking, early-stopping, PRISMA-trAIce + RAISE compliance (Schema 19), sprint-contract gates (Schema 20 / 20.1), passport reset boundary, collaboration depth observer | auto-detected stages |
@@ -77,17 +82,17 @@ See the [Quick Reference Card](docs/QUICK_REFERENCE.md) for a full "I want to X 
 /plugin install academic-research-skills
 ```
 
-(Upstream channel: `Imbad0202/academic-research-skills` — fork omits the experiment pipeline.)
+(Upstream channel: `Imbad0202/academic-research-skills` — upstream omits the experiment pipeline.)
 
 **Verify it works:** run `/ars-plan` and describe a paper you're working on — ARS will start a Socratic dialogue to map out chapter structure. For a single-shot test instead, try `/ars-lit-review "your topic"`.
 
-**👉 [docs/SETUP.md](docs/SETUP.md)** — full guide: install Claude Code, set up API keys, optional Pandoc/tectonic for DOCX/PDF, cross-model verification (`ARS_CROSS_MODEL`), and six installation methods (Plugin, project skills, global skills, claude.ai Project, repo-cloned, Claude Science import).
+**👉 [docs/SETUP.md](docs/SETUP.md)** — full guide: install Claude Code, set up API keys, optional Pandoc/tectonic for DOCX/PDF, cross-model verification (`ARS_CROSS_MODEL`), and six installation methods (Plugin for Claude Code / claude.ai / Claude Desktop, project skills, global skills, claude.ai Project, repo-cloned, Claude Science import).
 
 **👉 [docs/DATA_FLOWS.md](docs/DATA_FLOWS.md)** — what leaves your machine (bibliographic resolvers, optional consent-gated cross-model calls, the plugin update check), what is cached locally, for how long, and how to turn each path off.
 
 **👉 [docs/RISK_REGISTER.md](docs/RISK_REGISTER.md)** — the standing risks the suite knows about, which existing controls address each one, the evidence status behind those controls, and what remains open.
 
-**Using Claude Science?** The eight skills import directly: **Skills → Import from GitHub**, paste `https://github.com/pouriamrt/academic-research-skills`, **Preview**, then **Import 8 skills** (requires v3.20.0+ of this fork — the importer reads the explicit skill paths in the marketplace manifest). Imports are point-in-time snapshots: re-import after ARS updates. Imported skills carry the ARS methodology (research / writing / review protocols); Claude Code-specific machinery — slash commands, hooks, subagent orchestration — does not transfer. See [docs/SETUP.md](docs/SETUP.md) Method 5 for details.
+**Using Claude Science?** The nine skills import directly: **Skills → Import from GitHub**, paste `https://github.com/pouriamrt/academic-research-skills`, **Preview**, then **Import** (requires v3.20.0+ of this fork — the importer reads the explicit skill paths in the marketplace manifest). Imports are point-in-time snapshots: re-import after ARS updates. Imported skills carry the ARS methodology (research / writing / review protocols); Claude Code-specific machinery — slash commands, hooks, subagent orchestration — does not transfer. See [docs/SETUP.md](docs/SETUP.md) Method 5 for details.
 
 **Using Codex CLI?** Upstream maintains a sibling distribution at [`Imbad0202/academic-research-skills-codex`](https://github.com/Imbad0202/academic-research-skills-codex) — same workflow content, Codex-native packaging. Fork has not yet been ported to Codex.
 
@@ -97,7 +102,7 @@ See the [Quick Reference Card](docs/QUICK_REFERENCE.md) for a full "I want to X 
 
 ## Performance & cost
 
-**👉 [docs/PERFORMANCE.md](docs/PERFORMANCE.md)** — per-mode token budgets, full-pipeline estimate (~$4–6 for a 15k-word paper), and recommended Claude Code settings (Auto mode; Agent Team optional).
+**👉 [docs/PERFORMANCE.md](docs/PERFORMANCE.md)** — per-mode token budgets, full-pipeline estimate (about US$3–7 for a 15k-word paper at 2026-09 list prices, before cache discounts), and recommended Claude Code settings (Auto mode; Agent Team optional).
 
 ## Guides & articles
 
@@ -116,6 +121,7 @@ The experiment stages (1.5) are auto-detected from the methodology blueprint pro
 - **Academic Paper** — 11-agent English-only paper writing with experiment results integration (Schema 11/12), Style Calibration, Writing Quality Check, LaTeX output hardening, visualization, revision coaching, citation conversion, **writing judgment framework**, **anti-leakage protocol**, **VLM figure verification**, **disclosure mode** (venue-specific AI usage statements), and **v3.6.6/v3.6.8 generator-evaluator sprint contract** for paper drafting (Schema 20.1, renumbered from upstream 13.1)
 - **Academic Paper Reviewer** — Multi-perspective peer review with criterion-bound, evidence-anchored narrative judgements (Journal-Fit Reviewer + 3 dynamic reviewers + Devil's Advocate) with **concession threshold protocol** + **attack intensity preservation** + **optional cross-model review**) + **R&R traceability matrix** + **read-only constraint** + **review quality thinking framework** + **calibration mode** (FNR/FPR measurement against gold-standard sets) + **v3.6.2 sprint-contract hard gate** for reviewers (Schema 20, renumbered from upstream 13). Current live reviews remain `NOT_CALIBRATED`; full calibration produces a bounded candidate profile, while live-profile application is not yet wired.
 - **Academic Pipeline** — Full pipeline orchestrator (10 stages + experiment re-entry) with adaptive checkpoints, audible alerts, claim verification, Material Passport, **optional cross-model integrity verification**, **mid-conversation reinforcement**, **self-check questions**, narrative criterion-by-criterion regression checks (the typed trajectory carrier is deferred), **early-stopping criterion**, **AI Research Failure Mode Checklist** (Lu 2026 — 7-mode taxonomy, mandatory blocking at Stage 2.5/4.5), **PRISMA-trAIce + RAISE compliance** (Schema 19, v3.4.0+), and **passport reset boundary** for long-running sessions (v3.6.3+)
+- **SR-Screener** — 4-agent protocol-driven study screening for systematic, scoping and rapid reviews: two blinded AI reviewers plus a third-reviewer adjudicator, ordered exclusion codes, no silent defaults, resumable batch runs, QC (seed studies, near-miss rechecks, kappa and PABAK), PRISMA 2020 counts, EndNote/Zotero RIS groups, and a `literature_corpus[]` handoff to `academic-paper`. AI decisions are decision support; the review team verifies them.
 
 ## Upstream features adopted in v3.16
 
@@ -127,7 +133,7 @@ The experiment stages (1.5) are auto-detected from the methodology blueprint pro
 - **Trust-chain frontmatter** (v3.7.1+) + **claim faithfulness locator** (v3.7.3+) — three-layer citation anchors with NO-LOCATOR hard gate.
 - **Model Tiering** (#517, v3.16+) — optional `ARS_MODEL_TIERING` switch with two directions: `economy` (execution-type agents dispatch one tier below the session model, floor Opus-class) and `quality-boost` (judgment-type agents at integrity gates and final review step up to the frontier tier). Default unset = byte-equivalent to pre-#517 behavior. See [`shared/model_tiering.md`](shared/model_tiering.md).
 - **Canonical Cross-Model Handoff Envelope** (#527, v3.17+) — the owner→dispatcher→owner blind-checkpoint transport path (#523) now has a machine-stable `[CROSS-MODEL-HANDOFF v1]` envelope with a normative Python grammar (`scripts/cross_model_handoff.py`) instead of prose-only enforcement, pinning agreement/divergence/malformed-result routing across all three checkpoint owners. See [`shared/cross_model_verification.md`](shared/cross_model_verification.md) §"Cross-model handoff envelope".
-- **Experiment Provenance Intake** (#260) — optional `experiment_provenance[]` on the Material Passport records experiments run **outside the ARS experiment skills** (the fork's experiment-designer / data-analyst / simulation-runner produce Schema 11/12 records natively; `experiment_provenance[]` covers externally run experiments), and manuscript claims join to them via `claim_intent_manifest.planned_experiment_ids[]`. The integrity gate (Stage 2.5/4.5) audits each experiment-backed claim against declared provenance — `ALIGNED` / `OVERSTATED` / `NOT_SUPPORTED_BY_PROVENANCE` / `PROVENANCE_INSUFFICIENT` — **without judging whether the experiment itself was correct**. A fail-closed `experiment_intake_declaration` makes "did you run experiments?" an explicit Stage 1 decision (even literature-only runs declare `no_experiments_declared`). See [`shared/handoff_schemas.md`](shared/handoff_schemas.md) §"Experiment Provenance Intake (#260)".
+- **Experiment Provenance Intake** (#260) — optional `experiment_provenance[]` on the Material Passport records experiments run **outside the ARS experiment skills** (the fork's experiment-designer / data-analyst / simulation-runner produce Schema 11/12 records natively; `experiment_provenance[]` covers externally run experiments), and manuscript claims join to them via `claim_intent_manifest.planned_experiment_ids[]`. The integrity gate (Stage 2.5/4.5) audits each experiment-backed claim against declared provenance — `ALIGNED` / `OVERSTATED` / `NOT_SUPPORTED_BY_PROVENANCE` / `PROVENANCE_INSUFFICIENT` — **without judging whether the experiment itself was correct**. A fail-closed `experiment_intake_declaration` makes "did you run experiments?" an explicit decision the scholar answers after Stage 1, or on entry when a run starts later (even literature-only runs declare `no_experiments_declared`). See [`shared/handoff_schemas.md`](shared/handoff_schemas.md) §"Experiment Provenance Intake (#260)".
 
 ## Superpowers Integration
 
@@ -174,20 +180,22 @@ Experiment skills (`experiment-designer`, `data-analyst`, `simulation-runner`) i
 
 ## Showcase: real pipeline output
 
-See the complete artifacts from a real 10-stage pipeline run — peer review reports, integrity verification reports, and the final paper:
+See the complete artifacts from a real pipeline run, including peer review reports, integrity verification reports, and the final paper:
+
+> **A March 2026 record, not current performance.** This run (2026-03-07 to 03-08) used academic-pipeline v2.3, before ARS v3.3 added the Semantic Scholar check and v3.11 added the deterministic four-index citation gate. Its numbers describe that version; the current gates have not been measured on this paper. The byline names Claude (Anthropic) as author because the researcher asked for that during the experiment. The paper is not an Anthropic publication, and ARS's positioning is that the tool does not replace the researcher and does not claim authorship ([POSITIONING.md](POSITIONING.md#what-this-is-not)).
 
 **[Browse all pipeline artifacts →](examples/showcase/)**
 
 | Artifact | Description |
 |---|---|
 | [Final Paper](examples/showcase/full_paper_apa7.pdf) | APA 7.0 formatted, LaTeX-compiled |
-| [Integrity Report — Pre-Review](examples/showcase/integrity_report_stage2.5.pdf) | Stage 2.5: caught 15 fabricated refs + 3 statistical errors |
+| [Integrity Report — Pre-Review](examples/showcase/integrity_report_stage2.5.pdf) | Stage 2.5: flagged 15 problem references (8 with bibliographic errors, 6–8 likely fabricated) + 3 statistical errors |
 | [Integrity Report — Final](examples/showcase/integrity_report_stage4.5.pdf) | Stage 4.5: zero regressions confirmed |
 | [Peer Review Round 1](examples/showcase/stage3_review_report.pdf) | Journal-Fit Reviewer + 3 Reviewers + Devil's Advocate |
 | [Re-Review](examples/showcase/stage3prime_rereview_report.pdf) | Verification after revisions |
 | [Peer Review Round 2](examples/showcase/stage3_review_report_r2.pdf) | Follow-up review |
 | [Response to Reviewers](examples/showcase/response_to_reviewers_r2.pdf) | Point-by-point author response |
-| [Post-Publication Audit Report](examples/showcase/post_publication_audit_2026-03-09.pdf) | Independent full-reference audit: found 21/68 issues missed by 3 rounds of integrity checks |
+| [Post-Publication Audit Report](examples/showcase/post_publication_audit_2026-03-09.pdf) | Full-reference audit run separately with Claude Code + WebSearch: 21 of the 68 final references still had problems after 3 rounds of integrity checks |
 
 ---
 
@@ -215,7 +223,7 @@ Stage 2 WRITE  →  paper with verified experiment results integrated
 
 > **Upstream alternative**: the upstream suite (Imbad0202) splits experiment work into a separate [experiment-agent](https://github.com/Imbad0202/experiment-agent) companion repo. This fork takes the opposite design: experiments are built in. If you prefer the lean writer-focused upstream + standalone experiment-agent, use the upstream repo instead.
 
-**Stage 1 intake declaration (#260)**: at Stage 1, ARS detects whether the run will carry experiment-backed claims and sets a fail-closed `experiment_intake_declaration` on the Material Passport. If you ran experiments externally, the scholar enters one `experiment_provenance[]` entry per experiment (`experiment_id`, nested `repro_lock`, `planned_vs_executed[]`, `negative_results[]`, `known_limitations[]`) and the declaration is set to `experiments_declared`; if not, it is set to `no_experiments_declared`. The declaration is **required on every post-#260 passport** — a run that touches no experiments still declares `no_experiments_declared`, so the integrity gate can never be silently bypassed by a forgotten provenance block. The `experiment_id`s are frozen at this intake point; the writers later reference them via `planned_experiment_ids[]`.
+**Stage 1 intake declaration (#260, #925)**: at the checkpoint after Stage 1, or on entry when a run starts after Stage 1, ARS asks you whether the paper reports experiments or data analyses you ran yourself, and records your answer, in your words, in a fail-closed `experiment_intake_declaration` on the Material Passport. ARS does not infer the answer from the manuscript. If you ran experiments externally, the scholar enters one `experiment_provenance[]` entry per experiment (`experiment_id`, nested `repro_lock`, `planned_vs_executed[]`, `negative_results[]`, `known_limitations[]`) and the declaration is set to `experiments_declared`; if not, it is set to `no_experiments_declared`. The declaration is **required on every post-#260 passport** — a run that touches no experiments still declares `no_experiments_declared`, so the integrity gate can never be silently bypassed by a forgotten provenance block. The `experiment_id`s are frozen at this intake point, which closes before the first Stage 2 writer is dispatched (or before the first integrity gate when no Stage 2 lies ahead), so you can pause after Stage 1, run the experiments, and record them when you return; the writers later reference them via `planned_experiment_ids[]`.
 
 **Teaching-side companion**: [Teaching Skills](https://github.com/YujxZJCN/teaching-skills) applies the ARS architecture (skill ensembles, shared contracts, staged gates, a Course Passport) to the teaching side of academic life — course design → lessons → assessment → delivery → reflection; its `sotl` mode hands classroom-inquiry projects off to ARS deep-research / academic-paper for the publication phase.
 
@@ -233,7 +241,7 @@ claude plugin marketplace add /path/to/academic-research-skills
 claude plugin install academic-research-skills
 ```
 
-After installation, all 8 skills auto-trigger in every project based on your request.
+After installation, all 9 skills auto-trigger in every project based on your request.
 
 ### As a Standalone Project
 
@@ -342,6 +350,19 @@ Run `python tools/self_test.py` after making changes to catch regressions. CI wo
 ```
 
 > Pipeline ends with **Stage 6: Process Summary** — auto-generates a paper creation process record with 6-dimension Collaboration Quality Evaluation (1–100 scoring).
+
+#### SR-Screener (8 modes)
+
+```
+"Turn my proposal into a screening protocol"          → protocol mode
+"Is this abstract eligible for my review?"            → quick mode (single-reviewer triage)
+"Pilot the screening with my seed studies"            → pilot mode
+"Screen these database exports"                       → ta-screen mode
+"Screen the full texts of the advanced records"       → ft-screen mode
+"Adjudicate the conflicts in my Rayyan export"        → adjudicate mode
+"Double-check my exclusions"                          → audit mode
+"Give me the PRISMA numbers for the screening"        → report mode
+```
 
 ## Recommended Settings
 
@@ -490,6 +511,10 @@ Pipeline orchestrator with integrity verification, compliance, sprint-contract g
 - **v3.6.7 downstream-agent pattern protection** — hardens 13/18 documented hallucination/drift patterns in synthesis/research-architect/report-compiler agents
 - **v3.7.1+ trust-chain frontmatter** + **v3.7.3 three-layer citation locator** — NO-LOCATOR hard-gate refusal at finalizer
 
+### SR-Screener (v1.0.0)
+
+4-agent study screening between `deep-research` (question, protocol, search) and `academic-paper` (writing the review). Modes: protocol, quick, pilot, ta-screen, ft-screen, adjudicate, audit, report. Two blinded reviewer subagents (Read and Grep only) screen every record against the user-confirmed protocol, a third reviewer adjudicates advance-vs-exclude conflicts, and standard-library Python scripts parse RIS / PubMed .nbib / Web of Science / CSV exports, de-duplicate, batch, merge, and build the screening log, RIS groups, PRISMA 2020 counts, a methods draft with `[TO COMPLETE]` slots, and a `literature_corpus[]` file. Rules the agents follow (not runtime guarantees): no record is screened before the user confirms the protocol, no failed call becomes a default "exclude", and the review team verifies the decisions before the numbers are reported. See [`sr-screener/SKILL.md`](sr-screener/SKILL.md).
+
 ---
 
 ## Key Features
@@ -584,6 +609,8 @@ https://github.com/Imbad0202/academic-research-skills
 **[ktao732084-arch](https://github.com/ktao732084-arch)** — Contributor. Expanded the `academic-paper` disclosure system with nine medical-publishing policy targets, target-specific required-fact intake, and fail-closed standalone rendering ([Issue #596](https://github.com/Imbad0202/academic-research-skills/issues/596), [PR #599](https://github.com/Imbad0202/academic-research-skills/pull/599)); expanded the EQUATOR clinical-reporting reference with condensed CARE, STARD and TRIPOD+AI guidance plus a fail-closed study-design routing sequence ([Issue #594](https://github.com/Imbad0202/academic-research-skills/issues/594), [PR #601](https://github.com/Imbad0202/academic-research-skills/pull/601)); and designed and contributed the standalone Chinese-literature resolver, API protocol, and synthetic transport-fixture suite ([Issue #595](https://github.com/Imbad0202/academic-research-skills/issues/595), [PR #600](https://github.com/Imbad0202/academic-research-skills/pull/600)).
 
 **[didacrios](https://github.com/didacrios)** — Contributor. Translated the Spanish README upstream; this English-only fork does not ship it.
+
+**[laqueiroz](https://github.com/laqueiroz)** (Laís Queiróz) — Contributor. Translated the Brazilian Portuguese README upstream; this English-only fork does not ship it.
 
 ---
 

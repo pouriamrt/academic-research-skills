@@ -8,7 +8,7 @@ import json
 import shutil
 import sys
 from collections.abc import Callable
-from pathlib import Path
+from pathlib import Path, PureWindowsPath
 from typing import Any
 
 import pytest
@@ -706,3 +706,15 @@ def test_duplicate_or_nonfinite_schema_json_fails_closed(tmp_path: Path, payload
     root = _tree(tmp_path)
     (root / guard.SIDECAR_SCHEMA).write_text(payload, encoding="utf-8")
     _assert_error(root, "schema load/check failed")
+
+
+def test_pointer_and_ci_paths_match_windows_posix_form(tmp_path, monkeypatch) -> None:
+    root = _tree(tmp_path)
+    pointers = guard._required_pointers(
+        evidence_schema=PureWindowsPath(*guard.EVIDENCE_SCHEMA.parts),
+        protocol=PureWindowsPath(*guard.PROTOCOL.parts),
+    )
+    monkeypatch.setattr(guard, "REQUIRED_POINTERS", pointers)
+    monkeypatch.setattr(guard, "RUNTIME_TEST", PureWindowsPath(*guard.RUNTIME_TEST.parts))
+    assert guard._documentation_errors(root) == []
+    assert guard._ci_errors(root) == []

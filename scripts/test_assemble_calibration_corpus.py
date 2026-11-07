@@ -290,7 +290,7 @@ def test_lone_surrogate_text_is_hashable_and_deterministic(tmp_path, monkeypatch
     make_pdf(pdf_path)
     monkeypatch.setattr(pdftext.pypdf, "PdfReader", _FakeReader)
     _, text_sha, pages, _ = mod.pdf_facts(pdf_path)
-    expected = hashlib.sha256("alpha \ufffd beta\n".encode("utf-8")).hexdigest()
+    expected = hashlib.sha256("alpha \ufffd beta\n".encode()).hexdigest()
     assert text_sha == expected
     assert pages == 2
     assert normalize_extracted_text("\ud835\udc00") == "\ufffd\ufffd"

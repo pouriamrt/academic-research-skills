@@ -112,7 +112,8 @@ def test_citation_grader_matches_only_core_skill_name():
     import yaml
 
     paths = sorted((REPO / "plugin-evals-citation-check").glob("*/graders/skill-fired.md"))
-    assert len(paths) == 6
+    # Fork: 5, not upstream's 6; the zh-TW case 02 is not shipped (English-only).
+    assert len(paths) == 5
     for path in paths:
         grader = yaml.safe_load(path.read_text().split("---", 2)[1])
         pattern = grader["input_match"]

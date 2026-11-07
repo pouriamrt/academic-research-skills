@@ -1367,7 +1367,7 @@ After Stage 5 completes successfully:
    - Wrap in article class with title page, TOC, headers/footers
    - tectonic compile → paper_creation_process.pdf
 
-7. Update state_tracker: stage_id "6" → "completed"; set pipeline_state → "complete"
+7. Update state_tracker. AUTO mode: after delivery, stage_id "6" → "completed" and pipeline_state → "completed" (an unattended run has no terminal acknowledgement). Interactive mode: Stage 6 stays "in_progress" until the terminal acknowledgement, which sets both to "completed" (`../references/pipeline_state_machine.md` § Stage 6 terminal semantics)
 
 8. Display final delivery summary listing all artifacts:
    - Final paper (the Stage 5 files produced)

@@ -34,9 +34,14 @@ own entries below, unchanged except that upstream's 3.22.0 carries the `-upstrea
   (default `en`).
 - **Fork adaptations:** the routing core is not copied into `.claude/CLAUDE.md` (its
   16,000-char budget cannot hold it); the four experiment-skill `SKILL.md` files carry it
-  instead. Schema references renumbered to the fork's 18 / 20 / 20.1. The #610
-  receipt-enum lint and its two manifest tests, dropped by the previous sync's merge,
-  are wired back into CI.
+  instead. Schema references renumbered to the fork's 18 / 20 / 20.1.
+- **Repairs of earlier merge damage:** the #610 receipt-enum lint and its two manifest
+  tests are wired back into CI; `academic-pipeline/SKILL.md` regains the Phase-by-phase
+  Invocation Contract and the Mid-Conversation Reinforcement Protocol that
+  `references/reinforcement_content.md` points to; eight guard-launcher degradation tests
+  now send a payload that reaches the guard instead of passing on the fork's fast path.
+- **Fixed:** Stage 6 no longer sets the pipeline state to `complete` (the state is
+  `completed`), and in interactive mode it waits for the terminal acknowledgement.
 
 ## [3.22.0] - 2026-08-03 — Deterministic prose-tells scanner; anti-humanizer positioning retired
 

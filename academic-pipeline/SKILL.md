@@ -357,6 +357,28 @@ After user confirmation:
 3. Begin next stage
 ```
 
+### Mid-Conversation Reinforcement Protocol
+
+At every stage transition, the orchestrator MUST inject a brief core principles reminder. This prevents context rot in long conversations.
+
+**Template** (adapt to the upcoming stage):
+
+````
+--- STAGE TRANSITION: [Current] → [Next] ---
+
+🔄 Core Principles Reinforcement:
+1. [Most relevant IRON RULE for the next stage]
+2. [Most relevant Anti-Pattern to avoid in the next stage]
+3. Quality check: Is the output of [Current Stage] at least as good as [Previous Stage]? If not, PAUSE.
+
+Checkpoint: [MANDATORY/ADVISORY] — [What user needs to confirm]
+---
+````
+
+**Stage-specific reinforcement content**: See `references/reinforcement_content.md` for the full transition → reinforcement focus table.
+
+In AUTO mode the checkpoint line names the checkpoint the orchestrator records in the passport ledger; it does not wait for a reply.
+
 ---
 
 ## Integrity Review Protocol (Added in v2.0)

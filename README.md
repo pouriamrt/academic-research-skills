@@ -1,6 +1,6 @@
 # Academic Research Skills for Claude Code
 
-[![Version](https://img.shields.io/badge/version-v3.22.0-blue)](https://github.com/pouriamrt/academic-research-skills)
+[![Version](https://img.shields.io/badge/version-v3.23.0-blue)](https://github.com/pouriamrt/academic-research-skills)
 [![License: CC BY-NC 4.0](https://img.shields.io/badge/license-CC%20BY--NC%204.0-lightgrey)](https://creativecommons.org/licenses/by-nc/4.0/)
 
 A Claude Code plugin covering the full academic research lifecycle — from literature review and study screening through experimentation, statistical analysis, paper writing, peer review, and publication. **9 skills, 65 agents, 20 handoff schemas + 6 claim-audit schemas**, full pipeline orchestration with PRISMA-trAIce + RAISE compliance gates, reviewer + writer/evaluator sprint contracts, opt-in L3 claim ↔ reference faithfulness audit gate (v3.18.0 #103), passport reset boundary for long-running sessions, three-layer citation locator, temporal verification (v3.18.0 #135), Phase Boundary protocol (v3.18.0 #133), cross-index triangulation (v3.18.0 #102), and collaboration depth observer. **v3.17.0 runs the pipeline unattended by default — set `ARS_INTERACTIVE=1` to restore prompts.** English-only output. New `/ars-mark-read`, `/ars-unmark-read`, `/ars-reviewer` plugin commands. Experiment skills integrate with the [superpowers](https://github.com/obra/superpowers) plugin for disciplined, test-driven code development.
@@ -475,7 +475,7 @@ Four experiment skills (22 agents total) auto-detected from the methodology blue
 
 **Optional cross-model verification:** set `ARS_CROSS_MODEL` to use GPT-5.4 Pro or Gemini 3.1 Pro as an independent second reviewer.
 
-### Academic Pipeline (v3.22.0; suite-version-pinned, auto-by-default)
+### Academic Pipeline (v3.23.0; suite-version-pinned, auto-by-default)
 
 Pipeline orchestrator with integrity verification, compliance, sprint-contract gates, two-stage review, experiment re-entry, Socratic coaching, passport reset boundary, and collaboration evaluation:
 
@@ -620,6 +620,10 @@ https://github.com/Imbad0202/academic-research-skills
 
 Only the three most recent releases are summarized here. The full release history is in [CHANGELOG.md](CHANGELOG.md).
 
+### v3.23.0 (2026-11-07) — Upstream sync: v3.22.0 → v3.24.2 (sr-screener adopted, English-only contract kept)
+
+Merges 95 upstream commits (Imbad0202 `7e019f5` → `6d93886`, spanning upstream v3.22.1 through v3.24.2) onto the fork's v3.22.0 baseline. **Adopted:** `sr-screener` as the ninth skill, skill paths declared in `plugin.json` (the `skills/` symlink index is gone), the one-process guard launcher behind the fork's no-Python fast path, the run ledger, the acronym check, the panel's reference and claim checks, and the routing core in every `SKILL.md`. **Not merged:** the `output_language_pair` contract, the locale track, the translated READMEs and Chinese APA 7 loading; the fork stays English-only. **Repaired:** earlier merge damage (the #610 receipt-enum lint is back in CI, the pipeline's Invocation Contract and Reinforcement Protocol are restored, eight guard-launcher tests now reach the guard), and Stage 6 sets the pipeline state to `completed`.
+
 ### v3.22.0 (2026-08-03) — Deterministic prose-tells scanner
 - **`scripts/check_prose_tells.py`**: stdlib scanner for the four mechanically detectable AI copy tells (`copy-em-dash`, `copy-antithesis`, `hype-copy`, `copy-servile`) with `file:line` evidence. Flags: `--json`, `--strict`, `--exclude-quotes`, stdin via `-`. Skips fenced code blocks; `copy-ignore` exempts a line
 - **Wired as the deterministic pass** opening `academic-paper/references/writing_quality_check.md`. Sections A–E keep the judgment calls regex cannot make. The scanner count is now reported; judgment findings stay internal
@@ -629,7 +633,3 @@ Only the three most recent releases are summarized here. The full release histor
 ### v3.21.0 (2026-08-03) — Upstream sync: v3.17.0 → v3.19.0+ (re-review three-gate contract, role-scoped reviewer scoring, risk-stratified claim gate)
 
 Merges 51 upstream commits (Imbad0202 `039d94f` → `49e79a7`, spanning upstream v3.18.0 and v3.19.0) onto the fork's v3.20.1 baseline via a true git merge — 364 files, 46 conflicts resolved by hand. **Adopted:** the #576 three-gate re-review contract (criteria committed before the revision is seen, evidence verdicts before the author's persuasion), #574 role-scoped reviewer scoring with typed evidence anchors and abstention, #549 risk-stratified Stage 2.5 claim verification (100% of HIGH-IMPACT claims + a 10% random sentinel, replacing the flat 30% sample), #547 scope-conformance and #548 search-bounded novelty advisories, #569/#570 revision-round claim-drift guards, #512 PDF read-integrity preflight, #513 `read_scope` attestation on `/ars-mark-read`, #541 verification-cache staleness advisory, #540/#539 cross-model reviewer and judge-independence tracks, #544 SessionStart update reminder, #595 Chinese-literature resolver client, and bare `/ars-*` command aliases (#633). **Fork-side:** English-only surfaces stay deleted, fork schema numbering (18 / 20 / 20.1) and the experiment pipeline (Stage 1.5a/b/c re-entry, Phase F) survive inside upstream's rewritten files, and every file arriving from upstream was brought up to the fork's ruff gate.
-
-### v3.20.0 (2026-07-16) — Upstream sync: v3.13.0 → v3.17.0 (boundary semantics, cross-model envelope, model tiering, panel checker)
-
-Merges 54 upstream commits (Imbad0202 v3.13.0 → v3.17.0) onto the fork's v3.19.0 baseline via a true git merge. Bilingual additions (zh-CN/ja-JP/ko-KR READMEs, Korean trigger keywords + routing fixtures) NOT merged — fork stays English-only. Highlights: Stage 5/6 boundary semantics with terminal acknowledgement (#528/#529, AUTO-mode adapted) + whole-file content locks; canonical `[CROSS-MODEL-HANDOFF v1]` envelope + dispatcher contract (#527/#523); opt-in model tiering (#517) with the classification fork-extended 39 → 61 agents (the 4 experiment skills + `concept_lineage`); cross-model gate hardening + blind disagreement checkpoints (#518); executable sprint-contract panel checker + majority-formula fix (#510); machine-readable degradation registry (#511); tools allowlist + defrift lock (#514/#524); CARS intro-rhetoric + title-crafting reference (#500); WP advisory generalization (#501/#505); OpenAlex auth + backoff (#495); Claude Science importability with all 8 fork skills declared (#480); vendored release-discipline toolkit. Full detail in `CHANGELOG.md` [3.20.0].

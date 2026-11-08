@@ -2,8 +2,8 @@
 name: academic-pipeline
 description: "Orchestrator for the full academic research pipeline: research -> experiment (optional) -> write -> integrity check -> review -> revise -> re-review -> re-revise -> final integrity check -> finalize -> process summary. Coordinates deep-research, experiment-designer, data-analyst, simulation-runner, lab-notebook, academic-paper, and academic-paper-reviewer into a seamless workflow with auto-detected experiment stages, mandatory, coverage-bounded integrity checks, two-stage peer review, AI Research Failure Mode Checklist (Lu 2026), Score Trajectory tracking, Early-Stopping criterion, and auditable quality-assurance artifacts. Triggers on: academic pipeline, research to paper, full paper workflow, paper pipeline, end-to-end paper, research-to-publication, complete paper workflow, 연구부터 논문까지, 연구 주제 설정부터 논문 완성까지, 논문 전체 워크플로, flujo de trabajo académico, investigación a artículo, flujo completo de artículo, pipeline de investigación completa, publicación de investigación, flujo de trabajo completo del artículo."
 metadata:
-  version: "3.22.0"
-  last_updated: "2026-08-03"
+  version: "3.23.0"
+  last_updated: "2026-11-07"
   depends_on: "deep-research, experiment-designer, data-analyst, simulation-runner, lab-notebook, academic-paper, academic-paper-reviewer"
   status: active
   data_access_level: raw
@@ -18,7 +18,7 @@ metadata:
     - academic-paper-reviewer
 ---
 
-# Academic Pipeline v3.22.0 — Full Academic Research Workflow Orchestrator (suite-version-pinned, auto-by-default)
+# Academic Pipeline v3.23.0 — Full Academic Research Workflow Orchestrator (suite-version-pinned, auto-by-default)
 
 A lightweight orchestrator that manages the complete academic pipeline from research exploration to final manuscript. It does not perform substantive work — it only detects stages, recommends modes, dispatches skills, manages transitions, and tracks state.
 
@@ -1072,8 +1072,8 @@ When `ARS_MODEL_TIERING` is set, the dispatching session routes this skill's age
 
 | Item | Content |
 |------|---------|
-| Skill Version | 3.22.0 |
-| Last Updated | 2026-08-03 |
+| Skill Version | 3.23.0 |
+| Last Updated | 2026-11-07 |
 | Maintainer | Pouria Mortezaagha (fork) / Cheng-I Wu (upstream) |
 | Dependent Skills | deep-research v2.0+, experiment-designer v1.0+, data-analyst v1.0+, simulation-runner v1.0+, lab-notebook v1.0+, academic-paper v2.0+, academic-paper-reviewer v1.1+ |
 | Role | Full academic research workflow orchestrator (research → experiment → write → integrity/compliance → review with sprint contract → revise → finalize → process summary) |

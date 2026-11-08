@@ -3,7 +3,7 @@
 All notable changes to this project will be documented in this file.
 
 > **Duplicate release numbers (fork vs upstream).** This fork and upstream
-> independently shipped 3.20.0, 3.20.1, 3.21.0 and 3.22.0 as different releases. The
+> independently shipped 3.20.0, 3.20.1, 3.21.0, 3.22.0 and 3.23.0 as different releases. The
 > fork's numbers are the live ones for this repo; upstream's same-numbered
 > entries are preserved below with an `-upstream` suffix so each release keeps
 > a distinct identifier. Neither record is renumbered or rewritten.
@@ -14,12 +14,12 @@ All notable changes to this project will be documented in this file.
 >
 > The blockquote directly under a release heading is that release's one-paragraph summary. Those summaries lived in `README.md` until 2026-09-15 and were moved here verbatim; `README.md` now keeps only the three most recent.
 
-## [Unreleased]
+## [3.23.0] - 2026-11-07 — Upstream sync: v3.22.0 → v3.24.2 (sr-screener adopted, English-only contract kept)
 
 ### Upstream sync: v3.22.0 → v3.24.2 (`7e019f5..6d93886`, 95 commits)
 
 Merged with fork semantics preserved. The upstream release records follow the fork's
-own entries below, unchanged except that upstream's 3.22.0 carries the `-upstream` suffix.
+own entries below, unchanged except that upstream's 3.22.0 and 3.23.0 carry the `-upstream` suffix.
 
 - **Adopted:** `sr-screener` as the fork's ninth skill (65 prompt roles, four plugin
   agents with hyphenated names); skill paths declared in `plugin.json` with the `skills/`
@@ -219,7 +219,7 @@ fork's ruff gate (E741/E402/UP042) and the `datetime.timezone.utc` →
 
 - **A test regex uses a raw string, removing an invalid-escape warning (#956, contributed by @SID-6921).** Test-only; no behavior change.
 
-## [3.23.0] - 2026-10-03 — `sr-screener` as a fifth skill, repairs from a pipeline walk-through, and evidence and ledger hardening
+## [3.23.0-upstream] - 2026-10-03 — `sr-screener` as a fifth skill, repairs from a pipeline walk-through, and evidence and ledger hardening
 
 > **One new skill and behaviour repairs found by reading a full pipeline run end to end; the prompt-level changes are unmeasured, and `sr-screener` makes no screening-accuracy claim:** v3.23.0 adds `sr-screener` (#919, contributed by @erfanz97), a fifth skill that turns a review protocol into eligibility rules the user confirms and screens titles/abstracts and full texts with two blinded reviewer subagents and an adjudicator; its tests use synthetic records, and its spreadsheet exports neutralise formula text (#951). A walk-through of a default pipeline run on paper (#925-#929) changed what such a run does: the v3.6.7 Audit Artifact Gate is opt-in, the scholar is asked once whether the paper reports their own experiments, constraints set for a run are kept in the user's words and quoted to each later dispatch they apply to (at review stages they act at the checkpoints), the integrity gates follow one rule set and list paywalled sources as notes, Stages 5 and 6 produce only the files asked for, and opt-in switches surface Stage 5 refusals at Stage 4.5. The Stage 2.5 and 4.5 checkpoints replay evidence rows from a folder the orchestrator names (#933, #947, #948), a source the gate finds fabricated stays out of later revisions (#936), and the ledger readers report parse failures without quoting the file (#898, #945). Smaller changes: per-source method weaknesses in reading outputs (#916), a review-form note at a fixed point (#921), Schema 1 aligned with its producer (#938), and `/ars-citation-check` inheriting the session model (#912).
 
@@ -679,6 +679,8 @@ fork's ruff gate (E741/E402/UP042) and the `datetime.timezone.utc` →
   marketplace loader has no ignore mechanism.
 
 ## [3.20.0] - 2026-07-16 — Upstream sync: v3.13.0 → v3.17.0 (boundary semantics, cross-model envelope, model tiering, panel checker, degradation registry)
+
+> Merges 54 upstream commits (Imbad0202 v3.13.0 → v3.17.0) onto the fork's v3.19.0 baseline via a true git merge. Bilingual additions (zh-CN/ja-JP/ko-KR READMEs, Korean trigger keywords + routing fixtures) NOT merged — fork stays English-only. Highlights: Stage 5/6 boundary semantics with terminal acknowledgement (#528/#529, AUTO-mode adapted) + whole-file content locks; canonical `[CROSS-MODEL-HANDOFF v1]` envelope + dispatcher contract (#527/#523); opt-in model tiering (#517) with the classification fork-extended 39 → 61 agents (the 4 experiment skills + `concept_lineage`); cross-model gate hardening + blind disagreement checkpoints (#518); executable sprint-contract panel checker + majority-formula fix (#510); machine-readable degradation registry (#511); tools allowlist + defrift lock (#514/#524); CARS intro-rhetoric + title-crafting reference (#500); WP advisory generalization (#501/#505); OpenAlex auth + backoff (#495); Claude Science importability with all 8 fork skills declared (#480); vendored release-discipline toolkit. Full detail in `CHANGELOG.md` [3.20.0].
 
 Merges 54 upstream commits from Imbad0202 v3.13.0 (`c22c17e`) → v3.17.0 (`039d94f`) onto the fork's v3.19.0 baseline, via a true git merge (3-way re-merged against the v3.19.0 content base). Bilingual upstream additions (README.zh-CN/ja-JP/ko-KR, Korean trigger keywords #452/#509 and Korean routing fixtures) are NOT merged — fork remains English-only. Fork priorities preserved: experiment pipeline (Schemas 10–18), auto-by-default v3.17.0 pipeline, fork version line.
 

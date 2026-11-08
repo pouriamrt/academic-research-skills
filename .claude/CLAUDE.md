@@ -14,18 +14,16 @@ A suite of Claude Code skills for rigorous academic research, experimentation, s
 | `academic-paper` v3.2.0 | 11-agent academic paper writing (English-only) | full, plan, outline-only, revision, revision-coach, abstract-only, lit-review, format-convert, citation-check, disclosure, rebuttal-audit |
 | `academic-paper-reviewer` v1.9.1 | Multi-perspective paper review (5 reviewers + optional cross-model DA critique) | full, re-review, quick, methodology-focus, guided, calibration |
 | `sr-screener` v1.0.0 | Protocol-driven study screening (2 blinded AI reviewers + adjudicator) | protocol, quick, pilot, ta-screen, ft-screen, adjudicate, audit, report |
-| `academic-pipeline` v3.22.0 | Full pipeline orchestrator (suite-version-pinned, auto-by-default) | (coordinates all above) |
+| `academic-pipeline` v3.23.0 | Full pipeline orchestrator (suite-version-pinned, auto-by-default) | (coordinates all above) |
 
 
-## v3.22.0 Key Additions
+## v3.23.0 Key Additions
 
-- **`scripts/check_prose_tells.py`**: deterministic scanner for four mechanically
-  detectable AI copy tells (`copy-em-dash`, `copy-antithesis`, `hype-copy`,
-  `copy-servile`) with `file:line` evidence. It opens
-  `academic-paper/references/writing_quality_check.md`; sections A–E keep the judgment
-  calls. MIT port, attributed in THIRD_PARTY.md.
-- **Anti-humanizer positioning retired**, with the CONTRIBUTING principle that governed it
-  (4 → 3). The `disclosure_addendum` is unchanged: the compliance ladder enforces it in code.
+- **Upstream sync v3.22.0 → v3.24.2** (`7e019f5..6d93886`): `sr-screener` is the ninth
+  skill; skill paths are declared in `plugin.json`; the one-process guard launcher sits
+  behind the fork's no-Python fast path; run ledger, acronym and panel claim checks.
+- **Not merged (English-only):** `output_language_pair`, the locale track, translated
+  READMEs.
 
 ## Cross-model reviewer track — standing invariants
 
@@ -186,9 +184,9 @@ Materials: Sprint Contract (Schema 20, v3.6.2+ for reviewers; Schema 20.1, v3.6.
 `python tools/self_test.py` validates plugin structure (200+ checks); `tools/` also holds schema validation, dependency graph, dashboard, and replay. CI: `.github/workflows/` (`pytest.yml`, `spec-consistency.yml`, `freshness-check.yml`).
 
 ## Version Info
-- **Version**: 3.22.0
-- **Suite version**: 3.22.0
-- **Last Updated**: 2026-08-03
+- **Version**: 3.23.0
+- **Suite version**: 3.23.0
+- **Last Updated**: 2026-11-07
 - **Author**: Pouria Mortezaagha
 - **Upstream**: Imbad0202 (merged through v3.24.2 / commit 6d93886)
 - **License**: CC-BY-NC 4.0

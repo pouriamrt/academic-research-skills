@@ -620,9 +620,9 @@ https://github.com/Imbad0202/academic-research-skills
 
 Only the three most recent releases are summarized here. The full release history is in [CHANGELOG.md](CHANGELOG.md).
 
-### v3.23.1 (2026-11-19) — Upstream sync: v3.24.2 → v3.24.3+ (author letter, corroboration labels, Windows-safe file readers)
+### v3.23.1 (2026-11-19) — Upstream sync: v3.24.2 → v3.24.4 (author letter, corroboration labels, research-ethics scope for committee correspondence)
 
-Merges 26 upstream commits (Imbad0202 `6d93886` → `74fe227`, upstream v3.24.3 plus 13 later commits) onto the fork's v3.23.0 baseline. **Adopted:** a readable author letter beside every `full` review's Editorial Decision Package, `revision-roadmap/1.1` with `CORROBORATED` and `SINGLE-REVIEWER` labels, a field analyst that names no journal the author has not confirmed, `citation_compliance_agent` edits limited to `full` mode, Windows code paths for the no-follow file readers, and the cross-model doc corrections. **Not merged:** translated READMEs, `docs/*.zh-TW.md`, and the `output_language_pair` rules; the author letter is English-only. **Fixed on the fork:** the `academic-pipeline/SKILL.md` content lock that 3.23.0 left stale is re-pinned, so `main` passes Spec Consistency and pytest again.
+Merges 30 upstream commits (Imbad0202 `6d93886` → `23807f9`, upstream v3.24.3 and v3.24.4) onto the fork's v3.23.0 baseline. **Adopted:** a readable author letter beside every `full` review's Editorial Decision Package, `revision-roadmap/1.1` with `CORROBORATED` and `SINGLE-REVIEWER` labels, a field analyst that names no journal the author has not confirmed, `citation_compliance_agent` edits limited to `full` mode, a `revision-coach` committee-correspondence variant scoped to research ethics review (#907), MLA 9th conversion that keeps DOIs, Windows code paths for the no-follow file readers, and the cross-model doc corrections. **Not merged:** translated READMEs, `docs/*.zh-TW.md`, and the `output_language_pair` rules; the author letter is English-only. **Fixed on the fork:** the `academic-pipeline/SKILL.md` content lock that 3.23.0 left stale is re-pinned, so `main` passes Spec Consistency and pytest again.
 
 ### v3.23.0 (2026-11-07) — Upstream sync: v3.22.0 → v3.24.2 (sr-screener adopted, English-only contract kept)
 

@@ -1,6 +1,6 @@
 # Academic Research Skills
 
-A suite of Claude Code skills for rigorous academic research, experimentation, statistical analysis, systematic-review screening, paper writing, peer review, and pipeline orchestration. 9 skills, 65 agents, 21 handoff schemas + passport schemas. Upstream is merged through `74fe227`, past v3.24.3 (`sr-screener`, run ledger, acronym check, panel reference and claim checks, author letter). Full history in `CHANGELOG.md`.
+A suite of Claude Code skills for rigorous academic research, experimentation, statistical analysis, systematic-review screening, paper writing, peer review, and pipeline orchestration. 9 skills, 65 agents, 21 handoff schemas + passport schemas. Upstream is merged through v3.24.4 (`sr-screener`, run ledger, panel checks, author letter). Full history in `CHANGELOG.md`.
 
 ## Skills Overview
 
@@ -19,15 +19,10 @@ A suite of Claude Code skills for rigorous academic research, experimentation, s
 
 ## v3.23.1 Key Additions
 
-- **Upstream sync v3.24.2 → v3.24.3+** (`6d93886..74fe227`): a `full` review also writes
-  the author a readable letter, checked by `scripts/check_author_letter.py`;
-  `revision-roadmap/1.1` labels findings `CORROBORATED` or `SINGLE-REVIEWER`; the field
-  analyst names no journal the author has not confirmed; the no-follow file readers gain
-  a Windows code path.
-- **Fixed on the fork:** the `academic-pipeline/SKILL.md` content lock that 3.23.0 left
-  stale is re-pinned, so Spec Consistency and pytest pass on `main` again.
-- **Not merged (English-only):** translated READMEs, `docs/*.zh-TW.md`, the
-  `output_language_pair` rules.
+- **Upstream sync v3.24.2 → v3.24.4** (`6d93886..23807f9`): author letter on `full`
+  reviews; `revision-roadmap/1.1` labels; committee correspondence scoped to research
+  ethics review (#907); Windows paths for the no-follow readers.
+- **Not merged (English-only):** locale files and `output_language_pair`.
 
 ## Cross-model reviewer track — standing invariants
 
@@ -79,7 +74,7 @@ Not derivable from Claude Code's command listing; only actionable in this repo:
 
 10. **rebuttal-audit vs revision-coach**: route by input shape. `rebuttal-audit` only when the user supplies BOTH reviewer comments AND an existing response draft (advisory QA; generates nothing, never emits Schema 18). Comments alone → `revision-coach` (Response Letter Skeleton). Unclear → clarify.
 
-11. **real-committee correspondence (#668)**: the `revision-coach` committee-correspondence variant only when the user explicitly names a real committee or institutional review office; formal tone does not establish authority. It loads `academic-paper/references/committee_correspondence_protocol.md` and never emits reviewer severity, Schema 18, a determination, or a resolution claim.
+11. **research-ethics correspondence (#668, #907)**: the `revision-coach` committee-correspondence variant only when the user says, or the pasted text shows, that the comments may come from a research ethics or human-subjects protection review (e.g. an ethics committee or IRB). The Activation gate in `committee_correspondence_protocol.md` decides which comments this variant covers and what to quote from the user before taking it; comments that the gate excludes take normal `revision-coach` (#907). Formal tone does not establish authority. It never emits reviewer severity, Schema 18, a determination, or a resolution claim.
 
 12. **sr-screener vs deep-research systematic-review**: `sr-screener` for eligibility decisions on records the user already has (exports, abstracts, full texts), or a screening protocol, pilot, conflict adjudication, exclusion audit, or selection report. A request for the review itself, or a bare "systematic review" / "PRISMA", stays with `deep-research` `systematic-review`. `sr-screener` owns screening decisions and starts only when asked; nothing hands over to it automatically.
 
@@ -192,5 +187,5 @@ Materials: Sprint Contract (Schema 20, v3.6.2+ for reviewers; Schema 20.1, v3.6.
 - **Suite version**: 3.23.1
 - **Last Updated**: 2026-11-19
 - **Author**: Pouria Mortezaagha
-- **Upstream**: Imbad0202 (merged through v3.24.3+ / commit 74fe227)
+- **Upstream**: Imbad0202 (merged through v3.24.4 / commit 23807f9)
 - **License**: CC-BY-NC 4.0

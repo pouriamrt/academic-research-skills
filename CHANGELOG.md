@@ -3,7 +3,7 @@
 All notable changes to this project will be documented in this file.
 
 > **Duplicate release numbers (fork vs upstream).** This fork and upstream
-> independently shipped 3.20.0, 3.20.1, 3.21.0, 3.22.0, 3.23.0 and 3.23.1 as different releases. The
+> independently shipped 3.20.0, 3.20.1, 3.21.0, 3.22.0, 3.23.0, 3.23.1 and 3.23.2 as different releases. The
 > fork's numbers are the live ones for this repo; upstream's same-numbered
 > entries are preserved below with an `-upstream` suffix so each release keeps
 > a distinct identifier. Neither record is renumbered or rewritten.
@@ -14,7 +14,7 @@ All notable changes to this project will be documented in this file.
 >
 > The blockquote directly under a release heading is that release's one-paragraph summary. Those summaries lived in `README.md` until 2026-09-15 and were moved here verbatim; `README.md` now keeps only the three most recent.
 
-## [Unreleased]
+## [3.23.2] - 2026-11-19 — Codex citation checks run on Windows
 
 ### Fixed on the fork
 
@@ -141,6 +141,11 @@ own entries below, unchanged except that upstream's 3.22.0 and 3.23.0 carry the 
   `completed`), and in interactive mode it waits for the terminal acknowledgement.
 
 ## [3.22.0] - 2026-08-03 — Deterministic prose-tells scanner; anti-humanizer positioning retired
+
+> - **`scripts/check_prose_tells.py`**: stdlib scanner for the four mechanically detectable AI copy tells (`copy-em-dash`, `copy-antithesis`, `hype-copy`, `copy-servile`) with `file:line` evidence. Flags: `--json`, `--strict`, `--exclude-quotes`, stdin via `-`. Skips fenced code blocks; `copy-ignore` exempts a line
+> - **Wired as the deterministic pass** opening `academic-paper/references/writing_quality_check.md`. Sections A–E keep the judgment calls regex cannot make. The scanner count is now reported; judgment findings stay internal
+> - **Anti-humanizer positioning retired**: the anti-detection-evasion framing is removed from README, POSITIONING, both design-boundary blockquotes, and two SKILL.md clauses. CONTRIBUTING's decision principle governing it is deleted (4 principles → 3). The non-removable `disclosure_addendum` mechanism is unchanged — the compliance ladder enforces it in code, so it never rested on the policy
+> - MIT port from jcarterjohnson/vibecoded-design-tells via humanizer-stack; attribution in `THIRD_PARTY.md`. The CC BY-SA-derived `humanizer/SKILL.md` was deliberately not vendored (license incompatible with this repo's NC terms)
 
 **`scripts/check_prose_tells.py` (new).** `writing_quality_check.md` carried five
 categories of writing-quality rules and closed with "Do NOT report scores to the user.
@@ -332,7 +337,7 @@ fork's ruff gate (E741/E402/UP042) and the `datetime.timezone.utc` →
 
 - **The integrity-check rules agree on three points (#1011).** Entering at Stage 5 with a revised paper now runs Stage 4.5 first, which rule 12 of `shared/handoff_schemas.md` requires, and a prior integrity report is context for it, as the orchestrator's decision tree already said; the mode advisor had said the user could skip Stages 1-4.5 by showing a pass report. A prior report counts as fresh only when it is less than 24 hours old, within one session too; rule 11 and the orchestrator's decision tree had also accepted any report from the current session, and rule 10 now calls a report stale at 24 hours, the same boundary as the decision tree. The Stage 4 entry row no longer lists Stage 4′ as always run: after Stage 3′, only a Major decision leads to Stage 4′. The changes are prompt-level wording and unmeasured.
 
-## [3.23.2] - 2026-10-24 — Integrity checks read only the cited version, Stage 2.5 always runs, and adapter, announce, and Windows repairs
+## [3.23.2-upstream] - 2026-10-24 — Integrity checks read only the cited version, Stage 2.5 always runs, and adapter, announce, and Windows repairs
 
 > **Repairs; no new skill. One prompt-level change has a small behaviour check, and the others are unmeasured:** v3.23.2 makes the Stage 2.5 and 4.5 claim checks compare a claim only with the version of a work that the manuscript cites (#1006). When that version cannot be read, the check records an access note and asks for its PDF instead of reading a working paper or preprint. In one synthetic fixture run six times (three sessions each on Claude Opus 5.5 and Claude Fable 5.1, web tools off), every session followed the rule. A prior integrity report no longer lets a pipeline run skip Stage 2.5; the run attaches it as context (#995). A missing required input blocks the stage transition on every surface (#990), and the Socratic mentor's example no longer ranks the user's ideas (#992). The SessionStart announce shows the update reminder to the user, and the model-facing announce is about 2.1 KB shorter (#999). The Obsidian adapter accepts unquoted ISO dates and rejects boolean and superscript-digit years (#988, #989); six lints compare paths in POSIX form on Windows (#964, #978); the Pi wrapper composes with Pi's structured prompt sections (#985); and `CITATION.cff` gives the author's ORCID iD (#1007). Outside contributors wrote #978, #985, and #988.
 

@@ -429,6 +429,7 @@ Quality gate not passed ->
 | `data-analyst/report_compiler_agent` | Schema 11: Experiment Results (when available) | Structured Markdown (see `shared/handoff_schemas.md`) |
 | `simulation-runner/report_compiler_agent` | Schema 11: Experiment Results (when available) | Structured Markdown (see `shared/handoff_schemas.md`) |
 | `lab-notebook/provenance_auditor_agent` | Schema 12: Lab Record (when available) | Structured Markdown (see `shared/handoff_schemas.md`) |
+| `citation_compliance_agent` (`full` mode, first Phase 6 revision round) | Corrected Draft: the Complete Draft with the Phase 5 citation fixes applied; the first Phase 6 revision round edits this version, not the pre-Phase-5 draft, and a second revision round edits your Round 1 Revised Draft | Markdown full text |
 
 ### Schema 11 Integration (Experiment Results)
 
@@ -458,8 +459,8 @@ When `intake_agent` detects Schema 12 materials, integrate as follows:
 | Target Agent | Output Content | Data Format |
 |-----------|---------|---------|
 | `citation_compliance_agent` | Complete Draft (with all in-text citations) + English Abstract (150-300 words) + 5-7 keywords | This agent's Output Format |
-| `peer_reviewer_agent` | Complete Draft + Draft Metadata | Full text + Word Count table |
-| `formatter_agent` | Final Revised Draft (after passing peer review) | Markdown with citations |
+| `peer_reviewer_agent` | Complete Draft + Draft Metadata (in `full` mode the first review reads the Corrected Draft from `citation_compliance_agent`; later rounds read your Revised Draft + Revision Log) | Full text + Word Count table |
+| `formatter_agent` | Final Revised Draft: the version peer review accepted, or, without an Accept, the latest draft, with the "Acknowledged Limitations" section after Option A, which the formatter formats only after the user confirms it (`formatter_agent` § Review Status) | Markdown with citations |
 
 ### Handoff Format Requirements
 
@@ -729,7 +730,7 @@ In **revision mode** (standalone `academic-paper` revision, which is also what p
 
 For a review-roadmap round, your revision-invocation context carries the
 **anchored draft**, its exact **block manifest**, immutable
-`revision-roadmap/1.0`, exact `claim-surface-manifest/1.0`, complete
+`revision-roadmap/1.1` (or a valid `revision-roadmap/1.0`), exact `claim-surface-manifest/1.0`, complete
 `author-adjudication/1.0`, and the caller-computed raw artifact hashes plus
 `author_decision_digest`. Copy those supplied bindings; do not compute or
 invent them. An integrity-correction round instead carries the anchored draft,

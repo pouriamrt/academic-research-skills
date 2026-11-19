@@ -55,7 +55,9 @@ RE_REVIEW_RUNTIME = Path("scripts/check_re_review_synthesis.py")
 LEGACY_APPLY_RUNTIME = Path("scripts/legacy/ars_apply_revision_patch_v1_0.py")
 
 RUNTIME_HASHES = {
-    ROADMAP_RUNTIME: "2d9fb28aae08962eea1b2aad31c63a82edd51dd389540fc3ac6240e8a93b65e6",
+    # Re-pinned for #1100: CURRENT_ROADMAP_VERSION is now revision-roadmap/1.1.
+    # Re-pinned for #1092: ArtifactStore opens files through scripts/_anchored_open.py.
+    ROADMAP_RUNTIME: "2ddea1407e00f95ae94dcd589ed8c810dca5937c6359f5b8b441cf7b8cd82350",
     APPLY_RUNTIME: "6a811530ef7199fd345892ce9e0cbd1a4533d038a341cce699c78ce31e483e59",
     RE_REVIEW_RUNTIME: "ed95faf943851cf0f95f34afbc3d2721160248c40f8dec68e29b5ab2e281f3f2",
 }
@@ -71,6 +73,15 @@ RUNTIME_HASHES = {
 # Re-pinned for #1001 (domain and perspective reviewers repeat the works they
 # recommend in a `yaml suggested-references` block for a post-decision lookup;
 # no finding, score, or detection rule changes).
+# Re-pinned for #1098 (a detection-rule change in devils_advocate: a premise,
+# stated or unstated, that a core claim depends on and that the paper does not
+# support must be a CRITICAL or MAJOR issue row; Phase 2 item 3 states the rule
+# for reviewer_full, and Dimension 7 and Frame-Lock carry the same sentence; no
+# score or output-grammar change).
+# Re-pinned for #1101 (devils_advocate states its dimension count as 8
+# challenges and 1 severity calibration; no detection-rule change).
+# Re-pinned for #1107 (domain_reviewer judges literature coverage as of the
+# manuscript's stated date; no severity, score, or output-grammar change).
 DETECTION_HASHES = {
     Path(
         "academic-paper-reviewer/agents/eic_agent.md"
@@ -80,13 +91,13 @@ DETECTION_HASHES = {
     ): "7369527eb99f1ca2a7351a338a4e7ef0df482d3fb516056d271a944eb7d6d8b9",
     Path(
         "academic-paper-reviewer/agents/domain_reviewer_agent.md"
-    ): "706a70fab08a37dff52f6e097787cf8d5712fff02bcce87ac0a184109f478f55",
+    ): "5f09b9b348814370c14185d6266622766ef36ab0942a14809c077771f5cbc932",
     Path(
         "academic-paper-reviewer/agents/perspective_reviewer_agent.md"
     ): "a99386515c1e9e5b73e91f3f9cd62f6ec3660f03e229371ad53531fa165cf007",
     Path(
         "academic-paper-reviewer/agents/devils_advocate_reviewer_agent.md"
-    ): "a3ddde4c1e26e9e8603f71e47b3afb0c83131e0428b84048c0c3e634f19e5b5c",
+    ): "3f39bad01d78a403da4318ed477acde13c3171ca61e96ee24c9404dade5ec1de",
     Path(
         "academic-paper-reviewer/templates/peer_review_report_template.md"
     ): "5da1f9d24d6e321cec5f38c13fa03fe23b9363b1842cb0d8111c5e39a810c7d1",
@@ -118,21 +129,28 @@ REQUIRED_POINTERS = {
         "re_review/legacy/v1_0/",
     ),
     Path("shared/handoff_schemas.md"): (
-        "revision-roadmap/1.0",
+        "revision-roadmap/1.1",
         "author_adjudication.schema.json",
         "revision_evidence_bundle.schema.json",
         "obligation_class",
     ),
     Path("academic-paper-reviewer/agents/editorial_synthesizer_agent.md"): (
-        "revision-roadmap/1.0",
+        "revision-roadmap/1.1",
         "proposed_targets[]",
         "transport reference, not a rank",
+        "`CORROBORATED` (corroborated finding, agree =",
+        "`SINGLE-REVIEWER` (single-reviewer finding, agree = 1)",
+        "into `corroborating_sources[]` with `reviewer: DA`",
+        "never from the length\nof `corroborating_sources[]`",
+        "#### Below the Consensus Bar (#1100)",
     ),
     Path("academic-paper-reviewer/templates/editorial_decision_template.md"): (
         "Obligation class",
         "Cost scope",
         "Bounded consequence",
         "never a work rank",
+        "### Below the Consensus Bar (#1100)",
+        "The DA is not an independent seat and does not change the count.",
     ),
     Path("academic-paper/agents/revision_coach_agent.md"): (
         "build-adjudication",
@@ -259,7 +277,10 @@ def _schema_checks(root: Path) -> list[str]:
     roadmap_props = roadmap.get("properties", {})
     item = roadmap.get("$defs", {}).get("roadmap_item", {})
     item_props = item.get("properties", {})
-    if roadmap_props.get("schema_version", {}).get("const") != "revision-roadmap/1.0":
+    if roadmap_props.get("schema_version", {}).get("enum") != [
+        "revision-roadmap/1.1",
+        "revision-roadmap/1.0",
+    ]:
         errors.append("roadmap current schema_version drifted")
     if not {"base_draft_sha256", "block_manifest_sha256"}.issubset(roadmap.get("required", [])):
         errors.append("roadmap lost exact draft/manifest bindings")

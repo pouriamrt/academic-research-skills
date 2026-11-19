@@ -61,7 +61,7 @@ def test_writing_never_reuses_accept_reject_outcomes():
 def test_budget_tools_replicates_stopping_and_uncertainty_are_frozen():
     plan, _heldout = _assets()
     assert plan["budgets"] == {
-        "per_call_input_token_cap": 26000,  # fork: larger production prompts, see the study README
+        "per_call_input_token_cap": 28000,  # fork: larger production prompts, see the study README
         "per_call_output_token_cap": 1500,
         "no_rollover_between_seats": True,
         "planned_subject_calls": 186,
@@ -141,7 +141,7 @@ def test_complete_hash_bound_role_contract_is_embedded_and_within_budget():
         assert b"highest-precedence runtime authority" in prompt
         assert call["estimated_template_tokens"] == runner._estimated_template_tokens(prompt)
         assert call["reserved_dependency_tokens"] == len(call["depends_on"]) * 1500
-        assert call["estimated_worst_case_input_tokens"] <= 26000
+        assert call["estimated_worst_case_input_tokens"] <= 28000
 
 
 def test_manifest_order_ids_paths_hashes_and_dependencies_are_deterministic():

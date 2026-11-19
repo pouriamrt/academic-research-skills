@@ -24,6 +24,7 @@ import tempfile
 from pathlib import Path
 from typing import Any, NoReturn
 
+import _anchored_open
 from check_heldout_measurement_report import location_errors, validate_report
 from jsonschema import Draft202012Validator, FormatChecker
 from referencing import Registry, Resource
@@ -189,24 +190,15 @@ def _sha(raw: bytes) -> str:
 
 def _safe_explicit_file(path: Path, *, limit: int = MAX_ASSET_BYTES) -> bytes:
     absolute = path.absolute()
-    parts = absolute.parts
-    directory_flags = os.O_RDONLY | getattr(os, "O_DIRECTORY", 0)
-    nofollow = getattr(os, "O_NOFOLLOW", 0)
-    directory_fd = os.open(absolute.anchor, directory_flags)
+    if len(absolute.parts) < 2:
+        _fail(f"explicit input must name a file: {path}")
     try:
-        for component in parts[1:-1]:
-            next_fd = os.open(
-                component,
-                directory_flags | nofollow,
-                dir_fd=directory_fd,
-            )
-            os.close(directory_fd)
-            directory_fd = next_fd
-        fd = os.open(parts[-1], os.O_RDONLY | nofollow, dir_fd=directory_fd)
-    except OSError as exc:
+        fd = _anchored_open.open_explicit_path(absolute, os.O_RDONLY)
+    except (OSError, NotImplementedError) as exc:
         raise MeasurementError(f"cannot open explicit path without symlinks {path}: {exc}") from exc
-    finally:
-        os.close(directory_fd)
+    except ValueError as exc:
+        # A component that is not a plain name, or an embedded NUL.
+        raise MeasurementError(f"explicit path cannot be opened safely {path!r}: {exc}") from exc
     info = os.fstat(fd)
     if not stat.S_ISREG(info.st_mode):
         os.close(fd)

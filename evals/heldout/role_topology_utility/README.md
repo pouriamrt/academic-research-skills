@@ -15,11 +15,12 @@ emit their own artifacts and only the declared final seat emits the evaluated
 outcome; this prevents production phase/output grammar from contaminating the
 matched task.
 
-> **Fork budget note.** `per_call_input_token_cap` is 26000 here, not upstream's
+> **Fork budget note.** `per_call_input_token_cap` is 28000 here, not upstream's
 > 24000. The cap is a design budget for a study whose behavioral evidence is
 > `NOT_RUN`, and this fork's production prompts are larger by design (the
 > experiment-pipeline stages and the compliance track), which pushed one
-> materialized call to ~24.9k. Raising an unrun study's budget changes no
+> materialized call to ~24.9k (cap 26000), and the 2026-11 reviewer additions
+> (#1098, #1100) pushed the editorial-synthesizer calls to ~26.4k. Raising an unrun study's budget changes no
 > measurement; the arms, role graphs, stopping rule and UVV definition are
 > untouched.
 

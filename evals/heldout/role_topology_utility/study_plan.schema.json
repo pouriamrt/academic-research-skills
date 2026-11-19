@@ -78,7 +78,7 @@
       "type": "object", "additionalProperties": false,
       "required": ["per_call_input_token_cap", "per_call_output_token_cap", "no_rollover_between_seats", "planned_subject_calls", "judge_calls_included", "api_spend_authorized_usd"],
       "properties": {
-        "per_call_input_token_cap": {"const": 26000},
+        "per_call_input_token_cap": {"const": 28000},
         "per_call_output_token_cap": {"const": 1500},
         "no_rollover_between_seats": {"const": true},
         "planned_subject_calls": {"const": 186},

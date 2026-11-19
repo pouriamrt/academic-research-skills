@@ -64,6 +64,7 @@ from pathlib import Path, PurePosixPath
 from typing import Any, NoReturn
 
 try:  # Dual-path import: script invocation vs package import under pytest.
+    import _anchored_open
     import file_lock
     from research_workflow_profile import (
         JCS_SAFE_INTEGER_MAX,
@@ -78,7 +79,7 @@ try:  # Dual-path import: script invocation vs package import under pytest.
         canonical_bytes as _profile_canonical_bytes,
     )
 except ImportError:  # pragma: no cover - package-import path
-    from scripts import file_lock  # type: ignore[no-redef]
+    from scripts import _anchored_open, file_lock  # type: ignore[no-redef]
     from scripts.research_workflow_profile import (
         JCS_SAFE_INTEGER_MAX,
         load_profile,
@@ -1525,12 +1526,7 @@ def _passport_pointer(document: Mapping[str, Any]) -> dict[str, str] | None:
 
 
 def _fsync_directory(path: Path) -> None:
-    flags = os.O_RDONLY | getattr(os, "O_DIRECTORY", 0)
-    fd = os.open(path, flags)
-    try:
-        os.fsync(fd)
-    finally:
-        os.close(fd)
+    _anchored_open.fsync_directory(path)
 
 
 def _write_exclusive_durable(path: Path, data: bytes, *, mode: int = 0o600) -> None:

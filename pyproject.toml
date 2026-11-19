@@ -51,7 +51,9 @@ line-ending = "lf"
 # expressions — semantically identical, witness broken. Excluding the file from
 # the formatter keeps it byte-comparable with upstream too, which is what an
 # upstream-owned, witness-pinned checker should be. `ruff check` still covers it.
-exclude = ["scripts/check_panel_synthesis.py"]
+# _unspaced_scripts.py is written by gen_unspaced_scripts.py, whose --check mode
+# byte-compares it with fresh output; formatting it would report drift.
+exclude = ["scripts/check_panel_synthesis.py", "scripts/_unspaced_scripts.py"]
 
 [tool.mypy]
 # Scoped deliberately to the write-scope guard: it is the security-critical path

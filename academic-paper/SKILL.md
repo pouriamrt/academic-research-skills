@@ -249,7 +249,7 @@ User: "Write a paper on [topic]"
      |
 === Phase 5: CITATIONS ===
      |
-     +-> [citation_compliance_agent] -> Citation Audit Report
+     +-> [citation_compliance_agent] -> Citation Audit Report + Corrected Draft (to Phase 6)
          - In-text <-> reference list cross-check (zero orphans)
          - Format compliance (per selected style)
          - DOI/URL verification
@@ -313,9 +313,15 @@ alignment and do not silently reconstruct a target from model memory.
 
 1. **Phase 0 -> 1**: User must confirm Paper Configuration Record
 2. **Phase 2 -> 3**: User must approve outline (can request restructuring)
-3. **Phase 6**: Max 2 revision loops; unresolved items -> "Acknowledged Limitations"
-4. **Peer Review** Critical-severity issues block progression to Phase 7
+3. ⚠️ **IRON RULE**: Max 2 revision loops; unresolved items -> "Acknowledged Limitations" (when the user picks Option A; see rule 6)
+4. **Peer Review** Critical-severity issues block progression to Phase 7 through an Accept or Option A. While a Critical issue remains, `peer_reviewer_agent` does not offer Option A; the user can still ask for early formatting, and Phase 7 then follows rule 6
 5. User can skip Phase 1 (literature) if providing own sources
+6. **Phase 6 -> 7** (`full` mode, #1087): Phase 7 starts without a stop when peer review gave an Accept verdict for the draft that goes to Phase 7. In every other case Phase 7 starts only after the user confirms it at one stop, which `formatter_agent` shows before it formats, with the draft's Review Status (`formatter_agent` § Review Status). The cases are:
+   - **Last allowed revision**: after a Round 2 Minor Revision verdict, `draft_writer_agent` makes the second and last revision, and no review follows it.
+   - **Option A**: after Round 2, the user picks Option A, and `draft_writer_agent` adds the "Acknowledged Limitations" section.
+   - **Early formatting**: the user asks for Phase 7 before an Accept, including before any review.
+
+   Option C ends the workflow, and Phase 7 does not run. Option B returns to the phase it names. If the user declines at the stop, keep the draft and all Review Reports and end the workflow, as Option C does.
 
 ---
 
@@ -449,7 +455,7 @@ See `references/mode_selection_guide.md` for details.
 |------|---------|--------|--------|
 | `full` | "Write a paper" | All 11 (visualization_agent always included) | Complete paper draft with publication-ready figures |
 | `outline-only` | "Paper outline" | 1->2->3 | Detailed outline + evidence map |
-| `revision` | "Revise paper" | 8->5->6 | Patch document + deterministically applied revised draft + apply report (#390; revision log via `templates/revision_tracking_template.md`) |
+| `revision` | "Revise paper" | 8->5->6 | Patch document + deterministically applied revised draft + apply report (#390; revision log via `templates/revision_tracking_template.md`) + Citation Audit Report with proposed citation fixes (#1068) |
 | `abstract-only` | "Write abstract" | 1->5 | English abstract + keywords |
 | `lit-review` | "Literature review" | 1->2 | Annotated bibliography + synthesis |
 | `format-convert` | "Convert to LaTeX" / "Convert citations to [format]" | 9 only | Formatted document; includes citation format conversion (APA 7 / Chicago / MLA / IEEE / Vancouver) |
@@ -568,6 +574,19 @@ Whether the note appears must not depend on the topic, the wording, or the kind 
 Before auditing, load `agents/citation_compliance_agent.md`. Preserve supplied
 venue overrides.
 
+The deliverable of this mode is the citation error report (the agent's Citation
+Audit Report): the errors found, the Corrected Reference List, and each in-text
+correction listed with its location and the exact replacement citation where
+one exists. A sentence that misstates what a correctly listed source says is an
+error and goes in the error list. If you have a remark that reports no error,
+such as an optional wording suggestion for a sentence whose citation is
+accurate, keep it out of the errors, the corrections, and the Items Flagged for
+Review, and put it in a separate notes line. Leave the user's excerpt or draft text to the user: offer a
+corrected version and produce it only when the user asks. In this mode the
+agent's Auto-correct principle covers the reference list and the listed
+replacements; its Corrected Draft output belongs to `full`-mode runs that call
+it as Phase 5, not to this mode (#1062, #1068). For Chicago 17th, MLA 9th, IEEE, and Vancouver, the agent's Other Citation Styles: Report Only rule replaces this: the report lists findings only, with no Corrected Reference List or replacement citations. A corrected version of the user's text still comes only when the user asks, and it begins with a note that a correction for another style may be wrong (#1093).
+
 ---
 
 ## Rebuttal-Audit Mode
@@ -593,12 +612,14 @@ venue overrides.
 In revision mode, `draft_writer_agent` does NOT re-emit the complete paper. The round runs **anchorize → patch → deterministic apply → finalizer**, confining the regeneration surface to the blocks the revision explicitly touches (DELEGATE-52 blast-radius containment; spec `docs/design/2026-06-10-390-diff-patch-revision-mode-spec.md`):
 
 1. **Anchorize** the draft (`scripts/ars_anchorize_draft.py` — idempotent, content-neutral): every block gets a stable `<!--block:BNNNN-->` marker and an exact manifest. Nothing rewrites the draft before apply.
-2. **Bind explicit authority (#670):** validate the immutable `revision-roadmap/1.0`, exact registered claim surfaces, and complete `author-adjudication/1.0`. The roadmap keeps severity, obligation, cost scope, and bounded consequence independent; author triage and exact targets live only in the separate explicit sidecar.
+2. **Bind explicit authority (#670):** validate the immutable `revision-roadmap/1.1` (or a valid `revision-roadmap/1.0`, kept unchanged), exact registered claim surfaces, and complete `author-adjudication/1.0`. The roadmap keeps severity, obligation, cost scope, and bounded consequence independent; author triage and exact targets live only in the separate explicit sidecar.
 3. **The writer emits current patch 1.1** (`shared/contracts/patch/revision_patch.schema.json`) as a sidecar — every op cites only `will_address` items, stays inside exact target/operation scopes, and explicitly declares claim/collateral arrays. Registered claim movement needs an exact author-approved replacement; declined overlap needs exact collateral authority.
 4. **Deterministic apply** (`scripts/ars_apply_revision_patch.py`) replays every binding before structural analysis or write. Current report format 1.3 carries the mechanically derived authorization witness and the honest `unregistered_claim_drift_review_required` E6 boundary. If E6 later detects a drift on an unregistered surface, the checkpoint has no default-open route: the author must explicitly choose `restore`, `authorize_with_reason`, or `pause`. Build and replay validation bind each choice to one explicitly named run-local raw session-event artifact; the sidecar retains its recomputed digest but neither path nor message. Untouched blocks remain byte-identical.
 5. **Continuous evidence:** every review write, all-declined no-op, and integrity-correction round enters `revision-evidence-bundle/1.0`, from an exact integrity-PASS draft to the exact final draft. A scope escalation requires a new explicit sidecar or a narrower patch; legacy full re-emission cannot claim current authorization PASS.
 
 Orchestrated runs follow `pipeline_orchestrator_agent.md` § Revision-Round Patch Sequencing; Mode B users run the same scripts by hand — exact commands in `references/revision_patch_protocol.md`. Honest boundary: registered surfaces and exact edit authority are machine-replayed, but unregistered semantic drift still requires E6 review. `scripts/claim_strength_drift_disposition.py` closes explicit handling of reported rows only; it does not make model-mediated detection deterministic or complete. The `academic-paper full` in-pair Phase 6→4 loop is outside this standalone/pipeline revision contract.
+
+**Citation check after revision (#1068).** In standalone revision mode (agents 8->5->6), `citation_compliance_agent` runs after the patch is applied. It does not edit the applied draft, its reference list included, and emits no Corrected Draft. It returns the Citation Audit Report with each fix as a proposal (location, current text, exact replacement) and the Corrected Reference List as a proposal. To change the draft, the author carries these fixes into a later revision round; an edit made outside a patch round is not covered by the revision evidence bundle. Pipeline revision rounds follow the orchestrator's Revision-Round Patch Sequencing, which does not dispatch this agent; there the Stage 2.5 and 4.5 integrity gates check citations.
 
 **Abstract after revision (#936).** Revision mode does not regenerate the abstract (the patch round re-emits only targeted blocks), so the abstract changes only where an author-approved target covers its blocks. A standalone revision's delivery always says the abstract was not regenerated. When the applied patch changes a finding, number, or scope that the abstract states, it also quotes each abstract sentence the patched text now contradicts, so the author can approve an abstract target in the next round or run `abstract-only`. In pipeline runs the integrity gate's C2 check also compares the abstract with the body.
 
@@ -869,7 +890,7 @@ The `intake_agent` dynamically selects the appropriate template based on the pap
 ### Peer Review
 12. **Five criterion-bound dimensions** — Originality, Methodological Rigor, Evidence Sufficiency, Argument Coherence, and Writing Quality; report categorical judgements with evidence and no numerical aggregation
 13. **Actionable feedback** — every criticism must include a specific suggestion
-14. **Max 2 revision rounds** — unresolved items become Acknowledged Limitations
+14. **Max 2 revision rounds** — when the user picks Option A, unresolved items become Acknowledged Limitations (Checkpoint Rule 6)
 
 ### Mandatory Inclusions
 ⚠️ **IRON RULE**: Every paper MUST include: Data Availability Statement, Ethics Declaration, Author Contributions (CRediT), Conflict of Interest Statement, Funding Acknowledgment.

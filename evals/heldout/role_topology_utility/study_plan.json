@@ -444,7 +444,7 @@
     "model_fallback": false
   },
   "budgets": {
-    "per_call_input_token_cap": 26000,
+    "per_call_input_token_cap": 28000,
     "per_call_output_token_cap": 1500,
     "no_rollover_between_seats": true,
     "planned_subject_calls": 186,

@@ -59,6 +59,9 @@ MAX_AUTH_BYTES = 1024 * 1024
 MAX_STDERR_BYTES = 1024 * 1024
 APP_SERVER_TIMEOUT_SECONDS = 300.0
 APP_SERVER_DRAIN_GRACE_SECONDS = 3.0
+# Windows releases a killed child's file handles late; retry deleting the auth copy for ~5 s.
+AUTH_COPY_UNLINK_TRIES = 25
+AUTH_COPY_UNLINK_PAUSE_SECONDS = 0.2
 
 IDENTIFIER_RE = re.compile(r"^[a-z0-9][a-z0-9._-]{0,127}$")
 MODEL_RE = re.compile(r"^gpt-[a-z0-9][a-z0-9._-]{0,123}$")
@@ -410,6 +413,8 @@ def _minimal_status_env(environ: dict[str, str], codex_home: Path) -> dict[str, 
         "PATH": environ.get("PATH", os.defpath),
         "CODEX_HOME": str(codex_home),
         "HOME": environ.get("HOME", str(codex_home.parent)),
+        # Node behind the Windows codex.cmd shim aborts at start without it (rc 134); not a secret.
+        "SYSTEMROOT": environ.get("SYSTEMROOT", ""),
         "LANG": "C",
         "LC_ALL": "C",
         "NO_COLOR": "1",
@@ -513,7 +518,7 @@ def detect_transport(environ: dict[str, str] | None = None) -> tuple[int, dict[s
 
 
 def _read_auth_bytes(auth_path: Path) -> bytes:
-    flags = os.O_RDONLY
+    flags = os.O_RDONLY | getattr(os, "O_BINARY", 0)  # Windows fds default to text mode
     if hasattr(os, "O_NOFOLLOW"):
         flags |= os.O_NOFOLLOW
     fd = os.open(auth_path, flags)
@@ -545,7 +550,8 @@ def _read_auth_bytes(auth_path: Path) -> bytes:
 
 
 def _write_private(path: Path, raw: bytes) -> None:
-    fd = os.open(path, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
+    flags = os.O_WRONLY | os.O_CREAT | os.O_EXCL | getattr(os, "O_BINARY", 0)  # no CRLF rewrite
+    fd = os.open(path, flags, 0o600)
     try:
         view = memoryview(raw)
         written = 0
@@ -561,12 +567,30 @@ def _write_private(path: Path, raw: bytes) -> None:
         os.close(fd)
 
 
+def _remove_auth_copy(path: Path) -> None:
+    """Delete the private credential copy; fail closed if it would outlive the call."""
+    for _ in range(AUTH_COPY_UNLINK_TRIES):
+        try:
+            path.unlink()
+            return
+        except FileNotFoundError:
+            return
+        except OSError:
+            time.sleep(AUTH_COPY_UNLINK_PAUSE_SECONDS)
+    raise TransportError("AUTH_COPY_CLEANUP_FAILED")
+
+
 def _child_env(environ: dict[str, str], temp_root: Path, temp_codex_home: Path) -> dict[str, str]:
     return {
         "PATH": environ.get("PATH", os.defpath),
         "CODEX_HOME": str(temp_codex_home),
         "HOME": str(temp_root),
         "TMPDIR": str(temp_root),
+        # Windows equivalents of TMPDIR: without them SQLite falls back to C:\Windows and
+        # codex fails to create its state DB (code 14).
+        "TEMP": str(temp_root),
+        "TMP": str(temp_root),
+        "SYSTEMROOT": environ.get("SYSTEMROOT", ""),  # Windows Node needs it to start
         "LANG": "C",
         "LC_ALL": "C",
         "NO_COLOR": "1",
@@ -722,22 +746,36 @@ def _response_result(message: dict[str, Any], request_id: int) -> dict[str, Any]
     return result
 
 
+def _signal_process_group(proc: subprocess.Popen[bytes], signal_name: str) -> None:
+    if os.name == "nt":
+        # shortcut: Windows has no process groups or SIGKILL, so end the codex.cmd -> node ->
+        # codex tree by parent PID; a descendant orphaned after the parent exits is not reached.
+        try:
+            subprocess.run(
+                ["taskkill", "/T", "/F", "/PID", str(proc.pid)],
+                capture_output=True,
+                timeout=10,
+                check=False,
+            )
+        except (OSError, subprocess.TimeoutExpired):
+            pass
+        return
+    try:
+        os.killpg(proc.pid, getattr(signal, signal_name))
+    except (OSError, ProcessLookupError):
+        pass
+
+
 def _stop_process(proc: subprocess.Popen[bytes]) -> None:
     if proc.poll() is None:
-        try:
-            os.killpg(proc.pid, signal.SIGTERM)
-        except (OSError, ProcessLookupError):
-            pass
+        _signal_process_group(proc, "SIGTERM")
         try:
             proc.wait(timeout=3)
         except subprocess.TimeoutExpired:
             pass
     # The parent can exit on SIGTERM while a descendant ignores it. Always seal
     # the process-group boundary before returning, even when the parent is gone.
-    try:
-        os.killpg(proc.pid, signal.SIGKILL)
-    except (OSError, ProcessLookupError):
-        pass
+    _signal_process_group(proc, "SIGKILL")
     if proc.poll() is None:
         try:
             proc.wait(timeout=3)
@@ -822,7 +860,11 @@ def run_app_server(
 ) -> tuple[list[dict[str, Any]], bytes]:
     effort = validate_reasoning_effort(environ)
     auth_raw = _read_auth_bytes(source_auth)
-    with tempfile.TemporaryDirectory(prefix="ars-codex-citation-") as tmp:
+    # Windows: a killed codex can still lock its SQLite files at exit, so leftover state
+    # files must not mask the result; the credential copy is deleted explicitly below.
+    with tempfile.TemporaryDirectory(
+        prefix="ars-codex-citation-", ignore_cleanup_errors=os.name == "nt"
+    ) as tmp:
         temp_root = Path(tmp)
         os.chmod(temp_root, 0o700)
         temp_codex_home = temp_root / "codex-home"
@@ -954,6 +996,7 @@ def run_app_server(
                 reader.thread.join(timeout=3)
             if stderr_reader is not None:
                 stderr_reader.thread.join(timeout=3)
+            _remove_auth_copy(temp_codex_home / "auth.json")
 
 
 def _empty_receipt(

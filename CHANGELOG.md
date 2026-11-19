@@ -14,6 +14,30 @@ All notable changes to this project will be documented in this file.
 >
 > The blockquote directly under a release heading is that release's one-paragraph summary. Those summaries lived in `README.md` until 2026-09-15 and were moved here verbatim; `README.md` now keeps only the three most recent.
 
+## [Unreleased]
+
+### Fixed on the fork
+
+- **The Codex citation transport (#630) runs on Windows.** On Windows it could not work
+  at all: detection failed with `CODEX_VERSION_UNAVAILABLE` because Node behind the
+  `codex.cmd` shim aborts without `SYSTEMROOT`. Four changes in
+  `scripts/cross_model_codex_transport.py`, all no-ops on Linux and macOS:
+  - Both closed child environments add `SYSTEMROOT`, a path that carries no credential.
+    The app-server environment also adds `TEMP` and `TMP`, set to the same private temp
+    root as `TMPDIR`; without them codex could not create its SQLite state.
+  - The auth copy is read and written in binary mode, so Windows no longer rewrites line
+    endings and fails the size check (`AUTH_COPY_WRITE_FAILED`).
+  - With no process groups on Windows, the stop path ends the `codex.cmd` → node → codex
+    tree with `taskkill /T /F`. This is best effort: a descendant orphaned after its
+    parent exits is not reached.
+  - The private `auth.json` copy is now deleted explicitly. The call fails closed with
+    `AUTH_COPY_CLEANUP_FAILED` if the copy would outlive it, and on Windows leftover
+    SQLite files no longer hide the result.
+
+  `check_630` and the integration test list the new keys. The live smoke test
+  (`scripts/cross_model_smoke_test_codex.sh`, `gpt-6.2-astra`, codex-cli 0.169.0) passed
+  on Windows 11 on 2026-11-19 with a bound source. There is no Windows CI job.
+
 ## [3.23.1] - 2026-11-19 — Upstream sync: v3.24.2 → v3.24.4 (author letter, corroboration labels, research-ethics scope for committee correspondence)
 
 ### Upstream sync: v3.24.2 → v3.24.3+ (`6d93886..74fe227`, 26 commits)

@@ -42,8 +42,20 @@ EXPECTED_FIXTURES = {
     "unbound_source.jsonl",
     "wrong_search_shape.jsonl",
 }
-EXPECTED_CHILD_ENV = {"PATH", "CODEX_HOME", "HOME", "TMPDIR", "LANG", "LC_ALL", "NO_COLOR"}
-EXPECTED_STATUS_ENV = {"PATH", "CODEX_HOME", "HOME", "LANG", "LC_ALL", "NO_COLOR"}
+# SYSTEMROOT: Windows Node cannot start without it; it carries a path, never a credential.
+EXPECTED_CHILD_ENV = {
+    "PATH",
+    "CODEX_HOME",
+    "HOME",
+    "TMPDIR",
+    "TEMP",
+    "TMP",
+    "SYSTEMROOT",
+    "LANG",
+    "LC_ALL",
+    "NO_COLOR",
+}
+EXPECTED_STATUS_ENV = {"PATH", "CODEX_HOME", "HOME", "SYSTEMROOT", "LANG", "LC_ALL", "NO_COLOR"}
 REQUIRED_DISABLED_FEATURES = {
     "apps",
     "artifact",

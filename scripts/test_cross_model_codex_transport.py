@@ -1048,6 +1048,9 @@ def test_fake_app_server_e2e_is_auth_only_read_only_and_no_secret_env(tmp_path: 
         "NO_COLOR",
         "PATH",
         "TMPDIR",
+        "TEMP",  # same private temp root as TMPDIR, for Windows
+        "TMP",
+        "SYSTEMROOT",  # empty off Windows; Windows Node needs it to start
         "__CF_USER_TEXT_ENCODING",  # injected by macOS, not inherited from the caller
     }
     assert "OPENAI_API_KEY" not in capture["env"]

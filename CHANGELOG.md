@@ -19,8 +19,8 @@ All notable changes to this project will be documented in this file.
 ### Upstream sync: v3.24.2 → v3.24.3+ (`6d93886..74fe227`, 26 commits)
 
 Merged with fork semantics preserved. The fork stays at 3.23.0. Upstream's release record
-is filed below the fork's own entries as `[3.24.3]`, and the upstream changes made after
-that release as `[Unreleased-upstream]`.
+is filed below the fork's own entries as `[3.24.3]`, preceded by the upstream changes made
+after that release.
 
 - **Adopted, reviewer:** a `full` review also writes the author a readable letter beside
   the Editorial Decision Package, checked by `scripts/check_author_letter.py` (#1078). The
@@ -35,8 +35,11 @@ that release as `[Unreleased-upstream]`.
 - **Adopted, paper:** `citation_compliance_agent` edits the draft only in `full` mode and
   hands its Corrected Draft to Phase 6 (#1067, #1068). It corrects nothing in non-APA
   styles (#1093, interim). Every way the revision loop ends has one next step (#1087).
-- **Adopted, scripts:** the no-follow file readers work on Windows and refuse
-  drive-prefixed refs (#1092). The citation patterns no longer backtrack exponentially
+- **Adopted, scripts:** the no-follow file readers gain a Windows code path and refuse
+  drive-prefixed refs (#1092). On the maintainer's Windows 11 machine,
+  `test_adjudication_activity.py` and `test_review_criteria_binding.py` still fail with
+  `PermissionError` on the atomic rename, as they did before this merge and do on upstream
+  `74fe227`; CI runs on Linux. The citation patterns no longer backtrack exponentially
   (#1088). Quote matching applies NFC (#1074), and the Phase 1 checks count Han and kana
   letters (#1077).
 - **Adopted, models and docs:** Claude Fable 5.2 as a supported session model (#1063),
@@ -161,7 +164,7 @@ preserved inside upstream's rewritten surfaces. Upstream's `EIC` →
 update-available reminder. Files arriving from upstream were brought up to the
 fork's ruff gate (E741/E402/UP042) and the `datetime.timezone.utc` →
 `datetime.UTC` migration the fork's pyupgrade pass had already made.
-## [Unreleased-upstream] - upstream `main` after 3.24.3, through `74fe227`
+## Unreleased upstream changes after 3.24.3 (through `74fe227`)
 
 ### Changed
 

@@ -3,7 +3,7 @@
 All notable changes to this project will be documented in this file.
 
 > **Duplicate release numbers (fork vs upstream).** This fork and upstream
-> independently shipped 3.20.0, 3.20.1, 3.21.0, 3.22.0 and 3.23.0 as different releases. The
+> independently shipped 3.20.0, 3.20.1, 3.21.0, 3.22.0, 3.23.0 and 3.23.1 as different releases. The
 > fork's numbers are the live ones for this repo; upstream's same-numbered
 > entries are preserved below with an `-upstream` suffix so each release keeps
 > a distinct identifier. Neither record is renumbered or rewritten.
@@ -14,13 +14,13 @@ All notable changes to this project will be documented in this file.
 >
 > The blockquote directly under a release heading is that release's one-paragraph summary. Those summaries lived in `README.md` until 2026-09-15 and were moved here verbatim; `README.md` now keeps only the three most recent.
 
-## [Unreleased]
+## [3.23.1] - 2026-11-19 — Upstream sync: v3.24.2 → v3.24.3+ (author letter, corroboration labels, Windows-safe file readers)
 
 ### Upstream sync: v3.24.2 → v3.24.3+ (`6d93886..74fe227`, 26 commits)
 
-Merged with fork semantics preserved. The fork stays at 3.23.0. Upstream's release record
-is filed below the fork's own entries as `[3.24.3]`, preceded by the upstream changes made
-after that release.
+Merged with fork semantics preserved. Upstream's release record is filed below the fork's
+own entries as `[3.24.3]`, preceded by the upstream changes made after that release.
+Upstream's own 3.23.1 entry now carries the `-upstream` suffix.
 
 - **Adopted, reviewer:** a `full` review also writes the author a readable letter beside
   the Editorial Decision Package, checked by `scripts/check_author_letter.py` (#1078). The
@@ -147,6 +147,8 @@ sits ahead of section A — so the instruction reaches them through the referenc
 one source of truth instead of three copies needing mirror-sync.
 
 ## [3.21.0] - 2026-08-03 — Upstream sync: v3.17.0 → v3.19.0+ (re-review three-gate contract, role-scoped reviewer scoring, risk-stratified claim gate)
+
+> Merges 51 upstream commits (Imbad0202 `039d94f` → `49e79a7`, spanning upstream v3.18.0 and v3.19.0) onto the fork's v3.20.1 baseline via a true git merge — 364 files, 46 conflicts resolved by hand. **Adopted:** the #576 three-gate re-review contract (criteria committed before the revision is seen, evidence verdicts before the author's persuasion), #574 role-scoped reviewer scoring with typed evidence anchors and abstention, #549 risk-stratified Stage 2.5 claim verification (100% of HIGH-IMPACT claims + a 10% random sentinel, replacing the flat 30% sample), #547 scope-conformance and #548 search-bounded novelty advisories, #569/#570 revision-round claim-drift guards, #512 PDF read-integrity preflight, #513 `read_scope` attestation on `/ars-mark-read`, #541 verification-cache staleness advisory, #540/#539 cross-model reviewer and judge-independence tracks, #544 SessionStart update reminder, #595 Chinese-literature resolver client, and bare `/ars-*` command aliases (#633). **Fork-side:** English-only surfaces stay deleted, fork schema numbering (18 / 20 / 20.1) and the experiment pipeline (Stage 1.5a/b/c re-entry, Phase F) survive inside upstream's rewritten files, and every file arriving from upstream was brought up to the fork's ruff gate.
 
 Merges 51 upstream commits (Imbad0202 `039d94f` → `49e79a7`, spanning upstream
 v3.18.0 and v3.19.0) onto the fork's v3.20.1 baseline via a true git merge —
@@ -300,7 +302,7 @@ fork's ruff gate (E741/E402/UP042) and the `datetime.timezone.utc` →
 - **The Pi wrapper composes ARS with Pi's structured prompt sections (#966, #985, contributed by @daniyyell-dev).** When the wrapper returned a rendered `systemPrompt`, Pi treated it as a complete override and could drop sections from other extensions, such as MCP instructions. When `event.systemPromptOptions` is available, the wrapper now filters package-owned skills while ARS is inactive and adds an `ars_compatibility` section while it is active; stopping ARS removes only that section. Hosts without the structured API keep the string and array fallback from #880. Unit tests and an opt-in integration test against Pi 1.1.0 and 1.3.0 cover it.
 - **Windows: six lints compare repository paths in POSIX form (#964, #978, contributed by @daniyyell-dev).** `check_684_review_criteria_binding.py`, `check_collaboration_depth_rubric.py`, `check_content_coverage_advisory_integration.py`, `check_cross_document_consistency_advisory_integration.py`, `check_decision_contract.py`, and `check_tortured_phrase_screening_integration.py` compared `str(Path)`, which uses `\` on Windows, with forward-slash paths, and failed on a correct tree. They now use `Path.as_posix()`. The new tests pass Windows-style paths into each lint's comparison, so the Ubuntu CI fails if a conversion is reverted.
 
-## [3.23.1] - 2026-10-16 — Write-scope guard repairs, RFC 4180 CSV reading in sr-screener, and Gemini 4 Argon as a provisional verifier
+## [3.23.1-upstream] - 2026-10-16 — Write-scope guard repairs, RFC 4180 CSV reading in sr-screener, and Gemini 4 Argon as a provisional verifier
 
 > **Repairs and model currency; no new skill, and no accuracy or performance claim:** v3.23.1 closes two write-scope guard paths that let writes through without a check, one for plugin-dispatched agents and one for Windows `timeout.exe` (#972), and the docs now state where the fence engages (#974). `sr-screener` reads CSV exports by RFC 4180 quoting instead of quote rules guessed from a sample (#979). Gemini 4 Argon is listed as a provisional Google verifier and the recommended Google id; `gemini-3.1-pro-preview` stays validated (#980). The routing core states that a mid-message `[direct-mode]` token is not the escape hatch (#892); in a smoke test on a plugin install, Claude Fable 5.1 still honored the token in 3 of 6 sessions (6 of 6 before), so the acceptance rule is not met and #892 stays open. Smaller lint and Windows repairs come from outside contributors (#956, #963, #965, #977), and `THIRD_PARTY.md` lists md-to-word (#969).
 

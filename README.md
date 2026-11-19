@@ -1,6 +1,6 @@
 # Academic Research Skills for Claude Code
 
-[![Version](https://img.shields.io/badge/version-v3.23.0-blue)](https://github.com/pouriamrt/academic-research-skills)
+[![Version](https://img.shields.io/badge/version-v3.23.1-blue)](https://github.com/pouriamrt/academic-research-skills)
 [![License: CC BY-NC 4.0](https://img.shields.io/badge/license-CC%20BY--NC%204.0-lightgrey)](https://creativecommons.org/licenses/by-nc/4.0/)
 
 A Claude Code plugin covering the full academic research lifecycle — from literature review and study screening through experimentation, statistical analysis, paper writing, peer review, and publication. **9 skills, 65 agents, 20 handoff schemas + 6 claim-audit schemas**, full pipeline orchestration with PRISMA-trAIce + RAISE compliance gates, reviewer + writer/evaluator sprint contracts, opt-in L3 claim ↔ reference faithfulness audit gate (v3.18.0 #103), passport reset boundary for long-running sessions, three-layer citation locator, temporal verification (v3.18.0 #135), Phase Boundary protocol (v3.18.0 #133), cross-index triangulation (v3.18.0 #102), and collaboration depth observer. **v3.17.0 runs the pipeline unattended by default — set `ARS_INTERACTIVE=1` to restore prompts.** English-only output. New `/ars-mark-read`, `/ars-unmark-read`, `/ars-reviewer` plugin commands. Experiment skills integrate with the [superpowers](https://github.com/obra/superpowers) plugin for disciplined, test-driven code development.
@@ -475,7 +475,7 @@ Four experiment skills (22 agents total) auto-detected from the methodology blue
 
 **Optional cross-model verification:** set `ARS_CROSS_MODEL` to use GPT-5.4 Pro or Gemini 3.1 Pro as an independent second reviewer.
 
-### Academic Pipeline (v3.23.0; suite-version-pinned, auto-by-default)
+### Academic Pipeline (v3.23.1; suite-version-pinned, auto-by-default)
 
 Pipeline orchestrator with integrity verification, compliance, sprint-contract gates, two-stage review, experiment re-entry, Socratic coaching, passport reset boundary, and collaboration evaluation:
 
@@ -620,6 +620,10 @@ https://github.com/Imbad0202/academic-research-skills
 
 Only the three most recent releases are summarized here. The full release history is in [CHANGELOG.md](CHANGELOG.md).
 
+### v3.23.1 (2026-11-19) — Upstream sync: v3.24.2 → v3.24.3+ (author letter, corroboration labels, Windows-safe file readers)
+
+Merges 26 upstream commits (Imbad0202 `6d93886` → `74fe227`, upstream v3.24.3 plus 13 later commits) onto the fork's v3.23.0 baseline. **Adopted:** a readable author letter beside every `full` review's Editorial Decision Package, `revision-roadmap/1.1` with `CORROBORATED` and `SINGLE-REVIEWER` labels, a field analyst that names no journal the author has not confirmed, `citation_compliance_agent` edits limited to `full` mode, Windows code paths for the no-follow file readers, and the cross-model doc corrections. **Not merged:** translated READMEs, `docs/*.zh-TW.md`, and the `output_language_pair` rules; the author letter is English-only. **Fixed on the fork:** the `academic-pipeline/SKILL.md` content lock that 3.23.0 left stale is re-pinned, so `main` passes Spec Consistency and pytest again.
+
 ### v3.23.0 (2026-11-07) — Upstream sync: v3.22.0 → v3.24.2 (sr-screener adopted, English-only contract kept)
 
 Merges 95 upstream commits (Imbad0202 `7e019f5` → `6d93886`, spanning upstream v3.22.1 through v3.24.2) onto the fork's v3.22.0 baseline. **Adopted:** `sr-screener` as the ninth skill, skill paths declared in `plugin.json` (the `skills/` symlink index is gone), the one-process guard launcher behind the fork's no-Python fast path, the run ledger, the acronym check, the panel's reference and claim checks, and the routing core in every `SKILL.md`. **Not merged:** the `output_language_pair` contract, the locale track, the translated READMEs and Chinese APA 7 loading; the fork stays English-only. **Repaired:** earlier merge damage (the #610 receipt-enum lint is back in CI, the pipeline's Invocation Contract and Reinforcement Protocol are restored, eight guard-launcher tests now reach the guard), and Stage 6 sets the pipeline state to `completed`.
@@ -629,7 +633,3 @@ Merges 95 upstream commits (Imbad0202 `7e019f5` → `6d93886`, spanning upstream
 - **Wired as the deterministic pass** opening `academic-paper/references/writing_quality_check.md`. Sections A–E keep the judgment calls regex cannot make. The scanner count is now reported; judgment findings stay internal
 - **Anti-humanizer positioning retired**: the anti-detection-evasion framing is removed from README, POSITIONING, both design-boundary blockquotes, and two SKILL.md clauses. CONTRIBUTING's decision principle governing it is deleted (4 principles → 3). The non-removable `disclosure_addendum` mechanism is unchanged — the compliance ladder enforces it in code, so it never rested on the policy
 - MIT port from jcarterjohnson/vibecoded-design-tells via humanizer-stack; attribution in `THIRD_PARTY.md`. The CC BY-SA-derived `humanizer/SKILL.md` was deliberately not vendored (license incompatible with this repo's NC terms)
-
-### v3.21.0 (2026-08-03) — Upstream sync: v3.17.0 → v3.19.0+ (re-review three-gate contract, role-scoped reviewer scoring, risk-stratified claim gate)
-
-Merges 51 upstream commits (Imbad0202 `039d94f` → `49e79a7`, spanning upstream v3.18.0 and v3.19.0) onto the fork's v3.20.1 baseline via a true git merge — 364 files, 46 conflicts resolved by hand. **Adopted:** the #576 three-gate re-review contract (criteria committed before the revision is seen, evidence verdicts before the author's persuasion), #574 role-scoped reviewer scoring with typed evidence anchors and abstention, #549 risk-stratified Stage 2.5 claim verification (100% of HIGH-IMPACT claims + a 10% random sentinel, replacing the flat 30% sample), #547 scope-conformance and #548 search-bounded novelty advisories, #569/#570 revision-round claim-drift guards, #512 PDF read-integrity preflight, #513 `read_scope` attestation on `/ars-mark-read`, #541 verification-cache staleness advisory, #540/#539 cross-model reviewer and judge-independence tracks, #544 SessionStart update reminder, #595 Chinese-literature resolver client, and bare `/ars-*` command aliases (#633). **Fork-side:** English-only surfaces stay deleted, fork schema numbering (18 / 20 / 20.1) and the experiment pipeline (Stage 1.5a/b/c re-entry, Phase F) survive inside upstream's rewritten files, and every file arriving from upstream was brought up to the fork's ruff gate.

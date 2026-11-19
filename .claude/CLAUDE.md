@@ -1,6 +1,6 @@
 # Academic Research Skills
 
-A suite of Claude Code skills for rigorous academic research, experimentation, statistical analysis, systematic-review screening, paper writing, peer review, and pipeline orchestration. 9 skills, 65 agents, 21 handoff schemas + passport schemas. Upstream is merged through v3.24.2 (`sr-screener`, run ledger, acronym check, panel reference and claim checks). Full history in `CHANGELOG.md`.
+A suite of Claude Code skills for rigorous academic research, experimentation, statistical analysis, systematic-review screening, paper writing, peer review, and pipeline orchestration. 9 skills, 65 agents, 21 handoff schemas + passport schemas. Upstream is merged through `74fe227`, past v3.24.3 (`sr-screener`, run ledger, acronym check, panel reference and claim checks, author letter). Full history in `CHANGELOG.md`.
 
 ## Skills Overview
 
@@ -14,16 +14,20 @@ A suite of Claude Code skills for rigorous academic research, experimentation, s
 | `academic-paper` v3.2.0 | 11-agent academic paper writing (English-only) | full, plan, outline-only, revision, revision-coach, abstract-only, lit-review, format-convert, citation-check, disclosure, rebuttal-audit |
 | `academic-paper-reviewer` v1.9.1 | Multi-perspective paper review (5 reviewers + optional cross-model DA critique) | full, re-review, quick, methodology-focus, guided, calibration |
 | `sr-screener` v1.0.0 | Protocol-driven study screening (2 blinded AI reviewers + adjudicator) | protocol, quick, pilot, ta-screen, ft-screen, adjudicate, audit, report |
-| `academic-pipeline` v3.23.0 | Full pipeline orchestrator (suite-version-pinned, auto-by-default) | (coordinates all above) |
+| `academic-pipeline` v3.23.1 | Full pipeline orchestrator (suite-version-pinned, auto-by-default) | (coordinates all above) |
 
 
-## v3.23.0 Key Additions
+## v3.23.1 Key Additions
 
-- **Upstream sync v3.22.0 → v3.24.2** (`7e019f5..6d93886`): `sr-screener` is the ninth
-  skill; skill paths are declared in `plugin.json`; the one-process guard launcher sits
-  behind the fork's no-Python fast path; run ledger, acronym and panel claim checks.
-- **Not merged (English-only):** `output_language_pair`, the locale track, translated
-  READMEs.
+- **Upstream sync v3.24.2 → v3.24.3+** (`6d93886..74fe227`): a `full` review also writes
+  the author a readable letter, checked by `scripts/check_author_letter.py`;
+  `revision-roadmap/1.1` labels findings `CORROBORATED` or `SINGLE-REVIEWER`; the field
+  analyst names no journal the author has not confirmed; the no-follow file readers gain
+  a Windows code path.
+- **Fixed on the fork:** the `academic-pipeline/SKILL.md` content lock that 3.23.0 left
+  stale is re-pinned, so Spec Consistency and pytest pass on `main` again.
+- **Not merged (English-only):** translated READMEs, `docs/*.zh-TW.md`, the
+  `output_language_pair` rules.
 
 ## Cross-model reviewer track — standing invariants
 
@@ -184,9 +188,9 @@ Materials: Sprint Contract (Schema 20, v3.6.2+ for reviewers; Schema 20.1, v3.6.
 `python tools/self_test.py` validates plugin structure (200+ checks); `tools/` also holds schema validation, dependency graph, dashboard, and replay. CI: `.github/workflows/` (`pytest.yml`, `spec-consistency.yml`, `freshness-check.yml`).
 
 ## Version Info
-- **Version**: 3.23.0
-- **Suite version**: 3.23.0
-- **Last Updated**: 2026-11-07
+- **Version**: 3.23.1
+- **Suite version**: 3.23.1
+- **Last Updated**: 2026-11-19
 - **Author**: Pouria Mortezaagha
-- **Upstream**: Imbad0202 (merged through v3.24.2 / commit 6d93886)
+- **Upstream**: Imbad0202 (merged through v3.24.3+ / commit 74fe227)
 - **License**: CC-BY-NC 4.0

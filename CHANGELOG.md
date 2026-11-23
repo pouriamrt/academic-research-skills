@@ -14,7 +14,7 @@ All notable changes to this project will be documented in this file.
 >
 > The blockquote directly under a release heading is that release's one-paragraph summary. Those summaries lived in `README.md` until 2026-09-15 and were moved here verbatim; `README.md` now keeps only the three most recent.
 
-## [Unreleased]
+## [3.23.5] - 2026-11-23 — Falsifiability and source-independence checks (ideas from allenai/asta-theorizer)
 
 ### Added (falsifiability and source-independence checks, ideas from `allenai/asta-theorizer`)
 
@@ -65,6 +65,8 @@ under `Unreleased upstream changes after 3.24.4 (through 93d472e)`.
   points to `apa7_chinese_citation_guide.md`. The fork is English-only.
 
 ## [3.23.2] - 2026-11-19 — Codex citation checks run on Windows
+
+> Fork fix release. The #630 Codex citation transport, which sends Stage 2.5 and 4.5 citation checks to a second model family through a ChatGPT subscription, now runs on Windows. On Windows it previously failed at detection. The adapter's closed child environments add `SYSTEMROOT` and a private `TEMP`/`TMP`, the credential copy is read and written in binary mode, the stop path ends the codex process tree with `taskkill`, and the credential copy is deleted explicitly, failing closed if it would outlive the call. Linux and macOS behave as before. A live smoke test passed on Windows 11 with `gpt-6.2-astra`.
 
 ### Fixed on the fork
 

@@ -1,6 +1,6 @@
 # Academic Research Skills for Claude Code
 
-[![Version](https://img.shields.io/badge/version-v3.23.4-blue)](https://github.com/pouriamrt/academic-research-skills)
+[![Version](https://img.shields.io/badge/version-v3.23.5-blue)](https://github.com/pouriamrt/academic-research-skills)
 [![License: CC BY-NC 4.0](https://img.shields.io/badge/license-CC%20BY--NC%204.0-lightgrey)](https://creativecommons.org/licenses/by-nc/4.0/)
 
 A Claude Code plugin covering the full academic research lifecycle — from literature review and study screening through experimentation, statistical analysis, paper writing, peer review, and publication. **9 skills, 65 agents, 20 handoff schemas + 6 claim-audit schemas**, full pipeline orchestration with PRISMA-trAIce + RAISE compliance gates, reviewer + writer/evaluator sprint contracts, opt-in L3 claim ↔ reference faithfulness audit gate (v3.18.0 #103), passport reset boundary for long-running sessions, three-layer citation locator, temporal verification (v3.18.0 #135), Phase Boundary protocol (v3.18.0 #133), cross-index triangulation (v3.18.0 #102), and collaboration depth observer. **v3.17.0 runs the pipeline unattended by default — set `ARS_INTERACTIVE=1` to restore prompts.** English-only output. New `/ars-mark-read`, `/ars-unmark-read`, `/ars-reviewer` plugin commands. Experiment skills integrate with the [superpowers](https://github.com/obra/superpowers) plugin for disciplined, test-driven code development.
@@ -477,7 +477,7 @@ Four experiment skills (22 agents total) auto-detected from the methodology blue
 
 **Optional cross-model verification:** set `ARS_CROSS_MODEL` to use GPT-5.4 Pro or Gemini 3.1 Pro as an independent second reviewer.
 
-### Academic Pipeline (v3.23.4; suite-version-pinned, auto-by-default)
+### Academic Pipeline (v3.23.5; suite-version-pinned, auto-by-default)
 
 Pipeline orchestrator with integrity verification, compliance, sprint-contract gates, two-stage review, experiment re-entry, Socratic coaching, passport reset boundary, and collaboration evaluation:
 
@@ -622,6 +622,10 @@ https://github.com/Imbad0202/academic-research-skills
 
 Only the three most recent releases are summarized here. The full release history is in [CHANGELOG.md](CHANGELOG.md).
 
+### v3.23.5 (2026-11-23) — Falsifiability and source-independence checks (ideas from allenai/asta-theorizer)
+
+Fork feature release. Ideas from the Asta Theorizer paper (Jansen et al., ACL 2026) are paraphrased into four prompt surfaces; no text or code is copied. `synthesis_agent` counts a source toward "3+ sources agree" only when the finding is its own: a result restated from a cited work is traced to the original and counted once. Both Devil's Advocate agents ask for the observation that would falsify a claim and report a claim no result could contradict as vacuous. The theoretical paper template's Propositions table gains Scope, Conflicting / unaccounted-for evidence, and Falsifier columns. The #670 reviewer detection hash is re-pinned for the Devil's Advocate change.
+
 ### v3.23.4 (2026-11-23) — Upstream sync: 93d472e → 83c2308 (exact-title Tier 0 rule, preserved reference entries keep the target format)
 
 Merges 5 upstream commits (Imbad0202 `93d472e` → `83c2308`) onto the fork's v3.23.3 baseline. **Adopted:** Tier 0 title search accepts a candidate only on an exact normalized title, and a DOI hit also needs an exact title and the first author's family name (#1146); the OpenAlex, Crossref and arXiv protocols describe the same rule (#1148); a reference-list entry the formatter keeps for an incoming mismatch still has to follow the target format (#1161). **Kept the fork's text:** the resume/compact announce line, which already names the plugin agents with hyphens (#1168); upstream's longer wording would exceed the fork's 700-character announce budget. **Not merged:** the translated README usage examples (#1176); the fork stays English-only.
@@ -629,7 +633,3 @@ Merges 5 upstream commits (Imbad0202 `93d472e` → `83c2308`) onto the fork's v3
 ### v3.23.3 (2026-11-23) — Upstream sync: v3.24.4 → 93d472e (citation re-check before Phase 7, Crossref disputed verdict, claim decomposition)
 
 Merges 12 upstream commits (Imbad0202 `23807f9` → `93d472e`, after upstream v3.24.4) onto the fork's v3.23.2 baseline. **Adopted:** `academic-paper` `full` mode re-checks citations before Phase 7 when a revision round changed one (#1071, with formatter follow-ups #1143, #1152 and #1155); Phase 6 review inputs name the Corrected Draft (#1136); a `disputed` verdict when a Crossref retraction and reinstatement share the latest timestamp (#1150); an opt-in Claim Decomposition pass in `source_verification_agent` (#1128, #1133); the committee-correspondence pointer in `/ars-revision-coach` (#1123); and the `timeline_extraction_agent` enforcement fix (#1129). **Adapted:** upstream's Phase 5a is the fork's Phase 5, and reference ordering follows the target style instead of upstream's Chinese venue/locale rule. **Not merged:** the `abstract_bilingual_agent` rows and the Chinese-English mixed-format branch; the fork stays English-only.
-
-### v3.23.2 (2026-11-19) — Codex citation checks run on Windows
-
-Fork fix release. The #630 Codex citation transport, which sends Stage 2.5 and 4.5 citation checks to a second model family through a ChatGPT subscription, now runs on Windows. On Windows it previously failed at detection. The adapter's closed child environments add `SYSTEMROOT` and a private `TEMP`/`TMP`, the credential copy is read and written in binary mode, the stop path ends the codex process tree with `taskkill`, and the credential copy is deleted explicitly, failing closed if it would outlive the call. Linux and macOS behave as before. A live smoke test passed on Windows 11 with `gpt-6.2-astra`.

@@ -14,14 +14,14 @@ A suite of Claude Code skills for rigorous academic research, experimentation, s
 | `academic-paper` v3.2.0 | 11-agent academic paper writing (English-only) | full, plan, outline-only, revision, revision-coach, abstract-only, lit-review, format-convert, citation-check, disclosure, rebuttal-audit |
 | `academic-paper-reviewer` v1.9.1 | Multi-perspective paper review (5 reviewers + optional cross-model DA critique) | full, re-review, quick, methodology-focus, guided, calibration |
 | `sr-screener` v1.0.0 | Protocol-driven study screening (2 blinded AI reviewers + adjudicator) | protocol, quick, pilot, ta-screen, ft-screen, adjudicate, audit, report |
-| `academic-pipeline` v3.23.4 | Full pipeline orchestrator (suite-version-pinned, auto-by-default) | (coordinates all above) |
+| `academic-pipeline` v3.23.5 | Full pipeline orchestrator (suite-version-pinned, auto-by-default) | (coordinates all above) |
 
 
-## v3.23.4 Key Additions
+## v3.23.5 Key Additions
 
-- **Upstream sync `93d472e` → `83c2308`**: exact-title Tier 0 rule (#1146, #1148);
-  preserved reference entries keep the target format (#1161).
-- **3.23.3:** upstream sync through `93d472e` (#1071 citation re-check, #1150, #1128).
+- **asta-theorizer ideas**: own-finding source counts in `synthesis_agent`; falsifier
+  check in both DA agents; scope/falsifier columns in the theory template.
+- **3.23.4:** upstream sync through `83c2308` (#1146, #1148, #1161).
 
 ## Cross-model reviewer track — standing invariants
 
@@ -182,8 +182,8 @@ Materials: Sprint Contract (Schema 20, v3.6.2+ for reviewers; Schema 20.1, v3.6.
 `python tools/self_test.py` validates plugin structure (200+ checks); `tools/` also holds schema validation, dependency graph, dashboard, and replay. CI: `.github/workflows/` (`pytest.yml`, `spec-consistency.yml`, `freshness-check.yml`).
 
 ## Version Info
-- **Version**: 3.23.4
-- **Suite version**: 3.23.4
+- **Version**: 3.23.5
+- **Suite version**: 3.23.5
 - **Last Updated**: 2026-11-23
 - **Author**: Pouria Mortezaagha
 - **Upstream**: Imbad0202 (merged through v3.24.4+ / commit 83c2308)

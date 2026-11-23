@@ -14,7 +14,7 @@ All notable changes to this project will be documented in this file.
 >
 > The blockquote directly under a release heading is that release's one-paragraph summary. Those summaries lived in `README.md` until 2026-09-15 and were moved here verbatim; `README.md` now keeps only the three most recent.
 
-## [Unreleased]
+## [3.23.4] - 2026-11-23 — Upstream sync: 93d472e → 83c2308 (exact-title Tier 0 rule, preserved reference entries keep the target format)
 
 ### Upstream sync: `93d472e` → `83c2308` (5 commits)
 
@@ -80,6 +80,8 @@ under `Unreleased upstream changes after 3.24.4 (through 93d472e)`.
   on Windows 11 on 2026-11-19 with a bound source. There is no Windows CI job.
 
 ## [3.23.1] - 2026-11-19 — Upstream sync: v3.24.2 → v3.24.4 (author letter, corroboration labels, research-ethics scope for committee correspondence)
+
+> Merges 30 upstream commits (Imbad0202 `6d93886` → `23807f9`, upstream v3.24.3 and v3.24.4) onto the fork's v3.23.0 baseline. **Adopted:** a readable author letter beside every `full` review's Editorial Decision Package, `revision-roadmap/1.1` with `CORROBORATED` and `SINGLE-REVIEWER` labels, a field analyst that names no journal the author has not confirmed, `citation_compliance_agent` edits limited to `full` mode, a `revision-coach` committee-correspondence variant scoped to research ethics review (#907), MLA 9th conversion that keeps DOIs, Windows code paths for the no-follow file readers, and the cross-model doc corrections. **Not merged:** translated READMEs, `docs/*.zh-TW.md`, and the `output_language_pair` rules; the author letter is English-only. **Fixed on the fork:** the `academic-pipeline/SKILL.md` content lock that 3.23.0 left stale is re-pinned, so `main` passes Spec Consistency and pytest again.
 
 ### Upstream sync: v3.24.2 → v3.24.3+ (`6d93886..74fe227`, 26 commits)
 

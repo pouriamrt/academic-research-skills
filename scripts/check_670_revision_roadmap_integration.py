@@ -82,6 +82,9 @@ RUNTIME_HASHES = {
 # challenges and 1 severity calibration; no detection-rule change).
 # Re-pinned for #1107 (domain_reviewer judges literature coverage as of the
 # manuscript's stated date; no severity, score, or output-grammar change).
+# Re-pinned for the fork's asta-theorizer port (devils_advocate Dimension 1
+# adds a falsifiability question; a detection addition under the existing
+# severity classification, no score or output-grammar change).
 DETECTION_HASHES = {
     Path(
         "academic-paper-reviewer/agents/eic_agent.md"
@@ -97,7 +100,7 @@ DETECTION_HASHES = {
     ): "a99386515c1e9e5b73e91f3f9cd62f6ec3660f03e229371ad53531fa165cf007",
     Path(
         "academic-paper-reviewer/agents/devils_advocate_reviewer_agent.md"
-    ): "3f39bad01d78a403da4318ed477acde13c3171ca61e96ee24c9404dade5ec1de",
+    ): "d4fea642c7c614b1f047db98e841ac8331dd9777d6c8564806501b1274b09397",
     Path(
         "academic-paper-reviewer/templates/peer_review_report_template.md"
     ): "5da1f9d24d6e321cec5f38c13fa03fe23b9363b1842cb0d8111c5e39a810c7d1",

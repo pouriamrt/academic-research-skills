@@ -14,6 +14,24 @@ All notable changes to this project will be documented in this file.
 >
 > The blockquote directly under a release heading is that release's one-paragraph summary. Those summaries lived in `README.md` until 2026-09-15 and were moved here verbatim; `README.md` now keeps only the three most recent.
 
+## [Unreleased]
+
+### Upstream sync: `93d472e` → `83c2308` (5 commits)
+
+Merged with fork semantics kept. Upstream's entries are filed below the fork's releases
+under `Unreleased upstream changes after 3.24.4 (through 83c2308)`.
+
+- **Adopted:** Tier 0 title search follows the resolvers' exact-title rule, and a DOI hit
+  also needs an exact title and the first author (#1146); the OpenAlex, Crossref and arXiv
+  protocols describe the same rule (#1148); a reference-list entry the formatter preserves
+  for an incoming mismatch still follows the target format (#1161).
+- **Kept the fork's text:** the `compact|resume` announce line. The fork already names the
+  plugin agents with hyphens (#1168), and upstream's longer wording would put the line at
+  722 characters, over the fork's 700-character announce budget. `docs/ARCHITECTURE.md`
+  keeps the fork's skill versions and takes only upstream's Tier 0 wording.
+- **Not merged:** the `README.ja-JP.md`, `README.zh-CN.md` and `README.zh-TW.md` usage
+  examples (#1176). The fork ships no translated READMEs.
+
 ## [3.23.3] - 2026-11-23 — Upstream sync: v3.24.4 → 93d472e (citation re-check before Phase 7, Crossref disputed verdict, claim decomposition)
 
 ### Upstream sync: v3.24.4 → `93d472e` (`23807f9..93d472e`, 12 commits)
@@ -239,7 +257,7 @@ update-available reminder. Files arriving from upstream were brought up to the
 fork's ruff gate (E741/E402/UP042) and the `datetime.timezone.utc` →
 `datetime.UTC` migration the fork's pyupgrade pass had already made.
 
-## Unreleased upstream changes after 3.24.4 (through 93d472e)
+## Unreleased upstream changes after 3.24.4 (through 83c2308)
 
 ### Added
 
@@ -248,6 +266,10 @@ fork's ruff gate (E741/E402/UP042) and the `datetime.timezone.utc` →
 - **`source_verification_agent` can split a claim into premises when the user explicitly asks to check that claim's premises (#1128, #1133, contributed by @SID-6921).** It lists one to four premises, marks each `HOLDS`, `UNSUPPORTED`, or `CONTRADICTED` against the sources that passed Reference Existence Verification, and marks which premises the claim needs. It reports what follows and never accepts or rejects the claim; the claim as a whole still gets the two-independent-source cross-check. A list of claims in `fact-check` mode does not trigger it. It is a single-agent assessment. A follow-up maintainer edit made the trigger wording in Boundaries, the `Reading` cases, which the needed premises alone now decide, and the `fact-check` case agree. A claim with more than four conditions can exceed the premise limit, and the pass does not mark such a split as partial. When no premise is marked as needed, for example when a claim of the form "A or B" is split into two alternatives, the `Reading` can say that every needed premise holds even though no premise has support; the flags for the unsupported premises and the cross-check still follow. Prompt-level; unmeasured.
 
 ### Fixed
+
+- **The OpenAlex, Crossref, and arXiv protocols now describe the exact-title search rule from #431 (#1148).** All three protocols require an exact normalized title for title search and describe the matching-year preference among exact candidates. The DOI and arXiv ID cross-checks identify `_similarity` as the title score and retain the 0.70 threshold. `docs/ARCHITECTURE.md` now gives the S2 Tier 0 title and first-author requirements. The existing prompt-sync test covers the three protocols and both architecture rows. Prompt-level; unmeasured.
+
+- **After a resume or a compaction, the SessionStart announce names the plugin agents by their #1037 names (#1168).** The `compact|resume` branch of `scripts/announce-ars-loaded.sh` still listed `synthesis_agent`, `research_architect_agent`, `report_compiler_agent`, and `screening_reviewer_agent`; it now lists `synthesis-agent`, `research-architect-agent`, `report-compiler-agent`, and `screening-reviewer-agent`, as the startup branch does. A test in `scripts/test_check_command_skill_dispatch.py` runs the hook for `startup`, `clear`, `resume`, `compact`, and `fork` and checks that the context has one `Plugin agents` list and that it matches the frontmatter `name` of each file in `agents/`.
 
 - **Conflicting Crossref notices with the same latest timestamp now yield `disputed` (#1150).** When a retraction and a reinstatement for the cited DOI share the latest timestamp, either input order produces the same verdict.
 
@@ -261,7 +283,11 @@ fork's ruff gate (E741/E402/UP042) and the `datetime.timezone.utc` →
 
 - **The `academic-paper` full-mode Phase 6a evaluator prompt now allows the paper-blind #684 pointer authority in its lint instructions (#1143, reported by @Imbad0202).** This agrees with the instruction to reproduce the supplied `INTERNAL` binding marker after the Scoring Plan. Prompt-level; unmeasured.
 
+- **Tier 0 title search follows the resolvers' exact-title rule from #431, and the prompt also requires an exact title on DOI hits (#1146, reported by @Imbad0202).** The prompt text still accepted a match at title similarity >= 0.70 with a year match, so a cited work whose title is close to a different paper ("Attention Is All You Need" against "Attention Is Not All You Need", 0.926) could become `S2_VERIFIED` and skip the Tier 2 spot-check. A title-search candidate now passes the title check only when the two titles are equal under any of the three forms in `exact_normalized_title` (`scripts/_text_similarity.py`). `S2_VERIFIED` also needs the first author's family name, compared case-insensitively, and the check fails if either side has no author; a generic title such as `Editorial` cannot pass by title search. A DOI candidate needs the same two checks. The first-author check, and exact-title verification on a DOI candidate, are prompt-level: the scripts do not compare authors, and `_lookup_by_doi` returns `matched: True` once the DOI title cross-check clears its 0.70 threshold. Year is not a Tier 0 pass condition. The prompt uses matching year only as a tie-break among title-search candidates that pass both checks. The resolver's title-search scoring adds 0.05 when the year is equal among candidates that already have an exact normalized title and does not compare authors. The title score is `_similarity` in `scripts/_text_similarity.py`: it returns 1.0 for a Chinese-aware exact match and otherwise takes the higher of the base and dotted-acronym `difflib.SequenceMatcher.ratio()` scores, not a Levenshtein distance. Title search has required an exact normalized title since #431, and the helper now accepts the three forms. Only the `DOI_MISMATCH` threshold stayed at 0.70. A DOI candidate below 0.70 is `DOI_MISMATCH`. A DOI candidate at or above 0.70 whose title is not an exact normalized match is neither `DOI_MISMATCH` nor `S2_VERIFIED` and goes on to Tier 1 and Tier 2. The scripts are unchanged. Prompt-level; unmeasured.
+
 - **The `academic-paper` formatter's two #1071 quality-gate exceptions now apply only to an item that a reported incoming mismatch requires it to keep (#1152, reported by @Imbad0202).** In the `Format compliance` and `Journal requirements` rows, the sentence from #1127 could be read as letting any citation left verbatim pass, including one the formatter failed to convert; the condition now comes first and covers both the retained citation and the preserved reference-list entry. The earlier wording came from the maintainer's review of #1127. Prompt-level; unmeasured.
+
+- **A reference-list entry that the `academic-paper` formatter preserves for a reported incoming mismatch still has to follow the target format (#1161, reported by @Imbad0202).** In `full` mode, the Step 4 format compliance check and the `Format compliance` quality gate let such an entry pass the whole check, so a preserved entry with a missing number or a wrong format passed. Now a citation retained verbatim still passes, and a preserved entry is exempt only from a rule that would remove it. In the `Journal requirements` row, the exception now covers only the affected citation or entry: a requirement that would change a retained citation or remove a preserved entry does not apply to it, the Output Package warning names that requirement, and every other citation and entry is checked as usual. The earlier wording came from #1152 and #1156. Prompt-level; unmeasured.
 
 - **The `academic-paper` formatter's Step 4 format compliance check now accepts a reference-list entry that a reported incoming mismatch requires it to preserve in `full` mode (#1155, contributed by @pinjun99).** Step 4 now applies the same exception as the Format compliance quality gate to both that entry and a citation the mismatch requires retaining verbatim. Prompt-level; unmeasured.
 

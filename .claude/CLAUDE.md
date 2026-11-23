@@ -186,5 +186,5 @@ Materials: Sprint Contract (Schema 20, v3.6.2+ for reviewers; Schema 20.1, v3.6.
 - **Suite version**: 3.23.3
 - **Last Updated**: 2026-11-23
 - **Author**: Pouria Mortezaagha
-- **Upstream**: Imbad0202 (merged through v3.24.4+ / commit 93d472e)
+- **Upstream**: Imbad0202 (merged through v3.24.4+ / commit 83c2308)
 - **License**: CC-BY-NC 4.0

@@ -160,10 +160,12 @@ def test_normalize_folds_the_three_measured_chinese_variants():
     identical Chinese title (measured 2026-07-27: fullwidth 0.577/False, CJK
     terminal punctuation 0.981/False, interior spaces 0.929/False). The
     Chinese-aware normalizer must fold all three to one string."""
+    from _text_similarity import exact_normalized_title
     from chinese_literature_client import normalize_cn_title
 
     canonical = normalize_cn_title("宫颈腺癌中ProEXC和PRMT5的表达及其临床意义")
     assert normalize_cn_title("宫颈腺癌中ＰｒｏＥＸＣ和ＰＲＭＴ５的表达及其临床意义") == canonical
+    assert exact_normalized_title("宫颈腺癌中ＰｒｏＥＸＣ和ＰＲＭＴ５的表达及其临床意义", canonical)
     assert normalize_cn_title("宫颈腺癌中ProEXC和PRMT5的表达及其临床意义。") == canonical
     assert normalize_cn_title("宫颈腺癌中 ProEXC 和 PRMT5 的表达及其临床意义") == canonical
     assert normalize_cn_title("《宫颈腺癌中ProEXC和PRMT5的表达及其临床意义》") == canonical

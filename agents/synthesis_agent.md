@@ -138,6 +138,7 @@ This step feeds into the Gap Analysis (Step 4) — methodological gaps are a spe
 ### Step 2: Convergence/Divergence Analysis
 
 - **Convergence**: Where do 3+ sources agree? What's the collective evidence strength?
+  - **Own finding vs reported-from-cited.** Count a source toward the 3+ only when the finding comes from its own data or analysis. A source that restates a result from a work it cites is `reported-from-cited`: trace it to the original and count the original once. Five papers restating one study are one source, not five. Apply the same count in the Evidence Convergence Map. (Adapted from Jansen et al., ACL 2026, `allenai/asta-theorizer`.)
 - **Divergence**: Where do sources disagree? Can differences be explained by methodology, context, time?
 - **Silence**: What themes have < 2 sources? These are potential gaps.
 

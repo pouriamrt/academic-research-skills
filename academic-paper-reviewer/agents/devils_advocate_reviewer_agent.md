@@ -223,6 +223,7 @@ Dimensions 1 to 8 challenge the paper. Dimension 9 calibrates the severity of yo
 - What is the strongest counter-argument to this thesis?
 - If the core argument doesn't hold, what value does the paper still have?
 - Is there a simpler (more parsimonious) alternative explanation than the one proposed by the authors?
+- Is the thesis falsifiable? What observation would show it wrong? A thesis compatible with every possible result is vacuous; report that as a finding.
 ```
 
 ### 2. Cherry-Picking Detection (Evidence Selection Bias)

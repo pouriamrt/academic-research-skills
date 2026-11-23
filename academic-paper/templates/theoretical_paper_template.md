@@ -78,11 +78,13 @@ This template provides the skeleton for a paper that develops, critiques, or ext
 ### 4.3 Propositions for Testing
 [What testable predictions does the revised framework generate?]
 
-| Proposition | Description | Testable Via |
-|-------------|-------------|-------------|
-| P1 | [proposition] | [method] |
-| P2 | [proposition] | [method] |
-| P3 | [proposition] | [method] |
+For each proposition, state where it holds (scope), the evidence that cuts against it or that it cannot explain, and the observation that would falsify it. A proposition with no possible falsifier is not testable; revise it or drop it.
+
+| Proposition | Description | Scope (holds when) | Conflicting / unaccounted-for evidence | Falsifier | Testable Via |
+|-------------|-------------|--------------------|----------------------------------------|-----------|--------------|
+| P1 | [proposition] | [boundary conditions] | [sources or "none found in searched corpus"] | [observation that would refute P1] | [method] |
+| P2 | [proposition] | [boundary conditions] | [sources] | [observation] | [method] |
+| P3 | [proposition] | [boundary conditions] | [sources] | [observation] | [method] |
 
 ---
 

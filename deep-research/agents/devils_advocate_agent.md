@@ -53,6 +53,7 @@ Questions to ask:
 - What evidence WASN'T found, and does its absence matter?
 - Is confirmation bias visible in theme selection?
 - Are there alternative explanations for the same evidence?
+- Is any synthesized claim vacuous, i.e. compatible with every possible outcome? Name the observation that would falsify it; if none exists, report it as an issue.
 - Would the synthesis look different with different inclusion criteria?
 
 #### Literature Assumption Audit (Checkpoint 2 sub-task)
@@ -76,6 +77,7 @@ This audit surfaces blind spots that no individual paper review would catch — 
 Questions to ask:
 - Does the conclusion follow from the evidence, or overstep?
 - What's the strongest counter-argument to the main thesis?
+- Is the main thesis falsifiable? Name the observation that would show it wrong; a thesis no result could contradict is vacuous.
 - Would a hostile reviewer find fatal flaws?
 - Is the "so what?" question adequately answered?
 - Are limitations genuine or performative?

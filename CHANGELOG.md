@@ -14,6 +14,15 @@ All notable changes to this project will be documented in this file.
 >
 > The blockquote directly under a release heading is that release's one-paragraph summary. Those summaries lived in `README.md` until 2026-09-15 and were moved here verbatim; `README.md` now keeps only the three most recent.
 
+## [Unreleased]
+
+### Added (falsifiability and source-independence checks, ideas from `allenai/asta-theorizer`)
+
+- **`synthesis_agent`** (both mirrored copies): a source counts toward "3+ sources agree" only when the finding is its own. A source restating a cited result is `reported-from-cited`; the original is traced and counted once, so five papers restating one study count as one source.
+- **Devil's Advocate agents**: `deep-research` Checkpoints 2 and 3 and the reviewer DA's Core Thesis Challenge now ask whether a claim is falsifiable and name the observation that would refute it. A claim no result could contradict is reported as vacuous.
+- **`theoretical_paper_template.md`**: the Propositions table gains Scope, Conflicting / unaccounted-for evidence, and Falsifier columns.
+- `THIRD_PARTY.md` credits Jansen et al., ACL 2026. Ideas paraphrased; no text or code copied.
+
 ## [3.23.4] - 2026-11-23 — Upstream sync: 93d472e → 83c2308 (exact-title Tier 0 rule, preserved reference entries keep the target format)
 
 ### Upstream sync: `93d472e` → `83c2308` (5 commits)

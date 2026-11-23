@@ -14,7 +14,7 @@ All notable changes to this project will be documented in this file.
 >
 > The blockquote directly under a release heading is that release's one-paragraph summary. Those summaries lived in `README.md` until 2026-09-15 and were moved here verbatim; `README.md` now keeps only the three most recent.
 
-## [Unreleased]
+## [3.23.3] - 2026-11-23 — Upstream sync: v3.24.4 → 93d472e (citation re-check before Phase 7, Crossref disputed verdict, claim decomposition)
 
 ### Upstream sync: v3.24.4 → `93d472e` (`23807f9..93d472e`, 12 commits)
 
@@ -135,6 +135,8 @@ Upstream's own 3.23.1 entry now carries the `-upstream` suffix.
   numbering is left for a fork-wide fix.
 
 ## [3.23.0] - 2026-11-07 — Upstream sync: v3.22.0 → v3.24.2 (sr-screener adopted, English-only contract kept)
+
+> Merges 95 upstream commits (Imbad0202 `7e019f5` → `6d93886`, spanning upstream v3.22.1 through v3.24.2) onto the fork's v3.22.0 baseline. **Adopted:** `sr-screener` as the ninth skill, skill paths declared in `plugin.json` (the `skills/` symlink index is gone), the one-process guard launcher behind the fork's no-Python fast path, the run ledger, the acronym check, the panel's reference and claim checks, and the routing core in every `SKILL.md`. **Not merged:** the `output_language_pair` contract, the locale track, the translated READMEs and Chinese APA 7 loading; the fork stays English-only. **Repaired:** earlier merge damage (the #610 receipt-enum lint is back in CI, the pipeline's Invocation Contract and Reinforcement Protocol are restored, eight guard-launcher tests now reach the guard), and Stage 6 sets the pipeline state to `completed`.
 
 ### Upstream sync: v3.22.0 → v3.24.2 (`7e019f5..6d93886`, 95 commits)
 

@@ -14,6 +14,29 @@ All notable changes to this project will be documented in this file.
 >
 > The blockquote directly under a release heading is that release's one-paragraph summary. Those summaries lived in `README.md` until 2026-09-15 and were moved here verbatim; `README.md` now keeps only the three most recent.
 
+## [Unreleased]
+
+### Upstream sync: v3.24.4 → `93d472e` (`23807f9..93d472e`, 12 commits)
+
+Merged with fork semantics kept. Upstream's entries are filed below the fork's releases
+under `Unreleased upstream changes after 3.24.4 (through 93d472e)`.
+
+- **Adopted:** the `full`-mode citation re-check before Phase 7 (#1071) and its formatter
+  follow-ups (#1143, #1152, #1155); the Phase 6 review inputs that name the Corrected
+  Draft (#1136); the `disputed` verdict for same-date Crossref conflicts (#1150); the
+  Claim Decomposition pass in `source_verification_agent` (#1128, #1133); the
+  committee-correspondence pointer for `commands/ars-revision-coach.md` (#1123); the
+  `timeline_extraction_agent` citation fix (#1129); the DSH sibling note (#1126).
+- **Adapted:** upstream's "Phase 5a" is the fork's "Phase 5" in the merged agent and
+  SKILL text and in `tests/test_formatter_1071.py`. The formatter's Phase 7 caller row
+  carries the English Abstract + Keywords from `draft_writer_agent`, because the fork
+  has no `abstract_bilingual_agent`. `citation_compliance_agent` sorts by the target
+  style (APA/MLA alphabetical, IEEE/Vancouver by appearance) in place of upstream's
+  Chinese venue/locale ordering rule.
+- **Not merged:** the `abstract_bilingual_agent` rows, the zh-TW abstract bullet, the
+  `language` field in the intake row, and the Chinese-English mixed-format branch that
+  points to `apa7_chinese_citation_guide.md`. The fork is English-only.
+
 ## [3.23.2] - 2026-11-19 — Codex citation checks run on Windows
 
 ### Fixed on the fork
@@ -213,6 +236,32 @@ preserved inside upstream's rewritten surfaces. Upstream's `EIC` →
 update-available reminder. Files arriving from upstream were brought up to the
 fork's ruff gate (E741/E402/UP042) and the `datetime.timezone.utc` →
 `datetime.UTC` migration the fork's pyupgrade pass had already made.
+
+## Unreleased upstream changes after 3.24.4 (through 93d472e)
+
+### Added
+
+- **The README names the DeepSeek Harness (DSH) sibling distribution maintained by TY-Cheng (#1126).** It is recognized under the platform-ports policy in `CONTRIBUTING.md`. The ARS maintainer verified that its vendored skill and core files match the pinned upstream commit and reviewed its README and submission documents; the ARS maintainer did not audit the port's code or run it. The README entry states the port's limits. The Claude Code hooks are not ported. Its documented run used version 0.3.0 of the port, before its native DSH team skills and tools, ran all role prompts inline in one session, and used a model that its agent reported as `deepseek-flash`. That run shows no separate user decision at the review or Stage 5 entry checkpoints, and it predates the checkpoint rules that version 0.4.5 added to the port's `ars-pipeline-team` skill.
+
+- **`source_verification_agent` can split a claim into premises when the user explicitly asks to check that claim's premises (#1128, #1133, contributed by @SID-6921).** It lists one to four premises, marks each `HOLDS`, `UNSUPPORTED`, or `CONTRADICTED` against the sources that passed Reference Existence Verification, and marks which premises the claim needs. It reports what follows and never accepts or rejects the claim; the claim as a whole still gets the two-independent-source cross-check. A list of claims in `fact-check` mode does not trigger it. It is a single-agent assessment. A follow-up maintainer edit made the trigger wording in Boundaries, the `Reading` cases, which the needed premises alone now decide, and the `fact-check` case agree. A claim with more than four conditions can exceed the premise limit, and the pass does not mark such a split as partial. When no premise is marked as needed, for example when a claim of the form "A or B" is split into two alternatives, the `Reading` can say that every needed premise holds even though no premise has support; the flags for the unsupported premises and the cross-check still follow. Prompt-level; unmeasured.
+
+### Fixed
+
+- **Conflicting Crossref notices with the same latest timestamp now yield `disputed` (#1150).** When a retraction and a reinstatement for the cited DOI share the latest timestamp, either input order produces the same verdict.
+
+- **`academic-paper` `full` mode Phase 6 review inputs name the Phase 5a Corrected Draft for the first review and the writer's Revised Draft with its Revision Log for later rounds (#1136).** `academic-paper/SKILL.md` (Phase 6a overview and Phase 6b user content) and `academic-paper/agents/peer_reviewer_agent.md` (Complete Review Workflow input and Phase 6a/6b contract prompts) previously named the Phase 4b draft (or Complete Draft), contradicting `peer_reviewer_agent.md`'s Input Sources table after #1068. Prompt-level; unmeasured.
+
+- **The `academic-paper` mode guide's committee branch names resubmission organization, as the Activation gate does (#1123 point 5, contributed by @TanmayShah29).** A new test in `scripts/test_check_committee_correspondence.py` checks that the decision tree's committee line and the gate list the same three requests.
+
+- **`timeline_extraction_agent` no longer cites a v3.9.4 extension of `scripts/check_pipeline_integrity.py` that does not exist (#1129, reported by @SID-6921).** Its enforcement sentence now names the advisory verifier as the other Bucket A agents do, and `CANONICAL_ENFORCEMENT["4"]` in `scripts/check_v3_9_2_phase_boundary.py` carries the same sentence. The verifier and the write-scope guard are unchanged.
+
+- **`academic-paper` full mode re-checks citations before Phase 7 (#1071).** The re-check runs if any Phase 6 revision round or the Option A edit added, removed, or changed a citation or a reference-list entry. The formatter uses the re-check's Corrected Draft and its reference list. The Phase 5a report is kept alongside the re-check report, with its correction log when Phase 5a produced one. The re-check verifies sources as usual and records conflicts in Items Flagged for Review. The reviewer gives Final Counts with every Accept. The formatter skips confirmation and uses those counts only when the Phase 7 draft and its reference list both match the accepted draft and its `## References` section; the caller makes that comparison. If the re-check changed a citation or a reference-list entry after acceptance, the formatter shows `Citations changed after Round N acceptance; this version has not been re-reviewed`, asks once, and counts the draft itself. Before conversion, it compares the draft and list using the selected style's rules for which works require an entry and which entries require a citation. Missing, uncited, or duplicate entries appear in an Output Package warning. Formatting continues with citation content preserved. A citation edit the user asks for in chat outside a revision round is not covered and is tracked in #1145. Prompt-level only. The effect on runs is unmeasured.
+
+- **The `academic-paper` full-mode Phase 6a evaluator prompt now allows the paper-blind #684 pointer authority in its lint instructions (#1143, reported by @Imbad0202).** This agrees with the instruction to reproduce the supplied `INTERNAL` binding marker after the Scoring Plan. Prompt-level; unmeasured.
+
+- **The `academic-paper` formatter's two #1071 quality-gate exceptions now apply only to an item that a reported incoming mismatch requires it to keep (#1152, reported by @Imbad0202).** In the `Format compliance` and `Journal requirements` rows, the sentence from #1127 could be read as letting any citation left verbatim pass, including one the formatter failed to convert; the condition now comes first and covers both the retained citation and the preserved reference-list entry. The earlier wording came from the maintainer's review of #1127. Prompt-level; unmeasured.
+
+- **The `academic-paper` formatter's Step 4 format compliance check now accepts a reference-list entry that a reported incoming mismatch requires it to preserve in `full` mode (#1155, contributed by @pinjun99).** Step 4 now applies the same exception as the Format compliance quality gate to both that entry and a citation the mismatch requires retaining verbatim. Prompt-level; unmeasured.
 
 ## [3.24.4] - 2026-11-19 — A committee-correspondence variant scoped to research ethics review, below-consensus findings in the roadmap and letter, and GPT-6.2 Astra as the recommended OpenAI verifier
 

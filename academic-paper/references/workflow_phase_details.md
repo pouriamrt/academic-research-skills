@@ -108,6 +108,9 @@ Note: The English abstract (150-300 words, structured) and 5-7 keywords are prod
 - Verdict: Accept / Minor Revision / Major Revision / Reject
 - Line-level feedback with suggested fixes
 - Max 2 revision loops -> back to Phase 4 [draft_writer_agent] (limited to 1 round in academic-pipeline)
+- In `full` mode, call `citation_compliance_agent` for a re-check before Phase 7 if any Phase 6 revision round or the Option A edit (the "Acknowledged Limitations" section) added, removed, or changed a citation or a reference-list entry. Count the changes of every round, not only the last one. Send the writer's latest draft to the re-check. When the reviewer accepted a draft, keep that draft with its `## References` section for comparison.
+- In `full` mode, when a re-check runs, use its Corrected Draft as the sole Phase 7 manuscript and use its accompanying reference list. Keep the Phase 5 Citation Audit Report, and its correction log when Phase 5 produced one, alongside the re-check's report. The re-check verifies sources as usual and records conflicts in Items Flagged for Review. Use the Phase 5 list only when no re-check ran. With no revision round (a Round 1 Accept, or early formatting after Phase 5 and before any revision round), no re-check runs; send the initial Phase 5 Corrected Draft (#1071).
+- In `full` mode, Phase 7 skips Review Status confirmation and uses the reviewer's Final Counts only when the Phase 7 draft and its reference list both match the accepted version (the accepted draft with its `## References` section). The caller makes this comparison and passes the Final Counts to the formatter only on a match. If the re-check changed a citation in the draft or an entry in the list after acceptance, the formatter shows `Citations changed after Round N acceptance; this version has not been re-reviewed`, asks once, and counts the draft it receives (#1071).
 
 ---
 
@@ -116,6 +119,7 @@ Note: The English abstract (150-300 words, structured) and 5-7 keywords are prod
 **Agent**: `formatter_agent`
 **Output**: Final Output Package
 
+- In `full` mode, once Review Status allows formatting, compare the incoming draft and list before conversion. Count only works that require an entry under the selected citation style, and count an entry as uncited only where that style requires a list entry to be cited. List missing, uncited, or duplicate entries in an Output Package warning and continue formatting with citation content preserved (#1071).
 - Target format conversion (LaTeX + .bib / DOCX / PDF / Markdown)
 - Journal-specific formatting (if target journal specified)
 - Cover letter (if journal submission)
